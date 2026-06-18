@@ -22,7 +22,7 @@
 
 - 大高度输入框，适合粘贴长文本。
 - 提供示例文本，便于现场演示。
-- 展示本地校对服务和模型状态。
+- 展示校对服务和规则/模型状态。
 - 主按钮固定为单一核心动作：开始校对。
 - 校对中禁用按钮并显示加载状态。
 - 空内容提交给出轻提示。
@@ -32,20 +32,19 @@
 ## 技术方案
 
 - 选型：原生 HTML + CSS + JavaScript。
-- Demo 服务：Python 标准库 HTTP 服务 + 开源中文纠错模型。
-- 模型：`shibing624/macbert4csc-base-chinese`，通过 `pycorrector` 加载，首次调用会自动下载模型，无需 API Key。
+- 线上服务：Vercel Serverless Function + 内置中文错词规则，无需 API Key，无需模型下载。
+- 本地增强：可选 Python 标准库 HTTP 服务 + 开源中文纠错模型。
 - 路由：
   - `/index.html`：工具站入口。
   - `/tools/typo-proofreader/index.html`：错别字校对独立页面。
-- API：前端默认请求 `/api/proofread`；正式上线建议继续由后端保存 API Key，H5 只请求自己的后端接口。
+- API：前端默认请求同源 `/api/proofread`，Vercel 上可直接运行。
 
-### 免费模型选型
+### 免费校对方案
 
-- `pycorrector` 是开源中文文本纠错工具包，Apache 2.0 协议。
-- `pycorrector` 官方文档推荐 MacBERT 模型用于中文拼写纠错。
-- `shibing624/macbert4csc-base-chinese` 可直接通过 `MacBertCorrector` 使用，适合 demo 快速落地。
-- 当前 demo 本地推理，不依赖第三方付费 API，不需要在前端或仓库保存密钥。
-- 如需更强的多字、漏字和语法级纠错，可后续把 `TYPO_MODEL` 替换为更大的 CTC/GPT 类开源模型，前端接口无需变化。
+- 线上默认使用 `api/proofread.js` 和 `lib/proofreader.js` 的轻量中文错词规则，适合 Vercel 免费部署演示。
+- 该方案不依赖第三方付费 API，不需要在前端或仓库保存密钥，也不会触发 Vercel 安装 PyTorch 等重型依赖。
+- 本地如需更强效果，可运行 `server.py`，使用 `pycorrector` 加载 `shibing624/macbert4csc-base-chinese`。
+- 后续若接入云端模型或自托管模型，只需替换 `/api/proofread` 的后端实现，前端接口无需变化。
 
 ## 开发规则
 
@@ -56,12 +55,37 @@
 - 不在仓库中提交真实 API Key、令牌或私密配置。
 - 校对提示词必须保持强约束，禁止模型进行润色或解释。
 
-## 本地运行 Demo
+## Vercel 部署
+
+推送到 GitHub 后，Vercel 会自动部署静态页面和 `/api/*` Serverless Functions。
+
+线上访问：
+
+- 工具站首页：`https://<your-vercel-domain>/`
+- 错别字校对：`https://<your-vercel-domain>/tools/typo-proofreader/`
+- 健康检查：`https://<your-vercel-domain>/api/health`
+
+## 本地运行
+
+### Vercel 本地预览
+
+如果已安装 Vercel CLI，可直接运行：
+
+```bash
+vercel dev
+```
+
+访问：
+
+- 工具站首页：`http://127.0.0.1:3000/`
+- 错别字校对：`http://127.0.0.1:3000/tools/typo-proofreader/`
+
+### 本地 MacBERT 增强版
 
 安装依赖：
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-local.txt
 ```
 
 启动服务：
@@ -105,7 +129,8 @@ curl -X POST http://127.0.0.1:4173/api/proofread \
 
 ## 模型来源
 
+- Vercel 线上 demo：`built-in-chinese-typo-rules`
 - Hugging Face：`shibing624/macbert4csc-base-chinese`
 - Python 工具包：`pycorrector`
 
-该模型适合作为免费 demo 使用。正式产品如需更强的多字、漏字、复杂标点处理，可在后端替换为更强模型，但前端接口可以保持不变。
+Vercel 线上 demo 优先保证可直接打开使用。本地 MacBERT 适合作为免费增强版测试；正式产品如需更强的多字、漏字、复杂标点处理，可在后端替换为更强模型，但前端接口可以保持不变。

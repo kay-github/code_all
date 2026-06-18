@@ -305,10 +305,10 @@
   <main class="page">
     <header class="topbar">
       <h1 class="title">错别字校对</h1>
-      <p class="subtitle">使用免费开源中文纠错模型，本地后端完成校对，适合作为产品演示版。</p>
+      <p class="subtitle">使用同源校对接口完成纠错，线上 Vercel 部署可直接演示。</p>
     </header>
 
-    <p id="modelStatus" class="status-card">正在检查本地校对服务...</p>
+    <p id="modelStatus" class="status-card">正在检查校对服务...</p>
 
     <section class="editor" aria-label="错别字校对">
       <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
@@ -318,7 +318,7 @@
       </div>
       <div id="charCounter" class="counter">0 / 5000</div>
       <button id="proofreadButton" class="primary-button" type="button">开始校对</button>
-      <p class="help-text">首次校对会自动下载并加载模型，耗时取决于网络和机器性能；后续请求会复用模型。</p>
+      <p class="help-text">演示版默认使用线上轻量校对规则，后续可在后端替换为更强模型，前端接口保持不变。</p>
     </section>
 
     <section id="resultPanel" class="result" aria-label="校对结果">
@@ -336,8 +336,8 @@
   <script>
     // API 配置区：后续接入大模型时填写。正式上线建议由后端保存 API Key，前端只请求自己的后端接口。
     const API_CONFIG = {
-      mode: "local", // local 使用本仓库 server.py；openaiCompatible 可切换为兼容官方消息格式的接口
-      endpoint: "/api/proofread", // 本地 demo 接口；部署到后端后可替换为 https://api.example.com/proofread
+      mode: "serverless", // serverless 使用 Vercel API；openaiCompatible 可切换为兼容官方消息格式的接口
+      endpoint: "/api/proofread",
       healthEndpoint: "/api/health",
       apiKey: "", // TODO: 如必须前端直连官方 API，可填写测试 Key；不要把真实 Key 提交到公开仓库
       model: "", // TODO: 填写模型名称，由实际接入方决定
@@ -370,7 +370,7 @@
 
     let toastTimer = 0;
     let serviceInfo = {
-      provider: "免费本地模型",
+      provider: "线上校对服务",
       model: "",
       maxTextChars: API_CONFIG.maxTextChars
     };
@@ -396,7 +396,7 @@
     }
 
     function getModelLabel() {
-      return [serviceInfo.provider, serviceInfo.model].filter(Boolean).join(" / ") || "免费本地模型";
+      return [serviceInfo.provider, serviceInfo.model].filter(Boolean).join(" / ") || "线上校对服务";
     }
 
     function updateCharCounter() {
@@ -406,7 +406,7 @@
     }
 
     async function checkService() {
-      if (API_CONFIG.mode !== "local" || !API_CONFIG.healthEndpoint) {
+      if (!API_CONFIG.healthEndpoint) {
         setStatus("已配置外部校对接口，请确认接口服务可用。", "ready");
         return;
       }
@@ -424,9 +424,9 @@
           maxTextChars: data?.maxTextChars || serviceInfo.maxTextChars
         };
         updateCharCounter();
-        setStatus(`校对服务已就绪：${getModelLabel()}。${data?.loaded ? "模型已加载。" : "首次校对会自动加载模型。"}`, "ready");
+        setStatus(`校对服务已就绪：${getModelLabel()}。`, "ready");
       } catch {
-        setStatus("未连接到本地校对服务，请先运行 python server.py 后再演示。", "error");
+        setStatus("未连接到校对服务，请稍后刷新；本地预览请使用 vercel dev 或 python server.py。", "error");
       }
     }
 
@@ -435,7 +435,7 @@
     }
 
     function buildRequestBody(text) {
-      if (API_CONFIG.mode === "local") {
+      if (API_CONFIG.mode === "serverless") {
         return { text };
       }
 
@@ -485,7 +485,7 @@
         if (error.name === "AbortError") {
           throw new Error("校对超时，请稍后重试或缩短文本");
         }
-        throw new Error("校对服务连接失败，请确认 python server.py 正在运行");
+        throw new Error("校对服务连接失败，请稍后刷新重试");
       } finally {
         window.clearTimeout(timeoutId);
       }

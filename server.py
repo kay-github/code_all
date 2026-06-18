@@ -39,7 +39,7 @@ def load_corrector():
             except ImportError:
                 from pycorrector.macbert.macbert_corrector import MacBertCorrector
         except ImportError as exc:
-            raise ModelLoadError("模型依赖未安装，请先执行 pip install -r requirements.txt") from exc
+            raise ModelLoadError("模型依赖未安装，请先执行 pip install -r requirements-local.txt") from exc
 
         _corrector = MacBertCorrector(MODEL_NAME)
         return _corrector
