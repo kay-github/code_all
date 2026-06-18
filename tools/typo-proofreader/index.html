@@ -65,6 +65,37 @@
       font-weight: 800;
     }
 
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .status-card {
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      box-shadow: var(--shadow);
+    }
+
+    .status-card.is-ready {
+      border-color: #b7e3c7;
+      background: #f2fbf5;
+      color: var(--success);
+    }
+
+    .status-card.is-error {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: var(--danger);
+    }
+
     .editor {
       display: grid;
       gap: 12px;
@@ -96,6 +127,40 @@
       box-shadow: 0 0 0 3px rgba(21, 112, 239, 0.12), var(--shadow);
     }
 
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .secondary-button {
+      min-height: 44px;
+      border: 1px solid #c7d7f2;
+      border-radius: var(--radius);
+      background: #eef5ff;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .secondary-button:active {
+      background: #dfecff;
+    }
+
+    .counter {
+      margin: -4px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    .counter.is-over-limit {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
     .primary-button {
       display: inline-flex;
       align-items: center;
@@ -117,6 +182,13 @@
     .primary-button:disabled {
       cursor: default;
       opacity: 0.72;
+    }
+
+    .help-text {
+      margin: -2px 2px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .result {
@@ -164,6 +236,13 @@
 
     .copy-button:active {
       background: #dfecff;
+    }
+
+    .result-meta {
+      margin: 6px 12px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
     }
 
     .result-text {
@@ -226,11 +305,20 @@
   <main class="page">
     <header class="topbar">
       <h1 class="title">错别字校对</h1>
+      <p class="subtitle">使用免费开源中文纠错模型，本地后端完成校对，适合作为产品演示版。</p>
     </header>
+
+    <p id="modelStatus" class="status-card">正在检查本地校对服务...</p>
 
     <section class="editor" aria-label="错别字校对">
       <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
+      <div class="toolbar" aria-label="快捷操作">
+        <button id="sampleButton" class="secondary-button" type="button">填入示例</button>
+        <button id="clearButton" class="secondary-button" type="button">清空内容</button>
+      </div>
+      <div id="charCounter" class="counter">0 / 5000</div>
       <button id="proofreadButton" class="primary-button" type="button">开始校对</button>
+      <p class="help-text">首次校对会自动下载并加载模型，耗时取决于网络和机器性能；后续请求会复用模型。</p>
     </section>
 
     <section id="resultPanel" class="result" aria-label="校对结果">
@@ -238,6 +326,7 @@
         <h2 class="result-title">校对结果</h2>
         <button id="copyButton" class="copy-button" type="button">复制</button>
       </div>
+      <p id="resultMeta" class="result-meta"></p>
       <textarea id="resultText" class="result-text" readonly></textarea>
     </section>
   </main>
@@ -247,10 +336,16 @@
   <script>
     // API 配置区：后续接入大模型时填写。正式上线建议由后端保存 API Key，前端只请求自己的后端接口。
     const API_CONFIG = {
-      endpoint: "", // TODO: 填写校对接口地址，例如 https://api.example.com/proofread
+      mode: "local", // local 使用本仓库 server.py；openaiCompatible 可切换为兼容官方消息格式的接口
+      endpoint: "/api/proofread", // 本地 demo 接口；部署到后端后可替换为 https://api.example.com/proofread
+      healthEndpoint: "/api/health",
       apiKey: "", // TODO: 如必须前端直连官方 API，可填写测试 Key；不要把真实 Key 提交到公开仓库
-      model: "" // TODO: 填写模型名称，由实际接入方决定
+      model: "", // TODO: 填写模型名称，由实际接入方决定
+      maxTextChars: 5000,
+      requestTimeoutMs: 300000
     };
+
+    const SAMPLE_TEXT = "今天新情很好，我想去公圆玩。少先队员因该为老人让坐。你找到你最喜欢的工作，我也很高心。";
 
     const PROOFREAD_PROMPT = [
       "你是一个严格的中文错别字校对工具。",
@@ -264,11 +359,21 @@
     const sourceText = document.querySelector("#sourceText");
     const resultPanel = document.querySelector("#resultPanel");
     const resultText = document.querySelector("#resultText");
+    const resultMeta = document.querySelector("#resultMeta");
     const proofreadButton = document.querySelector("#proofreadButton");
+    const sampleButton = document.querySelector("#sampleButton");
+    const clearButton = document.querySelector("#clearButton");
     const copyButton = document.querySelector("#copyButton");
+    const modelStatus = document.querySelector("#modelStatus");
+    const charCounter = document.querySelector("#charCounter");
     const toast = document.querySelector("#toast");
 
     let toastTimer = 0;
+    let serviceInfo = {
+      provider: "免费本地模型",
+      model: "",
+      maxTextChars: API_CONFIG.maxTextChars
+    };
 
     function showToast(message) {
       window.clearTimeout(toastTimer);
@@ -284,11 +389,56 @@
       proofreadButton.textContent = isLoading ? "校对中..." : "开始校对";
     }
 
+    function setStatus(message, type = "") {
+      modelStatus.textContent = message;
+      modelStatus.classList.toggle("is-ready", type === "ready");
+      modelStatus.classList.toggle("is-error", type === "error");
+    }
+
+    function getModelLabel() {
+      return [serviceInfo.provider, serviceInfo.model].filter(Boolean).join(" / ") || "免费本地模型";
+    }
+
+    function updateCharCounter() {
+      const length = sourceText.value.length;
+      charCounter.textContent = `${length} / ${serviceInfo.maxTextChars}`;
+      charCounter.classList.toggle("is-over-limit", length > serviceInfo.maxTextChars);
+    }
+
+    async function checkService() {
+      if (API_CONFIG.mode !== "local" || !API_CONFIG.healthEndpoint) {
+        setStatus("已配置外部校对接口，请确认接口服务可用。", "ready");
+        return;
+      }
+
+      try {
+        const response = await fetch(API_CONFIG.healthEndpoint);
+        if (!response.ok) {
+          throw new Error("HEALTH_CHECK_FAILED");
+        }
+
+        const data = await response.json();
+        serviceInfo = {
+          provider: data?.provider || serviceInfo.provider,
+          model: data?.model || serviceInfo.model,
+          maxTextChars: data?.maxTextChars || serviceInfo.maxTextChars
+        };
+        updateCharCounter();
+        setStatus(`校对服务已就绪：${getModelLabel()}。${data?.loaded ? "模型已加载。" : "首次校对会自动加载模型。"}`, "ready");
+      } catch {
+        setStatus("未连接到本地校对服务，请先运行 python server.py 后再演示。", "error");
+      }
+    }
+
     function ensureApiReady() {
       return Boolean(API_CONFIG.endpoint);
     }
 
     function buildRequestBody(text) {
+      if (API_CONFIG.mode === "local") {
+        return { text };
+      }
+
       return {
         model: API_CONFIG.model,
         messages: [
@@ -320,14 +470,29 @@
         headers.Authorization = `Bearer ${API_CONFIG.apiKey}`;
       }
 
-      const response = await fetch(API_CONFIG.endpoint, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(buildRequestBody(text))
-      });
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), API_CONFIG.requestTimeoutMs);
+
+      let response;
+      try {
+        response = await fetch(API_CONFIG.endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(buildRequestBody(text)),
+          signal: controller.signal
+        });
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error("校对超时，请稍后重试或缩短文本");
+        }
+        throw new Error("校对服务连接失败，请确认 python server.py 正在运行");
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
-        throw new Error("API_REQUEST_FAILED");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.message || "API_REQUEST_FAILED");
       }
 
       const data = await response.json();
@@ -349,21 +514,48 @@
         return;
       }
 
+      if (text.length > serviceInfo.maxTextChars) {
+        showToast(`文本过长，请控制在 ${serviceInfo.maxTextChars} 字以内`);
+        return;
+      }
+
       setLoading(true);
 
       try {
         const corrected = await requestProofread(text);
         resultText.value = corrected;
+        resultMeta.textContent = `使用 ${getModelLabel()} · 原文 ${text.length} 字`;
         resultPanel.classList.add("is-visible");
+        checkService();
       } catch (error) {
         if (error.message === "API_NOT_CONFIGURED") {
           showToast("请先配置校对接口");
+        } else if (error.message && error.message !== "API_REQUEST_FAILED") {
+          showToast(error.message);
         } else {
           showToast("校对失败，请稍后重试");
         }
       } finally {
         setLoading(false);
       }
+    }
+
+    function fillSample() {
+      sourceText.value = SAMPLE_TEXT;
+      resultPanel.classList.remove("is-visible");
+      resultText.value = "";
+      resultMeta.textContent = "";
+      updateCharCounter();
+      sourceText.focus();
+    }
+
+    function clearAll() {
+      sourceText.value = "";
+      resultText.value = "";
+      resultMeta.textContent = "";
+      resultPanel.classList.remove("is-visible");
+      updateCharCounter();
+      sourceText.focus();
     }
 
     async function copyResult() {
@@ -399,8 +591,13 @@
       }
     }
 
+    sourceText.addEventListener("input", updateCharCounter);
+    sampleButton.addEventListener("click", fillSample);
+    clearButton.addEventListener("click", clearAll);
     proofreadButton.addEventListener("click", handleProofread);
     copyButton.addEventListener("click", copyResult);
+    updateCharCounter();
+    checkService();
   </script>
 </body>
 </html>
