@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>错别字校对</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #6c7586;
+      --line: #dfe5ee;
+      --accent: #1570ef;
+      --accent-pressed: #0f5fcf;
+      --danger: #c2410c;
+      --success: #067647;
+      --shadow: 0 10px 28px rgba(23, 32, 51, 0.06);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .page {
+      width: min(100%, 640px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      padding: 8px 2px 14px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .editor {
+      display: grid;
+      gap: 12px;
+    }
+
+    .text-box {
+      width: 100%;
+      height: clamp(300px, 50dvh, 560px);
+      min-height: 300px;
+      padding: 14px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      outline: none;
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-wrap: break-word;
+    }
+
+    .text-box::placeholder {
+      color: #9aa3b2;
+    }
+
+    .text-box:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(21, 112, 239, 0.12), var(--shadow);
+    }
+
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 52px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .primary-button:active {
+      background: var(--accent-pressed);
+    }
+
+    .primary-button:disabled {
+      cursor: default;
+      opacity: 0.72;
+    }
+
+    .result {
+      display: none;
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .result.is-visible {
+      display: block;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 12px 0;
+    }
+
+    .result-title {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 750;
+    }
+
+    .copy-button {
+      flex: 0 0 auto;
+      min-width: 82px;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid #b9cff4;
+      border-radius: var(--radius);
+      background: #eef5ff;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .copy-button:active {
+      background: #dfecff;
+    }
+
+    .result-text {
+      width: 100%;
+      min-height: 220px;
+      max-height: 50dvh;
+      margin-top: 8px;
+      padding: 0 12px 14px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-wrap: break-word;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 10;
+      max-width: calc(100vw - 32px);
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, 0.92);
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 8px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 360px) {
+      .page {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+
+      .text-box {
+        min-height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <h1 class="title">错别字校对</h1>
+    </header>
+
+    <section class="editor" aria-label="错别字校对">
+      <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
+      <button id="proofreadButton" class="primary-button" type="button">开始校对</button>
+    </section>
+
+    <section id="resultPanel" class="result" aria-label="校对结果">
+      <div class="result-head">
+        <h2 class="result-title">校对结果</h2>
+        <button id="copyButton" class="copy-button" type="button">复制</button>
+      </div>
+      <textarea id="resultText" class="result-text" readonly></textarea>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // API 配置区：后续接入大模型时填写。正式上线建议由后端保存 API Key，前端只请求自己的后端接口。
+    const API_CONFIG = {
+      endpoint: "", // TODO: 填写校对接口地址，例如 https://api.example.com/proofread
+      apiKey: "", // TODO: 如必须前端直连官方 API，可填写测试 Key；不要把真实 Key 提交到公开仓库
+      model: "" // TODO: 填写模型名称，由实际接入方决定
+    };
+
+    const PROOFREAD_PROMPT = [
+      "你是一个严格的中文错别字校对工具。",
+      "只修正文本中的错别字、多字、漏字，以及明显使用错误的标点符号。",
+      "绝对不改动原文句式、语序、用词和表达逻辑。",
+      "禁止润色、扩写、缩写、风格调整，禁止输出解释、说明、评语、前后缀话术。",
+      "如果没有需要修正的内容，原样返回。",
+      "只输出修正后的完整文本。"
+    ].join("\n");
+
+    const sourceText = document.querySelector("#sourceText");
+    const resultPanel = document.querySelector("#resultPanel");
+    const resultText = document.querySelector("#resultText");
+    const proofreadButton = document.querySelector("#proofreadButton");
+    const copyButton = document.querySelector("#copyButton");
+    const toast = document.querySelector("#toast");
+
+    let toastTimer = 0;
+
+    function showToast(message) {
+      window.clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      toastTimer = window.setTimeout(() => {
+        toast.classList.remove("is-visible");
+      }, 1800);
+    }
+
+    function setLoading(isLoading) {
+      proofreadButton.disabled = isLoading;
+      proofreadButton.textContent = isLoading ? "校对中..." : "开始校对";
+    }
+
+    function ensureApiReady() {
+      return Boolean(API_CONFIG.endpoint);
+    }
+
+    function buildRequestBody(text) {
+      return {
+        model: API_CONFIG.model,
+        messages: [
+          { role: "system", content: PROOFREAD_PROMPT },
+          { role: "user", content: text }
+        ],
+        temperature: 0
+      };
+    }
+
+    function readApiResult(data) {
+      return (
+        data?.choices?.[0]?.message?.content ??
+        data?.output_text ??
+        data?.correctedText ??
+        data?.result ??
+        data?.text ??
+        ""
+      );
+    }
+
+    async function requestProofread(text) {
+      if (!ensureApiReady()) {
+        throw new Error("API_NOT_CONFIGURED");
+      }
+
+      const headers = { "Content-Type": "application/json" };
+      if (API_CONFIG.apiKey) {
+        headers.Authorization = `Bearer ${API_CONFIG.apiKey}`;
+      }
+
+      const response = await fetch(API_CONFIG.endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(buildRequestBody(text))
+      });
+
+      if (!response.ok) {
+        throw new Error("API_REQUEST_FAILED");
+      }
+
+      const data = await response.json();
+      const corrected = readApiResult(data);
+
+      if (typeof corrected !== "string" || corrected.length === 0) {
+        throw new Error("API_RESULT_EMPTY");
+      }
+
+      return corrected;
+    }
+
+    async function handleProofread() {
+      const text = sourceText.value;
+
+      if (!text.trim()) {
+        showToast("请输入待校对文本");
+        sourceText.focus();
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const corrected = await requestProofread(text);
+        resultText.value = corrected;
+        resultPanel.classList.add("is-visible");
+      } catch (error) {
+        if (error.message === "API_NOT_CONFIGURED") {
+          showToast("请先配置校对接口");
+        } else {
+          showToast("校对失败，请稍后重试");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function copyResult() {
+      if (!resultText.value) {
+        return;
+      }
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(resultText.value);
+        } else {
+          copyBySelection();
+        }
+        showToast("复制成功");
+      } catch {
+        try {
+          copyBySelection();
+          showToast("复制成功");
+        } catch {
+          showToast("复制失败，请手动复制");
+        }
+      }
+    }
+
+    function copyBySelection() {
+      resultText.focus();
+      resultText.select();
+      const copied = document.execCommand("copy");
+      window.getSelection()?.removeAllRanges();
+
+      if (!copied) {
+        throw new Error("COPY_FAILED");
+      }
+    }
+
+    proofreadButton.addEventListener("click", handleProofread);
+    copyButton.addEventListener("click", copyResult);
+  </script>
+</body>
+</html>

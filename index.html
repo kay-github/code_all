@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>大杂烩工具站</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #18202f;
+      --muted: #697386;
+      --line: #e3e7ee;
+      --accent: #1677ff;
+      --accent-soft: #eaf3ff;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .page {
+      width: min(100%, 640px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .header {
+      padding: 8px 2px 18px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      font-weight: 750;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .tool-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .tool-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 72px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(24, 32, 47, 0.05);
+    }
+
+    .tool-link:active {
+      transform: translateY(1px);
+      background: #fbfcff;
+    }
+
+    .tool-name {
+      display: block;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .tool-desc {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .arrow {
+      display: grid;
+      place-items: center;
+      flex: 0 0 36px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 22px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1 class="title">大杂烩工具站</h1>
+      <p class="subtitle">轻量、直接、即开即用。</p>
+    </header>
+
+    <section class="tool-list" aria-label="工具列表">
+      <a class="tool-link" href="./tools/typo-proofreader/" aria-label="打开错别字校对">
+        <span>
+          <span class="tool-name">错别字校对</span>
+          <span class="tool-desc">粘贴文本，快速输出修正结果。</span>
+        </span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+    </section>
+  </main>
+</body>
+</html>
