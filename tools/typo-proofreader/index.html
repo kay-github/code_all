@@ -101,6 +101,17 @@
       gap: 12px;
     }
 
+    .source-wrap {
+      position: relative;
+    }
+
+    .source-wrap.has-highlights .text-box {
+      background: transparent;
+      color: transparent;
+      caret-color: var(--text);
+      box-shadow: none;
+    }
+
     .text-box {
       width: 100%;
       height: clamp(300px, 50dvh, 560px);
@@ -116,6 +127,42 @@
       font-size: 16px;
       line-height: 1.7;
       overflow-wrap: break-word;
+    }
+
+    .text-highlight {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: 14px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      font-size: 16px;
+      line-height: 1.7;
+      overflow: auto;
+      overflow-wrap: break-word;
+      pointer-events: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .text-highlight::-webkit-scrollbar {
+      display: none;
+    }
+
+    .source-wrap.has-highlights .text-highlight {
+      display: block;
+    }
+
+    .source-error {
+      border-radius: 3px;
+      background: rgba(194, 65, 12, 0.12);
+      color: var(--danger);
+      font-weight: 800;
     }
 
     .text-box::placeholder {
@@ -189,6 +236,18 @@
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
+    }
+
+    .highlight-hint {
+      display: none;
+      margin: -4px 2px 0;
+      color: var(--danger);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .highlight-hint.is-visible {
+      display: block;
     }
 
     .result {
@@ -311,7 +370,11 @@
     <p id="modelStatus" class="status-card">正在检查校对服务...</p>
 
     <section class="editor" aria-label="错别字校对">
-      <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
+      <div id="sourceWrap" class="source-wrap">
+        <div id="sourceHighlight" class="text-highlight" aria-hidden="true"></div>
+        <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
+      </div>
+      <p id="highlightHint" class="highlight-hint">红色标记为本次校对发现的疑似错字或错误标点。</p>
       <div class="toolbar" aria-label="快捷操作">
         <button id="sampleButton" class="secondary-button" type="button">填入示例</button>
         <button id="clearButton" class="secondary-button" type="button">清空内容</button>
@@ -357,6 +420,9 @@
     ].join("\n");
 
     const sourceText = document.querySelector("#sourceText");
+    const sourceWrap = document.querySelector("#sourceWrap");
+    const sourceHighlight = document.querySelector("#sourceHighlight");
+    const highlightHint = document.querySelector("#highlightHint");
     const resultPanel = document.querySelector("#resultPanel");
     const resultText = document.querySelector("#resultText");
     const resultMeta = document.querySelector("#resultMeta");
@@ -403,6 +469,88 @@
       const length = sourceText.value.length;
       charCounter.textContent = `${length} / ${serviceInfo.maxTextChars}`;
       charCounter.classList.toggle("is-over-limit", length > serviceInfo.maxTextChars);
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"]/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;"
+      })[char]);
+    }
+
+    function normalizeCorrections(text, corrections) {
+      if (!Array.isArray(corrections)) {
+        return [];
+      }
+
+      const ranges = corrections.map((item) => {
+        const start = Number.isInteger(item?.start) ? item.start : item?.index;
+        const source = typeof item?.source === "string" ? item.source : "";
+        const end = Number.isInteger(item?.end) ? item.end : start + source.length;
+
+        return {
+          start,
+          end,
+          source,
+          target: typeof item?.target === "string" ? item.target : ""
+        };
+      }).filter((item) => (
+        Number.isInteger(item.start) &&
+        Number.isInteger(item.end) &&
+        item.start >= 0 &&
+        item.end > item.start &&
+        item.end <= text.length
+      )).sort((left, right) => left.start - right.start || right.end - left.end);
+
+      const filtered = [];
+      let cursor = 0;
+      for (const item of ranges) {
+        if (item.start >= cursor) {
+          filtered.push(item);
+          cursor = item.end;
+        }
+      }
+
+      return filtered;
+    }
+
+    function clearSourceHighlights() {
+      sourceHighlight.innerHTML = "";
+      sourceWrap.classList.remove("has-highlights");
+      highlightHint.classList.remove("is-visible");
+    }
+
+    function renderSourceHighlights(corrections) {
+      const text = sourceText.value;
+      const ranges = normalizeCorrections(text, corrections);
+
+      if (ranges.length === 0) {
+        clearSourceHighlights();
+        return 0;
+      }
+
+      let html = "";
+      let cursor = 0;
+      for (const item of ranges) {
+        html += escapeHtml(text.slice(cursor, item.start));
+        const title = item.target ? ` title="${escapeHtml(item.source)} → ${escapeHtml(item.target)}"` : "";
+        html += `<mark class="source-error"${title}>${escapeHtml(text.slice(item.start, item.end))}</mark>`;
+        cursor = item.end;
+      }
+      html += escapeHtml(text.slice(cursor));
+
+      sourceHighlight.innerHTML = html;
+      sourceWrap.classList.add("has-highlights");
+      highlightHint.classList.add("is-visible");
+      syncHighlightScroll();
+      return ranges.length;
+    }
+
+    function syncHighlightScroll() {
+      sourceHighlight.scrollTop = sourceText.scrollTop;
+      sourceHighlight.scrollLeft = sourceText.scrollLeft;
     }
 
     async function checkService() {
@@ -502,7 +650,10 @@
         throw new Error("API_RESULT_EMPTY");
       }
 
-      return corrected;
+      return {
+        corrected,
+        corrections: Array.isArray(data?.corrections) ? data.corrections : []
+      };
     }
 
     async function handleProofread() {
@@ -522,10 +673,12 @@
       setLoading(true);
 
       try {
-        const corrected = await requestProofread(text);
+        const { corrected, corrections } = await requestProofread(text);
+        const correctionCount = renderSourceHighlights(corrections);
         resultText.value = corrected;
-        resultMeta.textContent = `使用 ${getModelLabel()} · 原文 ${text.length} 字`;
+        resultMeta.textContent = `使用 ${getModelLabel()} · 原文 ${text.length} 字 · ${correctionCount ? `发现 ${correctionCount} 处疑似错误` : "未发现明显错误"}`;
         resultPanel.classList.add("is-visible");
+        showToast(correctionCount ? `已完成校对，发现 ${correctionCount} 处疑似错误` : "已完成校对，未发现明显错误");
         checkService();
       } catch (error) {
         if (error.message === "API_NOT_CONFIGURED") {
@@ -542,6 +695,7 @@
 
     function fillSample() {
       sourceText.value = SAMPLE_TEXT;
+      clearSourceHighlights();
       resultPanel.classList.remove("is-visible");
       resultText.value = "";
       resultMeta.textContent = "";
@@ -551,6 +705,7 @@
 
     function clearAll() {
       sourceText.value = "";
+      clearSourceHighlights();
       resultText.value = "";
       resultMeta.textContent = "";
       resultPanel.classList.remove("is-visible");
@@ -591,7 +746,13 @@
       }
     }
 
-    sourceText.addEventListener("input", updateCharCounter);
+    function handleSourceInput() {
+      updateCharCounter();
+      clearSourceHighlights();
+    }
+
+    sourceText.addEventListener("input", handleSourceInput);
+    sourceText.addEventListener("scroll", syncHighlightScroll);
     sampleButton.addEventListener("click", fillSample);
     clearButton.addEventListener("click", clearAll);
     proofreadButton.addEventListener("click", handleProofread);
