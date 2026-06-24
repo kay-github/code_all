@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { proofreadText } = require("../lib/proofreader");
+const { buildDiffCorrections, proofreadText } = require("../lib/proofreader");
 
 function assertProofread(input, expected, expectedSources) {
   const output = proofreadText(input);
@@ -41,5 +41,13 @@ assertProofread(
 const unchanged = proofreadText("今天天气很好，适合出门散步。");
 assert.strictEqual(unchanged.result, "今天天气很好，适合出门散步。");
 assert.deepStrictEqual(unchanged.corrections, []);
+
+const semanticSource = "反映物业不足为，要求物业旅行指责";
+const semanticTarget = "反映物业不作为，要求物业履行职责";
+const semanticCorrections = buildDiffCorrections(semanticSource, semanticTarget);
+assert.deepStrictEqual(
+  semanticCorrections.map((item) => [item.source, item.target, item.start, item.end]),
+  [["足", "作", 5, 6], ["旅", "履", 12, 13], ["指", "职", 14, 15]]
+);
 
 console.log("proofreader tests passed");

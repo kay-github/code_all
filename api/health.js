@@ -1,4 +1,5 @@
 const { MAX_TEXT_CHARS, MODEL, PROVIDER } = require("../lib/proofreader");
+const { getModelConfig, isModelConfigured } = require("../lib/modelProofreader");
 
 module.exports = function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -12,11 +13,14 @@ module.exports = function handler(req, res) {
   }
 
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  const modelConfig = getModelConfig();
   res.statusCode = 200;
   res.end(JSON.stringify({
     ok: true,
-    provider: PROVIDER,
-    model: MODEL,
+    provider: isModelConfigured() ? "Xfyun Qwen Corrector" : PROVIDER,
+    model: isModelConfigured() ? modelConfig.model : MODEL,
+    fallbackProvider: PROVIDER,
+    modelConfigured: isModelConfigured(),
     loaded: true,
     maxTextChars: MAX_TEXT_CHARS
   }));

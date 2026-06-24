@@ -32,18 +32,19 @@
 ## 技术方案
 
 - 选型：原生 HTML + CSS + JavaScript。
-- 线上服务：Vercel Serverless Function + 内置中文错词规则，无需 API Key，无需模型下载。
+- 线上服务：Vercel Serverless Function + 讯飞 OpenAI 兼容 Qwen 模型，内置中文错词规则作为兜底。
 - 本地增强：可选 Python 标准库 HTTP 服务 + 开源中文纠错模型。
 - 路由：
   - `/index.html`：工具站入口。
   - `/tools/typo-proofreader/index.html`：错别字校对独立页面。
-- API：前端默认请求同源 `/api/proofread`，Vercel 上可直接运行。
+- API：前端默认请求同源 `/api/proofread`，Vercel 上由后端代理调用模型，前端不接触密钥。
 
-### 免费校对方案
+### 校对方案
 
-- 线上默认使用 `api/proofread.js` 和 `lib/proofreader.js` 的轻量中文错词规则，适合 Vercel 免费部署演示。
-- 该方案不依赖第三方付费 API，不需要在前端或仓库保存密钥，也不会触发 Vercel 安装 PyTorch 等重型依赖。
-- 本地如需更强效果，可运行 `server.py`，使用 `pycorrector` 加载 `shibing624/macbert4csc-base-chinese`。
+- 线上默认使用 `lib/modelProofreader.js` 调用讯飞 MaaS OpenAI 兼容接口，适合处理 `反映物业不足为，要求物业旅行指责` 这类语义级错词。
+- `lib/proofreader.js` 保留轻量中文错词规则，大模型未配置或调用失败时自动兜底。
+- 密钥只配置在 Vercel 环境变量中，不写入前端或仓库。
+- 本地如需开源模型增强，可运行 `server.py`，使用 `pycorrector` 加载 `shibing624/macbert4csc-base-chinese`。
 - 后续若接入云端模型或自托管模型，只需替换 `/api/proofread` 的后端实现，前端接口无需变化。
 
 ## 开发规则
@@ -58,6 +59,13 @@
 ## Vercel 部署
 
 推送到 GitHub 后，Vercel 会自动部署静态页面和 `/api/*` Serverless Functions。
+
+需要配置的生产环境变量：
+
+- `XFYUN_API_KEY`：讯飞 MaaS OpenAI 协议 APIKey，使用服务控制台提供的完整 key。
+- `XFYUN_OPENAI_BASE_URL`：默认 `https://maas-api.cn-huabei-1.xf-yun.com/v2`。
+- `XFYUN_MODEL`：服务卡片上的 `modelId`。
+- `XFYUN_LORA_ID`：服务卡片上的 `resourceId`，当前为 `0`。
 
 线上访问：
 
@@ -129,8 +137,9 @@ curl -X POST http://127.0.0.1:4173/api/proofread \
 
 ## 模型来源
 
-- Vercel 线上 demo：`built-in-chinese-typo-rules`
+- Vercel 线上：讯飞 MaaS OpenAI 兼容 Qwen 模型。
+- 规则兜底：`built-in-chinese-typo-rules`
 - Hugging Face：`shibing624/macbert4csc-base-chinese`
 - Python 工具包：`pycorrector`
 
-Vercel 线上 demo 优先保证可直接打开使用。本地 MacBERT 适合作为免费增强版测试；正式产品如需更强的多字、漏字、复杂标点处理，可在后端替换为更强模型，但前端接口可以保持不变。
+Vercel 线上版本优先使用大模型处理语义级错词，规则库保证基础可用性。本地 MacBERT 适合作为免费增强版测试；正式产品如需更强模型，可在后端替换，但前端接口可以保持不变。

@@ -1,4 +1,5 @@
-const { MAX_TEXT_CHARS, MODEL, PROVIDER, proofreadText } = require("../lib/proofreader");
+const { MAX_TEXT_CHARS, MODEL, PROVIDER, buildDiffCorrections, proofreadText } = require("../lib/proofreader");
+const { isModelConfigured, proofreadWithModel } = require("../lib/modelProofreader");
 
 function sendJson(res, status, data) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -97,13 +98,38 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { result, corrections } = proofreadText(text);
+  const ruleResult = proofreadText(text);
+  let result = ruleResult.result;
+  let corrections = ruleResult.corrections;
+  let model = MODEL;
+  let provider = PROVIDER;
+  let fallback = false;
+
+  if (isModelConfigured()) {
+    try {
+      const modelResult = await proofreadWithModel(text);
+      result = modelResult.corrected;
+      corrections = buildDiffCorrections(text, result);
+      model = modelResult.model;
+      provider = modelResult.provider;
+
+      if (result === text && ruleResult.result !== text) {
+        result = ruleResult.result;
+        corrections = ruleResult.corrections;
+        provider = `${modelResult.provider} + ${PROVIDER}`;
+      }
+    } catch (error) {
+      fallback = true;
+    }
+  }
+
   sendJson(res, 200, {
     result,
     text: result,
     correctedText: result,
     corrections,
-    model: MODEL,
-    provider: PROVIDER
+    model,
+    provider,
+    fallback
   });
 };
