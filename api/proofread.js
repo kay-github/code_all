@@ -108,7 +108,7 @@ module.exports = async function handler(req, res) {
   if (isModelConfigured()) {
     try {
       const modelResult = await proofreadWithModel(text);
-      result = modelResult.corrected;
+      result = proofreadText(modelResult.corrected).result;
       corrections = buildDiffCorrections(text, result);
       model = modelResult.model;
       provider = modelResult.provider;
