@@ -1,0 +1,31 @@
+name: family-ai-chat
+
+services:
+  chatgpt-next-web:
+    image: yidadaa/chatgpt-next-web:latest
+    container_name: family-chat-ui
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CODE: ${CHAT_ACCESS_CODE}
+      BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      HIDE_USER_API_KEY: "1"
+      DISABLE_FAST_LINK: "1"
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - chat_net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: family-chat-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - chatgpt-next-web
+    networks:
+      - chat_net
+
+networks:
+  chat_net:
+    driver: bridge
