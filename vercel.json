@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/cbz",
+      "destination": "/tools/typo-proofreader/"
+    },
+    {
+      "source": "/cbz/",
+      "destination": "/tools/typo-proofreader/"
+    }
+  ]
+}
