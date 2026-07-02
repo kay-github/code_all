@@ -7,16 +7,16 @@
 <style>
   :root{--bg:#05060f;--accent:#5eead4;--accent2:#a78bfa;--gold:#fbbf24;--danger:#fb7185;--text:#e5e7eb;--muted:#94a3b8;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;overflow:hidden}
-  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:radial-gradient(1000px 700px at 50% -10%,#0d1230 0%,var(--bg) 65%);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100%;overscroll-behavior:none;user-select:none;}
-  .frame{position:relative;width:100%;max-width:480px;height:100vh;max-height:860px;display:flex;flex-direction:column;}
+  html,body{height:100%;height:100dvh;overflow:hidden}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:radial-gradient(1000px 700px at 50% -10%,#0d1230 0%,var(--bg) 65%);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100%;overscroll-behavior:none;user-select:none;touch-action:none;}
+  .frame{position:relative;width:100%;max-width:480px;height:100vh;height:100dvh;max-height:860px;display:flex;flex-direction:column;}
   .hud{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:rgba(10,12,28,.6);border-bottom:1px solid #1c2148;font-size:12px;flex-wrap:wrap;}
   .hud .group{display:flex;align-items:center;gap:6px}
   .bar{width:80px;height:8px;background:#1a1f44;border-radius:5px;overflow:hidden;border:1px solid #262b55}
   .bar>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#fb7185,#f59e0b);transition:width .15s}
   .lbl{color:var(--muted);font-size:11px}
   .val{font-weight:700;color:var(--text)}.val.gold{color:var(--gold)}.val.purple{color:var(--accent2)}
-  .stage{position:relative;flex:1;overflow:hidden;background:#04050d}
+  .stage{position:relative;flex:1;overflow:hidden;background:#04050d;touch-action:none}
   canvas{display:block;width:100%;height:100%;touch-action:none}
   .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;background:rgba(4,5,13,.82);backdrop-filter:blur(5px);padding:24px;z-index:5;}
   .overlay.hidden{display:none}
@@ -29,6 +29,12 @@
   .hint{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;padding:6px;border-top:1px solid #1c2148;background:rgba(10,12,28,.6)}
   .hint kbd{background:#1d2148;border:1px solid #2a2f55;border-bottom-width:2px;border-radius:5px;padding:1px 5px;font-family:ui-monospace,monospace;font-size:10px;color:var(--text)}
   .comboflash{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:var(--gold);text-shadow:0 0 18px rgba(251,191,36,.7);pointer-events:none;opacity:0;z-index:4;transition:opacity .2s}
+  .mobile-controls{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom));display:none;align-items:flex-end;justify-content:space-between;padding:0 14px;pointer-events:none;z-index:4}
+  .mobile-controls.active{display:flex}
+  .touch-btn{appearance:none;border:1px solid rgba(255,255,255,.16);min-width:72px;height:48px;padding:0 16px;border-radius:999px;background:rgba(15,23,42,.72);color:var(--text);font-size:14px;font-weight:800;box-shadow:0 12px 26px rgba(0,0,0,.28);backdrop-filter:blur(8px);pointer-events:auto;touch-action:manipulation}
+  .touch-btn:active{transform:scale(.96)}
+  .touch-btn.bomb{min-width:92px;color:#0b1020;background:linear-gradient(180deg,#facc15,#f59e0b);border-color:rgba(251,191,36,.7)}
+  @media (min-width:701px){.mobile-controls.active{display:none}}
 </style>
 </head>
 <body>
@@ -43,6 +49,10 @@
   <div class="stage" id="stage">
     <canvas id="game" width="480" height="760"></canvas>
     <div class="comboflash" id="comboFlash"></div>
+    <div class="mobile-controls" id="mobileControls" aria-label="移动端操作">
+      <button class="touch-btn bomb" id="bombBtn" type="button">炸弹</button>
+      <button class="touch-btn pause" id="pauseBtn" type="button">暂停</button>
+    </div>
     <div class="overlay" id="overlay">
       <h1>飞机大战 · 割草无双</h1>
       <p>自动开火，你只管走位！吃道具升级火力，按 <b>空格</b> 丢炸弹清屏，爽就完了～<br>难度很简单，放心割草。</p>
@@ -56,7 +66,7 @@
 (function(){
 "use strict";
 var canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
-var hpBar=document.getElementById('hpBar'),wlvEl=document.getElementById('wlv'),bombEl=document.getElementById('bombCnt'),comboEl=document.getElementById('combo'),scoreEl=document.getElementById('score'),overlay=document.getElementById('overlay'),startBtn=document.getElementById('startBtn'),stage=document.getElementById('stage'),comboFlash=document.getElementById('comboFlash');
+var hpBar=document.getElementById('hpBar'),wlvEl=document.getElementById('wlv'),bombEl=document.getElementById('bombCnt'),comboEl=document.getElementById('combo'),scoreEl=document.getElementById('score'),overlay=document.getElementById('overlay'),startBtn=document.getElementById('startBtn'),stage=document.getElementById('stage'),comboFlash=document.getElementById('comboFlash'),mobileControls=document.getElementById('mobileControls'),bombBtn=document.getElementById('bombBtn'),pauseBtn=document.getElementById('pauseBtn');
 function rand(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return v<a?a:(v>b?b:v);}
 
@@ -271,7 +281,7 @@ function hitPlayer(dmg){
   floatText(p.x,p.y-24,'-1 HP','#fb7185');combo=1;comboTimer=0;updateHUD();
   if(p.hp<=0){p.alive=false;p.hp=0;gameOver();}
 }
-function gameOver(){state='over';overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='击坠！';var pt=overlay.querySelector('p');pt.innerHTML='<div class="stats">最终分数 <b>'+score+'</b><br>击杀 Boss <b>'+bossKills+'</b> 次<br>最高波次 <b>'+waveLevel+'</b></div>';startBtn.textContent='再来一局';}
+function gameOver(){state='over';setMobileControls(false);mouse.active=false;overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='击坠！';var pt=overlay.querySelector('p');pt.innerHTML='<div class="stats">最终分数 <b>'+score+'</b><br>击杀 Boss <b>'+bossKills+'</b> 次<br>最高波次 <b>'+waveLevel+'</b></div>';startBtn.textContent='再来一局';}
 function draw(){
   ctx.save();
   if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
@@ -348,10 +358,11 @@ function loop(ts){
   if(!lastT)lastT=ts;var dt=(ts-lastT)/1000;lastT=ts;if(dt>0.05)dt=0.05;
   update(dt);draw();requestAnimationFrame(loop);
 }
-function start(){reset();state='playing';overlay.classList.add('hidden');lastT=0;requestAnimationFrame(loop);}
+function setMobileControls(visible){mobileControls.classList.toggle('active',!!visible);}
+function start(){reset();state='playing';overlay.classList.add('hidden');setMobileControls(true);lastT=0;requestAnimationFrame(loop);}
 function togglePause(){
-  if(state==='playing'){state='paused';overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='已暂停';overlay.querySelector('p').innerHTML='休息一下，按 P 或点按钮继续。';startBtn.textContent='继续';}
-  else if(state==='paused'){state='playing';overlay.classList.add('hidden');lastT=0;requestAnimationFrame(loop);}
+  if(state==='playing'){state='paused';setMobileControls(false);mouse.active=false;overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='已暂停';overlay.querySelector('p').innerHTML='休息一下，按 P 或点按钮继续。';startBtn.textContent='继续';}
+  else if(state==='paused'){state='playing';overlay.classList.add('hidden');setMobileControls(true);lastT=0;requestAnimationFrame(loop);}
 }
 window.addEventListener('keydown',function(e){
   if(e.key===' '){e.preventDefault();if(state==='playing')useBomb();return;}
@@ -361,13 +372,24 @@ window.addEventListener('keydown',function(e){
 },{passive:false});
 window.addEventListener('keyup',function(e){keys[e.key]=false;});
 function canvasPos(clientX,clientY){var r=canvas.getBoundingClientRect();mouse.x=(clientX-r.left)*(W/r.width);mouse.y=(clientY-r.top)*(H/r.height);}
-stage.addEventListener('mousemove',function(e){mouse.active=true;canvasPos(e.clientX,e.clientY);});
+function isUiTouch(target){return target&&target.closest&&target.closest('.overlay,.mobile-controls');}
+function runStartAction(){if(state==='paused')togglePause();else start();}
+function bindTap(btn,action){
+  btn.addEventListener('click',action);
+  btn.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
+  btn.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();action();},{passive:false});
+}
+stage.addEventListener('mousemove',function(e){if(state!=='playing')return;mouse.active=true;canvasPos(e.clientX,e.clientY);});
 stage.addEventListener('mouseleave',function(){mouse.active=false;});
-stage.addEventListener('touchstart',function(e){mouse.active=true;var t=e.touches[0];canvasPos(t.clientX,t.clientY);e.preventDefault();},{passive:false});
-stage.addEventListener('touchmove',function(e){var t=e.touches[0];canvasPos(t.clientX,t.clientY);e.preventDefault();},{passive:false});
-stage.addEventListener('touchend',function(){mouse.active=false;});
-startBtn.addEventListener('click',function(){if(state==='paused')togglePause();else start();});
+stage.addEventListener('touchstart',function(e){if(state!=='playing'||isUiTouch(e.target))return;var t=e.touches[0];if(!t)return;mouse.active=true;canvasPos(t.clientX,t.clientY);e.preventDefault();},{passive:false});
+stage.addEventListener('touchmove',function(e){if(state!=='playing'||!mouse.active)return;var t=e.touches[0];if(!t)return;canvasPos(t.clientX,t.clientY);e.preventDefault();},{passive:false});
+stage.addEventListener('touchend',function(e){if(mouse.active)e.preventDefault();mouse.active=false;},{passive:false});
+stage.addEventListener('touchcancel',function(){mouse.active=false;});
+bindTap(startBtn,runStartAction);
+bindTap(bombBtn,function(){useBomb();});
+bindTap(pauseBtn,function(){togglePause();});
 reset();state='menu';
+setMobileControls(false);
 })();
 </script>
 </body>
