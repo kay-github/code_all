@@ -9,6 +9,8 @@
 - 结果接口：`GET /api/stock-ytd?symbol=300502.SZ&includeBse=false`。
 - 沪深300接口：`GET /api/stock-benchmark`，与个股结果独立加载和失败重试。
 - 数据健康接口：`GET /api/stock-health`，状态为 `READY`、`DEGRADED`、`DEMO` 或 `NOT_READY`。
+- 快照网关：`GET /api/stock-snapshot`，从私有 Vercel Blob 返回带 ETag 的 Published envelope。
+- 日终刷新：`GET /api/stock-refresh`，仅接受 `CRON_SECRET` Bearer 鉴权；Vercel Cron 在工作日北京时间 18:30 触发。
 - 本地与 Preview 未配置正式快照时使用明确标注的 Fixture；Vercel Production 和普通生产运行时无条件禁止 Fixture。
 - 生产查询只读取 `STOCK_SNAPSHOT_URL` 指向的 Published envelope，不在用户请求中抓取或计算全市场行情。
 - 正式统计口径、数据职责和质量闸门以 `docs/stock-ytd-ranking/PRD.md` 与 `DATA_SOURCES.md` 为准。
@@ -29,7 +31,7 @@ node scripts/refresh-stock-ytd.js --store-dir=.stock-ytd-data --force
 
 Worker 使用 Tushare 主数据、交易日历、日线、复权因子和沪深300，东财 `f25` 作为参考校验；通过质量闸门后写入不可变快照，再原子更新 `current.json`。新年度首个完整交易日结束前会生成基准日收益为 0 的重置快照，避免继续展示上一年度累计 YTD。
 
-`.stock-ytd-data/` 只用于本地验证，已被 Git 忽略。它不适合作为 Vercel Serverless 的生产持久化层；生产仍需对象存储保存不可变快照、KV 或数据库保存 current 指针，并由受保护的 HTTPS 网关返回 envelope 与 ETag。
+`.stock-ytd-data/` 只用于本地验证，已被 Git 忽略。生产使用私有 Vercel Blob：不可变快照写入 `stock-ytd/snapshots/`，通过条件写更新 `stock-ytd/current.json`，刷新锁使用 owner token、ETag 条件续租和过期回收。Blob 凭据只由 Vercel 注入，不进入前端或仓库。
 
 ### 首次真实数据验收
 
@@ -77,22 +79,24 @@ Remove-Item Env:TUSHARE_TOKEN
 
 示例中的 `openDates` 为缩略展示；真实 envelope 必须列出 `coveredFrom` 至 `coveredThrough` 范围内的全部开市日。
 
-响应必须使用 HTTPS、提供 ETag，并可选择 Bearer 鉴权。`tradingCalendar` 用于在 18:30 截止点后或缓存降级时继续以真实交易日历计算 `expectedAsOf/isStale`，不能用自然工作日猜测。
+响应必须使用 HTTPS、提供基于实际响应表示的 ETag，并可选择 Bearer 鉴权。完整 envelope 较大时，网关对支持 gzip 的调用方返回压缩表示，读取端仍按解压后的大小执行上限校验。`tradingCalendar` 用于在 18:30 截止点后或缓存降级时继续以真实交易日历计算 `expectedAsOf/isStale`，不能用自然工作日猜测。
 
 ### 股票环境变量
 
 - `TUSHARE_TOKEN`：日终 Worker 使用的 Tushare Token，仅配置在服务端。
+- `CRON_SECRET`：保护 `/api/stock-refresh` 的独立服务端密钥；未配置时刷新接口拒绝执行。
+- `BLOB_READ_WRITE_TOKEN` / `BLOB_STORE_ID`：由 Vercel Blob 连接自动注入，不要手工写入仓库。
 - `STOCK_SNAPSHOT_DIR`：本地文件快照目录，默认 `.stock-ytd-data`。
 - `STOCK_SNAPSHOT_URL`：生产 Published envelope 的 HTTPS 地址。
 - `STOCK_SNAPSHOT_AUTH_TOKEN`：读取 envelope 时可选的 Bearer Token。
 - `STOCK_SNAPSHOT_TIMEOUT_MS`：读取快照超时，默认 5000ms，最大 20000ms。
 - `STOCK_SNAPSHOT_CACHE_TTL_MS`：服务端 L1 缓存时间，默认 60000ms，最大 300000ms。
 - `STOCK_SNAPSHOT_MAX_BYTES`：快照响应大小上限，默认 12MiB，最大 50MiB。
-- `STOCK_REFRESH_LOCK_STALE_MS`：本地 Worker 锁心跳失效阈值，默认 2 小时，最小 60 秒。
+- `STOCK_REFRESH_LOCK_STALE_MS`：本地或 Blob Worker 锁心跳失效阈值，默认 2 小时，最小 60 秒。
 - `STOCK_TRADING_CALENDAR_HORIZON_DAYS`：持久化交易日历的前瞻天数，默认 45 天，可配置 7 至 370 天。
 - `STOCK_YTD_FIXTURE_ENABLED=0`：在非生产环境显式关闭 Fixture；不能用于在生产开启 Fixture。
 
-仓库当前未配置真实 `TUSHARE_TOKEN`、生产对象存储/网关、调度、告警和数据源商用授权，因此股票功能仍是可部署查询链路与可验证日终实现，不应宣称已具备无人值守的数据 SLA。
+生产 Blob、快照网关和工作日调度已经接入。首次提供真实数据前仍需在 Vercel Production 直接配置轮换后的 `TUSHARE_TOKEN` 与独立 `CRON_SECRET`，运行严格首批 shadow 验收，确认 Tushare 端点权限/额度和数据源商用授权，并验证一次全量刷新能在 300 秒函数时限内完成。完成至少 10 个交易日影子对比和告警接入前，不应宣称已具备无人值守的数据 SLA。
 
 ### 股票工具测试
 

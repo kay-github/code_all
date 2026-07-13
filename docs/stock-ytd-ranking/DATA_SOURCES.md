@@ -249,6 +249,12 @@ Raw、Candidate 和 Published 三层数据不能混用。
 
 该实现用于本地和单机验证，不是 Vercel Serverless 的持久化方案，也不是跨主机分布式锁。生产必须改用对象存储保存不可变快照、KV/数据库保存 current 指针，并使用具备条件写或租约能力的分布式协调机制。
 
+### 9.3 生产 Blob 存储
+
+`lib/stockSnapshotBlobStore.js` 使用私有 Vercel Blob 保存生产数据：先以确定性名称写入不可变快照，再通过 ETag `ifMatch` 条件写切换 `current.json`。首个 current 使用禁止覆盖写入，避免两个发布者同时初始化；读取路径始终绕过 CDN 缓存。
+
+`refresh.lock` 使用禁止覆盖获取租约，内容包含随机 owner token、创建时间和心跳时间。持有者通过 ETag 条件写续租，并只在 owner token 仍匹配时条件删除；超过失效阈值的租约通过 ETag 条件删除后竞争重建。`/api/stock-snapshot` 只返回 current envelope，不返回私有 Blob URL、存储凭据或重定向；大响应对支持 gzip 的调用方使用确定性压缩，并基于实际响应字节生成 ETag。`/api/stock-refresh` 只返回白名单批次摘要。
+
 ## 10. 当前代码
 
 | 文件 | 职责 |
@@ -263,11 +269,14 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | lib/stockBenchmark.js | 沪深300价格指数端点计算与发布校验 |
 | lib/stockPublishedSnapshot.js | HTTPS Published envelope 读取、ETag/L1 缓存、强完整性校验和降级提示 |
 | lib/stockSnapshotFileStore.js | 本地不可变快照、current 原子替换和带所有权的刷新锁 |
+| lib/stockSnapshotBlobStore.js | 私有 Vercel Blob 不可变快照、ETag 条件 current 写入和分布式刷新租约 |
 | lib/stockDailyWorker.js | 日终数据抓取、候选构建、完整校验、发布及上一快照降级编排 |
 | api/stock-search.js | Published 快照股票名称与代码搜索接口 |
 | api/stock-ytd.js | Published 快照个股 YTD 与双股票池排名读取接口；为兼容已有调用可携带 benchmark |
 | api/stock-benchmark.js | Published 快照沪深300独立读取接口，支持前端独立加载和错误隔离 |
 | api/stock-health.js | 数据模式、快照日期、质量和缓存降级健康状态 |
+| api/stock-snapshot.js | 私有 Blob Published envelope 网关，返回 ETag 且禁止缓存和重定向 |
+| api/stock-refresh.js | CRON_SECRET 保护的日终刷新入口，只返回脱敏批次摘要 |
 | tools/stock-ytd-ranking/index.html | 移动优先股票搜索与结果页面 |
 | scripts/check-stock-sources.js | 在线哨兵与全市场抓取检查 |
 | scripts/refresh-stock-ytd.js | 日终 Worker 命令行入口，支持本地目录和同日强制重跑 |
@@ -288,7 +297,10 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tests/stockBenchmark.test.js | 沪深300端点、重复值、缺失值和日期一致性测试 |
 | tests/stockPublishedSnapshot.test.js | envelope、结构完整性、ETag、超时、大小、缓存与动态 freshness 测试 |
 | tests/stockSnapshotFileStore.test.js | 原子发布、动态日期、防倒退、锁所有权和崩溃遗留锁测试 |
+| tests/stockSnapshotBlobStore.test.js | Blob 条件发布、不可变冲突、锁所有权和过期租约恢复测试 |
 | tests/stockDailyWorker.test.js | 正常发布、幂等、整源备用、质量失败、日历降级和跨年重置测试 |
+| tests/apiStockSnapshot.test.js | 快照网关 ETag、304、未就绪和错误脱敏测试 |
+| tests/apiStockRefresh.test.js | 刷新密钥、配置保护、响应白名单和并发冲突测试 |
 | tests/apiStockHealth.test.js | READY、DEGRADED、DEMO 与 NOT_READY 状态测试 |
 | tests/stockFirstBatch.test.js | 首批次零副作用预检、诊断短路、严格发布和报告脱敏测试 |
 
@@ -309,7 +321,10 @@ Raw、Candidate 和 Published 三层数据不能混用。
     node tests/stockBenchmark.test.js
     node tests/stockPublishedSnapshot.test.js
     node tests/stockSnapshotFileStore.test.js
+    node tests/stockSnapshotBlobStore.test.js
     node tests/stockDailyWorker.test.js
+    node tests/apiStockSnapshot.test.js
+    node tests/apiStockRefresh.test.js
     node tests/apiStockHealth.test.js
     node tests/stockFirstBatch.test.js
 
@@ -352,6 +367,8 @@ Tushare 全市场检查使用以下覆盖率口径：
 - `STOCK_SNAPSHOT_URL` 是生产 Published envelope 的 HTTPS 地址；可选 `STOCK_SNAPSHOT_AUTH_TOKEN` 只用于服务端 Bearer 鉴权。
 - `STOCK_SNAPSHOT_TIMEOUT_MS`、`STOCK_SNAPSHOT_CACHE_TTL_MS`、`STOCK_SNAPSHOT_MAX_BYTES` 分别控制读取超时、L1 TTL 和响应大小上限。
 - `STOCK_SNAPSHOT_DIR` 仅指定本地文件存储目录；`STOCK_REFRESH_LOCK_STALE_MS` 控制本地锁心跳失效阈值，默认 2 小时且最小 60 秒。
+- 生产 Blob 凭据由 Vercel 注入；`CRON_SECRET` 独立保护刷新入口，缺失时接口必须拒绝执行。
+- `stock-ytd/current.json` 使用 Blob ETag 条件写，`stock-ytd/refresh.lock` 使用禁止覆盖、owner token、条件续租和过期回收；读取网关不暴露 Blob URL 或凭据。
 - `STOCK_TRADING_CALENDAR_HORIZON_DAYS` 控制交易日历前瞻覆盖，默认 45 天，允许 7 至 370 天。
 - Token 不进入前端、日志、测试 Fixture 或仓库。
 - 所有用户查询只读取 Published 快照，不在用户请求中抓取全市场。
@@ -361,15 +378,14 @@ Tushare 全市场检查使用以下覆盖率口径：
 
 ## 12. 生产前仍需完成
 
-当前已经完成复权计算、多源适配、候选快照、质量闸门、批次内端点缺口回补、停牌向前选价、日终 Worker、Published envelope 读取、本地原子存储、动态交易日 freshness 和在线哨兵，但以下生产能力尚未落地：
+当前已经完成复权计算、多源适配、候选快照、质量闸门、批次内端点缺口回补、停牌向前选价、日终 Worker、Published envelope 读取、本地原子存储、私有 Vercel Blob 条件发布、ETag 网关、工作日 18:30 调度、动态交易日 freshness 和在线哨兵，但以下生产能力尚未落地：
 
 1. 配置具备所需权限与额度的 TUSHARE_TOKEN。
 2. 完成 Tushare 初始全量历史落库、每日增量持久化及调度编排；当前按股回补是批次内兜底，不替代持久化历史仓库。
-3. 用生产对象存储/KV/数据库替换 `.stock-ytd-data/` 本地文件实现，并提供受保护、带 ETag 的 HTTPS envelope 网关。
-4. 配置每日 18:30 后运行的日终任务，并在自然年切换时生成 0 收益重置快照；不能只依赖用户请求触发。
+3. 在 Vercel Production 配置独立 `CRON_SECRET` 和 `STOCK_SNAPSHOT_URL=https://1.688680.xyz/api/stock-snapshot`，并建立密钥轮换机制。
+4. 运行严格首批 shadow 验收，再触发第一次 Blob 正式发布；同时验证全量刷新能在当前 300 秒 Serverless 时限内完成，超时则迁移到长任务运行器。
 5. 建立 Worker 失败、SERVING_PREVIOUS、computed-fallback、日历覆盖不足和连续过期告警，并完成至少 10 个交易日影子对比。
-6. 配置生产 `STOCK_SNAPSHOT_URL`、读取鉴权和密钥轮换机制。
-7. 完成数据源商用授权与调用额度确认。
-8. 在生产提升前接入交易所或已授权证券代码清单及其日期化哈希，逐代码核对股票池；分交易所数量基线只能发现数量差异，不能识别同一交易所内“漏入与错入数量相互抵消”。
+6. 完成数据源商用授权与调用额度确认。
+7. 在生产提升前接入交易所或已授权证券代码清单及其日期化哈希，逐代码核对股票池；分交易所数量基线只能发现数量差异，不能识别同一交易所内“漏入与错入数量相互抵消”。
 
 在以上事项完成前，当前数据层适合作为可验证的工程基础和原型，不应宣称已经具备无人值守的生产级数据 SLA。

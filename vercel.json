@@ -1,4 +1,15 @@
 {
+  "functions": {
+    "api/stock-refresh.js": {
+      "maxDuration": 300
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/stock-refresh",
+      "schedule": "30 10 * * 1-5"
+    }
+  ],
   "rewrites": [
     {
       "source": "/cbz",
