@@ -1,13 +1,13 @@
 "use strict";
 
 const {
-  fixtureEnabled,
-  getFixtureSnapshot
-} = require("../lib/stockFixture");
+  StockPublishedSnapshotError,
+  loadStockSnapshot
+} = require("../lib/stockPublishedSnapshot");
 
-function sendJson(res, status, data) {
+function sendJson(res, status, data, cacheControl = "no-store") {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", cacheControl);
   res.statusCode = status;
   res.end(JSON.stringify(data));
 }
@@ -52,54 +52,73 @@ function searchStocks(snapshot, query) {
     }));
 }
 
-module.exports = function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+function createHandler(options = {}) {
+  const load = options.loadStockSnapshot || loadStockSnapshot;
+  const logger = options.logger || console;
+  return async function handler(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-  if (req.method !== "GET") {
-    sendJson(res, 405, {
-      error: "METHOD_NOT_ALLOWED",
-      message: "仅支持 GET 请求"
-    });
-    return;
-  }
-  if (!fixtureEnabled()) {
-    sendJson(res, 503, {
-      error: "STOCK_DATA_NOT_READY",
-      message: "股票生产快照尚未配置"
-    });
-    return;
-  }
+    if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+    if (req.method !== "GET") {
+      sendJson(res, 405, {
+        error: "METHOD_NOT_ALLOWED",
+        message: "仅支持 GET 请求"
+      });
+      return;
+    }
+    const query = String(readQueryValue(req, "q") || "").trim();
+    if (!query) {
+      sendJson(res, 400, {
+        error: "EMPTY_QUERY",
+        message: "请输入股票名称或代码"
+      });
+      return;
+    }
+    if (/^\d+$/.test(query) && query.length < 2) {
+      sendJson(res, 400, {
+        error: "QUERY_TOO_SHORT",
+        message: "股票代码至少输入两位"
+      });
+      return;
+    }
 
-  const query = String(readQueryValue(req, "q") || "").trim();
-  if (!query) {
-    sendJson(res, 400, {
-      error: "EMPTY_QUERY",
-      message: "请输入股票名称或代码"
-    });
-    return;
-  }
-  if (/^\d+$/.test(query) && query.length < 2) {
-    sendJson(res, 400, {
-      error: "QUERY_TOO_SHORT",
-      message: "股票代码至少输入两位"
-    });
-    return;
-  }
+    try {
+      const loaded = await load();
+      const snapshot = loaded.snapshot;
+      sendJson(res, 200, {
+        items: searchStocks(snapshot, query),
+        asOf: snapshot.asOf,
+        dataMode: loaded.mode,
+        warning: loaded.warning || snapshot.dataWarning || null
+      });
+    } catch (error) {
+      const knownDataError = error instanceof StockPublishedSnapshotError ||
+        error && error.code === "SNAPSHOT_NOT_PUBLISHABLE";
+      if (!knownDataError) {
+        logger.error("stock search internal error", {
+          name: error && error.name,
+          code: error && error.code
+        });
+      }
+      sendJson(res, knownDataError ? 503 : 500, knownDataError
+        ? {
+            error: "STOCK_DATA_UNAVAILABLE",
+            message: "股票数据暂未准备好，请稍后重试"
+          }
+        : {
+            error: "INTERNAL_ERROR",
+            message: "股票搜索服务暂时不可用"
+          });
+    }
+  };
+}
 
-  const snapshot = getFixtureSnapshot();
-  sendJson(res, 200, {
-    items: searchStocks(snapshot, query),
-    asOf: snapshot.asOf,
-    dataMode: snapshot.dataMode,
-    warning: snapshot.dataWarning
-  });
-};
-
+module.exports = createHandler();
+module.exports.createHandler = createHandler;
 module.exports.searchStocks = searchStocks;

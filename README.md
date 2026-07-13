@@ -1,15 +1,73 @@
 # 大杂烩工具站
 
-一个移动端优先的轻量 H5 工具站。当前已落地错别字校对，并新增股票 YTD 与市场排名工具的开发纵向切片。
+一个移动端优先的轻量 H5 工具站。当前已落地错别字校对，并实现股票 YTD 与市场排名工具的查询链路和日终数据基础设施。
 
-## 股票 YTD 开发切片
+## 股票 YTD 与市场排名
 
 - 页面：`/tools/stock-ytd-ranking/`。
 - 搜索接口：`GET /api/stock-search?q=新易`。
 - 结果接口：`GET /api/stock-ytd?symbol=300502.SZ&includeBse=false`。
-- 当前只使用明确标注的开发 Fixture，用于验证搜索、排名、北交所切换、沪深300和页面状态。
-- Fixture 在 Vercel Production 和普通生产运行时无条件关闭；本地与 Preview 可使用，`STOCK_YTD_FIXTURE_ENABLED=0` 可以显式关闭，不能作为生产行情使用。
-- 正式数据接入、快照存储和日终任务以 `docs/stock-ytd-ranking/PRD.md` 与 `DATA_SOURCES.md` 为准。
+- 数据健康接口：`GET /api/stock-health`，状态为 `READY`、`DEGRADED`、`DEMO` 或 `NOT_READY`。
+- 本地与 Preview 未配置正式快照时使用明确标注的 Fixture；Vercel Production 和普通生产运行时无条件禁止 Fixture。
+- 生产查询只读取 `STOCK_SNAPSHOT_URL` 指向的 Published envelope，不在用户请求中抓取或计算全市场行情。
+- 正式统计口径、数据职责和质量闸门以 `docs/stock-ytd-ranking/PRD.md` 与 `DATA_SOURCES.md` 为准。
+
+### 日终 Worker
+
+配置具备所需权限和额度的 `TUSHARE_TOKEN` 后运行：
+
+```bash
+node scripts/refresh-stock-ytd.js
+```
+
+可显式指定本地存储目录或强制重跑同一交易日：
+
+```bash
+node scripts/refresh-stock-ytd.js --store-dir=.stock-ytd-data --force
+```
+
+Worker 使用 Tushare 主数据、交易日历、日线、复权因子和沪深300，东财 `f25` 作为参考校验；通过质量闸门后写入不可变快照，再原子更新 `current.json`。新年度首个完整交易日结束前会生成基准日收益为 0 的重置快照，避免继续展示上一年度累计 YTD。
+
+`.stock-ytd-data/` 只用于本地验证，已被 Git 忽略。它不适合作为 Vercel Serverless 的生产持久化层；生产仍需对象存储保存不可变快照、KV 或数据库保存 current 指针，并由受保护的 HTTPS 网关返回 envelope 与 ETag。
+
+### Published envelope
+
+生产 `STOCK_SNAPSHOT_URL` 返回：
+
+```json
+{
+  "envelopeVersion": "stock-ytd-current.v1",
+  "snapshotId": "stock-ytd-20260710-...",
+  "expectedAsOf": "2026-07-10",
+  "refreshStatus": "PUBLISHED",
+  "tradingCalendar": {
+    "version": "sse-trading-calendar.v1",
+    "coveredFrom": "2025-12-01",
+    "coveredThrough": "2026-08-24",
+    "openDates": ["2025-12-31", "2026-07-10"]
+  },
+  "snapshot": {}
+}
+```
+
+示例中的 `openDates` 为缩略展示；真实 envelope 必须列出 `coveredFrom` 至 `coveredThrough` 范围内的全部开市日。
+
+响应必须使用 HTTPS、提供 ETag，并可选择 Bearer 鉴权。`tradingCalendar` 用于在 18:30 截止点后或缓存降级时继续以真实交易日历计算 `expectedAsOf/isStale`，不能用自然工作日猜测。
+
+### 股票环境变量
+
+- `TUSHARE_TOKEN`：日终 Worker 使用的 Tushare Token，仅配置在服务端。
+- `STOCK_SNAPSHOT_DIR`：本地文件快照目录，默认 `.stock-ytd-data`。
+- `STOCK_SNAPSHOT_URL`：生产 Published envelope 的 HTTPS 地址。
+- `STOCK_SNAPSHOT_AUTH_TOKEN`：读取 envelope 时可选的 Bearer Token。
+- `STOCK_SNAPSHOT_TIMEOUT_MS`：读取快照超时，默认 5000ms，最大 20000ms。
+- `STOCK_SNAPSHOT_CACHE_TTL_MS`：服务端 L1 缓存时间，默认 60000ms，最大 300000ms。
+- `STOCK_SNAPSHOT_MAX_BYTES`：快照响应大小上限，默认 12MiB，最大 50MiB。
+- `STOCK_REFRESH_LOCK_STALE_MS`：本地 Worker 锁心跳失效阈值，默认 2 小时，最小 60 秒。
+- `STOCK_TRADING_CALENDAR_HORIZON_DAYS`：持久化交易日历的前瞻天数，默认 45 天，可配置 7 至 370 天。
+- `STOCK_YTD_FIXTURE_ENABLED=0`：在非生产环境显式关闭 Fixture；不能用于在生产开启 Fixture。
+
+仓库当前未配置真实 `TUSHARE_TOKEN`、生产对象存储/网关、调度、告警和数据源商用授权，因此股票功能仍是可部署查询链路与可验证日终实现，不应宣称已具备无人值守的数据 SLA。
 
 ## 产品方案
 

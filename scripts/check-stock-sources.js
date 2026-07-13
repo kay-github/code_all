@@ -16,22 +16,13 @@ const {
   calculateYtdFromAdjustedBars
 } = require("../lib/stockYtd");
 const { normalizeDate } = require("../lib/stockSnapshot");
+const {
+  shanghaiDateParts,
+  deriveExpectedDates
+} = require("../lib/stockTradingDates");
 
 const WARNING_BP = 5;
 const FAILURE_BP = 20;
-
-function shanghaiDateParts(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23"
-  }).formatToParts(date);
-  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
-}
 
 function providerSymbols(symbol) {
   const normalized = String(symbol || "").trim().toUpperCase();
@@ -176,27 +167,6 @@ async function checkMarket(clients = {}) {
     ...assessMarketRows(rows),
     elapsedMs: Date.now() - startedAt
   };
-}
-
-function deriveExpectedDates(calendarRows, nowParts) {
-  const today = nowParts.year + "-" + nowParts.month + "-" + nowParts.day;
-  const cutoffPassed =
-    Number(nowParts.hour) > 18 ||
-    (Number(nowParts.hour) === 18 && Number(nowParts.minute) >= 30);
-  const openDates = [...new Set(
-    calendarRows
-      .filter((row) => String(row.is_open) === "1")
-      .map((row) => normalizeDate(row.cal_date))
-  )].sort();
-  const expectedAsOf = openDates.filter(
-    (date) => date < today || (date === today && cutoffPassed)
-  ).at(-1);
-  const baseCutoff = String(Number(nowParts.year) - 1) + "-12-31";
-  const baseDate = openDates.filter((date) => date <= baseCutoff).at(-1);
-  if (!expectedAsOf || !baseDate || expectedAsOf <= baseDate) {
-    throw new Error("Tushare trade calendar does not cover YTD endpoints");
-  }
-  return { today, expectedAsOf, baseDate };
 }
 
 function findRow(rows, symbol, date) {

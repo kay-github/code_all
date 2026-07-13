@@ -17,6 +17,8 @@ assert.ok(page.includes('id="retryButton"'));
 assert.ok(page.includes('role="status" aria-live="polite" aria-busy="true"'));
 assert.ok(page.includes("/api/stock-search"));
 assert.ok(page.includes("/api/stock-ytd"));
+assert.ok(page.includes("function setDataWarning(data)"));
+assert.ok(!page.includes("function setDemoWarning(data)"));
 assert.ok(page.includes("数据仅供参考，不构成投资建议"));
 assert.ok(page.includes("@media (max-width: 380px)"));
 assert.ok(page.includes("prefers-reduced-motion"));

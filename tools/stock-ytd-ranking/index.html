@@ -1120,11 +1120,10 @@
         return "持平";
       }
 
-      function setDemoWarning(data) {
-        if (data && data.dataMode === "fixture" && data.warning) {
-          elements.demoBanner.textContent = data.warning;
-          elements.demoBanner.classList.add("is-visible");
-        }
+      function setDataWarning(data) {
+        const warning = data && data.warning ? String(data.warning) : "";
+        elements.demoBanner.textContent = warning;
+        elements.demoBanner.classList.toggle("is-visible", Boolean(warning));
       }
 
       function setRequestError(message, retryAction = null) {
@@ -1233,7 +1232,7 @@
           const data = await response.json();
           if (requestId !== state.searchRequest) return;
           if (!response.ok) throw new Error(data.message || "股票搜索暂时不可用");
-          setDemoWarning(data);
+          setDataWarning(data);
           renderOptions(data.items || []);
         } catch (error) {
           if (error.name === "AbortError") return;
@@ -1361,16 +1360,20 @@
 
       function renderResult(data) {
         state.currentResult = data;
-        setDemoWarning(data);
+        setDataWarning(data);
         elements.skeleton.classList.remove("is-visible");
         elements.resultStack.classList.add("is-visible");
         elements.stockName.textContent = data.stock.name;
         elements.asOf.textContent = `截至 ${data.asOf} 收盘`;
         renderTags(data.stock);
 
-        elements.staleBanner.textContent = data.isStale
-          ? `当前快照截至 ${data.asOf}，预期交易日为 ${data.expectedAsOf}。`
-          : "";
+        elements.staleBanner.textContent = data.periodResetRequired
+          ? "新年度重置快照尚未生成，当前数据暂按过期状态展示。"
+          : data.calendarCoverageExpired
+            ? "交易日历覆盖已到期，当前展示上一份已校验快照。"
+            : data.isStale
+              ? `当前快照截至 ${data.asOf}，预期交易日为 ${data.expectedAsOf}。`
+              : "";
         elements.staleBanner.classList.toggle("is-visible", data.isStale);
 
         const eligible = data.stock.hasFullYtd && data.comparison;

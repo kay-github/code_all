@@ -2,13 +2,13 @@
 
 const { queryStockSnapshot } = require("../lib/stockSnapshot");
 const {
-  fixtureEnabled,
-  getFixtureSnapshot
-} = require("../lib/stockFixture");
+  StockPublishedSnapshotError,
+  loadStockSnapshot
+} = require("../lib/stockPublishedSnapshot");
 
-function sendJson(res, status, data) {
+function sendJson(res, status, data, cacheControl = "no-store") {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", cacheControl);
   res.statusCode = status;
   res.end(JSON.stringify(data));
 }
@@ -50,75 +50,97 @@ function publicStock(record, asOf) {
   };
 }
 
-module.exports = function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+function createHandler(options = {}) {
+  const load = options.loadStockSnapshot || loadStockSnapshot;
+  const query = options.queryStockSnapshot || queryStockSnapshot;
+  const logger = options.logger || console;
+  return async function handler(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-  if (req.method !== "GET") {
-    sendJson(res, 405, {
-      error: "METHOD_NOT_ALLOWED",
-      message: "仅支持 GET 请求"
-    });
-    return;
-  }
-  if (!fixtureEnabled()) {
-    sendJson(res, 503, {
-      error: "STOCK_DATA_NOT_READY",
-      message: "股票生产快照尚未配置"
-    });
-    return;
-  }
+    if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+    if (req.method !== "GET") {
+      sendJson(res, 405, {
+        error: "METHOD_NOT_ALLOWED",
+        message: "仅支持 GET 请求"
+      });
+      return;
+    }
+    const symbol = String(readQueryValue(req, "symbol") || "")
+      .trim()
+      .toUpperCase();
+    if (!/^\d{6}\.(SH|SZ|BJ)$/.test(symbol)) {
+      sendJson(res, 400, {
+        error: "INVALID_SYMBOL",
+        message: "股票代码格式错误"
+      });
+      return;
+    }
+    const includeBse = parseIncludeBse(readQueryValue(req, "includeBse"));
+    if (includeBse == null) {
+      sendJson(res, 400, {
+        error: "INVALID_INCLUDE_BSE",
+        message: "includeBse 只能为 true 或 false"
+      });
+      return;
+    }
 
-  const symbol = String(readQueryValue(req, "symbol") || "")
-    .trim()
-    .toUpperCase();
-  if (!/^\d{6}\.(SH|SZ|BJ)$/.test(symbol)) {
-    sendJson(res, 400, {
-      error: "INVALID_SYMBOL",
-      message: "股票代码格式错误"
-    });
-    return;
-  }
-  const includeBse = parseIncludeBse(readQueryValue(req, "includeBse"));
-  if (includeBse == null) {
-    sendJson(res, 400, {
-      error: "INVALID_INCLUDE_BSE",
-      message: "includeBse 只能为 true 或 false"
-    });
-    return;
-  }
+    try {
+      const loaded = await load();
+      const snapshot = loaded.snapshot;
+      const result = query(snapshot, symbol, { includeBse });
+      if (!result) {
+        sendJson(res, 404, {
+          error: "STOCK_NOT_FOUND",
+          message: "未找到该股票"
+        });
+        return;
+      }
 
-  const snapshot = getFixtureSnapshot();
-  const result = queryStockSnapshot(snapshot, symbol, { includeBse });
-  if (!result) {
-    sendJson(res, 404, {
-      error: "STOCK_NOT_FOUND",
-      message: "未找到该股票"
-    });
-    return;
-  }
+      sendJson(res, 200, {
+        snapshotId: snapshot.snapshotId || `${loaded.mode}-${snapshot.asOf}`,
+        dataMode: loaded.mode,
+        warning: loaded.warning || snapshot.dataWarning || null,
+        asOf: result.asOf,
+        expectedAsOf: result.expectedAsOf,
+        publishedAt: result.publishedAt,
+        isStale: result.isStale,
+        periodResetRequired: Boolean(snapshot.periodResetRequired),
+        calendarCoverageExpired: Boolean(snapshot.calendarCoverageExpired),
+        baseDate: result.baseDate,
+        methodologyVersion: result.methodologyVersion,
+        stock: publicStock(result.stock, result.asOf),
+        comparison: result.comparison,
+        benchmark: snapshot.benchmark || null
+      });
+    } catch (error) {
+      const knownDataError = error instanceof StockPublishedSnapshotError ||
+        error && error.code === "SNAPSHOT_NOT_PUBLISHABLE";
+      if (!knownDataError) {
+        logger.error("stock YTD internal error", {
+          name: error && error.name,
+          code: error && error.code
+        });
+      }
+      sendJson(res, knownDataError ? 503 : 500, knownDataError
+        ? {
+            error: "STOCK_DATA_UNAVAILABLE",
+            message: "股票数据暂未准备好，请稍后重试"
+          }
+        : {
+            error: "INTERNAL_ERROR",
+            message: "股票查询服务暂时不可用"
+          });
+    }
+  };
+}
 
-  sendJson(res, 200, {
-    snapshotId: `fixture-${snapshot.asOf}`,
-    dataMode: snapshot.dataMode,
-    warning: snapshot.dataWarning,
-    asOf: result.asOf,
-    expectedAsOf: result.expectedAsOf,
-    publishedAt: result.publishedAt,
-    isStale: result.isStale,
-    baseDate: result.baseDate,
-    methodologyVersion: result.methodologyVersion,
-    stock: publicStock(result.stock, result.asOf),
-    comparison: result.comparison,
-    benchmark: snapshot.benchmark
-  });
-};
-
+module.exports = createHandler();
+module.exports.createHandler = createHandler;
 module.exports.parseIncludeBse = parseIncludeBse;
 module.exports.publicStock = publicStock;
