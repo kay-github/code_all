@@ -1,6 +1,15 @@
 # 大杂烩工具站
 
-一个移动端优先的轻量 H5 工具站。当前已落地独立子功能：错别字校对。
+一个移动端优先的轻量 H5 工具站。当前已落地错别字校对，并新增股票 YTD 与市场排名工具的开发纵向切片。
+
+## 股票 YTD 开发切片
+
+- 页面：`/tools/stock-ytd-ranking/`。
+- 搜索接口：`GET /api/stock-search?q=新易`。
+- 结果接口：`GET /api/stock-ytd?symbol=300502.SZ&includeBse=false`。
+- 当前只使用明确标注的开发 Fixture，用于验证搜索、排名、北交所切换、沪深300和页面状态。
+- Fixture 在 Vercel Production 和普通生产运行时无条件关闭；本地与 Preview 可使用，`STOCK_YTD_FIXTURE_ENABLED=0` 可以显式关闭，不能作为生产行情使用。
+- 正式数据接入、快照存储和日终任务以 `docs/stock-ytd-ranking/PRD.md` 与 `DATA_SOURCES.md` 为准。
 
 ## 产品方案
 
@@ -37,6 +46,7 @@
 - 路由：
   - `/index.html`：工具站入口。
   - `/tools/typo-proofreader/index.html`：错别字校对独立页面。
+  - `/tools/stock-ytd-ranking/index.html`：股票 YTD 开发页面。
 - API：前端默认请求同源 `/api/proofread`，Vercel 上由后端代理调用模型，前端不接触密钥。
 
 ### 校对方案
@@ -87,6 +97,7 @@ vercel dev
 
 - 工具站首页：`http://127.0.0.1:3000/`
 - 错别字校对：`http://127.0.0.1:3000/tools/typo-proofreader/`
+- A股年内表现：`http://127.0.0.1:3000/tools/stock-ytd-ranking/`
 
 ### 本地 MacBERT 增强版
 

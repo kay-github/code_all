@@ -64,3 +64,10 @@
 - 下方显示修正后的完整文本。
 - 上方原文中把本次发现的疑似错字或错误标点标红。
 - 如果未发现错误，返回原文并提示未发现明显错误。
+
+## Planned Stock YTD Ranking Tool
+
+- 股票 YTD 与市场排名工具的产品、统计口径、UI 和验收基线位于 docs/stock-ytd-ranking/PRD.md。
+- 多源数据职责、复权规则、质量闸门和容灾基线位于 docs/stock-ytd-ranking/DATA_SOURCES.md。
+- 开始设计或开发 /tools/stock-ytd-ranking/ 前必须完整阅读以上两份文档。
+- 如需改变 YTD 公式、比较股票池、北交所规则、排名分母、沪深300口径或 UI 颜色语义，应先更新 PRD 的决策与变更记录，不要只修改代码。

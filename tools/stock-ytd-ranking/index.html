@@ -1,0 +1,1526 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>A股年内表现</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --text: #182230;
+      --text-soft: #526071;
+      --muted: #667085;
+      --line: #dde3ea;
+      --line-soft: #ebeef2;
+      --blue: #2457d6;
+      --blue-pressed: #1d46b8;
+      --blue-soft: #eef3ff;
+      --track: #e8edf5;
+      --up: #d92d20;
+      --up-soft: #fff1f0;
+      --down: #087a55;
+      --down-soft: #eaf8f2;
+      --warning: #b54708;
+      --warning-soft: #fff7e8;
+      --error: #c5221f;
+      --error-soft: #fff0f0;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(36, 87, 214, 0.07), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button,
+    a,
+    label {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .page {
+      width: min(100%, 960px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(64px + env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .back-link {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .back-link:hover {
+      color: var(--blue);
+    }
+
+    .hero {
+      padding: 14px 2px 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 10px 0 0;
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 24px;
+    }
+
+    .demo-banner,
+    .stale-banner,
+    .inline-error {
+      display: none;
+      margin: 0 0 16px;
+      padding: 10px 12px;
+      border: 1px solid #f2d39d;
+      border-radius: var(--radius);
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .demo-banner.is-visible,
+    .stale-banner.is-visible,
+    .inline-error.is-visible {
+      display: block;
+    }
+
+    .inline-error {
+      border-color: #f2b8b5;
+      background: var(--error-soft);
+      color: var(--error);
+    }
+
+    .inline-error.is-visible {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .retry-button {
+      min-width: 64px;
+      min-height: 44px;
+      flex: none;
+      padding: 0 14px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      background: transparent;
+      color: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .retry-button:hover {
+      background: rgba(197, 34, 31, 0.07);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .control-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .search-block,
+    .scope-card,
+    .result-card,
+    .benchmark-card,
+    .method-card,
+    .empty-state,
+    .skeleton-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .search-block {
+      position: relative;
+      padding: 14px;
+    }
+
+    .field-label,
+    .scope-label {
+      display: block;
+      margin: 0 0 8px;
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .search-shell {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .stock-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 48px 0 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+      background: #fff;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .stock-input::placeholder {
+      color: #8a94a6;
+    }
+
+    .stock-input::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .stock-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.13);
+    }
+
+    .clear-button {
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      width: 44px;
+      height: 44px;
+      display: none;
+      place-items: center;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 21px;
+    }
+
+    .clear-button.is-visible {
+      display: grid;
+    }
+
+    .clear-button:hover {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .search-help {
+      min-height: 20px;
+      margin: 7px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .option-list {
+      position: absolute;
+      z-index: 20;
+      top: calc(100% - 8px);
+      left: 14px;
+      right: 14px;
+      display: none;
+      max-height: 40vh;
+      margin: 0;
+      padding: 6px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(16, 24, 40, 0.12);
+      list-style: none;
+    }
+
+    .option-list.is-open {
+      display: block;
+      animation: option-in 150ms ease-out;
+    }
+
+    @keyframes option-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .option-item {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .option-item:hover,
+    .option-item.is-active {
+      background: #f3f6fc;
+    }
+
+    .option-name {
+      min-width: 0;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 24px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .option-meta {
+      flex: none;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .option-message {
+      padding: 14px 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 22px;
+    }
+
+    .scope-card {
+      min-height: 96px;
+      padding: 14px 16px;
+    }
+
+    .switch-row {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+    }
+
+    .scope-main {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 22px;
+    }
+
+    .scope-help {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+    }
+
+    .switch-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .switch-control {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      flex: none;
+      border-radius: 999px;
+      background: #cfd6e1;
+      transition: background 150ms ease;
+    }
+
+    .switch-control::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.24);
+      transition: transform 150ms ease;
+    }
+
+    .switch-input:checked + .switch-control {
+      background: var(--blue);
+    }
+
+    .switch-input:checked + .switch-control::after {
+      transform: translateX(20px);
+    }
+
+    .switch-input:focus-visible + .switch-control {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .empty-state {
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .empty-mark {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 14px;
+      border-radius: 14px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .empty-title {
+      margin: 0;
+      font-size: 17px;
+      line-height: 26px;
+      font-weight: 700;
+    }
+
+    .empty-copy {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 22px;
+    }
+
+    .skeleton-card {
+      display: none;
+      min-height: 350px;
+      padding: 20px;
+    }
+
+    .skeleton-card.is-visible {
+      display: block;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      margin-bottom: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #edf0f4, #f7f8fa, #edf0f4);
+      background-size: 200% 100%;
+      animation: skeleton 1.2s linear infinite;
+    }
+
+    .skeleton-line.is-short { width: 34%; }
+    .skeleton-line.is-medium { width: 58%; }
+    .skeleton-line.is-number { width: 48%; height: 54px; margin: 36px 0; }
+
+    @keyframes skeleton {
+      to { background-position: -200% 0; }
+    }
+
+    .result-stack {
+      display: none;
+      gap: 16px;
+    }
+
+    .result-stack.is-visible {
+      display: grid;
+      animation: result-in 200ms ease-out;
+    }
+
+    .update-status {
+      display: none;
+      margin-bottom: -6px;
+      color: var(--blue);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .result-stack.is-updating .update-status {
+      display: block;
+    }
+
+    .result-stack.is-updating .result-card,
+    .result-stack.is-updating .benchmark-card {
+      opacity: 0.58;
+    }
+
+    @keyframes result-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .result-card {
+      padding: 20px;
+    }
+
+    .identity-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .stock-name {
+      margin: 0;
+      font-size: 19px;
+      line-height: 27px;
+      font-weight: 700;
+    }
+
+    .stock-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f1f3f6;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 18px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tag.is-warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .as-of {
+      flex: none;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-body {
+      display: grid;
+      gap: 26px;
+      padding: 24px 0;
+    }
+
+    .metric-label {
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 600;
+    }
+
+    .ytd-value {
+      margin-top: 6px;
+      font-size: 44px;
+      line-height: 52px;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ytd-value.is-up,
+    .benchmark-value.is-up { color: var(--up); }
+    .ytd-value.is-down,
+    .benchmark-value.is-down { color: var(--down); }
+    .ytd-value.is-flat,
+    .benchmark-value.is-flat { color: var(--muted); }
+
+    .direction-copy {
+      margin-top: 4px;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .ranking-panel {
+      transition: opacity 150ms ease;
+    }
+
+    .ranking-panel.is-updating {
+      opacity: 0.48;
+    }
+
+    .beat-value {
+      margin-top: 5px;
+      color: var(--blue);
+      font-size: 30px;
+      line-height: 38px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      height: 8px;
+      margin: 12px 0 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .progress-value {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+      transition: width 220ms ease;
+    }
+
+    .ranking-copy {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 25px;
+    }
+
+    .ranking-copy strong {
+      color: var(--text);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-meta {
+      display: grid;
+      gap: 7px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line-soft);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 19px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .meta-row span:last-child {
+      color: var(--text-soft);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ineligible-panel {
+      display: none;
+      padding: 28px 0 20px;
+    }
+
+    .ineligible-panel.is-visible {
+      display: block;
+    }
+
+    .ineligible-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 32px;
+      font-weight: 700;
+    }
+
+    .ineligible-copy {
+      margin: 8px 0 0;
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 23px;
+    }
+
+    .benchmark-card {
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 17px 20px;
+    }
+
+    .benchmark-kicker {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .benchmark-name {
+      margin-top: 2px;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 700;
+    }
+
+    .benchmark-date {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 17px;
+    }
+
+    .benchmark-value {
+      flex: none;
+      font-size: 25px;
+      line-height: 32px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .method-card {
+      overflow: hidden;
+    }
+
+    .method-card summary {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--text-soft);
+      font-size: 14px;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .method-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .method-card summary::after {
+      content: "+";
+      color: var(--blue);
+      font-size: 21px;
+      font-weight: 400;
+    }
+
+    .method-card[open] summary::after {
+      content: "−";
+    }
+
+    .method-content {
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--line-soft);
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 22px;
+    }
+
+    .method-content ul {
+      margin: 14px 0 0;
+      padding-left: 20px;
+    }
+
+    .method-content li + li {
+      margin-top: 6px;
+    }
+
+    .disclaimer {
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    @media (min-width: 768px) {
+      .page {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      h1 {
+        font-size: 36px;
+        line-height: 46px;
+      }
+
+      .control-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      }
+
+      .stock-input {
+        height: 56px;
+      }
+
+      .result-card {
+        padding: 30px 32px;
+      }
+
+      .result-body {
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: 48px;
+        align-items: center;
+      }
+
+      .ytd-value {
+        font-size: 56px;
+        line-height: 64px;
+      }
+
+      .result-meta {
+        grid-template-columns: 1fr 1fr;
+        column-gap: 32px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .page {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .identity-row,
+      .benchmark-card {
+        align-items: flex-start;
+      }
+
+      .as-of {
+        max-width: 92px;
+      }
+
+      .ytd-value {
+        font-size: 39px;
+        line-height: 48px;
+      }
+
+      .benchmark-card {
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar" aria-label="返回工具站">
+      <a class="back-link" href="../../">
+        <span aria-hidden="true">←</span>
+        大杂烩工具站
+      </a>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">A-SHARE YEAR TO DATE</p>
+      <h1>A股年内表现</h1>
+      <p class="subtitle">查一只股票今年涨了多少，以及它跑赢了多少只可比 A 股。</p>
+    </header>
+
+    <div id="demoBanner" class="demo-banner" role="status"></div>
+
+    <section class="control-grid" aria-label="股票查询条件">
+      <div class="search-block">
+        <label class="field-label" for="stockInput">股票名称或代码</label>
+        <div class="search-shell">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+            <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <input
+            id="stockInput"
+            class="stock-input"
+            type="search"
+            inputmode="search"
+            autocomplete="off"
+            placeholder="如：新易盛 / 300502"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="stockOptions"
+            aria-expanded="false"
+            aria-describedby="searchHelp"
+          >
+          <button id="clearButton" class="clear-button" type="button" aria-label="清空股票搜索">×</button>
+        </div>
+        <div id="searchHelp" class="search-help" role="status" aria-live="polite">请从下拉结果中选择股票。</div>
+        <ul id="stockOptions" class="option-list" role="listbox" aria-label="股票搜索结果"></ul>
+      </div>
+
+      <div class="scope-card">
+        <span class="scope-label">比较范围</span>
+        <label class="switch-row" for="bseSwitch">
+          <span>
+            <span id="scopeMain" class="scope-main">沪深 A 股</span>
+            <span class="scope-help">开启后，排名加入北交所 A 股</span>
+          </span>
+          <span>
+            <input id="bseSwitch" class="switch-input" type="checkbox" role="switch" aria-label="纳入北交所，已关闭">
+            <span class="switch-control" aria-hidden="true"></span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <div id="requestError" class="inline-error" role="alert">
+      <span id="requestErrorText"></span>
+      <button id="retryButton" class="retry-button" type="button">重试</button>
+    </div>
+
+    <section id="emptyState" class="empty-state">
+      <div>
+        <div class="empty-mark" aria-hidden="true">股</div>
+        <p class="empty-title">选择一只股票，查看今年表现</p>
+        <p class="empty-copy">支持部分名称和部分代码搜索。</p>
+      </div>
+    </section>
+
+    <section id="skeleton" class="skeleton-card" role="status" aria-live="polite" aria-busy="true">
+      <span class="sr-only">正在加载股票结果</span>
+      <div class="skeleton-line is-medium"></div>
+      <div class="skeleton-line is-short"></div>
+      <div class="skeleton-line is-number"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line is-medium"></div>
+    </section>
+
+    <div id="resultStack" class="result-stack" aria-live="polite">
+      <div class="update-status" role="status">正在更新股票结果…</div>
+      <article class="result-card">
+        <div id="staleBanner" class="stale-banner"></div>
+        <header class="identity-row">
+          <div>
+            <h2 id="stockName" class="stock-name"></h2>
+            <div id="stockTags" class="stock-tags"></div>
+          </div>
+          <div id="asOf" class="as-of"></div>
+        </header>
+
+        <div id="normalResult" class="result-body">
+          <section aria-label="年初至今收益">
+            <div class="metric-label">年初至今收益</div>
+            <div id="ytdValue" class="ytd-value"></div>
+            <div id="directionCopy" class="direction-copy"></div>
+          </section>
+
+          <section id="rankingPanel" class="ranking-panel" aria-label="市场排名">
+            <div class="metric-label">跑赢比例</div>
+            <div id="beatValue" class="beat-value"></div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progressValue" class="progress-value"></div>
+            </div>
+            <p id="rankingCopy" class="ranking-copy"></p>
+          </section>
+        </div>
+
+        <section id="ineligiblePanel" class="ineligible-panel">
+          <h3 id="ineligibleTitle" class="ineligible-title"></h3>
+          <p id="ineligibleCopy" class="ineligible-copy"></p>
+        </section>
+
+        <footer id="resultMeta" class="result-meta"></footer>
+      </article>
+
+      <article class="benchmark-card" aria-label="同期沪深300基准">
+        <div>
+          <div class="benchmark-kicker">同期基准</div>
+          <div id="benchmarkName" class="benchmark-name">沪深300（价格指数）</div>
+          <div id="benchmarkDate" class="benchmark-date"></div>
+        </div>
+        <div id="benchmarkValue" class="benchmark-value"></div>
+      </article>
+
+      <details class="method-card">
+        <summary>统计口径与数据说明</summary>
+        <div class="method-content">
+          <ul>
+            <li>个股 YTD 使用上一自然年最后交易日至统计日的复权收益，处理分红、送股和拆并股。</li>
+            <li>比较池为当前上市且具有完整 YTD 的 A 股；默认不含北交所，ST 与 *ST 默认包含。</li>
+            <li>跑赢数量只统计收益严格低于目标股票的其他可比股票，目标股票自身不进入分母。</li>
+            <li>当年新股不展示标准 YTD 排名；停牌股票使用不晚于统计日的最近有效价格。</li>
+            <li>沪深300展示价格指数 YTD，与个股复权收益不直接计算超额收益。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <p class="disclaimer">数据仅供参考，不构成投资建议。</p>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SEARCH_API = "/api/stock-search";
+      const YTD_API = "/api/stock-ytd";
+      const reasonCopy = {
+        NEW_LISTING: ["暂无完整 YTD", "该股票在年初尚未上市，因此不进入标准 YTD 市场排名。"],
+        MISSING_BASE_PRICE: ["暂无可比 YTD", "缺少年初可比价格，暂时无法计算标准 YTD。"],
+        MISSING_CURRENT_PRICE: ["暂无可比 YTD", "缺少当前可比价格，暂时无法计算标准 YTD。"],
+        MISSING_ADJ_FACTOR: ["暂无可比 YTD", "复权数据不完整，暂时无法进入市场排名。"],
+        DATA_QUALITY_REJECTED: ["数据暂未通过校验", "该股票当前未通过数据质量校验，因此不展示排名。"],
+        NOT_ELIGIBLE_SECURITY: ["暂不支持该证券", "该证券不属于当前支持的 A 股范围。"]
+      };
+
+      const elements = {
+        input: document.getElementById("stockInput"),
+        clear: document.getElementById("clearButton"),
+        options: document.getElementById("stockOptions"),
+        searchHelp: document.getElementById("searchHelp"),
+        bse: document.getElementById("bseSwitch"),
+        scopeMain: document.getElementById("scopeMain"),
+        demoBanner: document.getElementById("demoBanner"),
+        requestError: document.getElementById("requestError"),
+        requestErrorText: document.getElementById("requestErrorText"),
+        retryButton: document.getElementById("retryButton"),
+        empty: document.getElementById("emptyState"),
+        skeleton: document.getElementById("skeleton"),
+        resultStack: document.getElementById("resultStack"),
+        staleBanner: document.getElementById("staleBanner"),
+        stockName: document.getElementById("stockName"),
+        stockTags: document.getElementById("stockTags"),
+        asOf: document.getElementById("asOf"),
+        normalResult: document.getElementById("normalResult"),
+        ytdValue: document.getElementById("ytdValue"),
+        directionCopy: document.getElementById("directionCopy"),
+        rankingPanel: document.getElementById("rankingPanel"),
+        beatValue: document.getElementById("beatValue"),
+        progressValue: document.getElementById("progressValue"),
+        rankingCopy: document.getElementById("rankingCopy"),
+        ineligiblePanel: document.getElementById("ineligiblePanel"),
+        ineligibleTitle: document.getElementById("ineligibleTitle"),
+        ineligibleCopy: document.getElementById("ineligibleCopy"),
+        resultMeta: document.getElementById("resultMeta"),
+        benchmarkName: document.getElementById("benchmarkName"),
+        benchmarkDate: document.getElementById("benchmarkDate"),
+        benchmarkValue: document.getElementById("benchmarkValue")
+      };
+
+      const state = {
+        selected: null,
+        options: [],
+        activeIndex: -1,
+        searchTimer: null,
+        searchController: null,
+        resultController: null,
+        searchRequest: 0,
+        resultRequest: 0,
+        currentResult: null,
+        retryAction: null
+      };
+
+      const percentFormatter = new Intl.NumberFormat("zh-CN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      const countFormatter = new Intl.NumberFormat("zh-CN");
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function formatPercent(value, signed = false) {
+        if (value == null || !Number.isFinite(Number(value))) return "--";
+        const number = Number(value) * 100;
+        const sign = signed && number > 0 ? "+" : "";
+        return `${sign}${percentFormatter.format(number)}%`;
+      }
+
+      function directionClass(value) {
+        if (value > 0) return "is-up";
+        if (value < 0) return "is-down";
+        return "is-flat";
+      }
+
+      function directionText(value) {
+        if (value > 0) return "上涨";
+        if (value < 0) return "下跌";
+        return "持平";
+      }
+
+      function setDemoWarning(data) {
+        if (data && data.dataMode === "fixture" && data.warning) {
+          elements.demoBanner.textContent = data.warning;
+          elements.demoBanner.classList.add("is-visible");
+        }
+      }
+
+      function setRequestError(message, retryAction = null) {
+        elements.requestErrorText.textContent = message || "";
+        elements.requestError.classList.toggle("is-visible", Boolean(message));
+        elements.retryButton.style.display = message && retryAction ? "block" : "none";
+        state.retryAction = message ? retryAction : null;
+      }
+
+      function exchangeText(exchange) {
+        if (exchange === "SH") return "上交所";
+        if (exchange === "SZ") return "深交所";
+        if (exchange === "BSE" || exchange === "BJ") return "北交所";
+        return exchange || "未知交易所";
+      }
+
+      function syncScope(enabled) {
+        elements.bse.checked = enabled;
+        elements.scopeMain.textContent = enabled ? "沪深 A 股及北交所 A 股" : "沪深 A 股";
+        elements.bse.setAttribute("aria-label", `纳入北交所，已${enabled ? "开启" : "关闭"}`);
+      }
+
+      function closeOptions() {
+        elements.options.classList.remove("is-open");
+        elements.input.setAttribute("aria-expanded", "false");
+        elements.input.removeAttribute("aria-activedescendant");
+        state.activeIndex = -1;
+      }
+
+      function openOptions() {
+        elements.options.classList.add("is-open");
+        elements.input.setAttribute("aria-expanded", "true");
+      }
+
+      function setActiveOption(index) {
+        const optionNodes = [...elements.options.querySelectorAll("[role=option]")];
+        if (!optionNodes.length) return;
+        state.activeIndex = (index + optionNodes.length) % optionNodes.length;
+        optionNodes.forEach((node, itemIndex) => {
+          const active = itemIndex === state.activeIndex;
+          node.classList.toggle("is-active", active);
+          node.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        const activeNode = optionNodes[state.activeIndex];
+        elements.input.setAttribute("aria-activedescendant", activeNode.id);
+        activeNode.scrollIntoView({ block: "nearest" });
+      }
+
+      function renderOptionMessage(message) {
+        state.options = [];
+        state.activeIndex = -1;
+        elements.options.innerHTML = `<li class="option-message">${escapeHtml(message)}</li>`;
+        openOptions();
+      }
+
+      function renderOptions(items) {
+        state.options = items;
+        state.activeIndex = -1;
+        if (!items.length) {
+          renderOptionMessage(`未找到“${elements.input.value.trim()}”，请检查股票名称或代码`);
+          elements.searchHelp.textContent = "未找到匹配股票。";
+          return;
+        }
+        elements.options.innerHTML = items.map((item, index) => `
+          <li
+            id="stock-option-${index}"
+            class="option-item"
+            role="option"
+            aria-selected="false"
+            data-index="${index}"
+          >
+            <span class="option-name">${escapeHtml(item.name)}</span>
+            <span class="option-meta">${escapeHtml(item.code)} · ${escapeHtml(exchangeText(item.exchange))} · ${escapeHtml(item.board || "未知板块")}</span>
+          </li>
+        `).join("");
+        elements.options.querySelectorAll("[role=option]").forEach((node) => {
+          node.addEventListener("mousedown", (event) => event.preventDefault());
+          node.addEventListener("click", () => selectStock(items[Number(node.dataset.index)]));
+        });
+        elements.searchHelp.textContent = `找到 ${items.length} 只股票，使用上下方向键选择。`;
+        openOptions();
+      }
+
+      async function searchStocks() {
+        const query = elements.input.value.trim();
+        const isShortCode = /^\d+$/.test(query) && query.length < 2;
+        if (!query || isShortCode) {
+          closeOptions();
+          elements.searchHelp.textContent = isShortCode
+            ? "股票代码至少输入两位。"
+            : "请从下拉结果中选择股票。";
+          return;
+        }
+
+        if (state.searchController) state.searchController.abort();
+        state.searchController = new AbortController();
+        const requestId = ++state.searchRequest;
+        setRequestError("");
+        renderOptionMessage("正在搜索股票…");
+        elements.searchHelp.textContent = "正在搜索股票…";
+
+        try {
+          const response = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query)}`, {
+            signal: state.searchController.signal
+          });
+          const data = await response.json();
+          if (requestId !== state.searchRequest) return;
+          if (!response.ok) throw new Error(data.message || "股票搜索暂时不可用");
+          setDemoWarning(data);
+          renderOptions(data.items || []);
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          if (requestId !== state.searchRequest) return;
+          renderOptionMessage("股票搜索暂时不可用，请稍后重试");
+          elements.searchHelp.textContent = error.message || "股票搜索暂时不可用。";
+          setRequestError(
+            error.message || "股票搜索暂时不可用，请稍后重试",
+            searchStocks
+          );
+        }
+      }
+
+      function scheduleSearch() {
+        clearTimeout(state.searchTimer);
+        state.searchTimer = setTimeout(searchStocks, 250);
+      }
+
+      function cancelSearchRequest() {
+        clearTimeout(state.searchTimer);
+        state.searchTimer = null;
+        if (state.searchController) state.searchController.abort();
+        state.searchController = null;
+        state.searchRequest += 1;
+      }
+
+      function cancelResultRequest() {
+        if (state.resultController) state.resultController.abort();
+        state.resultController = null;
+        state.resultRequest += 1;
+        elements.skeleton.classList.remove("is-visible");
+        elements.rankingPanel.classList.remove("is-updating");
+        elements.rankingPanel.removeAttribute("aria-busy");
+        elements.resultStack.classList.remove("is-updating");
+        elements.resultStack.removeAttribute("aria-busy");
+        if (!state.currentResult) {
+          elements.resultStack.classList.remove("is-visible");
+          elements.empty.style.display = "grid";
+        }
+      }
+
+      function selectStock(item) {
+        cancelSearchRequest();
+        state.selected = item;
+        elements.input.value = item.name;
+        elements.clear.classList.add("is-visible");
+        closeOptions();
+        elements.searchHelp.textContent = `已选择 ${item.name} ${item.code}`;
+        if (window.matchMedia("(max-width: 767px)").matches) elements.input.blur();
+        loadResult(false);
+      }
+
+      function setLoading(firstLoad, scopeOnly) {
+        setRequestError("");
+        if (firstLoad) {
+          elements.empty.style.display = "none";
+          elements.resultStack.classList.remove("is-visible");
+          elements.skeleton.classList.add("is-visible");
+        } else if (scopeOnly) {
+          elements.rankingPanel.classList.add("is-updating");
+          elements.rankingPanel.setAttribute("aria-busy", "true");
+        } else {
+          elements.resultStack.classList.add("is-updating");
+          elements.resultStack.setAttribute("aria-busy", "true");
+        }
+      }
+
+      function renderTags(stock) {
+        const tags = [
+          `<span class="tag">${escapeHtml(stock.code)}</span>`,
+          `<span class="tag">${escapeHtml(stock.board || stock.exchange)}</span>`
+        ];
+        if (stock.isSuspended) tags.push("<span class=\"tag is-warning\">停牌价格</span>");
+        elements.stockTags.innerHTML = tags.join("");
+      }
+
+      function renderMeta(data) {
+        const comparison = data.comparison;
+        const rows = [
+          ["比较范围", comparison
+            ? comparison.includeBse ? "沪深 A 股及北交所 A 股" : "沪深 A 股"
+            : "不适用"],
+          ["YTD 基准日", data.baseDate],
+          ["基准价格日期", data.stock.basePriceDate || "暂无"],
+          ["最近价格日期", data.stock.lastPriceDate || "暂无"]
+        ];
+        if (comparison) rows.push(["其他可比股票", countFormatter.format(comparison.peerCount)]);
+        elements.resultMeta.innerHTML = rows.map(([label, value]) => `
+          <div class="meta-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>
+        `).join("");
+      }
+
+      function renderBenchmark(benchmark) {
+        if (!benchmark || benchmark.ytd == null) {
+          elements.benchmarkName.textContent = "沪深300（价格指数）";
+          elements.benchmarkDate.textContent = "暂未获取同期基准数据";
+          elements.benchmarkValue.textContent = "--";
+          elements.benchmarkValue.className = "benchmark-value is-flat";
+          return;
+        }
+        elements.benchmarkName.textContent = benchmark.name;
+        elements.benchmarkDate.textContent = `截至 ${benchmark.asOf} 收盘`;
+        elements.benchmarkValue.textContent = formatPercent(benchmark.ytd, true);
+        elements.benchmarkValue.className = `benchmark-value ${directionClass(benchmark.ytd)}`;
+      }
+
+      function renderRequestFailure(stock, message) {
+        state.currentResult = null;
+        elements.empty.style.display = "none";
+        elements.skeleton.classList.remove("is-visible");
+        elements.resultStack.classList.add("is-visible");
+        elements.resultStack.classList.remove("is-updating");
+        elements.resultStack.removeAttribute("aria-busy");
+        elements.stockName.textContent = stock.name;
+        elements.asOf.textContent = "暂未更新";
+        renderTags(stock);
+        elements.staleBanner.classList.remove("is-visible");
+        elements.normalResult.style.display = "none";
+        elements.ineligiblePanel.classList.add("is-visible");
+        elements.ineligibleTitle.textContent = "暂时无法计算";
+        elements.ineligibleCopy.textContent = message || "股票结果暂时不可用，请稍后重试。";
+        elements.resultMeta.innerHTML = "";
+        renderBenchmark(null);
+      }
+
+      function renderResult(data) {
+        state.currentResult = data;
+        setDemoWarning(data);
+        elements.skeleton.classList.remove("is-visible");
+        elements.resultStack.classList.add("is-visible");
+        elements.stockName.textContent = data.stock.name;
+        elements.asOf.textContent = `截至 ${data.asOf} 收盘`;
+        renderTags(data.stock);
+
+        elements.staleBanner.textContent = data.isStale
+          ? `当前快照截至 ${data.asOf}，预期交易日为 ${data.expectedAsOf}。`
+          : "";
+        elements.staleBanner.classList.toggle("is-visible", data.isStale);
+
+        const eligible = data.stock.hasFullYtd && data.comparison;
+        elements.normalResult.style.display = eligible ? "grid" : "none";
+        elements.ineligiblePanel.classList.toggle("is-visible", !eligible);
+
+        if (eligible) {
+          const ytd = data.stock.ytd;
+          const beatRatio = data.comparison.beatRatio;
+          const scope = data.comparison.includeBse ? "沪深及北交所 A 股" : "沪深 A 股";
+          elements.ytdValue.textContent = formatPercent(ytd, true);
+          elements.ytdValue.className = `ytd-value ${directionClass(ytd)}`;
+          elements.directionCopy.textContent = directionText(ytd);
+          elements.beatValue.textContent = formatPercent(beatRatio);
+          elements.progressValue.style.width = `${Math.max(0, Math.min(100, beatRatio * 100))}%`;
+          elements.rankingCopy.innerHTML = `跑赢 <strong>${countFormatter.format(data.comparison.beatCount)} / ${countFormatter.format(data.comparison.peerCount)}</strong> 只其他可比股票，` +
+            `占${escapeHtml(scope)}可比样本的 <strong>${formatPercent(beatRatio)}</strong>，约位于市场前 <strong>${formatPercent(data.comparison.topRatio)}</strong>。`;
+        } else {
+          const copy = reasonCopy[data.stock.ineligibilityReason] || ["暂无可比 YTD", "当前数据不足以生成可靠的市场排名。"];
+          elements.ineligibleTitle.textContent = copy[0];
+          elements.ineligibleCopy.textContent = copy[1];
+        }
+
+        elements.rankingPanel.classList.remove("is-updating");
+        elements.rankingPanel.removeAttribute("aria-busy");
+        elements.resultStack.classList.remove("is-updating");
+        elements.resultStack.removeAttribute("aria-busy");
+        renderMeta(data);
+        renderBenchmark(data.benchmark);
+      }
+
+      async function loadResult(scopeOnly) {
+        if (!state.selected) return;
+        if (state.resultController) state.resultController.abort();
+        state.resultController = new AbortController();
+        const requestId = ++state.resultRequest;
+        const requestedStock = { ...state.selected };
+        const requestedIncludeBse = elements.bse.checked;
+        const previousIncludeBse = Boolean(
+          state.currentResult &&
+          state.currentResult.comparison &&
+          state.currentResult.comparison.includeBse
+        );
+        setLoading(!state.currentResult, scopeOnly);
+
+        const params = new URLSearchParams({
+          symbol: requestedStock.symbol,
+          includeBse: String(requestedIncludeBse)
+        });
+
+        try {
+          const response = await fetch(`${YTD_API}?${params}`, {
+            signal: state.resultController.signal
+          });
+          const data = await response.json();
+          if (requestId !== state.resultRequest) return;
+          if (!response.ok) throw new Error(data.message || "暂时无法计算");
+          renderResult(data);
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          if (requestId !== state.resultRequest) return;
+          elements.skeleton.classList.remove("is-visible");
+          elements.rankingPanel.classList.remove("is-updating");
+          elements.rankingPanel.removeAttribute("aria-busy");
+          elements.resultStack.classList.remove("is-updating");
+          elements.resultStack.removeAttribute("aria-busy");
+          if (scopeOnly && state.currentResult) {
+            syncScope(previousIncludeBse);
+            setRequestError(
+              "比较范围更新失败，已保留原排名。",
+              () => {
+                syncScope(requestedIncludeBse);
+                loadResult(true);
+              }
+            );
+          } else {
+            const message = error.message || "暂时无法计算，请稍后重试";
+            renderRequestFailure(requestedStock, message);
+            setRequestError(
+              `${requestedStock.name}：${message}`,
+              () => loadResult(false)
+            );
+          }
+        }
+      }
+
+      elements.input.addEventListener("input", () => {
+        elements.clear.classList.toggle("is-visible", Boolean(elements.input.value));
+        if (state.selected && elements.input.value !== state.selected.name) {
+          state.selected = null;
+          cancelResultRequest();
+        }
+        setRequestError("");
+        scheduleSearch();
+      });
+
+      elements.input.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") {
+          if (!elements.options.classList.contains("is-open")) return;
+          event.preventDefault();
+          setActiveOption(state.activeIndex + 1);
+        } else if (event.key === "ArrowUp") {
+          if (!elements.options.classList.contains("is-open")) return;
+          event.preventDefault();
+          setActiveOption(
+            state.activeIndex < 0 ? state.options.length - 1 : state.activeIndex - 1
+          );
+        } else if (event.key === "Enter" && state.activeIndex >= 0) {
+          event.preventDefault();
+          selectStock(state.options[state.activeIndex]);
+        } else if (event.key === "Escape") {
+          closeOptions();
+        }
+      });
+
+      elements.input.addEventListener("blur", () => {
+        setTimeout(closeOptions, 120);
+      });
+
+      elements.clear.addEventListener("click", () => {
+        cancelSearchRequest();
+        cancelResultRequest();
+        elements.input.value = "";
+        elements.clear.classList.remove("is-visible");
+        state.selected = null;
+        closeOptions();
+        setRequestError("");
+        elements.searchHelp.textContent = "请从下拉结果中选择股票。";
+        elements.input.focus();
+      });
+
+      elements.retryButton.addEventListener("click", () => {
+        const retry = state.retryAction;
+        setRequestError("");
+        if (retry) retry();
+      });
+
+      elements.bse.addEventListener("change", () => {
+        const enabled = elements.bse.checked;
+        syncScope(enabled);
+        if (state.selected) {
+          const hasMatchingResult = Boolean(
+            state.currentResult &&
+            state.currentResult.stock &&
+            state.currentResult.stock.symbol === state.selected.symbol
+          );
+          loadResult(hasMatchingResult);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
