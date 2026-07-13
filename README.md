@@ -7,6 +7,7 @@
 - 页面：`/tools/stock-ytd-ranking/`。
 - 搜索接口：`GET /api/stock-search?q=新易`。
 - 结果接口：`GET /api/stock-ytd?symbol=300502.SZ&includeBse=false`。
+- 沪深300接口：`GET /api/stock-benchmark`，与个股结果独立加载和失败重试。
 - 数据健康接口：`GET /api/stock-health`，状态为 `READY`、`DEGRADED`、`DEMO` 或 `NOT_READY`。
 - 本地与 Preview 未配置正式快照时使用明确标注的 Fixture；Vercel Production 和普通生产运行时无条件禁止 Fixture。
 - 生产查询只读取 `STOCK_SNAPSHOT_URL` 指向的 Published envelope，不在用户请求中抓取或计算全市场行情。
@@ -92,6 +93,16 @@ Remove-Item Env:TUSHARE_TOKEN
 - `STOCK_YTD_FIXTURE_ENABLED=0`：在非生产环境显式关闭 Fixture；不能用于在生产开启 Fixture。
 
 仓库当前未配置真实 `TUSHARE_TOKEN`、生产对象存储/网关、调度、告警和数据源商用授权，因此股票功能仍是可部署查询链路与可验证日终实现，不应宣称已具备无人值守的数据 SLA。
+
+### 股票工具测试
+
+Node 单元与接口测试继续使用 `node tests/<name>.test.js` 运行。浏览器端回归覆盖 320px 移动端和桌面端：
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
 
 ## 产品方案
 

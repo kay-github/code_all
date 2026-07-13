@@ -65,6 +65,20 @@ async function run() {
   assert.ok(!response.raw.includes("STOCK_SNAPSHOT_URL"));
   assert.ok(!response.raw.includes("token"));
 
+  const snapshotWithoutBenchmark = { ...publishedSnapshot };
+  delete snapshotWithoutBenchmark.benchmark;
+  handler = createHandler({
+    loadStockSnapshot: async () => ({
+      snapshot: snapshotWithoutBenchmark,
+      mode: "published",
+      cacheStatus: "fresh"
+    })
+  });
+  response = await invoke(handler);
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.data.status, "DEGRADED");
+  assert.strictEqual(response.data.benchmarkAvailable, false);
+
   handler = createHandler({
     loadStockSnapshot: async () => ({
       snapshot: publishedSnapshot,

@@ -100,7 +100,7 @@
       color: var(--blue);
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0;
     }
 
     h1 {
@@ -108,7 +108,7 @@
       font-size: 28px;
       line-height: 36px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: 0;
     }
 
     .subtitle {
@@ -167,6 +167,45 @@
     }
 
     .retry-button:hover {
+      background: rgba(197, 34, 31, 0.07);
+    }
+
+    .local-status,
+    .local-error {
+      display: none;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .local-status.is-visible {
+      display: block;
+      color: var(--blue);
+    }
+
+    .local-error.is-visible {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--error);
+    }
+
+    .local-retry-button {
+      min-width: 64px;
+      min-height: 44px;
+      flex: none;
+      padding: 0 12px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      background: transparent;
+      color: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .local-retry-button:hover {
       background: rgba(197, 34, 31, 0.07);
     }
 
@@ -371,6 +410,17 @@
       cursor: pointer;
     }
 
+    .switch-row > span:first-child {
+      min-width: 0;
+    }
+
+    .switch-toggle {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      flex: 0 0 46px;
+    }
+
     .scope-main {
       font-size: 15px;
       font-weight: 700;
@@ -388,16 +438,20 @@
 
     .switch-input {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      inset: 0;
+      z-index: 1;
+      width: 46px;
+      height: 26px;
+      margin: 0;
       opacity: 0;
+      cursor: pointer;
     }
 
     .switch-control {
       position: relative;
+      display: block;
       width: 46px;
       height: 26px;
-      flex: none;
       border-radius: 999px;
       background: #cfd6e1;
       transition: background 150ms ease;
@@ -513,8 +567,7 @@
       display: block;
     }
 
-    .result-stack.is-updating .result-card,
-    .result-stack.is-updating .benchmark-card {
+    .result-stack.is-updating .result-card {
       opacity: 0.58;
     }
 
@@ -525,6 +578,10 @@
 
     .result-card {
       padding: 20px;
+    }
+
+    .result-card.is-hidden {
+      display: none;
     }
 
     .identity-row {
@@ -595,7 +652,7 @@
       font-size: 44px;
       line-height: 52px;
       font-weight: 700;
-      letter-spacing: -0.035em;
+      letter-spacing: 0;
       font-variant-numeric: tabular-nums;
     }
 
@@ -617,8 +674,12 @@
       transition: opacity 150ms ease;
     }
 
-    .ranking-panel.is-updating {
+    .ranking-panel.is-updating .ranking-content {
       opacity: 0.48;
+    }
+
+    .ranking-content {
+      transition: opacity 150ms ease;
     }
 
     .beat-value {
@@ -704,13 +765,41 @@
       line-height: 23px;
     }
 
+    .ineligible-panel .local-retry-button {
+      display: none;
+      margin-top: 16px;
+      color: var(--error);
+    }
+
+    .ineligible-panel .local-retry-button.is-visible {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .benchmark-card {
       min-height: 84px;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
       gap: 16px;
       padding: 17px 20px;
+    }
+
+    .benchmark-main,
+    .benchmark-value {
+      transition: opacity 150ms ease;
+    }
+
+    .benchmark-card.is-updating .benchmark-main,
+    .benchmark-card.is-updating .benchmark-value {
+      opacity: 0.48;
+    }
+
+    .benchmark-card .local-status,
+    .benchmark-card .local-error {
+      grid-column: 1 / -1;
+      margin-top: -4px;
     }
 
     .benchmark-kicker {
@@ -864,7 +953,12 @@
       }
 
       .benchmark-card {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+      }
+
+      .benchmark-card .local-status,
+      .benchmark-card .local-error {
+        grid-column: 1;
       }
     }
 
@@ -931,7 +1025,7 @@
             <span id="scopeMain" class="scope-main">沪深 A 股</span>
             <span class="scope-help">开启后，排名加入北交所 A 股</span>
           </span>
-          <span>
+          <span class="switch-toggle">
             <input id="bseSwitch" class="switch-input" type="checkbox" role="switch" aria-label="纳入北交所，已关闭">
             <span class="switch-control" aria-hidden="true"></span>
           </span>
@@ -963,7 +1057,7 @@
 
     <div id="resultStack" class="result-stack" aria-live="polite">
       <div class="update-status" role="status">正在更新股票结果…</div>
-      <article class="result-card">
+      <article id="resultCard" class="result-card">
         <div id="staleBanner" class="stale-banner"></div>
         <header class="identity-row">
           <div>
@@ -981,30 +1075,49 @@
           </section>
 
           <section id="rankingPanel" class="ranking-panel" aria-label="市场排名">
-            <div class="metric-label">跑赢比例</div>
-            <div id="beatValue" class="beat-value"></div>
-            <div class="progress-track" aria-hidden="true">
-              <div id="progressValue" class="progress-value"></div>
+            <div class="ranking-content">
+              <div class="metric-label">跑赢比例</div>
+              <div id="beatValue" class="beat-value"></div>
+              <div class="progress-track" aria-hidden="true">
+                <div id="progressValue" class="progress-value"></div>
+              </div>
+              <p id="rankingCopy" class="ranking-copy"></p>
             </div>
-            <p id="rankingCopy" class="ranking-copy"></p>
+            <div id="rankingStatus" class="local-status" role="status" aria-live="polite">正在更新市场排名…</div>
+            <div id="rankingError" class="local-error" role="alert">
+              <span id="rankingErrorText"></span>
+              <button id="rankingRetryButton" class="local-retry-button" type="button">重试排名</button>
+            </div>
           </section>
         </div>
 
         <section id="ineligiblePanel" class="ineligible-panel">
           <h3 id="ineligibleTitle" class="ineligible-title"></h3>
           <p id="ineligibleCopy" class="ineligible-copy"></p>
+          <button id="stockRetryButton" class="local-retry-button" type="button">重试股票结果</button>
         </section>
 
-        <footer id="resultMeta" class="result-meta"></footer>
+        <footer id="resultMeta" class="result-meta">
+          <div id="metaScopeRow" class="meta-row"><span>比较范围</span><span id="metaScope"></span></div>
+          <div class="meta-row"><span>YTD 基准日</span><span id="metaBaseDate"></span></div>
+          <div class="meta-row"><span>基准价格日期</span><span id="metaBasePriceDate"></span></div>
+          <div class="meta-row"><span>最近价格日期</span><span id="metaLastPriceDate"></span></div>
+          <div id="metaPeerRow" class="meta-row"><span>其他可比股票</span><span id="metaPeerCount"></span></div>
+        </footer>
       </article>
 
-      <article class="benchmark-card" aria-label="同期沪深300基准">
-        <div>
+      <article id="benchmarkCard" class="benchmark-card" aria-label="同期沪深300基准">
+        <div class="benchmark-main">
           <div class="benchmark-kicker">同期基准</div>
           <div id="benchmarkName" class="benchmark-name">沪深300（价格指数）</div>
           <div id="benchmarkDate" class="benchmark-date"></div>
         </div>
         <div id="benchmarkValue" class="benchmark-value"></div>
+        <div id="benchmarkStatus" class="local-status" role="status" aria-live="polite">正在获取沪深300数据…</div>
+        <div id="benchmarkError" class="local-error" role="alert">
+          <span id="benchmarkErrorText"></span>
+          <button id="benchmarkRetryButton" class="local-retry-button" type="button">重试基准</button>
+        </div>
       </article>
 
       <details class="method-card">
@@ -1030,6 +1143,7 @@
 
       const SEARCH_API = "/api/stock-search";
       const YTD_API = "/api/stock-ytd";
+      const BENCHMARK_API = "/api/stock-benchmark";
       const reasonCopy = {
         NEW_LISTING: ["暂无完整 YTD", "该股票在年初尚未上市，因此不进入标准 YTD 市场排名。"],
         MISSING_BASE_PRICE: ["暂无可比 YTD", "缺少年初可比价格，暂时无法计算标准 YTD。"],
@@ -1053,6 +1167,7 @@
         empty: document.getElementById("emptyState"),
         skeleton: document.getElementById("skeleton"),
         resultStack: document.getElementById("resultStack"),
+        resultCard: document.getElementById("resultCard"),
         staleBanner: document.getElementById("staleBanner"),
         stockName: document.getElementById("stockName"),
         stockTags: document.getElementById("stockTags"),
@@ -1064,13 +1179,30 @@
         beatValue: document.getElementById("beatValue"),
         progressValue: document.getElementById("progressValue"),
         rankingCopy: document.getElementById("rankingCopy"),
+        rankingStatus: document.getElementById("rankingStatus"),
+        rankingError: document.getElementById("rankingError"),
+        rankingErrorText: document.getElementById("rankingErrorText"),
+        rankingRetryButton: document.getElementById("rankingRetryButton"),
         ineligiblePanel: document.getElementById("ineligiblePanel"),
         ineligibleTitle: document.getElementById("ineligibleTitle"),
         ineligibleCopy: document.getElementById("ineligibleCopy"),
+        stockRetryButton: document.getElementById("stockRetryButton"),
         resultMeta: document.getElementById("resultMeta"),
+        metaScopeRow: document.getElementById("metaScopeRow"),
+        metaScope: document.getElementById("metaScope"),
+        metaBaseDate: document.getElementById("metaBaseDate"),
+        metaBasePriceDate: document.getElementById("metaBasePriceDate"),
+        metaLastPriceDate: document.getElementById("metaLastPriceDate"),
+        metaPeerRow: document.getElementById("metaPeerRow"),
+        metaPeerCount: document.getElementById("metaPeerCount"),
+        benchmarkCard: document.getElementById("benchmarkCard"),
         benchmarkName: document.getElementById("benchmarkName"),
         benchmarkDate: document.getElementById("benchmarkDate"),
-        benchmarkValue: document.getElementById("benchmarkValue")
+        benchmarkValue: document.getElementById("benchmarkValue"),
+        benchmarkStatus: document.getElementById("benchmarkStatus"),
+        benchmarkError: document.getElementById("benchmarkError"),
+        benchmarkErrorText: document.getElementById("benchmarkErrorText"),
+        benchmarkRetryButton: document.getElementById("benchmarkRetryButton")
       };
 
       const state = {
@@ -1080,10 +1212,16 @@
         searchTimer: null,
         searchController: null,
         resultController: null,
+        benchmarkController: null,
         searchRequest: 0,
         resultRequest: 0,
+        benchmarkRequest: 0,
         currentResult: null,
-        retryAction: null
+        currentBenchmark: null,
+        retryAction: null,
+        stockRetryAction: null,
+        rankingRetryAction: null,
+        benchmarkRetryAction: null
       };
 
       const percentFormatter = new Intl.NumberFormat("zh-CN", {
@@ -1131,6 +1269,23 @@
         elements.requestError.classList.toggle("is-visible", Boolean(message));
         elements.retryButton.style.display = message && retryAction ? "block" : "none";
         state.retryAction = message ? retryAction : null;
+      }
+
+      function setStockRetry(retryAction = null) {
+        elements.stockRetryButton.classList.toggle("is-visible", Boolean(retryAction));
+        state.stockRetryAction = retryAction;
+      }
+
+      function setRankingError(message, retryAction = null) {
+        elements.rankingErrorText.textContent = message || "";
+        elements.rankingError.classList.toggle("is-visible", Boolean(message));
+        state.rankingRetryAction = message ? retryAction : null;
+      }
+
+      function setBenchmarkError(message, retryAction = null) {
+        elements.benchmarkErrorText.textContent = message || "";
+        elements.benchmarkError.classList.toggle("is-visible", Boolean(message));
+        state.benchmarkRetryAction = message ? retryAction : null;
       }
 
       function exchangeText(exchange) {
@@ -1266,12 +1421,36 @@
         elements.skeleton.classList.remove("is-visible");
         elements.rankingPanel.classList.remove("is-updating");
         elements.rankingPanel.removeAttribute("aria-busy");
+        elements.rankingStatus.classList.remove("is-visible");
         elements.resultStack.classList.remove("is-updating");
         elements.resultStack.removeAttribute("aria-busy");
-        if (!state.currentResult) {
+        if (!state.currentResult && !state.currentBenchmark) {
           elements.resultStack.classList.remove("is-visible");
           elements.empty.style.display = "grid";
         }
+      }
+
+      function cancelBenchmarkRequest() {
+        if (state.benchmarkController) state.benchmarkController.abort();
+        state.benchmarkController = null;
+        state.benchmarkRequest += 1;
+        elements.benchmarkCard.classList.remove("is-updating");
+        elements.benchmarkCard.removeAttribute("aria-busy");
+        elements.benchmarkStatus.classList.remove("is-visible");
+      }
+
+      function clearCurrentResult() {
+        state.currentResult = null;
+        cancelResultRequest();
+        state.currentBenchmark = null;
+        cancelBenchmarkRequest();
+        setStockRetry();
+        setRankingError("");
+        setBenchmarkError("");
+        renderBenchmark(null);
+        elements.resultCard.classList.remove("is-hidden");
+        elements.resultStack.classList.remove("is-visible");
+        elements.empty.style.display = "grid";
       }
 
       function selectStock(item) {
@@ -1283,18 +1462,25 @@
         elements.searchHelp.textContent = `已选择 ${item.name} ${item.code}`;
         if (window.matchMedia("(max-width: 767px)").matches) elements.input.blur();
         loadResult(false);
+        loadBenchmark();
       }
 
       function setLoading(firstLoad, scopeOnly) {
         setRequestError("");
+        setStockRetry();
         if (firstLoad) {
           elements.empty.style.display = "none";
-          elements.resultStack.classList.remove("is-visible");
+          elements.resultStack.classList.add("is-visible");
+          elements.resultCard.classList.add("is-hidden");
           elements.skeleton.classList.add("is-visible");
         } else if (scopeOnly) {
+          setRankingError("");
           elements.rankingPanel.classList.add("is-updating");
           elements.rankingPanel.setAttribute("aria-busy", "true");
+          elements.rankingStatus.classList.add("is-visible");
         } else {
+          elements.resultCard.classList.remove("is-hidden");
+          elements.resultStack.classList.add("is-visible");
           elements.resultStack.classList.add("is-updating");
           elements.resultStack.setAttribute("aria-busy", "true");
         }
@@ -1311,21 +1497,41 @@
 
       function renderMeta(data) {
         const comparison = data.comparison;
-        const rows = [
-          ["比较范围", comparison
-            ? comparison.includeBse ? "沪深 A 股及北交所 A 股" : "沪深 A 股"
-            : "不适用"],
-          ["YTD 基准日", data.baseDate],
-          ["基准价格日期", data.stock.basePriceDate || "暂无"],
-          ["最近价格日期", data.stock.lastPriceDate || "暂无"]
-        ];
-        if (comparison) rows.push(["其他可比股票", countFormatter.format(comparison.peerCount)]);
-        elements.resultMeta.innerHTML = rows.map(([label, value]) => `
-          <div class="meta-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>
-        `).join("");
+        elements.metaScope.textContent = comparison
+          ? comparison.includeBse ? "沪深 A 股及北交所 A 股" : "沪深 A 股"
+          : "不适用";
+        elements.metaBaseDate.textContent = data.baseDate;
+        elements.metaBasePriceDate.textContent = data.stock.basePriceDate || "暂无";
+        elements.metaLastPriceDate.textContent = data.stock.lastPriceDate || "暂无";
+        elements.metaPeerRow.style.display = comparison ? "flex" : "none";
+        elements.metaPeerCount.textContent = comparison
+          ? countFormatter.format(comparison.peerCount)
+          : "";
+      }
+
+      function renderRanking(comparison) {
+        const beatRatio = comparison.beatRatio;
+        const scope = comparison.includeBse ? "沪深及北交所 A 股" : "沪深 A 股";
+        elements.beatValue.textContent = formatPercent(beatRatio);
+        elements.progressValue.style.width = `${Math.max(0, Math.min(100, beatRatio * 100))}%`;
+        elements.rankingCopy.innerHTML = `跑赢 <strong>${countFormatter.format(comparison.beatCount)} / ${countFormatter.format(comparison.peerCount)}</strong> 只其他可比股票，` +
+          `占${escapeHtml(scope)}可比样本的 <strong>${formatPercent(beatRatio)}</strong>，约位于市场前 <strong>${formatPercent(comparison.topRatio)}</strong>。`;
+        elements.metaScope.textContent = comparison.includeBse
+          ? "沪深 A 股及北交所 A 股"
+          : "沪深 A 股";
+        elements.metaPeerRow.style.display = "flex";
+        elements.metaPeerCount.textContent = countFormatter.format(comparison.peerCount);
+        elements.rankingPanel.classList.remove("is-updating");
+        elements.rankingPanel.removeAttribute("aria-busy");
+        elements.rankingStatus.classList.remove("is-visible");
+        setRankingError("");
       }
 
       function renderBenchmark(benchmark) {
+        elements.benchmarkCard.classList.remove("is-updating");
+        elements.benchmarkCard.removeAttribute("aria-busy");
+        elements.benchmarkStatus.classList.remove("is-visible");
+        setBenchmarkError("");
         if (!benchmark || benchmark.ytd == null) {
           elements.benchmarkName.textContent = "沪深300（价格指数）";
           elements.benchmarkDate.textContent = "暂未获取同期基准数据";
@@ -1339,11 +1545,38 @@
         elements.benchmarkValue.className = `benchmark-value ${directionClass(benchmark.ytd)}`;
       }
 
+      function setBenchmarkLoading() {
+        elements.resultStack.classList.add("is-visible");
+        elements.benchmarkCard.classList.add("is-updating");
+        elements.benchmarkCard.setAttribute("aria-busy", "true");
+        elements.benchmarkStatus.classList.add("is-visible");
+        setBenchmarkError("");
+        if (!state.currentBenchmark) {
+          elements.benchmarkName.textContent = "沪深300（价格指数）";
+          elements.benchmarkDate.textContent = "正在获取同期基准数据";
+          elements.benchmarkValue.textContent = "--";
+          elements.benchmarkValue.className = "benchmark-value is-flat";
+        }
+      }
+
+      function renderBenchmarkFailure(message) {
+        state.currentBenchmark = null;
+        elements.benchmarkCard.classList.remove("is-updating");
+        elements.benchmarkCard.removeAttribute("aria-busy");
+        elements.benchmarkStatus.classList.remove("is-visible");
+        elements.benchmarkName.textContent = "沪深300（价格指数）";
+        elements.benchmarkDate.textContent = "暂未获取同期基准数据";
+        elements.benchmarkValue.textContent = "--";
+        elements.benchmarkValue.className = "benchmark-value is-flat";
+        setBenchmarkError(message || "暂未获取沪深300数据", loadBenchmark);
+      }
+
       function renderRequestFailure(stock, message) {
         state.currentResult = null;
         elements.empty.style.display = "none";
         elements.skeleton.classList.remove("is-visible");
         elements.resultStack.classList.add("is-visible");
+        elements.resultCard.classList.remove("is-hidden");
         elements.resultStack.classList.remove("is-updating");
         elements.resultStack.removeAttribute("aria-busy");
         elements.stockName.textContent = stock.name;
@@ -1354,15 +1587,18 @@
         elements.ineligiblePanel.classList.add("is-visible");
         elements.ineligibleTitle.textContent = "暂时无法计算";
         elements.ineligibleCopy.textContent = message || "股票结果暂时不可用，请稍后重试。";
-        elements.resultMeta.innerHTML = "";
-        renderBenchmark(null);
+        elements.resultMeta.style.display = "none";
+        setStockRetry(() => loadResult(false));
       }
 
       function renderResult(data) {
         state.currentResult = data;
         setDataWarning(data);
+        setStockRetry();
         elements.skeleton.classList.remove("is-visible");
         elements.resultStack.classList.add("is-visible");
+        elements.resultCard.classList.remove("is-hidden");
+        elements.resultMeta.style.display = "grid";
         elements.stockName.textContent = data.stock.name;
         elements.asOf.textContent = `截至 ${data.asOf} 收盘`;
         renderTags(data.stock);
@@ -1382,19 +1618,18 @@
 
         if (eligible) {
           const ytd = data.stock.ytd;
-          const beatRatio = data.comparison.beatRatio;
-          const scope = data.comparison.includeBse ? "沪深及北交所 A 股" : "沪深 A 股";
           elements.ytdValue.textContent = formatPercent(ytd, true);
           elements.ytdValue.className = `ytd-value ${directionClass(ytd)}`;
           elements.directionCopy.textContent = directionText(ytd);
-          elements.beatValue.textContent = formatPercent(beatRatio);
-          elements.progressValue.style.width = `${Math.max(0, Math.min(100, beatRatio * 100))}%`;
-          elements.rankingCopy.innerHTML = `跑赢 <strong>${countFormatter.format(data.comparison.beatCount)} / ${countFormatter.format(data.comparison.peerCount)}</strong> 只其他可比股票，` +
-            `占${escapeHtml(scope)}可比样本的 <strong>${formatPercent(beatRatio)}</strong>，约位于市场前 <strong>${formatPercent(data.comparison.topRatio)}</strong>。`;
+          renderRanking(data.comparison);
         } else {
           const copy = reasonCopy[data.stock.ineligibilityReason] || ["暂无可比 YTD", "当前数据不足以生成可靠的市场排名。"];
           elements.ineligibleTitle.textContent = copy[0];
           elements.ineligibleCopy.textContent = copy[1];
+          elements.rankingPanel.classList.remove("is-updating");
+          elements.rankingPanel.removeAttribute("aria-busy");
+          elements.rankingStatus.classList.remove("is-visible");
+          setRankingError("");
         }
 
         elements.rankingPanel.classList.remove("is-updating");
@@ -1402,11 +1637,23 @@
         elements.resultStack.classList.remove("is-updating");
         elements.resultStack.removeAttribute("aria-busy");
         renderMeta(data);
-        renderBenchmark(data.benchmark);
+        if (
+          state.currentBenchmark &&
+          (state.currentBenchmark.benchmark.asOf !== data.asOf ||
+            state.currentBenchmark.benchmark.baseDate !== data.baseDate)
+        ) {
+          renderBenchmarkFailure("沪深300与个股统计日期不一致，请重试基准数据。");
+        }
       }
 
       async function loadResult(scopeOnly) {
         if (!state.selected) return;
+        scopeOnly = Boolean(
+          scopeOnly &&
+          state.currentResult &&
+          state.currentResult.comparison &&
+          state.currentResult.stock.symbol === state.selected.symbol
+        );
         if (state.resultController) state.resultController.abort();
         state.resultController = new AbortController();
         const requestId = ++state.resultRequest;
@@ -1431,18 +1678,31 @@
           const data = await response.json();
           if (requestId !== state.resultRequest) return;
           if (!response.ok) throw new Error(data.message || "暂时无法计算");
-          renderResult(data);
+          state.resultController = null;
+          if (scopeOnly) {
+            if (!data.comparison || data.stock.symbol !== requestedStock.symbol) {
+              throw new Error("比较范围数据不完整");
+            }
+            state.currentResult = {
+              ...state.currentResult,
+              comparison: data.comparison
+            };
+            renderRanking(data.comparison);
+          } else {
+            renderResult(data);
+          }
         } catch (error) {
           if (error.name === "AbortError") return;
           if (requestId !== state.resultRequest) return;
           elements.skeleton.classList.remove("is-visible");
           elements.rankingPanel.classList.remove("is-updating");
           elements.rankingPanel.removeAttribute("aria-busy");
+          elements.rankingStatus.classList.remove("is-visible");
           elements.resultStack.classList.remove("is-updating");
           elements.resultStack.removeAttribute("aria-busy");
           if (scopeOnly && state.currentResult) {
             syncScope(previousIncludeBse);
-            setRequestError(
+            setRankingError(
               "比较范围更新失败，已保留原排名。",
               () => {
                 syncScope(requestedIncludeBse);
@@ -1452,21 +1712,62 @@
           } else {
             const message = error.message || "暂时无法计算，请稍后重试";
             renderRequestFailure(requestedStock, message);
-            setRequestError(
-              `${requestedStock.name}：${message}`,
-              () => loadResult(false)
-            );
           }
         }
       }
 
+      async function loadBenchmark() {
+        if (!state.selected) return;
+        if (state.benchmarkController) state.benchmarkController.abort();
+        state.benchmarkController = new AbortController();
+        const requestId = ++state.benchmarkRequest;
+        const requestedSymbol = state.selected.symbol;
+        state.currentBenchmark = null;
+        setBenchmarkLoading();
+
+        try {
+          const response = await fetch(BENCHMARK_API, {
+            signal: state.benchmarkController.signal
+          });
+          const data = await response.json();
+          if (requestId !== state.benchmarkRequest || !state.selected || state.selected.symbol !== requestedSymbol) return;
+          if (!response.ok || !data.benchmark || data.benchmark.ytd == null) {
+            throw new Error(data.message || "暂未获取沪深300数据");
+          }
+          if (
+            state.currentResult &&
+            state.currentResult.stock.symbol === requestedSymbol &&
+            (data.benchmark.asOf !== state.currentResult.asOf ||
+              data.benchmark.baseDate !== state.currentResult.baseDate)
+          ) {
+            throw new Error("沪深300与个股统计日期不一致，请重试基准数据。");
+          }
+          state.benchmarkController = null;
+          state.currentBenchmark = data;
+          renderBenchmark(data.benchmark);
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          if (requestId !== state.benchmarkRequest) return;
+          renderBenchmarkFailure(error.message || "暂未获取沪深300数据");
+        }
+      }
+
       elements.input.addEventListener("input", () => {
+        const query = elements.input.value.trim();
+        cancelSearchRequest();
+        closeOptions();
         elements.clear.classList.toggle("is-visible", Boolean(elements.input.value));
         if (state.selected && elements.input.value !== state.selected.name) {
           state.selected = null;
-          cancelResultRequest();
+          if (query) cancelResultRequest();
         }
         setRequestError("");
+        if (!query) {
+          state.selected = null;
+          clearCurrentResult();
+          elements.searchHelp.textContent = "请从下拉结果中选择股票。";
+          return;
+        }
         scheduleSearch();
       });
 
@@ -1481,7 +1782,12 @@
           setActiveOption(
             state.activeIndex < 0 ? state.options.length - 1 : state.activeIndex - 1
           );
-        } else if (event.key === "Enter" && state.activeIndex >= 0) {
+        } else if (
+          event.key === "Enter" &&
+          elements.options.classList.contains("is-open") &&
+          state.activeIndex >= 0 &&
+          state.options[state.activeIndex]
+        ) {
           event.preventDefault();
           selectStock(state.options[state.activeIndex]);
         } else if (event.key === "Escape") {
@@ -1495,11 +1801,11 @@
 
       elements.clear.addEventListener("click", () => {
         cancelSearchRequest();
-        cancelResultRequest();
         elements.input.value = "";
         elements.clear.classList.remove("is-visible");
         state.selected = null;
         closeOptions();
+        clearCurrentResult();
         setRequestError("");
         elements.searchHelp.textContent = "请从下拉结果中选择股票。";
         elements.input.focus();
@@ -1511,16 +1817,39 @@
         if (retry) retry();
       });
 
+      elements.stockRetryButton.addEventListener("click", () => {
+        const retry = state.stockRetryAction;
+        setStockRetry();
+        if (retry) retry();
+      });
+
+      elements.rankingRetryButton.addEventListener("click", () => {
+        const retry = state.rankingRetryAction;
+        setRankingError("");
+        if (retry) retry();
+      });
+
+      elements.benchmarkRetryButton.addEventListener("click", () => {
+        const retry = state.benchmarkRetryAction;
+        setBenchmarkError("");
+        if (retry) retry();
+      });
+
       elements.bse.addEventListener("change", () => {
         const enabled = elements.bse.checked;
         syncScope(enabled);
         if (state.selected) {
-          const hasMatchingResult = Boolean(
+          const canRefreshRanking = Boolean(
             state.currentResult &&
             state.currentResult.stock &&
-            state.currentResult.stock.symbol === state.selected.symbol
+            state.currentResult.stock.symbol === state.selected.symbol &&
+            state.currentResult.comparison
           );
-          loadResult(hasMatchingResult);
+          if (canRefreshRanking) {
+            loadResult(true);
+          } else if (!state.currentResult || state.currentResult.stock.symbol !== state.selected.symbol) {
+            loadResult(false);
+          }
         }
       });
     })();

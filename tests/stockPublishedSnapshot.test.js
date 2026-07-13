@@ -87,6 +87,19 @@ async function run() {
   );
 
   const snapshot = productionSnapshot();
+  const snapshotWithoutBenchmark = productionSnapshot();
+  delete snapshotWithoutBenchmark.benchmark;
+  assert.doesNotThrow(
+    () => validatePublishedSnapshot(snapshotWithoutBenchmark, { VERCEL_ENV: "production" })
+  );
+
+  const invalidBenchmark = productionSnapshot();
+  invalidBenchmark.benchmark = { ...invalidBenchmark.benchmark, ytd: null };
+  assert.throws(
+    () => validatePublishedSnapshot(invalidBenchmark, { VERCEL_ENV: "production" }),
+    (error) => error.code === "STOCK_SNAPSHOT_INVALID"
+  );
+
   const corruptedPool = productionSnapshot();
   corruptedPool.pools.shSz.sortedYtd = [...corruptedPool.pools.shSz.sortedYtd];
   corruptedPool.pools.shSz.sortedYtd[0] += 0.01;

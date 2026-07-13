@@ -12,20 +12,32 @@ function sendJson(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-function healthStatus(loaded) {
-  if (loaded.mode === "fixture") return "DEMO";
-  const snapshot = loaded.snapshot;
-  const degraded = snapshot.isStale ||
-    !snapshot.benchmark ||
-    snapshot.sourceMode !== "validated" ||
-    snapshot.quality.status !== "pass" ||
-    loaded.refreshStatus === "SERVING_PREVIOUS" ||
-    loaded.cacheStatus === "stale-fallback";
-  return degraded ? "DEGRADED" : "READY";
+function publicBenchmark(benchmark) {
+  if (
+    !benchmark ||
+    typeof benchmark.symbol !== "string" ||
+    typeof benchmark.name !== "string" ||
+    typeof benchmark.type !== "string" ||
+    !Number.isFinite(benchmark.ytd) ||
+    typeof benchmark.asOf !== "string" ||
+    typeof benchmark.baseDate !== "string"
+  ) {
+    return null;
+  }
+  return {
+    symbol: benchmark.symbol,
+    name: benchmark.name,
+    type: benchmark.type,
+    ytd: benchmark.ytd,
+    asOf: benchmark.asOf,
+    baseDate: benchmark.baseDate
+  };
 }
 
 function createHandler(options = {}) {
   const load = options.loadStockSnapshot || loadStockSnapshot;
+  const logger = options.logger || console;
+
   return async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -38,8 +50,8 @@ function createHandler(options = {}) {
     }
     if (req.method !== "GET") {
       sendJson(res, 405, {
-        ok: false,
-        status: "METHOD_NOT_ALLOWED"
+        error: "METHOD_NOT_ALLOWED",
+        message: "仅支持 GET 请求"
       });
       return;
     }
@@ -47,36 +59,37 @@ function createHandler(options = {}) {
     try {
       const loaded = await load();
       const snapshot = loaded.snapshot;
+      const benchmark = publicBenchmark(snapshot.benchmark);
+      if (!benchmark) {
+        sendJson(res, 503, {
+          error: "BENCHMARK_DATA_UNAVAILABLE",
+          message: "暂未获取沪深300数据"
+        });
+        return;
+      }
+
       sendJson(res, 200, {
-        ok: true,
-        status: healthStatus(loaded),
-        mode: loaded.mode,
-        snapshotId: snapshot.snapshotId || null,
-        asOf: snapshot.asOf,
+        snapshotId: snapshot.snapshotId || `${loaded.mode}-${snapshot.asOf}`,
+        dataMode: loaded.mode,
+        warning: loaded.warning || snapshot.dataWarning || null,
+        asOf: benchmark.asOf,
         expectedAsOf: snapshot.expectedAsOf,
         publishedAt: snapshot.publishedAt,
         isStale: snapshot.isStale,
-        sourceMode: snapshot.sourceMode,
-        qualityStatus: snapshot.quality.status,
-        coverageRatio: snapshot.quality.coverage.ratio,
-        cacheStatus: loaded.cacheStatus,
-        refreshStatus: loaded.refreshStatus || null,
-        lastValidatedAt: loaded.lastValidatedAt || null,
-        benchmarkAvailable: Boolean(snapshot.benchmark)
+        benchmark
       });
     } catch (error) {
       const knownDataError = error instanceof StockPublishedSnapshotError ||
         error && error.code === "SNAPSHOT_NOT_PUBLISHABLE";
       if (!knownDataError) {
-        console.error("stock health internal error", {
+        logger.error("stock benchmark internal error", {
           name: error && error.name,
           code: error && error.code
         });
       }
       sendJson(res, knownDataError ? 503 : 500, {
-        ok: false,
-        status: knownDataError ? "NOT_READY" : "INTERNAL_ERROR",
-        errorCode: knownDataError ? error.code : "INTERNAL_ERROR"
+        error: knownDataError ? "BENCHMARK_DATA_UNAVAILABLE" : "INTERNAL_ERROR",
+        message: "暂未获取沪深300数据"
       });
     }
   };
@@ -84,4 +97,4 @@ function createHandler(options = {}) {
 
 module.exports = createHandler();
 module.exports.createHandler = createHandler;
-module.exports.healthStatus = healthStatus;
+module.exports.publicBenchmark = publicBenchmark;

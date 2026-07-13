@@ -93,6 +93,23 @@ async function run() {
   assert.strictEqual(response.data.warning, "最新批次更新未完成");
   assert.ok(!Object.prototype.hasOwnProperty.call(response.data.stock, "computedYtd"));
 
+  const snapshotWithoutBenchmark = { ...publishedSnapshot };
+  delete snapshotWithoutBenchmark.benchmark;
+  const noBenchmarkHandler = createHandler({
+    loadStockSnapshot: async () => ({
+      snapshot: snapshotWithoutBenchmark,
+      mode: "published"
+    })
+  });
+  response = await invoke(
+    { symbol: "300502.SZ", includeBse: "false" },
+    "GET",
+    noBenchmarkHandler
+  );
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.data.stock.name, "新易盛");
+  assert.strictEqual(response.data.benchmark, null);
+
   const unavailableHandler = createHandler({
     loadStockSnapshot: async () => {
       throw new StockPublishedSnapshotError(

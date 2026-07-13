@@ -265,7 +265,8 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | lib/stockSnapshotFileStore.js | 本地不可变快照、current 原子替换和带所有权的刷新锁 |
 | lib/stockDailyWorker.js | 日终数据抓取、候选构建、完整校验、发布及上一快照降级编排 |
 | api/stock-search.js | Published 快照股票名称与代码搜索接口 |
-| api/stock-ytd.js | Published 快照个股 YTD、双股票池排名与沪深300读取接口 |
+| api/stock-ytd.js | Published 快照个股 YTD 与双股票池排名读取接口；为兼容已有调用可携带 benchmark |
+| api/stock-benchmark.js | Published 快照沪深300独立读取接口，支持前端独立加载和错误隔离 |
 | api/stock-health.js | 数据模式、快照日期、质量和缓存降级健康状态 |
 | tools/stock-ytd-ranking/index.html | 移动优先股票搜索与结果页面 |
 | scripts/check-stock-sources.js | 在线哨兵与全市场抓取检查 |
@@ -280,7 +281,9 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tests/stockFixture.test.js | 开发快照、双股票池与生产禁用保护测试 |
 | tests/apiStockSearch.test.js | 股票搜索契约、输入校验与生产禁用测试 |
 | tests/apiStockYtd.test.js | YTD结果、北交所切换、新股与错误契约测试 |
+| tests/apiStockBenchmark.test.js | 沪深300独立接口、缺失数据与错误隔离契约测试 |
 | tests/stockPage.test.js | 页面入口、核心控件、接口引用和响应式基线测试 |
+| tests/e2e/stock-ytd-ranking.spec.js | Playwright 移动端与桌面端选股、北交所局部更新、局部重试和竞态测试 |
 | tests/stockTradingDates.test.js | 18:30 截止点、交易日历覆盖和年度重置测试 |
 | tests/stockBenchmark.test.js | 沪深300端点、重复值、缺失值和日期一致性测试 |
 | tests/stockPublishedSnapshot.test.js | envelope、结构完整性、ETag、超时、大小、缓存与动态 freshness 测试 |
@@ -300,6 +303,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
     node tests/stockFixture.test.js
     node tests/apiStockSearch.test.js
     node tests/apiStockYtd.test.js
+    node tests/apiStockBenchmark.test.js
     node tests/stockPage.test.js
     node tests/stockTradingDates.test.js
     node tests/stockBenchmark.test.js
@@ -308,6 +312,10 @@ Raw、Candidate 和 Published 三层数据不能混用。
     node tests/stockDailyWorker.test.js
     node tests/apiStockHealth.test.js
     node tests/stockFirstBatch.test.js
+
+浏览器端到端测试：
+
+    npm run test:e2e
 
 在线哨兵：
 
