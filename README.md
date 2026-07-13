@@ -30,6 +30,30 @@ Worker 使用 Tushare 主数据、交易日历、日线、复权因子和沪深3
 
 `.stock-ytd-data/` 只用于本地验证，已被 Git 忽略。它不适合作为 Vercel Serverless 的生产持久化层；生产仍需对象存储保存不可变快照、KV 或数据库保存 current 指针，并由受保护的 HTTPS 网关返回 envelope 与 ETag。
 
+### 首次真实数据验收
+
+首次接入 Token 时使用独立 shadow 目录运行严格验收，不直接写入日常快照目录：
+
+```bash
+node scripts/run-stock-ytd-first-batch.js --store-dir=.stock-ytd-data/first-batch-YYYYMMDD --require-as-of=YYYY-MM-DD --expected-sh=NNNN --expected-sz=NNNN --expected-bse=NNN
+```
+
+`--require-as-of` 先由 Tushare 交易日历做轻量校验；指定日期尚未成为最近完整交易日时不会继续抓取全市场。`--expected-sh/sz/bse` 必须填写从交易所或已授权独立证券清单人工确认的当日当前上市 A 股数量，不能照抄本次 Tushare 返回值；缺少三项中的任何一项都会在联网前阻断。目标目录必须不存在或为空。Worker 只写入目标目录下的 `candidate/`，shadow 根目录不会生成可被生产读取器直接接受的 `current.json`，审计通过后也不会自动提升。入口会依次检查 Tushare 权限、沪深北主数据分布与覆盖率、东财全市场分页、新易盛和贵州茅台的腾讯复权哨兵，再调用 Worker；外部基线、诊断和发布三方的股票池总数及分交易所数量必须一致。只有 `validated`、`PUBLISHED`、覆盖率不低于 99.8%、无质量警告、无隔离记录、全市场跨源偏差均不超过 5bp 且发布后审计全部通过时才返回 0。`computed-fallback` 可以被普通 Worker 发布，但不能冒充首次多源验收通过。
+
+报告只输出日期、数量、覆盖率、偏差分桶、错误码和关键股票审计结果，不输出全市场记录、原始价格、复权因子或 Token。不要把 Token 写进命令历史、`.env` 或仓库；应由密钥管理的运行器注入，或在本机 PowerShell 使用隐藏输入临时注入当前进程：
+
+```powershell
+$secret = Read-Host "TUSHARE_TOKEN" -AsSecureString
+$pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
+try {
+  $env:TUSHARE_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
+}
+node scripts/run-stock-ytd-first-batch.js --store-dir=.stock-ytd-data/first-batch-YYYYMMDD --require-as-of=YYYY-MM-DD --expected-sh=NNNN --expected-sz=NNNN --expected-bse=NNN
+Remove-Item Env:TUSHARE_TOKEN
+```
+
 ### Published envelope
 
 生产 `STOCK_SNAPSHOT_URL` 返回：

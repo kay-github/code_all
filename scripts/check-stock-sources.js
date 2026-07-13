@@ -176,6 +176,23 @@ function findRow(rows, symbol, date) {
   ) || null;
 }
 
+function tushareExchange(value) {
+  const exchange = String(value || "").trim().toUpperCase();
+  if (exchange === "SSE" || exchange === "SH") return "SH";
+  if (exchange === "SZSE" || exchange === "SZ") return "SZ";
+  if (exchange === "BSE" || exchange === "BJ") return "BSE";
+  return "UNKNOWN";
+}
+
+function countTushareExchanges(rows, predicate = () => true) {
+  return (rows || []).reduce((counts, row) => {
+    if (!predicate(row)) return counts;
+    const exchange = tushareExchange(row.exchange);
+    counts[exchange] = (counts[exchange] || 0) + 1;
+    return counts;
+  }, { SH: 0, SZ: 0, BSE: 0, UNKNOWN: 0 });
+}
+
 async function checkTushare(options = {}) {
   const env = options.env || process.env;
   if (!env.TUSHARE_TOKEN) {
@@ -229,6 +246,12 @@ async function checkTushare(options = {}) {
     });
 
     const minStockCount = options.minStockCount == null ? 5000 : options.minStockCount;
+    const stockBasicByExchange = countTushareExchanges(stockResult.rows);
+    const masterByExchange = countTushareExchanges(computedRecords);
+    const expectedUniverseByExchange = countTushareExchanges(
+      computedRecords,
+      (row) => !row.listingDate || row.listingDate <= dates.baseDate
+    );
     const eligibleComputed = computedRecords.filter(
       (record) => record.computedYtd != null && !record.ineligibilityReason
     );
@@ -237,6 +260,18 @@ async function checkTushare(options = {}) {
       : eligibleComputed.length / dataset.expectedUniverseCount;
     const failures = [];
     if (stockResult.rows.length < minStockCount) failures.push("STOCK_BASIC_COVERAGE_LOW");
+    const minimumExchangeCounts = options.minimumExchangeCounts ||
+      (minStockCount >= 5000 ? { SH: 2000, SZ: 2500, BSE: 100 } : null);
+    if (minimumExchangeCounts) {
+      for (const exchange of ["SH", "SZ", "BSE"]) {
+        if (masterByExchange[exchange] < minimumExchangeCounts[exchange]) {
+          failures.push(`MASTER_${exchange}_COVERAGE_LOW`);
+        }
+      }
+      if (masterByExchange.UNKNOWN > 0) {
+        failures.push("MASTER_UNKNOWN_EXCHANGE");
+      }
+    }
     if (computedCoverage < 0.998) failures.push("COMPUTED_YTD_COVERAGE_LOW");
 
     const sentinel = "300502.SZ";
@@ -261,11 +296,18 @@ async function checkTushare(options = {}) {
       baseDate: dates.baseDate,
       counts: {
         stockBasic: stockResult.rows.length,
+        masterRecords: computedRecords.length,
         expectedUniverse: dataset.expectedUniverseCount,
         eligibleComputed: eligibleComputed.length,
         computedCoverage,
+        newListings: computedRecords.filter(
+          (record) => record.ineligibilityReason === "NEW_LISTING"
+        ).length,
         baseBackfill: dataset.backfill.baseMissingSymbols.length,
-        currentBackfill: dataset.backfill.currentMissingSymbols.length
+        currentBackfill: dataset.backfill.currentMissingSymbols.length,
+        stockBasicByExchange,
+        masterByExchange,
+        expectedUniverseByExchange
       },
       sentinelYtd,
       benchmarkYtd
@@ -347,6 +389,7 @@ module.exports = {
   checkSymbol,
   assessMarketRows,
   checkMarket,
+  countTushareExchanges,
   deriveExpectedDates,
   checkTushare,
   reportHasFailures,

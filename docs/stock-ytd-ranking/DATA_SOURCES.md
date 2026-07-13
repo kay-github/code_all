@@ -270,6 +270,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tools/stock-ytd-ranking/index.html | 移动优先股票搜索与结果页面 |
 | scripts/check-stock-sources.js | 在线哨兵与全市场抓取检查 |
 | scripts/refresh-stock-ytd.js | 日终 Worker 命令行入口，支持本地目录和同日强制重跑 |
+| scripts/run-stock-ytd-first-batch.js | 首次真实数据严格验收、shadow 发布与脱敏质量报告 |
 | tests/stockYtd.test.js | 分红、送股、复权和排名测试 |
 | tests/stockSources.test.js | 供应商字段、分页、超时、重试和单位转换测试 |
 | tests/stockSnapshot.test.js | 多源偏差、计算源隔离、上海时区日期、覆盖率和股票池测试 |
@@ -286,6 +287,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tests/stockSnapshotFileStore.test.js | 原子发布、动态日期、防倒退、锁所有权和崩溃遗留锁测试 |
 | tests/stockDailyWorker.test.js | 正常发布、幂等、整源备用、质量失败、日历降级和跨年重置测试 |
 | tests/apiStockHealth.test.js | READY、DEGRADED、DEMO 与 NOT_READY 状态测试 |
+| tests/stockFirstBatch.test.js | 首批次零副作用预检、诊断短路、严格发布和报告脱敏测试 |
 
 测试：
 
@@ -305,6 +307,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
     node tests/stockSnapshotFileStore.test.js
     node tests/stockDailyWorker.test.js
     node tests/apiStockHealth.test.js
+    node tests/stockFirstBatch.test.js
 
 在线哨兵：
 
@@ -325,9 +328,15 @@ Tushare 全市场检查使用以下覆盖率口径：
     eligibleComputed = computedYtd 非空且无 ineligibilityReason 的记录数
     computedCoverage = eligibleComputed / expectedUniverseCount
 
-`expectedUniverseCount` 来自当前上市且基准日或之前已上市的 Tushare 主数据；当年新股仍保留在主数据和查询记录中，但不进入该分母。`computedCoverage` 低于 0.998 时返回 `COMPUTED_YTD_COVERAGE_LOW`，检查状态为 `FAIL` 并非零退出。报告同时输出 expectedUniverse、eligibleComputed、computedCoverage、baseBackfill 和 currentBackfill。
+`expectedUniverseCount` 来自当前上市且基准日或之前已上市的 Tushare 主数据；当年新股仍保留在主数据和查询记录中，但不进入该分母。`computedCoverage` 低于 0.998 时返回 `COMPUTED_YTD_COVERAGE_LOW`，检查状态为 `FAIL` 并非零退出。报告同时输出 expectedUniverse、eligibleComputed、computedCoverage、baseBackfill、currentBackfill、原始 stockBasicByExchange、过滤非 CNY/CDR 后的 masterByExchange 和 expectedUniverseByExchange。正式规模检查还要求过滤后的目标主数据至少覆盖沪市 2,000、深市 2,500、北交所 100 只且不存在未知交易所，防止上游固定行数截断后用截断分母自证 100% 覆盖率。首批次还会逐交易所核对当前主数据、年初可比主数据、有效计算数量和独立覆盖率，任一阶段漂移均不能通过。
 
 按股历史回补设有上游保护：数据集默认每个端点最多回补 500 只，在线哨兵默认最多 200 只、并发度为 4；超过上限抛出 `TUSHARE_BACKFILL_LIMIT_EXCEEDED`，哨兵状态为 `UNAVAILABLE` 并默认非零退出。基准端和统计端依次回补，避免两个端点叠加并发。
+
+首次接入真实 Token 时，使用独立 shadow 目录执行严格首批次验收：
+
+    node scripts/run-stock-ytd-first-batch.js --store-dir=.stock-ytd-data/first-batch-YYYYMMDD --require-as-of=YYYY-MM-DD --expected-sh=NNNN --expected-sz=NNNN --expected-bse=NNN
+
+该入口固定一次运行时间，并强制要求 `--expected-sh/sz/bse` 三个由交易所或已授权独立证券清单确认的当前上市 A 股数量；不得用本次 Tushare 返回数量回填该基线。指定统计日先只读取交易日历；日期就绪后完成 Tushare、东财全市场和腾讯哨兵检查，再调用日终 Worker，并对 Published envelope、不可变快照、外部基线与诊断/发布股票池一致性、独立市场总量、覆盖率、计算源、沪深300、关键股票复权公式、全市场偏差、残留锁和 Token 泄漏做白名单审计。缺少 Token 时在任何网络请求和目录写入前退出；缺少外部数量基线同样在全市场请求前阻断。Tushare 核心检查失败后不继续调用公开源。目标目录非空、指定统计日未就绪、在线检查非 PASS、Worker 降级、`computed-fallback`、质量警告、隔离记录、超过 5bp 的跨源偏差或发布后审计失败时均非零退出。Worker 只在 shadow 根目录下的 `candidate/` 写入 envelope，根目录不生成 `current.json`；即使审计通过也不会自动提升为生产 current。报告禁止包含全市场记录、原始收盘价、复权因子和密钥值。
 
 ## 11. 环境与安全
 
@@ -353,5 +362,6 @@ Tushare 全市场检查使用以下覆盖率口径：
 5. 建立 Worker 失败、SERVING_PREVIOUS、computed-fallback、日历覆盖不足和连续过期告警，并完成至少 10 个交易日影子对比。
 6. 配置生产 `STOCK_SNAPSHOT_URL`、读取鉴权和密钥轮换机制。
 7. 完成数据源商用授权与调用额度确认。
+8. 在生产提升前接入交易所或已授权证券代码清单及其日期化哈希，逐代码核对股票池；分交易所数量基线只能发现数量差异，不能识别同一交易所内“漏入与错入数量相互抵消”。
 
 在以上事项完成前，当前数据层适合作为可验证的工程基础和原型，不应宣称已经具备无人值守的生产级数据 SLA。

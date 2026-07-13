@@ -2,10 +2,18 @@ const assert = require("assert");
 const {
   assessSymbol,
   assessMarketRows,
+  countTushareExchanges,
   deriveExpectedDates,
   checkTushare,
   reportHasFailures
 } = require("../scripts/check-stock-sources");
+
+assert.deepStrictEqual(countTushareExchanges([
+  { exchange: "SSE" },
+  { exchange: "SZSE" },
+  { exchange: "BSE" },
+  { exchange: "unexpected" }
+]), { SH: 1, SZ: 1, BSE: 1, UNKNOWN: 1 });
 
 const symbolAssessment = assessSymbol(
   {
@@ -158,6 +166,19 @@ async function run() {
   assert.strictEqual(healthy.expectedAsOf, "2026-07-10");
   assert.ok(Math.abs(healthy.sentinelYtd - 0.2) < 1e-12);
   assert.ok(Math.abs(healthy.benchmarkYtd - 0.1) < 1e-12);
+  assert.strictEqual(healthy.counts.newListings, 0);
+  assert.deepStrictEqual(healthy.counts.stockBasicByExchange, {
+    SH: 0,
+    SZ: 1,
+    BSE: 0,
+    UNKNOWN: 0
+  });
+  assert.deepStrictEqual(healthy.counts.masterByExchange, {
+    SH: 0,
+    SZ: 1,
+    BSE: 0,
+    UNKNOWN: 0
+  });
 
   const lowCoverage = await checkTushare({
     env: { TUSHARE_TOKEN: "fixture-token" },
