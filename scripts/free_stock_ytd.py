@@ -601,16 +601,36 @@ def sina_computed_record(
     return result
 
 
-def benchmark_rows(bs: Any, base_date: str, as_of: str) -> list[dict[str, Any]]:
-    query = bs.query_history_k_data_plus(
-        "sh.000300",
-        "date,code,close",
-        start_date=base_date,
-        end_date=as_of,
-        frequency="d",
-        adjustflag="3",
-    )
-    rows = collect_baostock_rows(query)
+def benchmark_rows(
+    bs: Any,
+    base_date: str,
+    as_of: str,
+    *,
+    retries: int = 2,
+    sleep: Callable[[float], None] = time.sleep,
+) -> list[dict[str, Any]]:
+    rows: list[list[str]] | None = None
+    last_error: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            query = bs.query_history_k_data_plus(
+                "sh.000300",
+                "date,code,close",
+                start_date=base_date,
+                end_date=as_of,
+                frequency="d",
+                adjustflag="3",
+            )
+            rows = collect_baostock_rows(query)
+            break
+        except Exception as error:
+            last_error = error
+            if attempt < retries:
+                sleep(0.5 * (attempt + 1))
+    if rows is None:
+        raise FreeStockSourceError(
+            "BAOSTOCK_QUERY_FAILED", "Baostock CSI300 query failed", source="baostock"
+        ) from last_error
     by_date = {normalize_date(row[0]): parse_number(row[2]) for row in rows if len(row) >= 3}
     if not by_date.get(base_date) or not by_date.get(as_of):
         raise FreeStockSourceError(

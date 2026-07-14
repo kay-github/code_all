@@ -157,6 +157,29 @@ class FreeStockYtdTests(unittest.TestCase):
         self.assertEqual(record["baseAdjustedClose"], 10.0)
         self.assertEqual(bs.calls[0][2]["adjustflag"], "2")
 
+    def test_benchmark_query_retries_after_transient_failure(self):
+        class FlakyBenchmark:
+            def __init__(self):
+                self.calls = 0
+
+            def query_history_k_data_plus(self, *args, **kwargs):
+                self.calls += 1
+                if self.calls == 1:
+                    raise RuntimeError("temporary benchmark failure")
+                return FakeResult([
+                    ["2025-12-31", "sh.000300", "4000"],
+                    ["2026-07-14", "sh.000300", "4400"],
+                ])
+
+        benchmark = free_stock_ytd.benchmark_rows(
+            FlakyBenchmark(),
+            "2025-12-31",
+            "2026-07-14",
+            sleep=lambda _: None,
+        )
+        self.assertEqual(len(benchmark), 2)
+        self.assertEqual(benchmark[1]["close"], 4400.0)
+
     def test_sina_parsing_and_adjusted_return(self):
         history = (
             'var _bj920001=([{"day":"2025-12-31","close":"10"},'
