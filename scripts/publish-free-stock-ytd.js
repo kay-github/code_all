@@ -10,6 +10,10 @@ const { GITHUB_OIDC_AUDIENCE } = require("../lib/stockPublishAuth");
 
 const DATASET_VERSION = "free-stock-ytd-dataset.v1";
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
+const EASTMONEY_MARKET_URLS = Object.freeze([
+  "https://push2.eastmoney.com/api/qt/clist/get",
+  "https://push2delay.eastmoney.com/api/qt/clist/get"
+]);
 
 function parseArguments(argv) {
   const args = {
@@ -57,12 +61,32 @@ async function loadReferenceRecords(dataset, options = {}) {
   if (options.skipReference) {
     return { records: [], warningCode: "REFERENCE_SKIPPED" };
   }
+  const fetchMarket = options.fetchEastmoneyMarket || fetchEastmoneyMarket;
+  const baseUrls = options.eastmoneyBaseUrls || EASTMONEY_MARKET_URLS;
+  let rows = null;
+  let lastError = null;
+  for (const baseUrl of baseUrls) {
+    try {
+      rows = await fetchMarket({
+        retries: 3,
+        timeoutMs: 10000,
+        pageDelayMs: 150,
+        baseUrl
+      });
+      break;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (!rows) {
+    return {
+      records: [],
+      warningCode: lastError && lastError.code
+        ? String(lastError.code)
+        : "REFERENCE_SOURCE_UNAVAILABLE"
+    };
+  }
   try {
-    const rows = await (options.fetchEastmoneyMarket || fetchEastmoneyMarket)({
-      retries: 3,
-      timeoutMs: 10000,
-      pageDelayMs: 150
-    });
     const currentRows = rows.filter(
       (row) => row && row.sourceAsOf === dataset.asOf && row.ytd != null
     );
@@ -210,6 +234,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  EASTMONEY_MARKET_URLS,
   parseArguments,
   readDataset,
   loadReferenceRecords,

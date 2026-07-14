@@ -118,6 +118,33 @@ async function run() {
     assert.strictEqual(references.records.length, 1);
     assert.strictEqual(references.warningCode, null);
 
+    const attemptedHosts = [];
+    const fallbackReferences = await loadReferenceRecords(dataset(), {
+      eastmoneyBaseUrls: ["https://primary.test/clist", "https://delay.test/clist"],
+      fetchEastmoneyMarket: async (options) => {
+        attemptedHosts.push(options.baseUrl);
+        if (options.baseUrl.includes("primary")) {
+          const error = new Error("primary unavailable");
+          error.code = "HTTP_ERROR";
+          throw error;
+        }
+        return [{
+          symbol: "600000.SH",
+          code: "600000",
+          name: "600000.SH",
+          exchange: "SH",
+          ytd: 0.1,
+          sourceAsOf: AS_OF
+        }];
+      }
+    });
+    assert.deepStrictEqual(attemptedHosts, [
+      "https://primary.test/clist",
+      "https://delay.test/clist"
+    ]);
+    assert.strictEqual(fallbackReferences.records.length, 1);
+    assert.strictEqual(fallbackReferences.warningCode, null);
+
     const build = await buildCandidateFromDataset(dataset(), {
       skipReference: true
     });

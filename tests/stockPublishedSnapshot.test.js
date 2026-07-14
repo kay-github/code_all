@@ -135,7 +135,7 @@ async function run() {
     ...fallbackWarningSnapshot.quality,
     status: "warning"
   };
-  assert.ok(snapshotWarning(fallbackWarningSnapshot).includes("独立复权计算"));
+  assert.ok(snapshotWarning(fallbackWarningSnapshot).includes("完整独立复权数据"));
   assert.ok(snapshotWarning(fallbackWarningSnapshot, {
     refreshStatus: "SERVING_PREVIOUS"
   }).includes("上一份"));
@@ -240,7 +240,7 @@ async function run() {
       tradingCalendar: tradingCalendar()
     }, { etag: '"computed-fallback-v1"' })
   });
-  assert.ok(freshFallback.warning.includes("独立复权计算"));
+  assert.ok(freshFallback.warning.includes("完整独立复权数据"));
   const cachedFallback = await loadStockSnapshot({
     env: fallbackEnv,
     now: TEST_NOW + 200,
@@ -250,7 +250,7 @@ async function run() {
     }
   });
   assert.ok(cachedFallback.warning.includes("服务端缓存"));
-  assert.ok(cachedFallback.warning.includes("独立复权计算"));
+  assert.ok(cachedFallback.warning.includes("完整独立复权数据"));
 
   resetStockSnapshotCache();
   await assert.rejects(
