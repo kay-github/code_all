@@ -360,7 +360,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
 
 Python Worker 先读取三家交易所清单和 Baostock 交易日历，再串行抓取沪深前复权端点并限并发抓取北交所新浪历史与因子。报告只输出分交易所数量、耗时、覆盖率和错误代码，不输出全市场价格或因子。`expectedUniverseCount` 来自官方清单中基准日或之前上市的证券；低于 99.8% 时 Node 快照质量闸门阻止发布。
 
-生产由 `.github/workflows/stock-ytd.yml` 在工作日北京时间 20:30 执行。Workflow 具备 `id-token: write`，发布脚本向 GitHub OIDC 端点申请 audience 为 `stock-ytd-publish` 的短期 JWT；Vercel 仅接受 `kay-github/code_all` 主分支指定 Workflow 的签名 Token。无需在 GitHub 保存数据供应商 Token 或 Blob Token。
+生产由 `.github/workflows/stock-ytd.yml` 在工作日北京时间 20:30 执行；股票数据流水线自身合入 `main` 时也会运行一次，普通站点改动不会触发全量任务。Workflow 具备 `id-token: write`，发布脚本向 GitHub OIDC 端点申请 audience 为 `stock-ytd-publish` 的短期 JWT；Vercel 仅接受 `kay-github/code_all` 主分支指定 Workflow 的签名 Token。无需在 GitHub 保存数据供应商 Token 或 Blob Token。
 
 东财与腾讯在线哨兵仍可独立运行，但旧 Tushare 首批次脚本只作为历史回归工具，不再是生产发布前置条件。
 

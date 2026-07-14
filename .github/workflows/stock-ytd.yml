@@ -1,6 +1,18 @@
 name: Stock YTD snapshot
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/stock-ytd.yml
+      - api/stock-publish.js
+      - lib/stockPublishAuth.js
+      - lib/stockPublishedSnapshot.js
+      - lib/stockSnapshot.js
+      - requirements-stock-ytd.txt
+      - scripts/free_stock_ytd.py
+      - scripts/publish-free-stock-ytd.js
   schedule:
     - cron: "30 12 * * 1-5"
   workflow_dispatch:
