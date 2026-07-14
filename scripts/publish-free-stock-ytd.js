@@ -104,11 +104,11 @@ async function loadReferenceRecords(dataset, options = {}) {
 
 async function buildCandidateFromDataset(dataset, options = {}) {
   const reference = await loadReferenceRecords(dataset, options);
-  const candidate = buildCandidate({
+  const build = (referenceRecords) => buildCandidate({
     asOf: dataset.asOf,
     baseDate: dataset.baseDate,
     computedRecords: dataset.computedRecords,
-    referenceRecords: reference.records,
+    referenceRecords,
     expectedUniverseCount: dataset.expectedUniverseCount,
     indexRows: dataset.indexRows,
     benchmarkSource: dataset.benchmarkSource || "baostock",
@@ -117,6 +117,20 @@ async function buildCandidateFromDataset(dataset, options = {}) {
     methodologyVersion: "adjusted-ytd.v2",
     poolVersion: "official-a-share.v2"
   });
+  let candidate;
+  let warningCodes = [reference.warningCode].filter(Boolean);
+  try {
+    candidate = build(reference.records);
+  } catch (error) {
+    const quality = error && error.quality;
+    const referenceQualityFailed =
+      error && error.code === "SNAPSHOT_NOT_PUBLISHABLE" &&
+      quality &&
+      Number(quality.counts && quality.counts.quarantined) > 0;
+    if (!referenceQualityFailed || reference.records.length === 0) throw error;
+    candidate = build([]);
+    warningCodes.push("REFERENCE_VALIDATION_REJECTED");
+  }
   const tradingCalendar = createTradingCalendar(dataset.tradingCalendar.rows, {
     coveredFrom: dataset.tradingCalendar.coveredFrom,
     coveredThrough: dataset.tradingCalendar.coveredThrough
@@ -124,7 +138,7 @@ async function buildCandidateFromDataset(dataset, options = {}) {
   return {
     candidate,
     tradingCalendar,
-    warningCodes: [reference.warningCode].filter(Boolean)
+    warningCodes
   };
 }
 

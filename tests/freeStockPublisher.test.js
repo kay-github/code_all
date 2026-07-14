@@ -145,6 +145,38 @@ async function run() {
     assert.strictEqual(fallbackReferences.records.length, 1);
     assert.strictEqual(fallbackReferences.warningCode, null);
 
+    const rejectedReference = await buildCandidateFromDataset(dataset(), {
+      fetchEastmoneyMarket: async () => [
+        {
+          symbol: "600000.SH",
+          code: "600000",
+          name: "600000.SH",
+          exchange: "SH",
+          ytd: 0.9,
+          sourceAsOf: AS_OF
+        },
+        {
+          symbol: "000001.SZ",
+          code: "000001",
+          name: "000001.SZ",
+          exchange: "SZ",
+          ytd: 0.8,
+          sourceAsOf: AS_OF
+        },
+        {
+          symbol: "920001.BJ",
+          code: "920001",
+          name: "920001.BJ",
+          exchange: "BSE",
+          ytd: 0.7,
+          sourceAsOf: AS_OF
+        }
+      ]
+    });
+    assert.strictEqual(rejectedReference.candidate.sourceMode, "computed-fallback");
+    assert.ok(rejectedReference.warningCodes.includes("REFERENCE_VALIDATION_REJECTED"));
+    assert.strictEqual(rejectedReference.candidate.quality.coverage.ratio, 1);
+
     const build = await buildCandidateFromDataset(dataset(), {
       skipReference: true
     });
