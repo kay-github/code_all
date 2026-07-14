@@ -1,6 +1,6 @@
 const assert = require("assert");
 const stockRefreshApi = require("../api/stock-refresh");
-const { createHandler, secretMatches } = stockRefreshApi;
+const { createHandler, secretMatches, sourceFailureMetadata } = stockRefreshApi;
 
 async function invoke(handler, method = "GET", authorization = "") {
   const req = { method, headers: { authorization } };
@@ -26,6 +26,22 @@ async function invoke(handler, method = "GET", authorization = "") {
 async function run() {
   assert.strictEqual(secretMatches("Bearer cron-test", "cron-test"), true);
   assert.strictEqual(secretMatches("Bearer wrong", "cron-test"), false);
+  assert.deepStrictEqual(sourceFailureMetadata({
+    cause: {
+      source: "tushare",
+      details: {
+        apiName: "trade_cal",
+        providerCode: -2001,
+        rateLimitPerMinute: 0,
+        message: "secret upstream detail"
+      }
+    }
+  }), {
+    causeSource: "tushare",
+    causeOperation: "trade_cal",
+    providerCode: -2001,
+    rateLimitPerMinute: 0
+  });
 
   let handler = createHandler({ env: {}, logger: { error() {} } });
   let response = await invoke(handler);

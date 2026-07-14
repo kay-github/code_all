@@ -445,6 +445,22 @@ async function run() {
     fields: "ts_code,trade_date,close"
   });
 
+  await assert.rejects(
+    callTushare("trade_cal", {}, [], {
+      env: { TUSHARE_TOKEN: "fixture-token" },
+      retries: 0,
+      fetchImpl: async () => jsonResponse({
+        code: -2001,
+        msg: "每分钟最多访问该接口 0 次",
+        data: null
+      })
+    }),
+    (error) => error instanceof StockSourceError &&
+      error.code === ERROR_CODES.RATE_LIMITED &&
+      error.details.apiName === "trade_cal" &&
+      error.details.rateLimitPerMinute === 0
+  );
+
   const previousTushareToken = process.env.TUSHARE_TOKEN;
   process.env.TUSHARE_TOKEN = "process-token";
   try {

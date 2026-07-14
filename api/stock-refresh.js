@@ -41,6 +41,28 @@ function publicSummary(result) {
   };
 }
 
+function sourceFailureMetadata(error) {
+  const sourceError = error && error.cause;
+  const details = sourceError && sourceError.details &&
+    typeof sourceError.details === "object"
+    ? sourceError.details
+    : {};
+  return {
+    causeSource: sourceError && sourceError.source || null,
+    causeOperation: typeof details.apiName === "string"
+      ? details.apiName.slice(0, 80)
+      : null,
+    providerCode: details.providerCode != null &&
+      Number.isFinite(Number(details.providerCode))
+      ? Number(details.providerCode)
+      : null,
+    rateLimitPerMinute: details.rateLimitPerMinute != null &&
+      Number.isFinite(Number(details.rateLimitPerMinute))
+      ? Number(details.rateLimitPerMinute)
+      : null
+  };
+}
+
 function createHandler(options = {}) {
   const env = options.env || process.env;
   const runWorker = options.runStockDailyWorker || runStockDailyWorker;
@@ -87,7 +109,8 @@ function createHandler(options = {}) {
       logger.error("stock refresh failed", {
         name: error && error.name,
         code: error && error.code,
-        causeCode: error && error.details && error.details.causeCode
+        causeCode: error && error.details && error.details.causeCode,
+        ...sourceFailureMetadata(error)
       });
       sendJson(res, error && error.code === "STOCK_REFRESH_LOCKED" ? 409 : 503, {
         ok: false,
@@ -104,3 +127,4 @@ module.exports = createHandler();
 module.exports.createHandler = createHandler;
 module.exports.publicSummary = publicSummary;
 module.exports.secretMatches = secretMatches;
+module.exports.sourceFailureMetadata = sourceFailureMetadata;
