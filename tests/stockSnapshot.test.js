@@ -233,6 +233,50 @@ assert.ok(
     (item) => item.code === "MIXED_COMPUTED_SOURCES"
   )
 );
+
+const partitionedSourceSnapshot = buildStockSnapshot({
+  asOf: AS_OF,
+  baseDate: BASE_DATE,
+  methodologyVersion: "adjusted-ytd.v2",
+  poolVersion: "official-a-share.v2",
+  computedRecords: [
+    computedRecord("600000.SH", 0.1, { source: "baostock" }),
+    computedRecord("000001.SZ", 0.2, { source: "baostock" }),
+    computedRecord("920001.BJ", 0.3, { source: "sina" })
+  ],
+  referenceRecords: [],
+  expectedUniverseCount: 3,
+  minCoverageRatio: 1
+});
+assert.strictEqual(partitionedSourceSnapshot.productionPublishable, true);
+assert.deepStrictEqual(
+  partitionedSourceSnapshot.quality.computedSources.active,
+  ["baostock", "sina"]
+);
+assert.strictEqual(
+  partitionedSourceSnapshot.quality.computedSources.exchangeMismatchCount,
+  0
+);
+
+const partitionedSourceMismatch = buildStockSnapshot({
+  asOf: AS_OF,
+  baseDate: BASE_DATE,
+  methodologyVersion: "adjusted-ytd.v2",
+  poolVersion: "official-a-share.v2",
+  computedRecords: [
+    computedRecord("600000.SH", 0.1, { source: "sina" }),
+    computedRecord("920001.BJ", 0.3, { source: "baostock" })
+  ],
+  referenceRecords: [],
+  expectedUniverseCount: 2,
+  minCoverageRatio: 1
+});
+assert.strictEqual(partitionedSourceMismatch.productionPublishable, false);
+assert.ok(
+  partitionedSourceMismatch.quality.errors.some(
+    (item) => item.code === "COMPUTED_SOURCE_EXCHANGE_MISMATCH"
+  )
+);
 assert.ok(
   mixedComputedSourcesSnapshot.quality.errors.some(
     (item) => item.code === "UNSUPPORTED_COMPUTED_SOURCE"

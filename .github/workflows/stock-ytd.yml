@@ -1,0 +1,93 @@
+name: Stock YTD snapshot
+
+on:
+  schedule:
+    - cron: "30 12 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: Optional YYYY-MM-DD trading date
+        required: false
+        type: string
+      skip_reference:
+        description: Skip the Eastmoney reference check
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: Build and validate without publishing
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: stock-ytd-production
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      STOCK_PUBLISH_URL: https://1.688680.xyz/api/stock-publish
+      AS_OF: ${{ inputs.as_of || '' }}
+      SKIP_REFERENCE: ${{ inputs.skip_reference || false }}
+      DRY_RUN: ${{ inputs.dry_run || false }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-stock-ytd.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-stock-ytd.txt
+          npm ci
+
+      - name: Test free-source pipeline
+        run: |
+          npm run test:stock-free
+          npm run test:stock-python
+
+      - name: Collect official market data
+        shell: bash
+        run: |
+          args=(
+            --output .stock-ytd-data/free-dataset.json
+            --progress-every 100
+          )
+          if [[ -n "$AS_OF" ]]; then
+            args+=(--as-of "$AS_OF")
+          fi
+          python scripts/free_stock_ytd.py "${args[@]}"
+
+      - name: Validate and publish snapshot
+        shell: bash
+        run: |
+          args=(--input=.stock-ytd-data/free-dataset.json)
+          if [[ "$SKIP_REFERENCE" == "true" ]]; then
+            args+=(--skip-reference)
+          fi
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          else
+            args+=(--publish-url="$STOCK_PUBLISH_URL")
+          fi
+          node scripts/publish-free-stock-ytd.js "${args[@]}"

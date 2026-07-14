@@ -2,7 +2,9 @@
   "name": "mixed-tools-site",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:stock-free": "node tests/stockSnapshot.test.js && node tests/stockPublishedSnapshot.test.js && node tests/stockBenchmark.test.js && node tests/stockPublishAuth.test.js && node tests/apiStockPublish.test.js && node tests/freeStockPublisher.test.js",
+    "test:stock-python": "python tests/free_stock_ytd_test.py"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1"

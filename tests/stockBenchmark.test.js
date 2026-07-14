@@ -19,6 +19,13 @@ assertBenchmarkPublishable(benchmark, {
   asOf: "2026-07-10"
 });
 
+const baostockBenchmark = buildCsi300Benchmark(rows, {
+  baseDate: "2025-12-31",
+  asOf: "2026-07-10",
+  source: "baostock"
+});
+assert.strictEqual(baostockBenchmark.source, "baostock");
+
 assert.throws(
   () => buildCsi300Benchmark(rows.slice(0, 1), {
     baseDate: "2025-12-31",
