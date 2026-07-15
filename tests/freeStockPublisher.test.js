@@ -86,6 +86,27 @@ function dataset(overrides = {}) {
 async function run() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "free-stock-publisher-"));
   try {
+    const recoveryFilename = path.join(directory, "recovery-dataset.json");
+    fs.writeFileSync(recoveryFilename, JSON.stringify({
+      version: "free-stock-ytd-recovery.v1",
+      recoveryOnly: true,
+      recoverAsOf: AS_OF
+    }));
+    assert.deepStrictEqual(readDataset(recoveryFilename), {
+      version: "free-stock-ytd-recovery.v1",
+      recoveryOnly: true,
+      recoverAsOf: AS_OF
+    });
+    fs.writeFileSync(recoveryFilename, JSON.stringify({
+      version: "free-stock-ytd-recovery.v1",
+      recoveryOnly: true,
+      recoverAsOf: "2026-02-30"
+    }));
+    assert.throws(
+      () => readDataset(recoveryFilename),
+      /recovery dataset contract is invalid/
+    );
+
     const recoveryArgs = parseArguments([
       `--recover-as-of=${AS_OF}`,
       "--publish-url=https://publish.example.test/api/stock-publish"

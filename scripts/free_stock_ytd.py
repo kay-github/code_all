@@ -25,6 +25,8 @@ from openpyxl import load_workbook
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 DATASET_VERSION = "free-stock-ytd-dataset.v1"
+RECOVERY_DATASET_VERSION = "free-stock-ytd-recovery.v1"
+RECOVERY_AS_OF_PREFIX = "recover:"
 MIN_COVERAGE_RATIO = 0.998
 MIN_MASTER_COUNTS = {"SH": 2000, "SZ": 2500, "BSE": 100}
 BAOSTOCK_RECONNECT_EVERY = 1000
@@ -911,6 +913,23 @@ def parse_now(value: str | None) -> datetime:
     return parsed.astimezone(SHANGHAI)
 
 
+def recovery_as_of(value: str | None) -> str | None:
+    if not value or not value.startswith(RECOVERY_AS_OF_PREFIX):
+        return None
+    candidate = value[len(RECOVERY_AS_OF_PREFIX) :]
+    try:
+        normalized = normalize_date(candidate)
+    except Exception as error:
+        raise FreeStockSourceError(
+            "RECOVERY_AS_OF_INVALID", "recovery asOf is invalid"
+        ) from error
+    if normalized != candidate:
+        raise FreeStockSourceError(
+            "RECOVERY_AS_OF_INVALID", "recovery asOf is invalid"
+        )
+    return normalized
+
+
 def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
@@ -932,6 +951,26 @@ def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_arguments(argv)
     try:
+        recover_date = recovery_as_of(args.as_of)
+        if recover_date:
+            dataset = {
+                "version": RECOVERY_DATASET_VERSION,
+                "recoveryOnly": True,
+                "recoverAsOf": recover_date,
+            }
+            _atomic_write_json(Path(args.output).resolve(), dataset)
+            print(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "version": RECOVERY_DATASET_VERSION,
+                        "recoveryOnly": True,
+                        "asOf": recover_date,
+                    },
+                    ensure_ascii=True,
+                )
+            )
+            return 0
         dataset = build_dataset(args)
         _atomic_write_json(Path(args.output).resolve(), dataset)
         summary = {

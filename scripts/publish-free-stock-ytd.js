@@ -10,6 +10,7 @@ const { GITHUB_OIDC_AUDIENCE } = require("../lib/stockPublishAuth");
 const { normalizeDate } = require("../lib/stockSnapshot");
 
 const DATASET_VERSION = "free-stock-ytd-dataset.v1";
+const RECOVERY_DATASET_VERSION = "free-stock-ytd-recovery.v1";
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
 const DEFAULT_PUBLISH_TIMEOUT_MS = 180 * 1000;
 const EASTMONEY_MARKET_URLS = Object.freeze([
@@ -59,6 +60,24 @@ function readDataset(filename) {
     throw new Error("free stock dataset file is invalid");
   }
   const dataset = JSON.parse(fs.readFileSync(resolved, "utf8"));
+  if (dataset && dataset.version === RECOVERY_DATASET_VERSION) {
+    let validRecoveryDate = false;
+    try {
+      validRecoveryDate =
+        typeof dataset.recoverAsOf === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(dataset.recoverAsOf) &&
+        normalizeDate(dataset.recoverAsOf, "recoverAsOf") === dataset.recoverAsOf;
+    } catch {
+      validRecoveryDate = false;
+    }
+    if (
+      dataset.recoveryOnly !== true ||
+      !validRecoveryDate
+    ) {
+      throw new Error("free stock recovery dataset contract is invalid");
+    }
+    return dataset;
+  }
   if (
     !dataset ||
     dataset.version !== DATASET_VERSION ||
@@ -319,6 +338,14 @@ async function main(argv = process.argv.slice(2)) {
     return;
   }
   const dataset = readDataset(args.input);
+  if (dataset.version === RECOVERY_DATASET_VERSION) {
+    if (args.dryRun) {
+      throw new TypeError("stock snapshot recovery cannot run as a dry run");
+    }
+    const recovered = await recoverSnapshot(dataset.recoverAsOf, args.publishUrl);
+    console.log(JSON.stringify(recoverySummary(recovered.result.publish)));
+    return;
+  }
   const build = await buildCandidateFromDataset(dataset, {
     skipReference: args.skipReference
   });
@@ -355,6 +382,7 @@ if (require.main === module) {
 
 module.exports = {
   EASTMONEY_MARKET_URLS,
+  RECOVERY_DATASET_VERSION,
   parseArguments,
   readDataset,
   loadReferenceRecords,

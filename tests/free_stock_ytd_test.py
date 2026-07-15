@@ -3,6 +3,7 @@ import json
 import sys
 import unittest
 import zipfile
+import tempfile
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
@@ -44,6 +45,32 @@ class FakeBaostock:
 
 
 class FreeStockYtdTests(unittest.TestCase):
+    def test_recovery_marker_writes_lightweight_dataset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "recovery.json"
+            result = free_stock_ytd.main(
+                [
+                    "--output",
+                    str(output),
+                    "--as-of",
+                    "recover:2026-07-15",
+                ]
+            )
+            self.assertEqual(result, 0)
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(
+                payload,
+                {
+                    "version": "free-stock-ytd-recovery.v1",
+                    "recoveryOnly": True,
+                    "recoverAsOf": "2026-07-15",
+                },
+            )
+        with self.assertRaisesRegex(
+            free_stock_ytd.FreeStockSourceError, "recovery asOf is invalid"
+        ):
+            free_stock_ytd.recovery_as_of("recover:2026-02-30")
+
     def test_normalization_and_master_identity(self):
         self.assertEqual(free_stock_ytd.normalize_code(1), "000001")
         self.assertEqual(free_stock_ytd.normalize_code("920001.0"), "920001")
