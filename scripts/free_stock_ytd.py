@@ -27,6 +27,7 @@ SHANGHAI = ZoneInfo("Asia/Shanghai")
 DATASET_VERSION = "free-stock-ytd-dataset.v1"
 MIN_COVERAGE_RATIO = 0.998
 MIN_MASTER_COUNTS = {"SH": 2000, "SZ": 2500, "BSE": 100}
+BAOSTOCK_RECONNECT_EVERY = 1000
 SSE_URL = "https://query.sse.com.cn/sseQuery/commonQuery.do"
 SZSE_URL = "https://www.szse.cn/api/report/ShowReport"
 BSE_URL = "https://www.bse.cn/nqxxController/nqxxCnzq.do"
@@ -354,6 +355,40 @@ def collect_baostock_rows(result: Any) -> list[list[str]]:
     return rows
 
 
+def login_baostock(
+    bs: Any,
+    *,
+    retries: int = 2,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    last_error: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            result = bs.login()
+            if getattr(result, "error_code", None) == "0":
+                return
+            last_error = RuntimeError("Baostock login returned an error")
+        except Exception as error:
+            last_error = error
+        if attempt < retries:
+            sleep(0.5 * (attempt + 1))
+    raise FreeStockSourceError(
+        "BAOSTOCK_LOGIN_FAILED", "Baostock login failed", source="baostock"
+    ) from last_error
+
+
+def reconnect_baostock(
+    bs: Any,
+    *,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    try:
+        bs.logout()
+    except Exception:
+        pass
+    login_baostock(bs, sleep=sleep)
+
+
 def derive_dates(
     calendar_rows: list[list[str]], now: datetime, required_as_of: str | None = None
 ) -> tuple[str, str, list[str]]:
@@ -415,6 +450,7 @@ def baostock_computed_record(
     as_of: str,
     *,
     retries: int = 2,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> dict[str, Any]:
     result = _record_master_fields(master, "baostock", as_of)
     if master.listing_date > base_date:
@@ -441,7 +477,7 @@ def baostock_computed_record(
         except Exception as error:  # provider errors need a clean retry boundary
             last_error = error
             if attempt < retries:
-                time.sleep(0.5 * (attempt + 1))
+                sleep(0.5 * (attempt + 1))
     if rows is None:
         raise FreeStockSourceError(
             "BAOSTOCK_HISTORY_FAILED", "Baostock history failed", source="baostock"
@@ -475,6 +511,59 @@ def baostock_computed_record(
         }
     )
     return result
+
+
+def collect_baostock_records(
+    bs: Any,
+    masters: list[MasterRecord],
+    base_date: str,
+    as_of: str,
+    *,
+    reconnect_every: int = BAOSTOCK_RECONNECT_EVERY,
+    progress_every: int = 0,
+    sleep: Callable[[float], None] = time.sleep,
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    records: list[dict[str, Any]] = []
+    failures: list[dict[str, str]] = []
+    for index, master in enumerate(masters, start=1):
+        if reconnect_every and index > 1 and (index - 1) % reconnect_every == 0:
+            reconnect_baostock(bs, sleep=sleep)
+        try:
+            record = baostock_computed_record(
+                bs, master, base_date, as_of, sleep=sleep
+            )
+        except Exception:
+            # Query retries cannot repair a dead module-level Baostock session.
+            reconnect_baostock(bs, sleep=sleep)
+            try:
+                record = baostock_computed_record(
+                    bs, master, base_date, as_of, sleep=sleep
+                )
+            except Exception as recovery_error:
+                failures.append(
+                    {
+                        "symbol": master.symbol,
+                        "source": "baostock",
+                        "code": getattr(
+                            recovery_error, "code", "BAOSTOCK_HISTORY_FAILED"
+                        ),
+                    }
+                )
+                record = {
+                    **_record_master_fields(master, "baostock", as_of),
+                    "ineligibilityReason": "DATA_QUALITY_REJECTED",
+                }
+        records.append(record)
+        if progress_every and index % progress_every == 0:
+            print(
+                json.dumps(
+                    {"stage": "baostock", "completed": index, "total": len(masters)},
+                    ensure_ascii=True,
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
+    return records, failures
 
 
 def parse_sina_history(text: str) -> list[tuple[str, float]]:
@@ -697,11 +786,7 @@ def build_dataset(options: argparse.Namespace) -> dict[str, Any]:
             "BAOSTOCK_NOT_INSTALLED", "baostock is required", source="baostock"
         ) from error
 
-    login = bs.login()
-    if login.error_code != "0":
-        raise FreeStockSourceError(
-            "BAOSTOCK_LOGIN_FAILED", "Baostock login failed", source="baostock"
-        )
+    login_baostock(bs)
     computed_records: list[dict[str, Any]] = []
     failures: list[dict[str, str]] = []
     try:
@@ -712,36 +797,18 @@ def build_dataset(options: argparse.Namespace) -> dict[str, Any]:
         )
         calendar_rows = collect_baostock_rows(calendar_query)
         base_date, as_of, _ = derive_dates(calendar_rows, now, options.as_of)
+        index_rows = benchmark_rows(bs, base_date, as_of)
 
         sh_sz = [record for record in masters if record.exchange in {"SH", "SZ"}]
-        for index, master in enumerate(sh_sz, start=1):
-            try:
-                computed_records.append(
-                    baostock_computed_record(bs, master, base_date, as_of)
-                )
-            except Exception as error:
-                failures.append(
-                    {
-                        "symbol": master.symbol,
-                        "source": "baostock",
-                        "code": getattr(error, "code", "BAOSTOCK_HISTORY_FAILED"),
-                    }
-                )
-                computed_records.append(
-                    {
-                        **_record_master_fields(master, "baostock", as_of),
-                        "ineligibilityReason": "DATA_QUALITY_REJECTED",
-                    }
-                )
-            if options.progress_every and index % options.progress_every == 0:
-                print(
-                    json.dumps(
-                        {"stage": "baostock", "completed": index, "total": len(sh_sz)},
-                        ensure_ascii=True,
-                    ),
-                    file=sys.stderr,
-                    flush=True,
-                )
+        baostock_records, baostock_failures = collect_baostock_records(
+            bs,
+            sh_sz,
+            base_date,
+            as_of,
+            progress_every=options.progress_every,
+        )
+        computed_records.extend(baostock_records)
+        failures.extend(baostock_failures)
 
         bse = [record for record in masters if record.exchange == "BSE"]
         with concurrent.futures.ThreadPoolExecutor(max_workers=options.bse_workers) as executor:
@@ -784,7 +851,6 @@ def build_dataset(options: argparse.Namespace) -> dict[str, Any]:
                         file=sys.stderr,
                         flush=True,
                     )
-        index_rows = benchmark_rows(bs, base_date, as_of)
     finally:
         bs.logout()
 

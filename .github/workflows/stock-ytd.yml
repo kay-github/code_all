@@ -43,7 +43,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       STOCK_PUBLISH_URL: https://1.688680.xyz/api/stock-publish
       AS_OF: ${{ inputs.as_of || '' }}

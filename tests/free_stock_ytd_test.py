@@ -157,6 +157,161 @@ class FreeStockYtdTests(unittest.TestCase):
         self.assertEqual(record["baseAdjustedClose"], 10.0)
         self.assertEqual(bs.calls[0][2]["adjustflag"], "2")
 
+    def test_baostock_login_retries_transient_failure(self):
+        provider = mock.Mock()
+        provider.login.side_effect = [
+            RuntimeError("temporary login failure"),
+            mock.Mock(error_code="0"),
+        ]
+        sleeps = []
+
+        free_stock_ytd.login_baostock(provider, sleep=sleeps.append)
+
+        self.assertEqual(provider.login.call_count, 2)
+        self.assertEqual(sleeps, [0.5])
+
+    def test_baostock_records_reconnect_periodically_and_after_session_reset(self):
+        class ResettingProvider:
+            def __init__(self):
+                self.active = False
+                self.login_calls = 0
+                self.logout_calls = 0
+                self.reset_done = False
+
+            def login(self):
+                self.active = True
+                self.login_calls += 1
+                return mock.Mock(error_code="0")
+
+            def logout(self):
+                self.active = False
+                self.logout_calls += 1
+
+            def query_history_k_data_plus(self, code, fields, **options):
+                if not self.active:
+                    return FakeResult([], error_code="10002007")
+                if code == "sh.600001" and not self.reset_done:
+                    self.active = False
+                    self.reset_done = True
+                    return FakeResult([], error_code="10002007")
+                return FakeResult(
+                    [
+                        ["2025-12-31", code, "10", "1"],
+                        ["2026-07-14", code, "12", "1"],
+                    ]
+                )
+
+        provider = ResettingProvider()
+        masters = [
+            free_stock_ytd.MasterRecord(
+                f"60000{index}", f"SH sample {index}", "SH", "2000-01-01", "MAIN"
+            )
+            for index in range(3)
+        ]
+        free_stock_ytd.login_baostock(provider, sleep=lambda _: None)
+
+        records, failures = free_stock_ytd.collect_baostock_records(
+            provider,
+            masters,
+            "2025-12-31",
+            "2026-07-14",
+            reconnect_every=2,
+            sleep=lambda _: None,
+        )
+
+        self.assertEqual(failures, [])
+        self.assertEqual(len(records), 3)
+        for record in records:
+            self.assertAlmostEqual(record["computedYtd"], 0.2)
+        self.assertEqual(provider.login_calls, 3)
+        self.assertEqual(provider.logout_calls, 2)
+
+    def test_build_dataset_queries_benchmark_before_stock_history(self):
+        events = []
+
+        class OrderedProvider:
+            def login(self):
+                events.append("login")
+                return mock.Mock(error_code="0")
+
+            def logout(self):
+                events.append("logout")
+
+            def query_trade_dates(self, **options):
+                events.append("calendar")
+                return FakeResult(
+                    [
+                        ["2025-12-31", "1"],
+                        ["2026-07-14", "1"],
+                        ["2026-07-15", "1"],
+                    ]
+                )
+
+            def query_history_k_data_plus(self, code, fields, **options):
+                if code == "sh.000300":
+                    events.append("benchmark")
+                    return FakeResult(
+                        [
+                            ["2025-12-31", code, "4000"],
+                            ["2026-07-14", code, "4400"],
+                        ]
+                    )
+                events.append(f"stock:{code}")
+                return FakeResult(
+                    [
+                        ["2025-12-31", code, "10", "1"],
+                        ["2026-07-14", code, "12", "1"],
+                    ]
+                )
+
+        provider = OrderedProvider()
+        sh = free_stock_ytd.MasterRecord(
+            "600000", "SH sample", "SH", "2000-01-01", "MAIN"
+        )
+        sz = free_stock_ytd.MasterRecord(
+            "000001", "SZ sample", "SZ", "2000-01-01", "MAIN"
+        )
+        bse = free_stock_ytd.MasterRecord(
+            "920001", "BSE sample", "BSE", "2020-01-01", "BSE"
+        )
+        options = mock.Mock(
+            timeout=1,
+            limit_per_exchange=1,
+            now=datetime(2026, 7, 14, 20, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
+            as_of="2026-07-14",
+            progress_every=0,
+            bse_workers=1,
+        )
+
+        def fake_sina_record(master, base_date, as_of, **kwargs):
+            return {
+                **free_stock_ytd._record_master_fields(master, "sina", as_of),
+                "computedYtd": 0.1,
+            }
+
+        with mock.patch.dict(sys.modules, {"baostock": provider}), mock.patch.object(
+            free_stock_ytd, "default_session", return_value=mock.Mock()
+        ), mock.patch.object(
+            free_stock_ytd, "fetch_sse_master", return_value=[sh]
+        ), mock.patch.object(
+            free_stock_ytd, "fetch_szse_master", return_value=[sz]
+        ), mock.patch.object(
+            free_stock_ytd, "fetch_bse_master", return_value=[bse]
+        ), mock.patch.object(
+            free_stock_ytd,
+            "validate_master",
+            return_value={"SH": 1, "SZ": 1, "BSE": 1},
+        ), mock.patch.object(
+            free_stock_ytd, "sina_computed_record", side_effect=fake_sina_record
+        ):
+            dataset = free_stock_ytd.build_dataset(options)
+
+        first_stock = min(
+            index for index, event in enumerate(events) if event.startswith("stock:")
+        )
+        self.assertLess(events.index("benchmark"), first_stock)
+        self.assertEqual(dataset["indexRows"][1]["close"], 4400.0)
+
     def test_benchmark_query_retries_after_transient_failure(self):
         class FlakyBenchmark:
             def __init__(self):
