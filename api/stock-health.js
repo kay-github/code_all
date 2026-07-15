@@ -17,7 +17,7 @@ function healthStatus(loaded) {
   const snapshot = loaded.snapshot;
   const degraded = snapshot.isStale ||
     !snapshot.benchmark ||
-    snapshot.sourceMode !== "validated" ||
+    !["validated", "reported"].includes(snapshot.sourceMode) ||
     snapshot.quality.status !== "pass" ||
     loaded.refreshStatus === "SERVING_PREVIOUS" ||
     loaded.cacheStatus === "stale-fallback";

@@ -2,6 +2,8 @@
 
 一个移动端优先的轻量 H5 工具站。当前已落地错别字校对，并实现股票 YTD 与市场排名工具的查询链路和日终数据基础设施。
 
+> **2026-07-16 起股票数据主源已切换为东财 f25 直取**（`reported-ytd.v1`，见 PRD 决策记录 v2.0）：全市场约 1 分钟刷新，与东财 app 逐位一致，腾讯前复权哨兵防口径漂移。下文 Baostock/新浪自算管线（`scripts/free_stock_ytd.py`）退役为备用，文档保留供回退参考。日常刷新入口为 `node scripts/refresh-stock-ytd-em.js`。
+
 ## 股票 YTD 与市场排名
 
 - 页面：`/tools/stock-ytd-ranking/`。
