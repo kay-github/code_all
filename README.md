@@ -177,7 +177,7 @@ npm run test:e2e
 - `ZHIPU_API_KEY`：智谱 BigModel APIKey（bigmodel.cn）。
 - `ZHIPU_MODEL`：默认 `glm-4-flash-250414`（免费模型）。
 - `SILICONFLOW_API_KEY`：硅基流动 APIKey（siliconflow.cn）。
-- `SILICONFLOW_MODEL`：默认 `Qwen/Qwen2.5-7B-Instruct`（免费模型）。
+- `SILICONFLOW_MODEL`：默认 `Qwen/Qwen3-8B`（免费模型，已禁用思考模式）。
 - `DASHSCOPE_API_KEY`：阿里云百炼 APIKey。
 - `DASHSCOPE_MODEL`：默认 `qwen-turbo`。
 - `TYPO_PROVIDER_ORDER`：可选，逗号分隔的提供商顺序（`xfyun,zhipu,siliconflow,dashscope`），默认按此顺序。

@@ -47,6 +47,10 @@ assert.deepStrictEqual(configured.map((item) => item.key), ["zhipu", "dashscope"
 assert.strictEqual(configured[0].model, "glm-4-flash-250414");
 assert.strictEqual(configured[0].baseUrl, "https://open.bigmodel.cn/api/paas/v4");
 
+const sfConfigured = getConfiguredProviders({ SILICONFLOW_API_KEY: "s-key" });
+assert.strictEqual(sfConfigured[0].model, "Qwen/Qwen3-8B");
+assert.strictEqual(sfConfigured[0].extraBody.enable_thinking, false);
+
 // 文本清理
 assert.strictEqual(cleanModelText("```text\n反映物业不作为\n```"), "反映物业不作为");
 assert.strictEqual(cleanModelText("“反映物业不作为”"), "反映物业不作为");
