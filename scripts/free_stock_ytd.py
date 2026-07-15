@@ -27,6 +27,8 @@ SHANGHAI = ZoneInfo("Asia/Shanghai")
 DATASET_VERSION = "free-stock-ytd-dataset.v1"
 RECOVERY_DATASET_VERSION = "free-stock-ytd-recovery.v1"
 RECOVERY_AS_OF_PREFIX = "recover:"
+RECOVERY_REQUEST_VERSION = "stock-ytd-recovery-request.v1"
+DEFAULT_RECOVERY_REQUEST_PATH = ".stock-ytd-recovery-request.json"
 MIN_COVERAGE_RATIO = 0.998
 MIN_MASTER_COUNTS = {"SH": 2000, "SZ": 2500, "BSE": 100}
 BAOSTOCK_RECONNECT_EVERY = 1000
@@ -930,6 +932,31 @@ def recovery_as_of(value: str | None) -> str | None:
     return normalized
 
 
+def pending_recovery_as_of(env: dict[str, str] | os._Environ[str] = os.environ) -> str | None:
+    if env.get("GITHUB_EVENT_NAME") != "push":
+        return None
+    request_path = Path(
+        env.get("STOCK_RECOVERY_REQUEST_FILE", DEFAULT_RECOVERY_REQUEST_PATH)
+    )
+    if not request_path.is_file():
+        return None
+    try:
+        payload = json.loads(request_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise FreeStockSourceError(
+            "RECOVERY_REQUEST_INVALID", "recovery request is invalid"
+        ) from error
+    if (
+        not isinstance(payload, dict)
+        or payload.get("version") != RECOVERY_REQUEST_VERSION
+        or not isinstance(payload.get("recoverAsOf"), str)
+    ):
+        raise FreeStockSourceError(
+            "RECOVERY_REQUEST_INVALID", "recovery request is invalid"
+        )
+    return recovery_as_of(f"{RECOVERY_AS_OF_PREFIX}{payload['recoverAsOf']}")
+
+
 def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
@@ -951,7 +978,7 @@ def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_arguments(argv)
     try:
-        recover_date = recovery_as_of(args.as_of)
+        recover_date = recovery_as_of(args.as_of) or pending_recovery_as_of()
         if recover_date:
             dataset = {
                 "version": RECOVERY_DATASET_VERSION,

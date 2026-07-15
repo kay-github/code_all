@@ -71,6 +71,35 @@ class FreeStockYtdTests(unittest.TestCase):
         ):
             free_stock_ytd.recovery_as_of("recover:2026-02-30")
 
+    def test_push_recovery_request_is_explicit_and_event_scoped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            request_path = Path(directory) / "request.json"
+            request_path.write_text(
+                json.dumps(
+                    {
+                        "version": "stock-ytd-recovery-request.v1",
+                        "recoverAsOf": "2026-07-15",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            env = {
+                "GITHUB_EVENT_NAME": "push",
+                "STOCK_RECOVERY_REQUEST_FILE": str(request_path),
+            }
+            self.assertEqual(
+                free_stock_ytd.pending_recovery_as_of(env), "2026-07-15"
+            )
+            self.assertIsNone(
+                free_stock_ytd.pending_recovery_as_of(
+                    {
+                        **env,
+                        "GITHUB_EVENT_NAME": "schedule",
+                    }
+                )
+            )
+
+
     def test_normalization_and_master_identity(self):
         self.assertEqual(free_stock_ytd.normalize_code(1), "000001")
         self.assertEqual(free_stock_ytd.normalize_code("920001.0"), "920001")
