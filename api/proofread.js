@@ -104,6 +104,7 @@ module.exports = async function handler(req, res) {
   let model = MODEL;
   let provider = PROVIDER;
   let fallback = false;
+  let attempts = [];
 
   if (isModelConfigured()) {
     try {
@@ -112,6 +113,7 @@ module.exports = async function handler(req, res) {
       corrections = buildDiffCorrections(text, result);
       model = modelResult.model;
       provider = modelResult.provider;
+      attempts = modelResult.attempts || [];
 
       if (result === text && ruleResult.result !== text) {
         result = ruleResult.result;
@@ -120,6 +122,7 @@ module.exports = async function handler(req, res) {
       }
     } catch (error) {
       fallback = true;
+      attempts = error.attempts || [];
     }
   }
 
@@ -130,6 +133,7 @@ module.exports = async function handler(req, res) {
     corrections,
     model,
     provider,
+    attempts,
     fallback
   });
 };

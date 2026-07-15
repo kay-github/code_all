@@ -109,6 +109,77 @@
       color: var(--danger);
     }
 
+    .status-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .status-toggle:disabled {
+      cursor: default;
+    }
+
+    .status-arrow {
+      flex: none;
+      transition: transform 0.2s ease;
+    }
+
+    .status-card.is-expanded .status-arrow {
+      transform: rotate(180deg);
+    }
+
+    .provider-list {
+      margin: 8px 0 0;
+      padding: 8px 0 0;
+      border-top: 1px dashed var(--line);
+      list-style: none;
+      color: var(--muted);
+    }
+
+    .provider-list li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 0;
+    }
+
+    .provider-dot {
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    .provider-dot.is-ok {
+      background: #22c55e;
+    }
+
+    .provider-dot.is-down {
+      background: #f97316;
+    }
+
+    .provider-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .provider-note {
+      margin-left: auto;
+      flex: none;
+      font-size: 12px;
+    }
+
     .editor {
       display: grid;
       gap: 12px;
@@ -380,7 +451,13 @@
       <p class="subtitle">快速访问：<span class="shortcut-domain">1.688680.xyz/cbz</span></p>
     </header>
 
-    <p id="modelStatus" class="status-card">正在检查校对服务...</p>
+    <div id="statusCard" class="status-card">
+      <button id="statusToggle" class="status-toggle" type="button" aria-expanded="false" aria-controls="providerList" disabled>
+        <span id="modelStatus" class="status-text">正在检查校对服务...</span>
+        <span id="statusArrow" class="status-arrow" aria-hidden="true" hidden>▾</span>
+      </button>
+      <ul id="providerList" class="provider-list" hidden></ul>
+    </div>
 
     <section class="editor" aria-label="错别字校对">
       <div id="sourceWrap" class="source-wrap">
@@ -443,6 +520,10 @@
     const clearButton = document.querySelector("#clearButton");
     const copyButton = document.querySelector("#copyButton");
     const modelStatus = document.querySelector("#modelStatus");
+    const statusCard = document.querySelector("#statusCard");
+    const statusToggle = document.querySelector("#statusToggle");
+    const statusArrow = document.querySelector("#statusArrow");
+    const providerList = document.querySelector("#providerList");
     const charCounter = document.querySelector("#charCounter");
     const toast = document.querySelector("#toast");
 
@@ -469,9 +550,37 @@
 
     function setStatus(message, type = "") {
       modelStatus.textContent = message;
-      modelStatus.classList.toggle("is-ready", type === "ready");
-      modelStatus.classList.toggle("is-error", type === "error");
+      statusCard.classList.toggle("is-ready", type === "ready");
+      statusCard.classList.toggle("is-error", type === "error");
     }
+
+    function renderProviderList(providers) {
+      if (!Array.isArray(providers) || !providers.length) {
+        statusToggle.disabled = true;
+        statusArrow.hidden = true;
+        return;
+      }
+
+      statusToggle.disabled = false;
+      statusArrow.hidden = false;
+      providerList.innerHTML = providers.map((item) => {
+        const available = item.configured && !item.coolingDown;
+        const dotClass = available ? "is-ok" : (item.configured ? "is-down" : "");
+        const note = available ? "可用" : (item.configured ? "暂不可用" : "未配置");
+        const label = [item.name, item.model].filter(Boolean).join(" / ");
+        return `<li><span class="provider-dot ${dotClass}"></span><span class="provider-name">${escapeHtml(label)}</span><span class="provider-note">${note}</span></li>`;
+      }).join("");
+    }
+
+    statusToggle.addEventListener("click", () => {
+      if (statusToggle.disabled) {
+        return;
+      }
+      const expanded = providerList.hidden;
+      providerList.hidden = !expanded;
+      statusCard.classList.toggle("is-expanded", expanded);
+      statusToggle.setAttribute("aria-expanded", String(expanded));
+    });
 
     function getModelLabel() {
       return [serviceInfo.provider, serviceInfo.model].filter(Boolean).join(" / ") || "线上校对服务";
@@ -584,8 +693,13 @@
           maxTextChars: data?.maxTextChars || serviceInfo.maxTextChars
         };
         updateCharCounter();
+        renderProviderList(data?.providers);
         setStatus(`校对服务已就绪：${getModelLabel()}。`, "ready");
       } catch {
+        renderProviderList([]);
+        providerList.hidden = true;
+        statusCard.classList.remove("is-expanded");
+        statusToggle.setAttribute("aria-expanded", "false");
         setStatus("未连接到校对服务，请稍后刷新；本地预览请使用 vercel dev 或 python server.py。", "error");
       }
     }
