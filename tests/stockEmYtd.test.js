@@ -76,13 +76,18 @@ assert.strictEqual(boardForCode("600519", "SH"), "主板");
     marketRow("600519", "SH", 0.1),
     marketRow("920001", "BJ", 0.25),
     marketRow("301999", "SZ", null, { listingDate: "20260501" }),
+    marketRow("688825", "SH", 0.3, { listingDate: null }),
     marketRow("600000", "SH", null)
   ], dates);
-  assert.strictEqual(records.length, 3);
+  assert.strictEqual(records.length, 4);
   assert.strictEqual(missingYtd, 1);
   const newListing = records.find((r) => r.symbol === "301999.SZ");
   assert.strictEqual(newListing.ineligibilityReason, "NEW_LISTING");
   assert.strictEqual(newListing.computedYtd, null);
+  // 东财缺上市日期（新股常见）按 NEW_LISTING 排除，不产生隔离告警
+  const missingListing = records.find((r) => r.symbol === "688825.SH");
+  assert.strictEqual(missingListing.ineligibilityReason, "NEW_LISTING");
+  assert.strictEqual(missingListing.computedYtd, null);
   const bse = records.find((r) => r.symbol === "920001.BJ");
   assert.strictEqual(bse.exchange, "BSE");
   assert.strictEqual(records[0].source, "eastmoney");
