@@ -1527,6 +1527,22 @@
         setRankingError("");
       }
 
+      function sameSnapshot(left, right) {
+        return Boolean(
+          left &&
+          right &&
+          typeof left.snapshotId === "string" &&
+          typeof right.snapshotId === "string" &&
+          left.snapshotId === right.snapshotId &&
+          typeof left.asOf === "string" &&
+          typeof right.asOf === "string" &&
+          left.asOf === right.asOf &&
+          typeof left.baseDate === "string" &&
+          typeof right.baseDate === "string" &&
+          left.baseDate === right.baseDate
+        );
+      }
+
       function renderBenchmark(benchmark) {
         elements.benchmarkCard.classList.remove("is-updating");
         elements.benchmarkCard.removeAttribute("aria-busy");
@@ -1680,11 +1696,22 @@
           if (!response.ok) throw new Error(data.message || "暂时无法计算");
           state.resultController = null;
           if (scopeOnly) {
-            if (!data.comparison || data.stock.symbol !== requestedStock.symbol) {
-              throw new Error("比较范围数据不完整");
+            const currentResult = state.currentResult;
+            const matchesCurrentResult = Boolean(
+              currentResult &&
+              currentResult.stock &&
+              data.comparison &&
+              data.comparison.includeBse === requestedIncludeBse &&
+              sameSnapshot(data, currentResult) &&
+              data.stock &&
+              data.stock.symbol === requestedStock.symbol &&
+              data.stock.symbol === currentResult.stock.symbol
+            );
+            if (!matchesCurrentResult) {
+              throw new Error("比较范围数据与当前快照不一致");
             }
             state.currentResult = {
-              ...state.currentResult,
+              ...currentResult,
               comparison: data.comparison
             };
             renderRanking(data.comparison);

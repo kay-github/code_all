@@ -10,6 +10,7 @@ const { GITHUB_OIDC_AUDIENCE } = require("../lib/stockPublishAuth");
 
 const DATASET_VERSION = "free-stock-ytd-dataset.v1";
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
+const DEFAULT_PUBLISH_TIMEOUT_MS = 180 * 1000;
 const EASTMONEY_MARKET_URLS = Object.freeze([
   "https://push2.eastmoney.com/api/qt/clist/get",
   "https://push2delay.eastmoney.com/api/qt/clist/get"
@@ -178,6 +179,7 @@ async function publishSnapshot(build, publishUrl, options = {}) {
   if (body.length > MAX_COMPRESSED_BYTES) {
     throw new Error("compressed stock snapshot exceeds publish limit");
   }
+  const timeoutMs = Number(options.timeoutMs || process.env.STOCK_PUBLISH_TIMEOUT_MS || DEFAULT_PUBLISH_TIMEOUT_MS);
   const response = await (options.fetchImpl || fetch)(publishUrl, {
     method: "POST",
     headers: {
@@ -186,11 +188,27 @@ async function publishSnapshot(build, publishUrl, options = {}) {
       "Content-Length": String(body.length)
     },
     body,
-    signal: AbortSignal.timeout(90000)
+    signal: AbortSignal.timeout(
+      Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_PUBLISH_TIMEOUT_MS
+    )
   });
-  const result = await response.json().catch(() => null);
+  const responseText = await response.text();
+  let result = null;
+  try {
+    result = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    result = null;
+  }
   if (!response.ok || !result || result.ok !== true) {
-    throw new Error(`stock publish failed with HTTP ${response.status}`);
+    const error = new Error(
+      result && result.error
+        ? `stock publish failed with HTTP ${response.status}: ${result.error}`
+        : `stock publish failed with HTTP ${response.status}`
+    );
+    error.code = "STOCK_PUBLISH_HTTP_ERROR";
+    error.status = response.status;
+    error.responseError = result && result.error ? String(result.error).slice(0, 120) : null;
+    throw error;
   }
   return { result, compressedBytes: body.length };
 }
@@ -241,7 +259,10 @@ if (require.main === module) {
   main().catch((error) => {
     console.error(JSON.stringify({
       ok: false,
-      error: error && error.code ? String(error.code) : "FREE_STOCK_PUBLISH_FAILED"
+      error: error && error.code ? String(error.code) : "FREE_STOCK_PUBLISH_FAILED",
+      status: Number.isFinite(Number(error && error.status)) ? Number(error.status) : null,
+      responseError: error && error.responseError ? String(error.responseError).slice(0, 120) : null,
+      message: error && error.message ? String(error.message).slice(0, 240) : null
     }));
     process.exit(1);
   });
@@ -255,6 +276,7 @@ module.exports = {
   buildCandidateFromDataset,
   requestGithubOidcToken,
   publishSnapshot,
+  DEFAULT_PUBLISH_TIMEOUT_MS,
   summary,
   main
 };

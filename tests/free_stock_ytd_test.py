@@ -180,6 +180,60 @@ class FreeStockYtdTests(unittest.TestCase):
         self.assertEqual(len(benchmark), 2)
         self.assertEqual(benchmark[1]["close"], 4400.0)
 
+    def test_benchmark_query_retries_when_endpoint_is_missing(self):
+        class MissingEndpointThenHealthy:
+            def __init__(self):
+                self.calls = 0
+
+            def query_history_k_data_plus(self, *args, **kwargs):
+                self.calls += 1
+                if self.calls == 1:
+                    return FakeResult([["2025-12-31", "sh.000300", "4000"]])
+                return FakeResult(
+                    [
+                        ["2025-12-31", "sh.000300", "4000"],
+                        ["2026-07-14", "sh.000300", "4400"],
+                    ]
+                )
+
+        sleeps = []
+        provider = MissingEndpointThenHealthy()
+        benchmark = free_stock_ytd.benchmark_rows(
+            provider,
+            "2025-12-31",
+            "2026-07-14",
+            sleep=sleeps.append,
+        )
+        self.assertEqual(provider.calls, 2)
+        self.assertEqual(sleeps, [0.5])
+        self.assertEqual(benchmark[0]["close"], 4000.0)
+        self.assertEqual(benchmark[1]["close"], 4400.0)
+
+    def test_benchmark_query_fails_after_missing_endpoint_retries(self):
+        class MissingEndpoint:
+            def __init__(self):
+                self.calls = 0
+
+            def query_history_k_data_plus(self, *args, **kwargs):
+                self.calls += 1
+                return FakeResult([["2025-12-31", "sh.000300", "4000"]])
+
+        sleeps = []
+        provider = MissingEndpoint()
+        with self.assertRaisesRegex(
+            free_stock_ytd.FreeStockSourceError, "endpoint is missing"
+        ) as context:
+            free_stock_ytd.benchmark_rows(
+                provider,
+                "2025-12-31",
+                "2026-07-14",
+                retries=2,
+                sleep=sleeps.append,
+            )
+        self.assertEqual(context.exception.code, "CSI300_ENDPOINT_MISSING")
+        self.assertEqual(provider.calls, 3)
+        self.assertEqual(sleeps, [0.5, 1.0])
+
     def test_sina_parsing_and_adjusted_return(self):
         history = (
             'var _bj920001=([{"day":"2025-12-31","close":"10"},'

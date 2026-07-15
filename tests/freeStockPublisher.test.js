@@ -218,11 +218,11 @@ async function run() {
           return {
             ok: true,
             status: 200,
-            async json() {
-              return {
+            async text() {
+              return JSON.stringify({
                 ok: true,
                 publish: { snapshotId: "stock-ytd-test" }
-              };
+              });
             }
           };
         }
@@ -239,6 +239,31 @@ async function run() {
     );
     assert.strictEqual(payload.snapshot.methodologyVersion, "adjusted-ytd.v2");
     assert.strictEqual(payload.tradingCalendar.version, "sse-trading-calendar.v1");
+
+    await assert.rejects(
+      () => publishSnapshot(
+        build,
+        "https://publish.example.test/api/stock-publish",
+        {
+          token: "publish-token",
+          timeoutMs: 123456,
+          fetchImpl: async (url, options) => {
+            assert.ok(options.signal);
+            return {
+              ok: false,
+              status: 503,
+              async text() {
+                return JSON.stringify({ ok: false, error: "STOCK_REFRESH_LOCKED" });
+              }
+            };
+          }
+        }
+      ),
+      (error) => error &&
+        error.code === "STOCK_PUBLISH_HTTP_ERROR" &&
+        error.status === 503 &&
+        error.responseError === "STOCK_REFRESH_LOCKED"
+    );
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

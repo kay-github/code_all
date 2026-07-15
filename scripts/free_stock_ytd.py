@@ -609,7 +609,7 @@ def benchmark_rows(
     retries: int = 2,
     sleep: Callable[[float], None] = time.sleep,
 ) -> list[dict[str, Any]]:
-    rows: list[list[str]] | None = None
+    by_date: dict[str, float | None] | None = None
     last_error: Exception | None = None
     for attempt in range(retries + 1):
         try:
@@ -622,20 +622,29 @@ def benchmark_rows(
                 adjustflag="3",
             )
             rows = collect_baostock_rows(query)
+            candidate_by_date = {
+                normalize_date(row[0]): parse_number(row[2])
+                for row in rows
+                if len(row) >= 3
+            }
+            if not candidate_by_date.get(base_date) or not candidate_by_date.get(as_of):
+                raise FreeStockSourceError(
+                    "CSI300_ENDPOINT_MISSING",
+                    "Baostock CSI300 endpoint is missing",
+                    source="baostock",
+                )
+            by_date = candidate_by_date
             break
         except Exception as error:
             last_error = error
             if attempt < retries:
                 sleep(0.5 * (attempt + 1))
-    if rows is None:
+    if by_date is None:
+        if isinstance(last_error, FreeStockSourceError) and last_error.code == "CSI300_ENDPOINT_MISSING":
+            raise last_error
         raise FreeStockSourceError(
             "BAOSTOCK_QUERY_FAILED", "Baostock CSI300 query failed", source="baostock"
         ) from last_error
-    by_date = {normalize_date(row[0]): parse_number(row[2]) for row in rows if len(row) >= 3}
-    if not by_date.get(base_date) or not by_date.get(as_of):
-        raise FreeStockSourceError(
-            "CSI300_ENDPOINT_MISSING", "Baostock CSI300 endpoint is missing", source="baostock"
-        )
     return [
         {"ts_code": "000300.SH", "trade_date": base_date, "close": by_date[base_date]},
         {"ts_code": "000300.SH", "trade_date": as_of, "close": by_date[as_of]},
