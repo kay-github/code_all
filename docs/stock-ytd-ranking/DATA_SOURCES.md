@@ -269,7 +269,9 @@ Raw、Candidate 和 Published 三层数据不能混用。
 
 `lib/stockSnapshotBlobStore.js` 使用私有 Vercel Blob 保存生产数据：先以确定性名称写入不可变快照，再通过 ETag `ifMatch` 条件写切换 `current.json`。首个 current 使用禁止覆盖写入，避免两个发布者同时初始化；读取路径始终绕过 CDN 缓存。
 
-`refresh.lock` 使用禁止覆盖获取租约，内容包含随机 owner token、创建时间和心跳时间。持有者通过 ETag 条件写续租，并只在 owner token 仍匹配时条件删除；超过失效阈值的租约通过 ETag 条件删除后竞争重建。`/api/stock-snapshot` 只返回 current envelope，不返回私有 Blob URL、存储凭据或重定向；大响应对支持 gzip 的调用方使用确定性压缩，并基于实际响应字节生成 ETag。`/api/stock-publish` 只接受 gzip 候选快照，校验 GitHub Actions OIDC 或人工 `CRON_SECRET`，并只返回白名单批次摘要。
+`current.json` 条件写冲突时必须重新读取最新 envelope，确认快照日期不倒退后用新 ETag 重试；如果完整不可变快照已经写入但 current 尚未切换，可以由 GitHub Actions OIDC 或人工 `CRON_SECRET` 通过 `/api/stock-publish?recoverAsOf=YYYY-MM-DD` 提升该日期最新且重新通过生产校验的快照。恢复只复用 current 中仍覆盖目标日期的交易日历，不暴露 Blob URL，也不得跨日期选择候选。
+
+`refresh.lock` 使用禁止覆盖获取租约，内容包含随机 owner token、创建时间和心跳时间。持有者通过 ETag 条件写续租，并只在 owner token 仍匹配时条件删除；超过失效阈值的租约通过 ETag 条件删除后竞争重建。`/api/stock-snapshot` 只返回 current envelope，不返回私有 Blob URL、存储凭据或重定向；大响应对支持 gzip 的调用方使用确定性压缩，并基于实际响应字节生成 ETag。`/api/stock-publish` 的正常发布只接受 gzip 候选快照，按日期恢复只接受无正文的显式恢复参数；两者都校验 GitHub Actions OIDC 或人工 `CRON_SECRET`，并只返回白名单批次摘要。
 
 ## 10. 当前代码
 

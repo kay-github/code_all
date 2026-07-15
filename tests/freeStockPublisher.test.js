@@ -6,8 +6,11 @@ const zlib = require("zlib");
 const {
   buildCandidateFromDataset,
   loadReferenceRecords,
+  parseArguments,
   publishSnapshot,
   readDataset,
+  recoverSnapshot,
+  recoverySummary,
   requestGithubOidcToken
 } = require("../scripts/publish-free-stock-ytd");
 
@@ -83,6 +86,25 @@ function dataset(overrides = {}) {
 async function run() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "free-stock-publisher-"));
   try {
+    const recoveryArgs = parseArguments([
+      `--recover-as-of=${AS_OF}`,
+      "--publish-url=https://publish.example.test/api/stock-publish"
+    ]);
+    assert.strictEqual(recoveryArgs.input, null);
+    assert.strictEqual(recoveryArgs.recoverAsOf, AS_OF);
+    assert.throws(
+      () => parseArguments(["--recover-as-of=2026-02-30", "--publish-url=https://example.test"]),
+      /must be YYYY-MM-DD/
+    );
+    assert.throws(
+      () => parseArguments([
+        `--recover-as-of=${AS_OF}`,
+        "--dry-run",
+        "--publish-url="
+      ]),
+      /--publish-url is required/
+    );
+
     const filename = path.join(directory, "dataset.json");
     fs.writeFileSync(filename, JSON.stringify(dataset()));
     assert.strictEqual(readDataset(filename).computedRecords.length, 3);
@@ -239,6 +261,112 @@ async function run() {
     );
     assert.strictEqual(payload.snapshot.methodologyVersion, "adjusted-ytd.v2");
     assert.strictEqual(payload.tradingCalendar.version, "sse-trading-calendar.v1");
+
+    let recoveryRequest;
+    const recovered = await recoverSnapshot(
+      AS_OF,
+      "https://publish.example.test/api/stock-publish?existing=1",
+      {
+        token: "publish-token",
+        fetchImpl: async (url, options) => {
+          recoveryRequest = { url: String(url), options };
+          return {
+            ok: true,
+            status: 200,
+            async text() {
+              return JSON.stringify({
+                ok: true,
+                publish: {
+                  snapshotId: "stock-ytd-recovered",
+                  asOf: AS_OF,
+                  expectedAsOf: AS_OF,
+                  sourceMode: "computed-fallback",
+                  coverageRatio: 1,
+                  computedSources: ["baostock", "sina"],
+                  authorization: "github-oidc",
+                  privateBlobUrl: "must-not-be-logged"
+                }
+              });
+            }
+          };
+        }
+      }
+    );
+    const recoveryUrl = new URL(recoveryRequest.url);
+    assert.strictEqual(recoveryUrl.searchParams.get("existing"), "1");
+    assert.strictEqual(recoveryUrl.searchParams.get("recoverAsOf"), AS_OF);
+    assert.strictEqual(recoveryRequest.options.method, "POST");
+    assert.strictEqual(recoveryRequest.options.body, undefined);
+    assert.strictEqual(recoveryRequest.options.headers["Content-Type"], undefined);
+    const safeRecovery = recoverySummary(recovered.result.publish);
+    assert.strictEqual(safeRecovery.snapshotId, "stock-ytd-recovered");
+    assert.ok(!Object.prototype.hasOwnProperty.call(safeRecovery, "privateBlobUrl"));
+
+    const recoveryFetches = [];
+    await recoverSnapshot(
+      AS_OF,
+      "https://publish.example.test/api/stock-publish",
+      {
+        requestUrl: "https://oidc.example.test/token",
+        requestToken: "request-secret",
+        fetchImpl: async (url, options) => {
+          recoveryFetches.push({ url: String(url), options });
+          if (String(url).startsWith("https://oidc.example.test/")) {
+            return {
+              ok: true,
+              async json() {
+                return { value: "oidc-recovery-token" };
+              }
+            };
+          }
+          assert.strictEqual(
+            options.headers.Authorization,
+            "Bearer oidc-recovery-token"
+          );
+          return {
+            ok: true,
+            status: 200,
+            async text() {
+              return JSON.stringify({
+                ok: true,
+                publish: { snapshotId: "stock-ytd-oidc-recovered" }
+              });
+            }
+          };
+        }
+      }
+    );
+    assert.strictEqual(recoveryFetches.length, 2);
+
+    const originalCronSecret = process.env.CRON_SECRET;
+    process.env.CRON_SECRET = "manual-recovery-token";
+    try {
+      await recoverSnapshot(
+        AS_OF,
+        "https://publish.example.test/api/stock-publish",
+        {
+          fetchImpl: async (url, options) => {
+            assert.strictEqual(
+              options.headers.Authorization,
+              "Bearer manual-recovery-token"
+            );
+            return {
+              ok: true,
+              status: 200,
+              async text() {
+                return JSON.stringify({
+                  ok: true,
+                  publish: { snapshotId: "stock-ytd-manual-recovered" }
+                });
+              }
+            };
+          }
+        }
+      );
+    } finally {
+      if (originalCronSecret == null) delete process.env.CRON_SECRET;
+      else process.env.CRON_SECRET = originalCronSecret;
+    }
 
     await assert.rejects(
       () => publishSnapshot(

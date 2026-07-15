@@ -7,6 +7,7 @@ const { fetchEastmoneyMarket } = require("../lib/stockSources");
 const { filterEastmoneyReferences, buildCandidate } = require("../lib/stockDailyWorker");
 const { createTradingCalendar } = require("../lib/stockTradingDates");
 const { GITHUB_OIDC_AUDIENCE } = require("../lib/stockPublishAuth");
+const { normalizeDate } = require("../lib/stockSnapshot");
 
 const DATASET_VERSION = "free-stock-ytd-dataset.v1";
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
@@ -22,7 +23,8 @@ function parseArguments(argv) {
     publishUrl: process.env.STOCK_PUBLISH_URL || null,
     dryRun: false,
     skipReference: false,
-    snapshotOutput: null
+    snapshotOutput: null,
+    recoverAsOf: null
   };
   for (const value of argv) {
     if (value === "--dry-run") args.dryRun = true;
@@ -30,10 +32,23 @@ function parseArguments(argv) {
     else if (value.startsWith("--input=")) args.input = value.slice(8);
     else if (value.startsWith("--publish-url=")) args.publishUrl = value.slice(14);
     else if (value.startsWith("--snapshot-output=")) args.snapshotOutput = value.slice(18);
+    else if (value.startsWith("--recover-as-of=")) {
+      const recoverAsOf = value.slice(16);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(recoverAsOf)) {
+        throw new TypeError("--recover-as-of must be YYYY-MM-DD");
+      }
+      try {
+        args.recoverAsOf = normalizeDate(recoverAsOf, "recover-as-of");
+      } catch {
+        throw new TypeError("--recover-as-of must be YYYY-MM-DD");
+      }
+    }
     else throw new TypeError(`unknown argument: ${value}`);
   }
-  if (!args.input) throw new TypeError("--input is required");
-  if (!args.dryRun && !args.publishUrl) throw new TypeError("--publish-url is required");
+  if (!args.recoverAsOf && !args.input) throw new TypeError("--input is required");
+  if ((args.recoverAsOf || !args.dryRun) && !args.publishUrl) {
+    throw new TypeError("--publish-url is required");
+  }
   return args;
 }
 
@@ -162,7 +177,7 @@ async function requestGithubOidcToken(options = {}) {
 }
 
 async function publishSnapshot(build, publishUrl, options = {}) {
-  const token = options.token || process.env.STOCK_PUBLISH_TOKEN ||
+  const token = options.token || process.env.STOCK_PUBLISH_TOKEN || process.env.CRON_SECRET ||
     await requestGithubOidcToken(options);
   if (!token) throw new Error("stock publish authorization is unavailable");
   const payload = {
@@ -213,6 +228,71 @@ async function publishSnapshot(build, publishUrl, options = {}) {
   return { result, compressedBytes: body.length };
 }
 
+async function recoverSnapshot(asOf, publishUrl, options = {}) {
+  const token = options.token || process.env.STOCK_PUBLISH_TOKEN || process.env.CRON_SECRET ||
+    await requestGithubOidcToken(options);
+  if (!token) throw new Error("stock publish authorization is unavailable");
+  const url = new URL(publishUrl);
+  url.searchParams.set("recoverAsOf", asOf);
+  const timeoutMs = Number(options.timeoutMs || process.env.STOCK_PUBLISH_TIMEOUT_MS || DEFAULT_PUBLISH_TIMEOUT_MS);
+  const response = await (options.fetchImpl || fetch)(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(
+      Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_PUBLISH_TIMEOUT_MS
+    )
+  });
+  const responseText = await response.text();
+  let result = null;
+  try {
+    result = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    result = null;
+  }
+  if (
+    !response.ok ||
+    !result ||
+    result.ok !== true ||
+    !result.publish ||
+    typeof result.publish !== "object"
+  ) {
+    const error = new Error(
+      result && result.error
+        ? `stock recovery failed with HTTP ${response.status}: ${result.error}`
+        : `stock recovery failed with HTTP ${response.status}`
+    );
+    error.code = "STOCK_PUBLISH_HTTP_ERROR";
+    error.status = response.status;
+    error.responseError = result && result.error ? String(result.error).slice(0, 120) : null;
+    throw error;
+  }
+  return { result };
+}
+
+function recoverySummary(publish) {
+  const text = (value, maxLength = 120) => typeof value === "string"
+    ? value.slice(0, maxLength)
+    : null;
+  return {
+    ok: true,
+    recovered: true,
+    snapshotId: text(publish && publish.snapshotId),
+    asOf: text(publish && publish.asOf, 10),
+    expectedAsOf: text(publish && publish.expectedAsOf, 10),
+    sourceMode: text(publish && publish.sourceMode, 40),
+    coverageRatio: publish && Number.isFinite(publish.coverageRatio)
+      ? publish.coverageRatio
+      : null,
+    computedSources: publish && Array.isArray(publish.computedSources)
+      ? publish.computedSources
+        .filter((source) => typeof source === "string")
+        .slice(0, 10)
+        .map((source) => source.slice(0, 40))
+      : [],
+    authorization: text(publish && publish.authorization, 40)
+  };
+}
+
 function summary(build, extra = {}) {
   const snapshot = build.candidate;
   return {
@@ -233,6 +313,11 @@ function summary(build, extra = {}) {
 
 async function main(argv = process.argv.slice(2)) {
   const args = parseArguments(argv);
+  if (args.recoverAsOf) {
+    const recovered = await recoverSnapshot(args.recoverAsOf, args.publishUrl);
+    console.log(JSON.stringify(recoverySummary(recovered.result.publish)));
+    return;
+  }
   const dataset = readDataset(args.input);
   const build = await buildCandidateFromDataset(dataset, {
     skipReference: args.skipReference
@@ -276,6 +361,8 @@ module.exports = {
   buildCandidateFromDataset,
   requestGithubOidcToken,
   publishSnapshot,
+  recoverSnapshot,
+  recoverySummary,
   DEFAULT_PUBLISH_TIMEOUT_MS,
   summary,
   main

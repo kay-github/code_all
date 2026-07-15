@@ -94,6 +94,7 @@ async function invoke(handler, options = {}) {
       "content-type": options.contentType || "application/gzip",
       ...(options.headers || {})
     },
+    query: options.query || {},
     body: options.body == null ? gzipPayload() : options.body
   };
   const res = {
@@ -117,6 +118,7 @@ async function invoke(handler, options = {}) {
 
 async function run() {
   const published = [];
+  const promoted = [];
   const storage = {
     async withRefreshLock(worker) {
       return worker();
@@ -127,6 +129,14 @@ async function run() {
         snapshotId: "stock-ytd-20260714-test",
         expectedAsOf: options.expectedAsOf,
         snapshot
+      };
+    },
+    async promoteLatestSnapshot(asOf, options) {
+      promoted.push({ asOf, options });
+      return {
+        snapshotId: "stock-ytd-20260714-recovered",
+        expectedAsOf: asOf,
+        snapshot: candidate()
       };
     }
   };
@@ -145,7 +155,37 @@ async function run() {
   assert.ok(!JSON.stringify(response.data).includes("baseAdjustedClose"));
   assert.ok(!JSON.stringify(response.data).includes("publish-secret"));
 
-  response = await invoke(handler, { authorization: "Bearer wrong" });
+  response = await invoke(handler, {
+    query: { recoverAsOf: AS_OF },
+    contentType: "application/json",
+    body: Buffer.from("recovery requests do not need a body")
+  });
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.data.publish.snapshotId, "stock-ytd-20260714-recovered");
+  assert.strictEqual(response.data.publish.authorization, "manual");
+  assert.strictEqual(promoted.length, 1);
+  assert.strictEqual(promoted[0].asOf, AS_OF);
+  assert.ok(Number.isFinite(Date.parse(promoted[0].options.refreshedAt)));
+  assert.strictEqual(published.length, 1);
+
+  response = await invoke(handler, {
+    query: { recoverAsOf: "2026-02-30" },
+    contentType: "application/json"
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_RECOVERY_DATE_INVALID");
+
+  response = await invoke(handler, {
+    query: { recoverAsOf: [AS_OF, "2026-07-13"] },
+    contentType: "application/json"
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_RECOVERY_DATE_INVALID");
+
+  response = await invoke(handler, {
+    authorization: "Bearer wrong",
+    query: { recoverAsOf: "invalid-private-value" }
+  });
   assert.strictEqual(response.status, 401);
   assert.strictEqual(response.data.error, "UNAUTHORIZED");
 
@@ -200,6 +240,28 @@ async function run() {
   assert.strictEqual(response.status, 409);
   assert.strictEqual(response.data.error, "STOCK_REFRESH_LOCKED");
   assert.ok(!JSON.stringify(response.data).includes("private lock detail"));
+
+  handler = stockPublishApi.createHandler({
+    env: { CRON_SECRET: "publish-secret" },
+    storage: {
+      async withRefreshLock(worker) {
+        return worker();
+      },
+      async promoteLatestSnapshot() {
+        const error = new Error("private orphan inventory detail");
+        error.code = "STOCK_SNAPSHOT_ORPHAN_NOT_FOUND";
+        throw error;
+      }
+    },
+    logger: { error() {} }
+  });
+  response = await invoke(handler, {
+    query: { recoverAsOf: AS_OF },
+    contentType: "application/json"
+  });
+  assert.strictEqual(response.status, 503);
+  assert.strictEqual(response.data.error, "STOCK_PUBLISH_FAILED");
+  assert.ok(!JSON.stringify(response.data).includes("private orphan inventory detail"));
 
   console.log("stock publish API tests passed");
 }

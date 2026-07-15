@@ -1,6 +1,7 @@
 const assert = require("assert");
 const { createFixtureSnapshot } = require("../lib/stockFixture");
 const { createTradingCalendar } = require("../lib/stockTradingDates");
+const { preparePublishedEnvelope } = require("../lib/stockSnapshotStore");
 const {
   createStockSnapshotBlobStore
 } = require("../lib/stockSnapshotBlobStore");
@@ -15,13 +16,22 @@ function preconditionError() {
 function memoryBlobClient() {
   const objects = new Map();
   let sequence = 0;
+  let currentWriteConflicts = 0;
   return {
     objects,
+    conflictCurrentWriteOnce() {
+      currentWriteConflicts += 1;
+    },
     isPreconditionFailure(error) {
       return error && error.code === "BLOB_PRECONDITION_FAILED";
     },
     async put(pathname, body, options = {}) {
       const existing = objects.get(pathname);
+      if (pathname.endsWith("/current.json") && currentWriteConflicts > 0) {
+        currentWriteConflicts -= 1;
+        if (existing) existing.etag = `etag-${++sequence}`;
+        throw preconditionError();
+      }
       if (existing && options.allowOverwrite !== true) throw preconditionError();
       if (options.ifMatch && (!existing || existing.etag !== options.ifMatch)) {
         throw preconditionError();
@@ -56,6 +66,28 @@ function memoryBlobClient() {
           contentType: "application/json",
           size: Buffer.byteLength(object.body)
         }
+      };
+    },
+    async list(options = {}) {
+      const prefix = String(options.prefix || "");
+      const offset = Number(options.cursor || 0);
+      const limit = Number(options.limit || 1000);
+      const matches = [...objects.entries()]
+        .filter(([pathname]) => pathname.startsWith(prefix))
+        .sort(([left], [right]) => left.localeCompare(right));
+      const page = matches.slice(offset, offset + limit);
+      const nextOffset = offset + page.length;
+      return {
+        blobs: page.map(([pathname, object]) => ({
+          pathname,
+          etag: object.etag,
+          uploadedAt: object.uploadedAt,
+          size: Buffer.byteLength(object.body),
+          url: `https://blob.invalid/${pathname}`,
+          downloadUrl: `https://blob.invalid/download/${pathname}`
+        })),
+        cursor: nextOffset < matches.length ? String(nextOffset) : undefined,
+        hasMore: nextOffset < matches.length
       };
     },
     async del(pathname, options = {}) {
@@ -114,6 +146,36 @@ async function run() {
   assert.ok(current.etag);
   assert.deepStrictEqual(JSON.parse(current.body), current.envelope);
 
+  const orphanSnapshot = {
+    ...productionSnapshot(),
+    publishedAt: "2026-07-10T11:30:00.000Z"
+  };
+  const orphanPrepared = preparePublishedEnvelope(orphanSnapshot, {
+    expectedAsOf: "2026-07-10",
+    refreshedAt: "2026-07-10T11:31:00.000Z",
+    tradingCalendar: tradingCalendar()
+  });
+  const orphanPath = `stock-ytd/snapshots/${orphanPrepared.snapshotId}.json`;
+  await client.put(
+    orphanPath,
+    JSON.stringify(orphanPrepared.publishedSnapshot),
+    { allowOverwrite: false }
+  );
+  client.objects.get(immutablePath).uploadedAt = new Date("2026-07-10T11:00:00.000Z");
+  client.objects.get(orphanPath).uploadedAt = new Date("2026-07-10T11:30:00.000Z");
+
+  const promoted = await store.promoteLatestSnapshot("2026-07-10", {
+    refreshedAt: "2026-07-10T11:32:00.000Z"
+  });
+  assert.strictEqual(promoted.snapshotId, orphanPrepared.snapshotId);
+  assert.strictEqual(promoted.refreshedAt, "2026-07-10T11:32:00.000Z");
+  assert.deepStrictEqual(promoted.tradingCalendar, tradingCalendar());
+  assert.ok(!JSON.stringify(promoted).includes("blob.invalid"));
+  assert.strictEqual(
+    (await store.loadCurrentEnvelope()).snapshotId,
+    orphanPrepared.snapshotId
+  );
+
   const originalImmutable = client.objects.get(immutablePath);
   client.objects.set(immutablePath, {
     ...originalImmutable,
@@ -128,6 +190,7 @@ async function run() {
   );
   client.objects.set(immutablePath, originalImmutable);
 
+  client.conflictCurrentWriteOnce();
   const marked = await store.markServingPrevious("2026-07-11", [
     "NETWORK_ERROR",
     "NETWORK_ERROR",
@@ -135,6 +198,10 @@ async function run() {
   ]);
   assert.strictEqual(marked.refreshStatus, "SERVING_PREVIOUS");
   assert.deepStrictEqual(marked.errorCodes, ["NETWORK_ERROR"]);
+  assert.strictEqual(
+    (await store.loadCurrentEnvelope()).refreshStatus,
+    "SERVING_PREVIOUS"
+  );
   await assert.rejects(
     store.markServingPrevious("2026-07-10", ["REGRESSION"]),
     (error) => error.code === "STOCK_SNAPSHOT_EXPECTED_DATE_REGRESSION"

@@ -6,6 +6,7 @@ const { validatePublishedSnapshot } = require("../lib/stockPublishedSnapshot");
 const { assertBenchmarkPublishable } = require("../lib/stockBenchmark");
 const { validateTradingCalendar } = require("../lib/stockTradingDates");
 const { authorizeStockPublish } = require("../lib/stockPublishAuth");
+const { normalizeDate } = require("../lib/stockSnapshot");
 
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
 const MAX_JSON_BYTES = 30 * 1024 * 1024;
@@ -22,6 +23,36 @@ function requestHeader(req, name) {
   if (!headers) return null;
   const value = headers[name.toLowerCase()] || headers[name];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function parseRecoveryAsOf(req) {
+  let values = null;
+  if (req && req.query && Object.prototype.hasOwnProperty.call(req.query, "recoverAsOf")) {
+    const value = req.query.recoverAsOf;
+    values = Array.isArray(value) ? value : [value];
+  } else if (req && req.url) {
+    try {
+      values = new URL(req.url, "https://stock-publish.local")
+        .searchParams
+        .getAll("recoverAsOf");
+    } catch {
+      values = null;
+    }
+  }
+  if (!values || values.length === 0) return null;
+  const value = values.length === 1 ? values[0] : null;
+  try {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      throw new TypeError("recoverAsOf must be YYYY-MM-DD");
+    }
+    const normalized = normalizeDate(value, "recoverAsOf");
+    if (normalized !== value) throw new TypeError("recoverAsOf must be YYYY-MM-DD");
+    return normalized;
+  } catch {
+    const error = new Error("recovery date is invalid");
+    error.code = "PUBLISH_RECOVERY_DATE_INVALID";
+    throw error;
+  }
 }
 
 async function readRawBody(req) {
@@ -148,17 +179,29 @@ function createHandler(options = {}) {
       return;
     }
     try {
-      const payload = validatePublishPayload(await parsePublishPayload(req));
-      const storage = options.storage || createStockSnapshotBlobStore({ env });
-      const envelope = await storage.withRefreshLock(
-        () => storage.publishSnapshot(payload.snapshot, {
-          expectedAsOf: payload.snapshot.asOf,
-          refreshedAt: payload.refreshedAt,
-          warningCodes: payload.warningCodes,
-          tradingCalendar: payload.tradingCalendar
-        }),
-        { staleAfterMs: env.STOCK_REFRESH_LOCK_STALE_MS }
-      );
+      const recoverAsOf = parseRecoveryAsOf(req);
+      let envelope;
+      if (recoverAsOf) {
+        const storage = options.storage || createStockSnapshotBlobStore({ env });
+        envelope = await storage.withRefreshLock(
+          () => storage.promoteLatestSnapshot(recoverAsOf, {
+            refreshedAt: new Date().toISOString()
+          }),
+          { staleAfterMs: env.STOCK_REFRESH_LOCK_STALE_MS }
+        );
+      } else {
+        const payload = validatePublishPayload(await parsePublishPayload(req));
+        const storage = options.storage || createStockSnapshotBlobStore({ env });
+        envelope = await storage.withRefreshLock(
+          () => storage.publishSnapshot(payload.snapshot, {
+            expectedAsOf: payload.snapshot.asOf,
+            refreshedAt: payload.refreshedAt,
+            warningCodes: payload.warningCodes,
+            tradingCalendar: payload.tradingCalendar
+          }),
+          { staleAfterMs: env.STOCK_REFRESH_LOCK_STALE_MS }
+        );
+      }
       sendJson(res, 200, { ok: true, publish: publicSummary(envelope, auth) });
     } catch (error) {
       const code = error && error.code ? String(error.code).slice(0, 80) : "UNKNOWN_ERROR";
@@ -182,6 +225,7 @@ module.exports = createHandler();
 module.exports.createHandler = createHandler;
 module.exports.readRawBody = readRawBody;
 module.exports.parsePublishPayload = parsePublishPayload;
+module.exports.parseRecoveryAsOf = parseRecoveryAsOf;
 module.exports.validatePublishPayload = validatePublishPayload;
 module.exports.publicSummary = publicSummary;
 module.exports.MAX_COMPRESSED_BYTES = MAX_COMPRESSED_BYTES;
