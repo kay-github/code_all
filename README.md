@@ -148,8 +148,9 @@ npm run test:e2e
 
 ### 校对方案
 
-- 线上默认使用 `lib/modelProofreader.js` 调用讯飞 MaaS OpenAI 兼容接口，适合处理 `反映物业不足为，要求物业旅行指责` 这类语义级错词。
-- `lib/proofreader.js` 保留轻量中文错词规则，大模型未配置或调用失败时自动兜底。
+- 线上默认使用 `lib/modelProofreader.js` 调用大模型 OpenAI 兼容接口，适合处理 `反映物业不足为，要求物业旅行指责` 这类语义级错词。
+- 支持多个免费模型提供商按顺序故障转移（讯飞 → 智谱 → 硅基流动 → 阿里云百炼）：某家返回 401/403/429（额度超限）或超时、宕机时自动切换到下一家，并短暂冷却失败的提供商（429/鉴权错误默认冷却 10 分钟，其余 1 分钟）。
+- `lib/proofreader.js` 保留轻量中文错词规则，大模型全部未配置或全部失败时自动兜底。
 - 密钥只配置在 Vercel 环境变量中，不写入前端或仓库。
 - 本地如需开源模型增强，可运行 `server.py`，使用 `pycorrector` 加载 `shibing624/macbert4csc-base-chinese`。
 - 后续若接入云端模型或自托管模型，只需替换 `/api/proofread` 的后端实现，前端接口无需变化。
@@ -167,12 +168,22 @@ npm run test:e2e
 
 推送到 GitHub 后，Vercel 会自动部署静态页面和 `/api/*` Serverless Functions。
 
-需要配置的生产环境变量：
+需要配置的生产环境变量（每家提供商只需配置 APIKey 即可启用，其余均有默认值）：
 
 - `XFYUN_API_KEY`：讯飞 MaaS OpenAI 协议 APIKey，使用服务控制台提供的完整 key。
 - `XFYUN_OPENAI_BASE_URL`：默认 `https://maas-api.cn-huabei-1.xf-yun.com/v2`。
-- `XFYUN_MODEL`：服务卡片上的 `modelId`。
+- `XFYUN_MODEL`：服务卡片上的 `modelId`，默认 `xopqwen36v35b`。
 - `XFYUN_LORA_ID`：服务卡片上的 `resourceId`，当前为 `0`。
+- `ZHIPU_API_KEY`：智谱 BigModel APIKey（bigmodel.cn）。
+- `ZHIPU_MODEL`：默认 `glm-4-flash-250414`（免费模型）。
+- `SILICONFLOW_API_KEY`：硅基流动 APIKey（siliconflow.cn）。
+- `SILICONFLOW_MODEL`：默认 `Qwen/Qwen2.5-7B-Instruct`（免费模型）。
+- `DASHSCOPE_API_KEY`：阿里云百炼 APIKey。
+- `DASHSCOPE_MODEL`：默认 `qwen-turbo`。
+- `TYPO_PROVIDER_ORDER`：可选，逗号分隔的提供商顺序（`xfyun,zhipu,siliconflow,dashscope`），默认按此顺序。
+- `TYPO_QUOTA_COOLDOWN_MS` / `TYPO_FAILOVER_COOLDOWN_MS`：可选，额度超限/一般失败后的冷却毫秒数。
+
+健康检查 `/api/health` 会返回每个提供商的配置与冷却状态，便于排查。
 
 线上访问：
 

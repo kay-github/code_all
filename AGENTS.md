@@ -12,8 +12,8 @@
 ## Current Correction Pipeline
 
 - 前端始终请求同源接口 `/api/proofread`，不要在前端直连模型服务。
-- `api/proofread.js` 优先调用讯飞 MaaS OpenAI 兼容 Qwen 模型。
-- `lib/modelProofreader.js` 封装模型调用、prompt 和响应清洗。
+- `api/proofread.js` 优先调用大模型（OpenAI 兼容接口），`lib/modelProofreader.js` 内置多提供商顺序故障转移：讯飞 → 智谱 → 硅基流动 → 阿里云百炼，某家 401/403/429/超时/宕机时自动切换并短暂冷却。
+- `lib/modelProofreader.js` 封装提供商注册表、模型调用、prompt 和响应清洗。
 - `lib/proofreader.js` 保留内置中文错词规则，作为模型不可用时的兜底。
 - 模型返回修正文后，后端用 diff 生成 `corrections`，前端据此把原文错误字/标点标红。
 - 典型验证句：`反映物业不足为，要求物业旅行指责` 应修正为 `反映物业不作为，要求物业履行职责`。
@@ -21,11 +21,12 @@
 ## Environment And Secrets
 
 - 不要把 API Key、APISecret、APPID、token、cookie 或任何私密配置写入仓库。
-- 讯飞模型配置只放在 Vercel 环境变量中：
-  - `XFYUN_API_KEY`
-  - `XFYUN_OPENAI_BASE_URL`
-  - `XFYUN_MODEL`
-  - `XFYUN_LORA_ID`
+- 模型提供商配置只放在 Vercel 环境变量中：
+  - 讯飞：`XFYUN_API_KEY`、`XFYUN_OPENAI_BASE_URL`、`XFYUN_MODEL`、`XFYUN_LORA_ID`
+  - 智谱：`ZHIPU_API_KEY`、`ZHIPU_MODEL`（默认 `glm-4-flash-250414`）
+  - 硅基流动：`SILICONFLOW_API_KEY`、`SILICONFLOW_MODEL`
+  - 阿里云百炼：`DASHSCOPE_API_KEY`、`DASHSCOPE_MODEL`
+  - 顺序与冷却：`TYPO_PROVIDER_ORDER`、`TYPO_QUOTA_COOLDOWN_MS`、`TYPO_FAILOVER_COOLDOWN_MS`
 - `.vercel/`、`.env*`、`.venv/` 等本地文件不要提交。
 - 如果密钥在聊天、日志或截图中暴露，应提醒用户去平台控制台轮换密钥。
 
