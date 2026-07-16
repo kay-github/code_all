@@ -2,7 +2,7 @@
 // 鉴权：MONITOR_SECRET，通过 x-monitor-secret 头或 Authorization: Bearer 传入。
 // 状态：持久化到 Vercel Blob typo-monitor/state.json（连续失败防抖 + 上次告警级别）。
 
-const { put, list } = require("@vercel/blob");
+const blob = require("@vercel/blob");
 const { runMonitorCycle } = require("../lib/proofreadMonitor");
 
 const STATE_PREFIX = "typo-monitor";
@@ -24,26 +24,35 @@ function extractSecret(req) {
   return match ? match[1] : "";
 }
 
+async function streamToString(stream) {
+  if (!stream) {
+    return "";
+  }
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+// 私有 Blob 只能通过 SDK get 读取（不能用公开 URL fetch）。
 async function readState(token) {
   try {
-    const { blobs } = await list({ prefix: STATE_PATH, token, limit: 1 });
-    const found = blobs.find((item) => item.pathname === STATE_PATH);
-    if (!found) {
+    const result = await blob.get(STATE_PATH, { access: "private", useCache: false, token });
+    if (!result || result.statusCode !== 200 || !result.stream) {
       return null;
     }
-    const response = await fetch(`${found.url}?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) {
-      return null;
-    }
-    return await response.json();
+    const body = await streamToString(result.stream);
+    return body ? JSON.parse(body) : null;
   } catch {
+    // 首次运行状态文件不存在，视为无历史。
     return null;
   }
 }
 
 async function writeState(state, token) {
-  await put(STATE_PATH, JSON.stringify(state), {
-    access: "public",
+  await blob.put(STATE_PATH, JSON.stringify(state), {
+    access: "private",
     contentType: "application/json; charset=utf-8",
     token,
     addRandomSuffix: false,
