@@ -1,0 +1,34 @@
+name: Typo proofreader monitor
+
+on:
+  schedule:
+    # 每 2 小时探活一次（放宽频率，配合连续 2 轮确认防抖）。
+    - cron: "17 */2 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: typo-proofreader-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger monitor endpoint
+        shell: bash
+        env:
+          MONITOR_URL: https://1.688680.xyz/api/proofread-monitor
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+        run: |
+          if [[ -z "$MONITOR_SECRET" ]]; then
+            echo "MONITOR_SECRET secret is not configured" >&2
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/monitor.json -w "%{http_code}" \
+            -X POST "$MONITOR_URL" \
+            -H "x-monitor-secret: $MONITOR_SECRET")
+          echo "HTTP $code"
+          cat /tmp/monitor.json
+          echo
+          [[ "$code" == "200" ]]
