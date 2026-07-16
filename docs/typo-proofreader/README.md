@@ -72,8 +72,9 @@
 - **推送规则**：只在**级别变化**时推一次（避免刷屏）。北京时间 `23:00–08:00`（`MONITOR_QUIET_START/END`）静默，只放行 `critical`，`warning`/恢复延到静默结束后第一次探测补发（未成功推送则 `lastNotifiedLevel` 不推进，保证补发）。
 - **状态**：持久化到私有 Vercel Blob `typo-monitor/state.json`（`lastNotifiedLevel` + 每家 `failStreak`），跨实例共享，不受 serverless 内存不共享影响。
 - **卡片**：PushPlus `template:html`，微信 webview 渲染状态徽章 + 提供商表格（状态圆点/耗时/错误）+ 北京时间 + 健康链接。
-- **环境变量**：`PUSHPLUS_TOKEN`（个人 token）、`MONITOR_SECRET`（端点鉴权，同时配 Vercel 生产 + GitHub Actions Secret）；`BLOB_READ_WRITE_TOKEN` 复用现有。
+- **环境变量**：`PUSHPLUS_TOKEN`（个人 token）、`MONITOR_SECRET`（端点鉴权，Vercel 生产 + GitHub Actions Secret 均已于 2026-07-16 配置完成）；`BLOB_READ_WRITE_TOKEN` 复用现有。
 - **手动验证**：`curl -x http://127.0.0.1:7897 -X POST https://1.688680.xyz/api/proofread-monitor -H "x-monitor-secret: <SECRET>"`，看返回 `level/notified/providers[].latencyMs/failStreak`。发卡样例见 `lib/pushplus.js` 的 `buildAlertHtml`。
+- **定时验收**：cron 为 `17 */2 * * *`（UTC 偶数小时 17 分，北京时间 00:17/02:17/…/16:17/…，GitHub 调度可能延迟约 15-30 分钟）。到 Actions 页看「Typo proofreader monitor」最近一次 run 为 success、日志里 HTTP 200 即为链路全通；也可在 Actions 页手动 Run workflow 立即验证。
 
 ## 经验教训
 
