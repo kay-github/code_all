@@ -69,6 +69,7 @@
 ## Planned Stock YTD Ranking Tool
 
 - 股票 YTD 与市场排名工具的产品、统计口径、UI 和验收基线位于 docs/stock-ytd-ranking/PRD.md。
-- 多源数据职责、复权规则、质量闸门和容灾基线位于 docs/stock-ytd-ranking/DATA_SOURCES.md。
+- 多源数据职责、复权规则、质量闸门和容灾基线位于 docs/stock-ytd-ranking/DATA_SOURCES.md；历次数据管线重构的经验教训见 docs/stock-ytd-ranking/LESSONS.md。
+- 2026-07-16 起主数据源为东财 f25 直取（reported-ytd.v1，`lib/stockEmYtd.js` + `scripts/refresh-stock-ytd-em.js`），Baostock/新浪自算管线保留为回退路径。
 - 开始设计或开发 /tools/stock-ytd-ranking/ 前必须完整阅读以上两份文档。
 - 如需改变 YTD 公式、比较股票池、北交所规则、排名分母、沪深300口径或 UI 颜色语义，应先更新 PRD 的决策与变更记录，不要只修改代码。
