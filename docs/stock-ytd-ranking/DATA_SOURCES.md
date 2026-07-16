@@ -297,6 +297,11 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | api/stock-snapshot.js | 私有 Blob Published envelope 网关，返回 ETag 且禁止缓存和重定向 |
 | api/stock-publish.js | OIDC/CRON_SECRET 保护的 gzip 快照校验与 Blob 原子发布入口 |
 | tools/stock-ytd-ranking/index.html | 移动优先股票搜索与结果页面 |
+| lib/stockEmYtd.js | 东财 f25 全市场直取、腾讯哨兵闸门、盘中结算闸门与 reported 快照构建 |
+| scripts/refresh-stock-ytd-em.js | reported 管线命令行入口：读取网关日历、构建快照、OIDC 发布与 no-op 幂等 |
+| lib/stockIntervalStats.js | 区间涨跌分布：快照紧凑映射提取、YTD 比值合成、阈值分桶与样本资格（见 INTERVAL_STATS.md） |
+| api/stock-interval-stats.js | 区间涨跌分布查询接口：分布统计、名单钻取、可用基准日列表 |
+| tools/stock-interval-stats/index.html | 区间涨跌分布移动优先页面 |
 | scripts/check-stock-sources.js | 在线哨兵与全市场抓取检查 |
 | scripts/refresh-stock-ytd.js | 日终 Worker 命令行入口，支持本地目录和同日强制重跑 |
 | scripts/run-stock-ytd-first-batch.js | 首次真实数据严格验收、shadow 发布与脱敏质量报告 |
@@ -329,6 +334,10 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tests/stockPublishAuth.test.js | GitHub OIDC 签名、claims、工作流身份和人工密钥鉴权测试 |
 | tests/apiStockPublish.test.js | gzip 限制、OIDC/人工鉴权、发布校验和响应脱敏测试 |
 | tests/freeStockPublisher.test.js | 免费源数据集、东财参考降级、OIDC 申请、压缩和发布请求测试 |
+| tests/stockEmYtd.test.js | reported 管线：f25 记录、哨兵闸门、结算闸门和基准构建测试 |
+| tests/stockIntervalStats.test.js | 区间合成恒等式、分红仿射误差方向、样本资格、阈值边界和跨年守卫测试 |
+| tests/apiStockIntervalStats.test.js | 区间分布接口契约、参数校验、名单分页、可用日期和脱敏测试 |
+| tests/stockIntervalPage.test.js | 区间分布页面入口、控件和接口引用基线测试 |
 
 测试：
 
@@ -353,6 +362,10 @@ Raw、Candidate 和 Published 三层数据不能混用。
     node tests/apiStockRefresh.test.js
     node tests/apiStockHealth.test.js
     node tests/stockFirstBatch.test.js
+    node tests/stockEmYtd.test.js
+    node tests/stockIntervalStats.test.js
+    node tests/apiStockIntervalStats.test.js
+    node tests/stockIntervalPage.test.js
     npm run test:stock-free
     npm run test:stock-python
 

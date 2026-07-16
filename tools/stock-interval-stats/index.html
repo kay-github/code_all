@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>A股区间涨跌分布</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --text: #182230;
+      --text-soft: #526071;
+      --muted: #667085;
+      --line: #dde3ea;
+      --line-soft: #ebeef2;
+      --blue: #2457d6;
+      --blue-pressed: #1d46b8;
+      --blue-soft: #eef3ff;
+      --track: #e8edf5;
+      --up: #d92d20;
+      --up-soft: #fff1f0;
+      --down: #087a55;
+      --down-soft: #eaf8f2;
+      --warning: #b54708;
+      --warning-soft: #fff7e8;
+      --error: #c5221f;
+      --error-soft: #fff0f0;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(36, 87, 214, 0.07), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+
+    body { overflow-x: hidden; }
+    button, input, select { font: inherit; }
+    button, a, label { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+
+    .page {
+      width: min(100%, 720px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(64px + env(safe-area-inset-bottom));
+    }
+
+    .topbar { min-height: 44px; display: flex; align-items: center; }
+
+    .back-link {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .back-link:hover { color: var(--blue); }
+
+    .hero { padding: 14px 2px 20px; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 { margin: 0; font-size: 26px; line-height: 34px; font-weight: 700; }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 10px 0 0;
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 24px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .field-label { color: var(--text-soft); font-size: 13px; font-weight: 600; }
+
+    select#baseDate {
+      min-height: 44px;
+      min-width: 170px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .bse-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      color: var(--text-soft);
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .bse-toggle input { width: 18px; height: 18px; accent-color: var(--blue); }
+
+    .bse-hint { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .tab {
+      flex: 1;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--text-soft);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tab[aria-selected="true"].tab-down {
+      background: var(--down-soft);
+      border-color: var(--down);
+      color: var(--down);
+    }
+
+    .tab[aria-selected="true"].tab-up {
+      background: var(--up-soft);
+      border-color: var(--up);
+      color: var(--up);
+    }
+
+    .meta-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin: 0 0 12px;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .meta-line strong { color: var(--text); font-weight: 700; }
+
+    .banner {
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin: 0 0 12px;
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .banner-warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+      border: 1px solid rgba(181, 71, 8, 0.25);
+    }
+
+    .banner-error {
+      background: var(--error-soft);
+      color: var(--error);
+      border: 1px solid rgba(197, 34, 31, 0.25);
+    }
+
+    .rows { display: flex; flex-direction: column; }
+
+    .row {
+      border: 0;
+      border-top: 1px solid var(--line-soft);
+      background: none;
+      width: 100%;
+      min-height: 52px;
+      display: grid;
+      grid-template-columns: 92px 1fr 84px;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 2px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .row:first-child { border-top: 0; }
+    .row:hover { background: var(--blue-soft); }
+
+    .row-threshold { font-weight: 700; font-size: 15px; }
+    .row-threshold.down { color: var(--down); }
+    .row-threshold.up { color: var(--up); }
+
+    .row-bar {
+      height: 10px;
+      border-radius: 5px;
+      background: var(--track);
+      overflow: hidden;
+    }
+
+    .row-bar-fill { height: 100%; border-radius: 5px; }
+    .row-bar-fill.down { background: var(--down); }
+    .row-bar-fill.up { background: var(--up); }
+
+    .row-count {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .row-count small {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 11px;
+    }
+
+    .list-panel {
+      border-top: 1px solid var(--line-soft);
+      padding: 10px 2px 4px;
+    }
+
+    .list-title {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .list-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    .list-table td {
+      padding: 8px 4px;
+      border-top: 1px solid var(--line-soft);
+      vertical-align: middle;
+    }
+
+    .list-table .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .list-table .num.down { color: var(--down); }
+    .list-table .num.up { color: var(--up); }
+
+    .stock-code { color: var(--muted); font-size: 12px; }
+
+    .suspend-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-size: 11px;
+    }
+
+    .load-more {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--blue);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .load-more:disabled { color: var(--muted); cursor: default; }
+
+    .status {
+      padding: 28px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footnote {
+      margin: 14px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .disclaimer {
+      margin: 8px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .row { grid-template-columns: 84px 1fr 76px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar" aria-label="返回工具站">
+      <a class="back-link" href="../../">
+        <span aria-hidden="true">←</span>
+        大杂烩工具站
+      </a>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">A股市场统计</p>
+      <h1>区间涨跌分布</h1>
+      <p class="subtitle">选一个基准日，看全市场自该日以来跌超或涨超某个幅度的股票各有多少只。每个交易日晚间更新。</p>
+    </header>
+
+    <section class="panel" aria-label="统计条件">
+      <div class="controls">
+        <div class="field">
+          <label class="field-label" for="baseDate">基准日（自该日收盘起算）</label>
+          <select id="baseDate" aria-label="选择基准日"></select>
+        </div>
+        <label class="bse-toggle">
+          <input type="checkbox" id="includeBse">
+          纳入北交所
+        </label>
+      </div>
+      <p class="bse-hint" id="bseHint">当前比较池：沪深 A 股</p>
+    </section>
+
+    <section class="panel" aria-label="分布结果">
+      <div class="tabs" role="tablist" aria-label="方向切换">
+        <button class="tab tab-down" id="tabDown" role="tab" aria-selected="true">跌幅分布</button>
+        <button class="tab tab-up" id="tabUp" role="tab" aria-selected="false">涨幅分布</button>
+      </div>
+      <div id="banner"></div>
+      <div class="meta-line" id="metaLine" hidden></div>
+      <div id="content"><div class="status">正在加载可选日期…</div></div>
+    </section>
+
+    <p class="footnote" id="precisionNote">区间涨跌幅为前复权口径合成值，整体精度约 ±0.5 个百分点；卡在阈值边界的个股可能因舍入归入相邻档位。个股精确值以行情软件为准。</p>
+    <p class="disclaimer">数据仅供参考，不构成投资建议。</p>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const STATS_API = "/api/stock-interval-stats";
+
+      const baseDateSelect = document.getElementById("baseDate");
+      const includeBseInput = document.getElementById("includeBse");
+      const bseHint = document.getElementById("bseHint");
+      const tabDown = document.getElementById("tabDown");
+      const tabUp = document.getElementById("tabUp");
+      const banner = document.getElementById("banner");
+      const metaLine = document.getElementById("metaLine");
+      const content = document.getElementById("content");
+
+      const state = {
+        direction: "down",
+        stats: null,
+        openThreshold: null,
+        listItems: [],
+        listTotal: 0,
+        requestId: 0
+      };
+
+      function pct(value) {
+        return (value * 100).toFixed(2) + "%";
+      }
+
+      function signedPct(value) {
+        const text = pct(Math.abs(value));
+        return value < 0 ? "-" + text : "+" + text;
+      }
+
+      function setStatus(message) {
+        content.innerHTML = "";
+        const div = document.createElement("div");
+        div.className = "status";
+        div.textContent = message;
+        content.appendChild(div);
+      }
+
+      function setBanner(message, kind) {
+        banner.innerHTML = "";
+        if (!message) return;
+        const div = document.createElement("div");
+        div.className = "banner " + (kind === "error" ? "banner-error" : "banner-warning");
+        div.textContent = message;
+        banner.appendChild(div);
+      }
+
+      async function fetchJson(params) {
+        const response = await fetch(STATS_API + "?" + params.toString(), {
+          headers: { Accept: "application/json" }
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          const error = new Error((data && data.message) || "请求失败");
+          error.payload = data;
+          throw error;
+        }
+        return data;
+      }
+
+      async function loadDates() {
+        try {
+          const data = await fetchJson(new URLSearchParams({ dates: "1" }));
+          const dates = (data.availableBaseDates || []).slice().reverse();
+          if (!dates.length) {
+            setStatus("暂无可选基准日：历史快照还在累积中，请过几个交易日再来。");
+            return;
+          }
+          baseDateSelect.innerHTML = "";
+          for (const date of dates) {
+            const option = document.createElement("option");
+            option.value = date;
+            option.textContent = date;
+            baseDateSelect.appendChild(option);
+          }
+          await loadStats();
+        } catch (error) {
+          setStatus("可选日期加载失败，请稍后刷新重试。");
+          setBanner(error.message, "error");
+        }
+      }
+
+      async function loadStats() {
+        const requestId = ++state.requestId;
+        const baseDate = baseDateSelect.value;
+        if (!baseDate) return;
+        state.stats = null;
+        state.openThreshold = null;
+        setBanner(null);
+        metaLine.hidden = true;
+        setStatus("正在统计…");
+        try {
+          const data = await fetchJson(new URLSearchParams({
+            baseDate,
+            includeBse: includeBseInput.checked ? "true" : "false"
+          }));
+          if (requestId !== state.requestId) return;
+          state.stats = data;
+          renderMeta(data);
+          if (data.warning || data.isStale) {
+            setBanner(data.warning || "数据非最新交易日，按上一份已校验快照展示。", "warning");
+          }
+          renderRows();
+        } catch (error) {
+          if (requestId !== state.requestId) return;
+          const payload = error.payload || {};
+          if (payload.error === "BASE_SNAPSHOT_MISSING") {
+            setStatus("该日期没有历史快照，请换一个基准日。");
+          } else if (payload.error === "BASE_YEAR_MISMATCH") {
+            setStatus("暂不支持跨年度区间，请选择本年度内的基准日。");
+          } else {
+            setStatus("统计加载失败，请稍后重试。");
+          }
+          setBanner(error.message, "error");
+        }
+      }
+
+      function renderMeta(data) {
+        metaLine.hidden = false;
+        metaLine.innerHTML = "";
+        const parts = [
+          ["区间", data.baseDate + " 收盘 → " + data.asOf + " 收盘"],
+          ["样本", data.matchedCount + " 只"],
+          ["其中停牌", data.suspendedCount + " 只"],
+          ["排除", (data.excluded.newSinceBase + data.excluded.missingCurrent + data.excluded.ineligible) + " 只（新股/退市/无效）"]
+        ];
+        for (const [label, value] of parts) {
+          const span = document.createElement("span");
+          const strong = document.createElement("strong");
+          strong.textContent = value;
+          span.append(label + "：", strong);
+          metaLine.appendChild(span);
+        }
+      }
+
+      function renderRows() {
+        const data = state.stats;
+        if (!data) return;
+        const isDown = state.direction === "down";
+        const buckets = isDown ? data.declines : data.gains;
+        const denominator = Math.max(1, data.matchedCount);
+        content.innerHTML = "";
+        const rows = document.createElement("div");
+        rows.className = "rows";
+        const maxCount = Math.max(1, ...buckets.map((bucket) => bucket.count));
+        for (const bucket of buckets) {
+          const row = document.createElement("button");
+          row.type = "button";
+          row.className = "row";
+          row.setAttribute("aria-expanded", String(state.openThreshold === bucket.thresholdPct));
+
+          const threshold = document.createElement("span");
+          threshold.className = "row-threshold " + (isDown ? "down" : "up");
+          threshold.textContent = (isDown ? "跌超 " : "涨超 ") + bucket.thresholdPct + "%";
+
+          const bar = document.createElement("span");
+          bar.className = "row-bar";
+          const fill = document.createElement("span");
+          fill.className = "row-bar-fill " + (isDown ? "down" : "up");
+          fill.style.width = (bucket.count / maxCount * 100).toFixed(1) + "%";
+          bar.appendChild(fill);
+
+          const count = document.createElement("span");
+          count.className = "row-count";
+          count.textContent = bucket.count + " 只";
+          const share = document.createElement("small");
+          share.textContent = "占 " + (bucket.count / denominator * 100).toFixed(1) + "%";
+          count.appendChild(share);
+
+          row.append(threshold, bar, count);
+          row.addEventListener("click", () => toggleList(bucket.thresholdPct));
+          rows.appendChild(row);
+
+          if (state.openThreshold === bucket.thresholdPct) {
+            rows.appendChild(buildListPanel(bucket));
+          }
+        }
+        content.appendChild(rows);
+      }
+
+      function buildListPanel(bucket) {
+        const isDown = state.direction === "down";
+        const panel = document.createElement("div");
+        panel.className = "list-panel";
+        const title = document.createElement("p");
+        title.className = "list-title";
+        title.textContent = (isDown ? "跌超 " : "涨超 ") + bucket.thresholdPct +
+          "% 名单（共 " + state.listTotal + " 只，按幅度排序）";
+        panel.appendChild(title);
+
+        const table = document.createElement("table");
+        table.className = "list-table";
+        const tbody = document.createElement("tbody");
+        for (const item of state.listItems) {
+          const tr = document.createElement("tr");
+          const nameTd = document.createElement("td");
+          nameTd.textContent = item.name || item.symbol;
+          const codeSpan = document.createElement("span");
+          codeSpan.className = "stock-code";
+          codeSpan.textContent = " " + item.code;
+          nameTd.appendChild(codeSpan);
+          if (item.isSuspended) {
+            const tag = document.createElement("span");
+            tag.className = "suspend-tag";
+            tag.textContent = "停牌";
+            nameTd.appendChild(tag);
+          }
+          const numTd = document.createElement("td");
+          numTd.className = "num " + (item.intervalReturn < 0 ? "down" : "up");
+          numTd.textContent = signedPct(item.intervalReturn);
+          tr.append(nameTd, numTd);
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        panel.appendChild(table);
+
+        if (state.listItems.length < state.listTotal) {
+          const more = document.createElement("button");
+          more.type = "button";
+          more.className = "load-more";
+          more.textContent = "加载更多（已显示 " + state.listItems.length + "/" + state.listTotal + "）";
+          more.addEventListener("click", () => loadList(bucket.thresholdPct, state.listItems.length, more));
+          panel.appendChild(more);
+        }
+        return panel;
+      }
+
+      async function toggleList(thresholdPct) {
+        if (state.openThreshold === thresholdPct) {
+          state.openThreshold = null;
+          renderRows();
+          return;
+        }
+        state.openThreshold = thresholdPct;
+        state.listItems = [];
+        state.listTotal = 0;
+        renderRows();
+        await loadList(thresholdPct, 0, null);
+      }
+
+      async function loadList(thresholdPct, offset, moreButton) {
+        if (moreButton) {
+          moreButton.disabled = true;
+          moreButton.textContent = "加载中…";
+        }
+        try {
+          const signed = state.direction === "down" ? -thresholdPct : thresholdPct;
+          const data = await fetchJson(new URLSearchParams({
+            baseDate: baseDateSelect.value,
+            includeBse: includeBseInput.checked ? "true" : "false",
+            list: String(signed),
+            limit: "100",
+            offset: String(offset)
+          }));
+          if (state.openThreshold !== thresholdPct) return;
+          state.listItems = offset === 0
+            ? data.list.items
+            : state.listItems.concat(data.list.items);
+          state.listTotal = data.list.total;
+          renderRows();
+        } catch (error) {
+          setBanner("名单加载失败：" + error.message, "error");
+          if (moreButton) {
+            moreButton.disabled = false;
+            moreButton.textContent = "加载更多";
+          }
+        }
+      }
+
+      function selectDirection(direction) {
+        if (state.direction === direction) return;
+        state.direction = direction;
+        state.openThreshold = null;
+        tabDown.setAttribute("aria-selected", String(direction === "down"));
+        tabUp.setAttribute("aria-selected", String(direction === "up"));
+        if (state.stats) renderRows();
+      }
+
+      tabDown.addEventListener("click", () => selectDirection("down"));
+      tabUp.addEventListener("click", () => selectDirection("up"));
+      baseDateSelect.addEventListener("change", loadStats);
+      includeBseInput.addEventListener("change", () => {
+        bseHint.textContent = includeBseInput.checked
+          ? "当前比较池：沪深 A 股 + 北交所"
+          : "当前比较池：沪深 A 股";
+        loadStats();
+      });
+
+      loadDates();
+    })();
+  </script>
+</body>
+</html>

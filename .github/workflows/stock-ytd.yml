@@ -67,7 +67,7 @@ jobs:
         run: npm ci
 
       - name: Test snapshot pipeline
-        run: npm run test:stock-free && node tests/stockEmYtd.test.js
+        run: npm run test:stock-free && node tests/stockEmYtd.test.js && npm run test:stock-interval
 
       - name: Refresh and publish snapshot
         shell: bash

@@ -240,6 +240,37 @@ async function run() {
   assert.strictEqual(recovered, true);
   assert.ok(!client.objects.has("stock-ytd/refresh.lock"));
 
+  // 历史快照只读能力：日期列表来自不可变快照文件名。
+  const availableDates = await store.listAvailableSnapshotDates();
+  assert.deepStrictEqual(availableDates, ["2026-07-10"]);
+
+  // 同日多份快照取上传时间最新且校验通过者。
+  const historical = await store.loadLatestSnapshotForDate("2026-07-10");
+  assert.ok(historical);
+  assert.strictEqual(historical.snapshotId, orphanPrepared.snapshotId);
+  assert.strictEqual(historical.snapshot.asOf, "2026-07-10");
+  assert.strictEqual(historical.snapshot.productionPublishable, true);
+
+  // 损坏的最新快照被跳过，回退到次新可解析快照。
+  const corruptPrepared = preparePublishedEnvelope({
+    ...productionSnapshot(),
+    publishedAt: "2026-07-10T11:40:00.000Z"
+  }, {
+    expectedAsOf: "2026-07-10",
+    refreshedAt: "2026-07-10T11:41:00.000Z",
+    tradingCalendar: tradingCalendar()
+  });
+  const corruptPath = `stock-ytd/snapshots/${corruptPrepared.snapshotId}.json`;
+  await client.put(corruptPath, "{not json", { allowOverwrite: false });
+  client.objects.get(corruptPath).uploadedAt = new Date("2026-07-10T11:45:00.000Z");
+  const fallback = await store.loadLatestSnapshotForDate("2026-07-10");
+  assert.ok(fallback);
+  assert.strictEqual(fallback.snapshotId, orphanPrepared.snapshotId);
+
+  // 无快照日期返回 null；非法日期抛错。
+  assert.strictEqual(await store.loadLatestSnapshotForDate("2026-07-09"), null);
+  await assert.rejects(store.loadLatestSnapshotForDate("not-a-date"));
+
   console.log("stock snapshot Blob store tests passed");
 }
 

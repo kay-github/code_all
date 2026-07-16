@@ -12,6 +12,14 @@
     {
       "source": "/cbz/",
       "destination": "/tools/typo-proofreader/"
+    },
+    {
+      "source": "/qjfb",
+      "destination": "/tools/stock-interval-stats/"
+    },
+    {
+      "source": "/qjfb/",
+      "destination": "/tools/stock-interval-stats/"
     }
   ]
 }
