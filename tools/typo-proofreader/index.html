@@ -180,6 +180,41 @@
       font-size: 12px;
     }
 
+    .tabbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 0 0 14px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .tab-button {
+      min-height: 42px;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab-button.is-active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.is-active {
+      display: block;
+    }
+
     .editor {
       display: grid;
       gap: 12px;
@@ -279,8 +314,68 @@
       background: #dfecff;
     }
 
-    .counter {
+    .panel-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       margin: -4px 2px 0;
+    }
+
+    .google-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .google-switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch-track {
+      position: relative;
+      flex: none;
+      width: 34px;
+      height: 20px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      transition: background 0.18s ease;
+    }
+
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(23, 32, 51, 0.25);
+      transition: transform 0.18s ease;
+    }
+
+    .google-switch input:checked + .switch-track {
+      background: var(--accent);
+    }
+
+    .google-switch input:checked + .switch-track::after {
+      transform: translateX(14px);
+    }
+
+    .google-switch input:checked ~ .switch-label {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .counter {
       color: var(--muted);
       font-size: 12px;
       line-height: 1.4;
@@ -320,6 +415,13 @@
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
+    }
+
+    .panel-intro {
+      margin: 0 2px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
     }
 
     .highlight-hint {
@@ -459,34 +561,81 @@
       <ul id="providerList" class="provider-list" hidden></ul>
     </div>
 
-    <section class="editor" aria-label="错别字校对">
-      <div id="sourceWrap" class="source-wrap">
-        <div id="sourceHighlight" class="text-highlight" aria-hidden="true"></div>
-        <textarea id="sourceText" class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
-      </div>
-      <p id="highlightHint" class="highlight-hint">红色标记为本次校对发现的疑似错字或错误标点。</p>
-      <div class="toolbar" aria-label="快捷操作">
-        <button id="sampleButton" class="secondary-button" type="button">填入示例</button>
-        <button id="clearButton" class="secondary-button" type="button">清空内容</button>
-      </div>
-      <div id="charCounter" class="counter">0 / 5000</div>
-      <button id="proofreadButton" class="primary-button" type="button">开始校对</button>
+    <div class="tabbar" role="tablist" aria-label="校对模式">
+      <button id="tabTypo" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="panelTypo">错别字校对</button>
+      <button id="tabDeep" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panelDeep">深度校对</button>
+    </div>
+
+    <section id="panelTypo" class="tab-panel is-active" data-mode="typo" role="tabpanel" aria-labelledby="tabTypo">
+      <section class="editor" aria-label="错别字校对">
+        <div class="source-wrap">
+          <div class="text-highlight" aria-hidden="true"></div>
+          <textarea class="text-box" placeholder="请输入或粘贴待校对的文本内容"></textarea>
+        </div>
+        <p class="highlight-hint">红色标记为本次校对发现的疑似错字或错误标点。</p>
+        <div class="toolbar" aria-label="快捷操作">
+          <button class="sample-button secondary-button" type="button">填入示例</button>
+          <button class="clear-button secondary-button" type="button">清空内容</button>
+        </div>
+        <div class="panel-foot">
+          <label class="google-switch">
+            <input class="google-toggle" type="checkbox">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-label">优先用 Google 模型</span>
+          </label>
+          <div class="counter">0 / 5000</div>
+        </div>
+        <button class="proofread-button primary-button" type="button">开始校对</button>
+      </section>
+
+      <section class="result" aria-label="校对结果">
+        <div class="result-head">
+          <h2 class="result-title">校对结果</h2>
+          <button class="copy-button" type="button">复制</button>
+        </div>
+        <p class="result-meta"></p>
+        <textarea class="result-text" readonly></textarea>
+      </section>
     </section>
 
-    <section id="resultPanel" class="result" aria-label="校对结果">
-      <div class="result-head">
-        <h2 class="result-title">校对结果</h2>
-        <button id="copyButton" class="copy-button" type="button">复制</button>
-      </div>
-      <p id="resultMeta" class="result-meta"></p>
-      <textarea id="resultText" class="result-text" readonly></textarea>
+    <section id="panelDeep" class="tab-panel" data-mode="deep" role="tabpanel" aria-labelledby="tabDeep" hidden>
+      <p class="panel-intro">在错别字、标点校对的基础上，同时修正逻辑不通、逻辑混乱的语句，以及重复表达的语句。</p>
+      <section class="editor" aria-label="深度校对">
+        <div class="source-wrap">
+          <div class="text-highlight" aria-hidden="true"></div>
+          <textarea class="text-box" placeholder="请输入或粘贴待深度校对的文本内容"></textarea>
+        </div>
+        <p class="highlight-hint">红色标记为本次校对发现的错字、标点、逻辑或重复问题。</p>
+        <div class="toolbar" aria-label="快捷操作">
+          <button class="sample-button secondary-button" type="button">填入示例</button>
+          <button class="clear-button secondary-button" type="button">清空内容</button>
+        </div>
+        <div class="panel-foot">
+          <label class="google-switch">
+            <input class="google-toggle" type="checkbox">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-label">优先用 Google 模型</span>
+          </label>
+          <div class="counter">0 / 5000</div>
+        </div>
+        <button class="proofread-button primary-button" type="button">开始校对</button>
+      </section>
+
+      <section class="result" aria-label="校对结果">
+        <div class="result-head">
+          <h2 class="result-title">校对结果</h2>
+          <button class="copy-button" type="button">复制</button>
+        </div>
+        <p class="result-meta"></p>
+        <textarea class="result-text" readonly></textarea>
+      </section>
     </section>
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // API 配置区：后续接入大模型时填写。正式上线建议由后端保存 API Key，前端只请求自己的后端接口。
+    // API 配置区：后端保存 API Key，前端只请求自己的后端接口。
     const API_CONFIG = {
       mode: "serverless", // serverless 使用 Vercel API；openaiCompatible 可切换为兼容官方消息格式的接口
       endpoint: "/api/proofread",
@@ -497,7 +646,18 @@
       requestTimeoutMs: 300000
     };
 
-    const SAMPLE_TEXT = "今天新情很好，我想去公圆玩。少先队员因该为老人让坐。你找到你最喜欢的工作，我也很高心。";
+    const PANEL_PRESETS = {
+      typo: {
+        sampleText: "今天新情很好，我想去公圆玩。少先队员因该为老人让坐。你找到你最喜欢的工作，我也很高心。",
+        emptyResultLabel: "未发现明显错误",
+        foundLabel: "处疑似错误"
+      },
+      deep: {
+        sampleText: "今天新情很好，我想去公圆玩。因为他生病了，所以他坚持来上班。我们要提高工作效率，我们要把工作效率提上去。",
+        emptyResultLabel: "未发现明显问题",
+        foundLabel: "处疑似问题"
+      }
+    };
 
     const PROOFREAD_PROMPT = [
       "你是一个严格的中文错别字校对工具。",
@@ -508,23 +668,11 @@
       "只输出修正后的完整文本。"
     ].join("\n");
 
-    const sourceText = document.querySelector("#sourceText");
-    const sourceWrap = document.querySelector("#sourceWrap");
-    const sourceHighlight = document.querySelector("#sourceHighlight");
-    const highlightHint = document.querySelector("#highlightHint");
-    const resultPanel = document.querySelector("#resultPanel");
-    const resultText = document.querySelector("#resultText");
-    const resultMeta = document.querySelector("#resultMeta");
-    const proofreadButton = document.querySelector("#proofreadButton");
-    const sampleButton = document.querySelector("#sampleButton");
-    const clearButton = document.querySelector("#clearButton");
-    const copyButton = document.querySelector("#copyButton");
     const modelStatus = document.querySelector("#modelStatus");
     const statusCard = document.querySelector("#statusCard");
     const statusToggle = document.querySelector("#statusToggle");
     const statusArrow = document.querySelector("#statusArrow");
     const providerList = document.querySelector("#providerList");
-    const charCounter = document.querySelector("#charCounter");
     const toast = document.querySelector("#toast");
 
     let toastTimer = 0;
@@ -533,6 +681,7 @@
       model: "",
       maxTextChars: API_CONFIG.maxTextChars
     };
+    const panels = [];
 
     function showToast(message) {
       window.clearTimeout(toastTimer);
@@ -541,11 +690,6 @@
       toastTimer = window.setTimeout(() => {
         toast.classList.remove("is-visible");
       }, 1800);
-    }
-
-    function setLoading(isLoading) {
-      proofreadButton.disabled = isLoading;
-      proofreadButton.textContent = isLoading ? "校对中..." : "开始校对";
     }
 
     function setStatus(message, type = "") {
@@ -584,12 +728,6 @@
 
     function getModelLabel() {
       return [serviceInfo.provider, serviceInfo.model].filter(Boolean).join(" / ") || "线上校对服务";
-    }
-
-    function updateCharCounter() {
-      const length = sourceText.value.length;
-      charCounter.textContent = `${length} / ${serviceInfo.maxTextChars}`;
-      charCounter.classList.toggle("is-over-limit", length > serviceInfo.maxTextChars);
     }
 
     function escapeHtml(value) {
@@ -637,43 +775,6 @@
       return filtered;
     }
 
-    function clearSourceHighlights() {
-      sourceHighlight.innerHTML = "";
-      sourceWrap.classList.remove("has-highlights");
-      highlightHint.classList.remove("is-visible");
-    }
-
-    function renderSourceHighlights(corrections) {
-      const text = sourceText.value;
-      const ranges = normalizeCorrections(text, corrections);
-
-      if (ranges.length === 0) {
-        clearSourceHighlights();
-        return 0;
-      }
-
-      let html = "";
-      let cursor = 0;
-      for (const item of ranges) {
-        html += escapeHtml(text.slice(cursor, item.start));
-        const title = item.target ? ` title="${escapeHtml(item.source)} → ${escapeHtml(item.target)}"` : "";
-        html += `<mark class="source-error"${title}>${escapeHtml(text.slice(item.start, item.end))}</mark>`;
-        cursor = item.end;
-      }
-      html += escapeHtml(text.slice(cursor));
-
-      sourceHighlight.innerHTML = html;
-      sourceWrap.classList.add("has-highlights");
-      highlightHint.classList.add("is-visible");
-      syncHighlightScroll();
-      return ranges.length;
-    }
-
-    function syncHighlightScroll() {
-      sourceHighlight.scrollTop = sourceText.scrollTop;
-      sourceHighlight.scrollLeft = sourceText.scrollLeft;
-    }
-
     async function checkService() {
       if (!API_CONFIG.healthEndpoint) {
         setStatus("已配置外部校对接口，请确认接口服务可用。", "ready");
@@ -692,7 +793,7 @@
           model: data?.model || serviceInfo.model,
           maxTextChars: data?.maxTextChars || serviceInfo.maxTextChars
         };
-        updateCharCounter();
+        panels.forEach((panel) => panel.updateCharCounter());
         renderProviderList(data?.providers);
         setStatus(`校对服务已就绪：${getModelLabel()}。`, "ready");
       } catch {
@@ -708,9 +809,9 @@
       return Boolean(API_CONFIG.endpoint);
     }
 
-    function buildRequestBody(text) {
+    function buildRequestBody(text, mode, preferGoogle) {
       if (API_CONFIG.mode === "serverless") {
-        return { text };
+        return { text, mode, preferGoogle };
       }
 
       return {
@@ -734,7 +835,7 @@
       );
     }
 
-    async function requestProofread(text) {
+    async function requestProofread(text, mode, preferGoogle) {
       if (!ensureApiReady()) {
         throw new Error("API_NOT_CONFIGURED");
       }
@@ -752,7 +853,7 @@
         response = await fetch(API_CONFIG.endpoint, {
           method: "POST",
           headers,
-          body: JSON.stringify(buildRequestBody(text)),
+          body: JSON.stringify(buildRequestBody(text, mode, preferGoogle)),
           signal: controller.signal
         });
       } catch (error) {
@@ -778,112 +879,221 @@
 
       return {
         corrected,
-        corrections: Array.isArray(data?.corrections) ? data.corrections : []
+        corrections: Array.isArray(data?.corrections) ? data.corrections : [],
+        provider: typeof data?.provider === "string" ? data.provider : "",
+        model: typeof data?.model === "string" ? data.model : ""
       };
     }
 
-    async function handleProofread() {
-      const text = sourceText.value;
-
-      if (!text.trim()) {
-        showToast("请输入待校对文本");
-        sourceText.focus();
-        return;
-      }
-
-      if (text.length > serviceInfo.maxTextChars) {
-        showToast(`文本过长，请控制在 ${serviceInfo.maxTextChars} 字以内`);
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const { corrected, corrections } = await requestProofread(text);
-        const correctionCount = renderSourceHighlights(corrections);
-        resultText.value = corrected;
-        resultMeta.textContent = `使用 ${getModelLabel()} · 原文 ${text.length} 字 · ${correctionCount ? `发现 ${correctionCount} 处疑似错误` : "未发现明显错误"}`;
-        resultPanel.classList.add("is-visible");
-        showToast(correctionCount ? `已完成校对，发现 ${correctionCount} 处疑似错误` : "已完成校对，未发现明显错误");
-        checkService();
-      } catch (error) {
-        if (error.message === "API_NOT_CONFIGURED") {
-          showToast("请先配置校对接口");
-        } else if (error.message && error.message !== "API_REQUEST_FAILED") {
-          showToast(error.message);
-        } else {
-          showToast("校对失败，请稍后重试");
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    function fillSample() {
-      sourceText.value = SAMPLE_TEXT;
-      clearSourceHighlights();
-      resultPanel.classList.remove("is-visible");
-      resultText.value = "";
-      resultMeta.textContent = "";
-      updateCharCounter();
-      sourceText.focus();
-    }
-
-    function clearAll() {
-      sourceText.value = "";
-      clearSourceHighlights();
-      resultText.value = "";
-      resultMeta.textContent = "";
-      resultPanel.classList.remove("is-visible");
-      updateCharCounter();
-      sourceText.focus();
-    }
-
-    async function copyResult() {
-      if (!resultText.value) {
-        return;
-      }
+    function setupPanel(panelRoot) {
+      const mode = panelRoot.dataset.mode || "typo";
+      const preset = PANEL_PRESETS[mode] || PANEL_PRESETS.typo;
+      const sourceText = panelRoot.querySelector(".text-box");
+      const sourceWrap = panelRoot.querySelector(".source-wrap");
+      const sourceHighlight = panelRoot.querySelector(".text-highlight");
+      const highlightHint = panelRoot.querySelector(".highlight-hint");
+      const resultPanel = panelRoot.querySelector(".result");
+      const resultText = panelRoot.querySelector(".result-text");
+      const resultMeta = panelRoot.querySelector(".result-meta");
+      const proofreadButton = panelRoot.querySelector(".proofread-button");
+      const sampleButton = panelRoot.querySelector(".sample-button");
+      const clearButton = panelRoot.querySelector(".clear-button");
+      const copyButton = panelRoot.querySelector(".copy-button");
+      const googleToggle = panelRoot.querySelector(".google-toggle");
+      const charCounter = panelRoot.querySelector(".counter");
+      const googleStorageKey = `typoProofreader.preferGoogle.${mode}`;
 
       try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(resultText.value);
-        } else {
-          copyBySelection();
-        }
-        showToast("复制成功");
+        googleToggle.checked = window.localStorage.getItem(googleStorageKey) === "1";
       } catch {
+        // localStorage 不可用时保持默认不勾选
+      }
+
+      googleToggle.addEventListener("change", () => {
         try {
-          copyBySelection();
+          window.localStorage.setItem(googleStorageKey, googleToggle.checked ? "1" : "0");
+        } catch {
+          // 忽略存储失败
+        }
+      });
+
+      function setLoading(isLoading) {
+        proofreadButton.disabled = isLoading;
+        proofreadButton.textContent = isLoading ? "校对中..." : "开始校对";
+      }
+
+      function updateCharCounter() {
+        const length = sourceText.value.length;
+        charCounter.textContent = `${length} / ${serviceInfo.maxTextChars}`;
+        charCounter.classList.toggle("is-over-limit", length > serviceInfo.maxTextChars);
+      }
+
+      function clearSourceHighlights() {
+        sourceHighlight.innerHTML = "";
+        sourceWrap.classList.remove("has-highlights");
+        highlightHint.classList.remove("is-visible");
+      }
+
+      function syncHighlightScroll() {
+        sourceHighlight.scrollTop = sourceText.scrollTop;
+        sourceHighlight.scrollLeft = sourceText.scrollLeft;
+      }
+
+      function renderSourceHighlights(corrections) {
+        const text = sourceText.value;
+        const ranges = normalizeCorrections(text, corrections);
+
+        if (ranges.length === 0) {
+          clearSourceHighlights();
+          return 0;
+        }
+
+        let html = "";
+        let cursor = 0;
+        for (const item of ranges) {
+          html += escapeHtml(text.slice(cursor, item.start));
+          const title = item.target ? ` title="${escapeHtml(item.source)} → ${escapeHtml(item.target)}"` : "";
+          html += `<mark class="source-error"${title}>${escapeHtml(text.slice(item.start, item.end))}</mark>`;
+          cursor = item.end;
+        }
+        html += escapeHtml(text.slice(cursor));
+
+        sourceHighlight.innerHTML = html;
+        sourceWrap.classList.add("has-highlights");
+        highlightHint.classList.add("is-visible");
+        syncHighlightScroll();
+        return ranges.length;
+      }
+
+      async function handleProofread() {
+        const text = sourceText.value;
+
+        if (!text.trim()) {
+          showToast("请输入待校对文本");
+          sourceText.focus();
+          return;
+        }
+
+        if (text.length > serviceInfo.maxTextChars) {
+          showToast(`文本过长，请控制在 ${serviceInfo.maxTextChars} 字以内`);
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const { corrected, corrections, provider, model } = await requestProofread(text, mode, googleToggle.checked);
+          const correctionCount = renderSourceHighlights(corrections);
+          const usedLabel = [provider, model].filter(Boolean).join(" / ") || getModelLabel();
+          resultText.value = corrected;
+          resultMeta.textContent = `使用 ${usedLabel} · 原文 ${text.length} 字 · ${correctionCount ? `发现 ${correctionCount} ${preset.foundLabel}` : preset.emptyResultLabel}`;
+          resultPanel.classList.add("is-visible");
+          showToast(correctionCount ? `已完成校对，发现 ${correctionCount} ${preset.foundLabel}` : `已完成校对，${preset.emptyResultLabel}`);
+          checkService();
+        } catch (error) {
+          if (error.message === "API_NOT_CONFIGURED") {
+            showToast("请先配置校对接口");
+          } else if (error.message && error.message !== "API_REQUEST_FAILED") {
+            showToast(error.message);
+          } else {
+            showToast("校对失败，请稍后重试");
+          }
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      function fillSample() {
+        sourceText.value = preset.sampleText;
+        clearSourceHighlights();
+        resultPanel.classList.remove("is-visible");
+        resultText.value = "";
+        resultMeta.textContent = "";
+        updateCharCounter();
+        sourceText.focus();
+      }
+
+      function clearAll() {
+        sourceText.value = "";
+        clearSourceHighlights();
+        resultText.value = "";
+        resultMeta.textContent = "";
+        resultPanel.classList.remove("is-visible");
+        updateCharCounter();
+        sourceText.focus();
+      }
+
+      function copyBySelection() {
+        resultText.focus();
+        resultText.select();
+        const copied = document.execCommand("copy");
+        window.getSelection()?.removeAllRanges();
+
+        if (!copied) {
+          throw new Error("COPY_FAILED");
+        }
+      }
+
+      async function copyResult() {
+        if (!resultText.value) {
+          return;
+        }
+
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(resultText.value);
+          } else {
+            copyBySelection();
+          }
           showToast("复制成功");
         } catch {
-          showToast("复制失败，请手动复制");
+          try {
+            copyBySelection();
+            showToast("复制成功");
+          } catch {
+            showToast("复制失败，请手动复制");
+          }
         }
       }
-    }
 
-    function copyBySelection() {
-      resultText.focus();
-      resultText.select();
-      const copied = document.execCommand("copy");
-      window.getSelection()?.removeAllRanges();
-
-      if (!copied) {
-        throw new Error("COPY_FAILED");
+      function handleSourceInput() {
+        updateCharCounter();
+        clearSourceHighlights();
       }
-    }
 
-    function handleSourceInput() {
+      sourceText.addEventListener("input", handleSourceInput);
+      sourceText.addEventListener("scroll", syncHighlightScroll);
+      sampleButton.addEventListener("click", fillSample);
+      clearButton.addEventListener("click", clearAll);
+      proofreadButton.addEventListener("click", handleProofread);
+      copyButton.addEventListener("click", copyResult);
       updateCharCounter();
-      clearSourceHighlights();
+
+      return { updateCharCounter };
     }
 
-    sourceText.addEventListener("input", handleSourceInput);
-    sourceText.addEventListener("scroll", syncHighlightScroll);
-    sampleButton.addEventListener("click", fillSample);
-    clearButton.addEventListener("click", clearAll);
-    proofreadButton.addEventListener("click", handleProofread);
-    copyButton.addEventListener("click", copyResult);
-    updateCharCounter();
+    const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+    const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        tabButtons.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-selected", String(active));
+        });
+        tabPanels.forEach((panel) => {
+          const active = panel.id === button.getAttribute("aria-controls");
+          panel.classList.toggle("is-active", active);
+          panel.hidden = !active;
+        });
+      });
+    });
+
+    tabPanels.forEach((panel) => {
+      panels.push(setupPanel(panel));
+    });
+
     checkService();
   </script>
 </body>

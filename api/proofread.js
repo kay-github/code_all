@@ -1,5 +1,5 @@
 const { MAX_TEXT_CHARS, MODEL, PROVIDER, buildDiffCorrections, proofreadText } = require("../lib/proofreader");
-const { isModelConfigured, proofreadWithModel } = require("../lib/modelProofreader");
+const { isModelConfigured, normalizeMode, proofreadWithModel } = require("../lib/modelProofreader");
 
 function sendJson(res, status, data) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -98,6 +98,9 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const mode = normalizeMode(payload && payload.mode);
+  const preferGoogle = payload ? payload.preferGoogle === true || payload.preferGoogle === "true" : false;
+
   const ruleResult = proofreadText(text);
   let result = ruleResult.result;
   let corrections = ruleResult.corrections;
@@ -108,7 +111,7 @@ module.exports = async function handler(req, res) {
 
   if (isModelConfigured()) {
     try {
-      const modelResult = await proofreadWithModel(text);
+      const modelResult = await proofreadWithModel(text, { mode, preferGoogle });
       result = proofreadText(modelResult.corrected).result;
       corrections = buildDiffCorrections(text, result);
       model = modelResult.model;
@@ -131,6 +134,7 @@ module.exports = async function handler(req, res) {
     text: result,
     correctedText: result,
     corrections,
+    mode,
     model,
     provider,
     attempts,
