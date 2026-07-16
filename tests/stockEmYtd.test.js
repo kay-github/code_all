@@ -46,6 +46,7 @@ function marketRow(code, exchange, ytd, extra = {}) {
     name: `股票${code}`,
     ytd,
     listingDate: "20200101",
+    sourceAsOf: AS_OF,
     ...extra
   };
 }
@@ -247,6 +248,22 @@ async function run() {
         fetchEastmoneyMarket: async () => makeMarketRows(100)
       }),
       (error) => error.code === "MARKET_SWEEP_INCOMPLETE"
+    );
+  }
+
+  // --- 端到端：盘中数据（sourceAsOf 落后）→ 结算闸门阻断 ---
+  {
+    const staleRows = makeMarketRows(5300).map((row) => ({
+      ...row,
+      sourceAsOf: "2026-07-14"
+    }));
+    await assert.rejects(
+      () => buildEmSnapshot({
+        tradingCalendar: makeCalendar(),
+        now: new Date("2026-07-15T22:00:00+08:00"),
+        fetchEastmoneyMarket: async () => staleRows
+      }),
+      (error) => error.code === "MARKET_DATA_NOT_SETTLED"
     );
   }
 

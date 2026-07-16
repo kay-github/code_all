@@ -77,13 +77,29 @@ async function main(argv = process.argv.slice(2)) {
   const args = parseArguments(argv);
   const envelope = await loadCurrentEnvelope(args.snapshotUrl);
   const tradingCalendar = validateTradingCalendar(envelope.tradingCalendar);
-  const build = await buildEmSnapshot({
-    tradingCalendar,
-    requireAsOf: args.requireAsOf,
-    now: new Date()
-  });
-
   const currentAsOf = envelope.snapshot && envelope.snapshot.asOf;
+  let build;
+  try {
+    build = await buildEmSnapshot({
+      tradingCalendar,
+      requireAsOf: args.requireAsOf,
+      now: new Date()
+    });
+  } catch (error) {
+    // 盘中/未过截止点时东财返回实时数据，属预期状态而非故障：
+    // 以 no-op 成功退出，等晚间调度窗口重跑。
+    if (error && error.code === "MARKET_DATA_NOT_SETTLED") {
+      console.log(JSON.stringify({
+        ok: true,
+        noOp: true,
+        reason: error.code,
+        details: error.details || null,
+        currentAsOf: currentAsOf || null
+      }));
+      return;
+    }
+    throw error;
+  }
   if (
     !args.force &&
     !args.dryRun &&
