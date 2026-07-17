@@ -271,6 +271,48 @@ async function run() {
   assert.strictEqual(await store.loadLatestSnapshotForDate("2026-07-09"), null);
   await assert.rejects(store.loadLatestSnapshotForDate("not-a-date"));
 
+  // 区间统计逐日回填文件读写与列表。
+  const dailyPayload = {
+    version: "stock-ytd-interval-daily.v1",
+    asOf: "2026-03-18",
+    baseDate: "2025-12-31",
+    methodologyVersion: "backfill-qfq.v1",
+    generatedAt: "2026-07-16T12:00:00.000Z",
+    records: { "600000.SH": { exchange: "SH", ytd: -0.12 } }
+  };
+  await store.putIntervalDailyMap("2026-03-18", dailyPayload);
+  assert.ok(client.objects.has("stock-ytd/interval/daily/2026-03-18.json"));
+
+  const loadedDaily = await store.loadIntervalDailyMap("2026-03-18");
+  assert.deepStrictEqual(loadedDaily, dailyPayload);
+  assert.strictEqual(await store.loadIntervalDailyMap("2026-03-17"), null);
+
+  // 覆盖写允许（因子修订重灌）。
+  const revised = { ...dailyPayload, records: { "600000.SH": { exchange: "SH", ytd: -0.13 } } };
+  await store.putIntervalDailyMap("2026-03-18", revised);
+  assert.strictEqual(
+    (await store.loadIntervalDailyMap("2026-03-18")).records["600000.SH"].ytd,
+    -0.13
+  );
+
+  // 版本或日期不符的文件按缺失处理。
+  client.objects.set("stock-ytd/interval/daily/2026-03-19.json", {
+    body: JSON.stringify({ ...dailyPayload, asOf: "2026-03-20" }),
+    etag: "mismatch",
+    uploadedAt: new Date()
+  });
+  assert.strictEqual(await store.loadIntervalDailyMap("2026-03-19"), null);
+
+  await store.putIntervalDailyMap("2025-12-31", {
+    ...dailyPayload,
+    asOf: "2025-12-31",
+    records: { "600000.SH": { exchange: "SH", ytd: 0 } }
+  });
+  assert.deepStrictEqual(
+    await store.listIntervalDailyDates(),
+    ["2025-12-31", "2026-03-18", "2026-03-19"]
+  );
+
   console.log("stock snapshot Blob store tests passed");
 }
 

@@ -107,14 +107,115 @@
 
     .field-label { color: var(--text-soft); font-size: 13px; font-weight: 600; }
 
-    select#baseDate {
+    .date-field { position: relative; }
+
+    .date-button {
       min-height: 44px;
-      min-width: 170px;
-      padding: 8px 12px;
+      min-width: 190px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 14px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: #fff;
+      font-weight: 600;
+      cursor: pointer;
     }
+
+    .date-button:hover { border-color: var(--blue); }
+    .date-button[aria-expanded="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+    .date-button .caret { color: var(--muted); font-size: 12px; }
+
+    .calendar {
+      position: absolute;
+      z-index: 30;
+      top: calc(100% + 6px);
+      left: 0;
+      width: 308px;
+      max-width: calc(100vw - 40px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 28px rgba(16, 24, 40, 0.16);
+      padding: 12px;
+    }
+
+    .calendar[hidden] { display: none; }
+
+    .cal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .cal-title { font-weight: 700; font-size: 15px; }
+
+    .cal-nav {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .cal-nav:disabled { color: var(--line); cursor: default; }
+    .cal-nav:not(:disabled):hover { border-color: var(--blue); color: var(--blue); }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .cal-weekday {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 4px 0;
+    }
+
+    .cal-day {
+      height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: none;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .cal-day:disabled { color: var(--line); cursor: default; }
+    .cal-day:not(:disabled) { font-weight: 600; }
+    .cal-day:not(:disabled):hover { background: var(--blue-soft); }
+    .cal-day.is-selected { background: var(--blue); color: #fff; }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .chip {
+      min-height: 32px;
+      padding: 4px 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      color: var(--text-soft);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip:not(:disabled):hover { border-color: var(--blue); color: var(--blue); }
+    .chip:disabled { color: var(--line); cursor: default; }
 
     .bse-toggle {
       display: inline-flex;
@@ -338,9 +439,22 @@
 
     <section class="panel" aria-label="统计条件">
       <div class="controls">
-        <div class="field">
-          <label class="field-label" for="baseDate">基准日（自该日收盘起算）</label>
-          <select id="baseDate" aria-label="选择基准日"></select>
+        <div class="field date-field">
+          <span class="field-label" id="baseDateLabel">基准日（自该日收盘起算）</span>
+          <button type="button" class="date-button" id="baseDateButton"
+                  aria-haspopup="dialog" aria-expanded="false" aria-labelledby="baseDateLabel baseDateButton">
+            <span id="baseDateText">选择日期</span>
+            <span class="caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="calendar" id="calendarPanel" role="dialog" aria-label="选择基准日" hidden>
+            <div class="cal-head">
+              <button type="button" class="cal-nav" id="calPrev" aria-label="上一月">‹</button>
+              <span class="cal-title" id="calTitle"></span>
+              <button type="button" class="cal-nav" id="calNext" aria-label="下一月">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="quick-chips" id="quickChips"></div>
+          </div>
         </div>
         <label class="bse-toggle">
           <input type="checkbox" id="includeBse">
@@ -370,7 +484,14 @@
 
       const STATS_API = "/api/stock-interval-stats";
 
-      const baseDateSelect = document.getElementById("baseDate");
+      const baseDateButton = document.getElementById("baseDateButton");
+      const baseDateText = document.getElementById("baseDateText");
+      const calendarPanel = document.getElementById("calendarPanel");
+      const calPrev = document.getElementById("calPrev");
+      const calNext = document.getElementById("calNext");
+      const calTitle = document.getElementById("calTitle");
+      const calGrid = document.getElementById("calGrid");
+      const quickChips = document.getElementById("quickChips");
       const includeBseInput = document.getElementById("includeBse");
       const bseHint = document.getElementById("bseHint");
       const tabDown = document.getElementById("tabDown");
@@ -385,8 +506,124 @@
         openThreshold: null,
         listItems: [],
         listTotal: 0,
-        requestId: 0
+        requestId: 0,
+        baseDate: null,
+        availableDates: [],
+        availableSet: new Set(),
+        calendarMonth: null
       };
+
+      const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+
+      function monthKey(date) {
+        return date.slice(0, 7);
+      }
+
+      function shiftMonth(key, delta) {
+        const [year, month] = key.split("-").map(Number);
+        const shifted = new Date(Date.UTC(year, month - 1 + delta, 1));
+        return shifted.toISOString().slice(0, 7);
+      }
+
+      function shiftDays(date, delta) {
+        const [year, month, day] = date.split("-").map(Number);
+        const shifted = new Date(Date.UTC(year, month - 1, day + delta));
+        return shifted.toISOString().slice(0, 10);
+      }
+
+      function latestAvailableOnOrBefore(target) {
+        for (let i = state.availableDates.length - 1; i >= 0; i -= 1) {
+          if (state.availableDates[i] <= target) return state.availableDates[i];
+        }
+        return null;
+      }
+
+      function setBaseDate(date, reload) {
+        state.baseDate = date;
+        baseDateText.textContent = date || "选择日期";
+        if (date) state.calendarMonth = monthKey(date);
+        if (reload) loadStats();
+      }
+
+      function openCalendar() {
+        calendarPanel.hidden = false;
+        baseDateButton.setAttribute("aria-expanded", "true");
+        renderCalendar();
+      }
+
+      function closeCalendar() {
+        calendarPanel.hidden = true;
+        baseDateButton.setAttribute("aria-expanded", "false");
+      }
+
+      function renderCalendar() {
+        if (!state.calendarMonth) return;
+        const [year, month] = state.calendarMonth.split("-").map(Number);
+        calTitle.textContent = year + " 年 " + month + " 月";
+        const firstMonth = monthKey(state.availableDates[0]);
+        const lastMonth = monthKey(state.availableDates[state.availableDates.length - 1]);
+        calPrev.disabled = state.calendarMonth <= firstMonth;
+        calNext.disabled = state.calendarMonth >= lastMonth;
+
+        calGrid.innerHTML = "";
+        for (const weekday of WEEKDAYS) {
+          const cell = document.createElement("span");
+          cell.className = "cal-weekday";
+          cell.textContent = weekday;
+          calGrid.appendChild(cell);
+        }
+        const firstDay = new Date(Date.UTC(year, month - 1, 1));
+        const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        // 周一起始：getUTCDay() 周日=0 → 前置空位 (day+6)%7。
+        const leading = (firstDay.getUTCDay() + 6) % 7;
+        for (let i = 0; i < leading; i += 1) {
+          calGrid.appendChild(document.createElement("span"));
+        }
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const date = state.calendarMonth + "-" + String(day).padStart(2, "0");
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "cal-day";
+          cell.textContent = String(day);
+          if (!state.availableSet.has(date)) {
+            cell.disabled = true;
+          } else {
+            if (date === state.baseDate) cell.classList.add("is-selected");
+            cell.addEventListener("click", () => {
+              closeCalendar();
+              setBaseDate(date, true);
+            });
+          }
+          calGrid.appendChild(cell);
+        }
+        renderQuickChips();
+      }
+
+      function renderQuickChips() {
+        const latest = state.availableDates[state.availableDates.length - 1];
+        const earliest = state.availableDates[0];
+        const candidates = [
+          ["最近交易日", latest],
+          ["一周前", latestAvailableOnOrBefore(shiftDays(latest, -7))],
+          ["一月前", latestAvailableOnOrBefore(shiftDays(latest, -30))],
+          [earliest < latest.slice(0, 4) + "-01-02" ? "年初以来" : "最早可选", earliest]
+        ];
+        quickChips.innerHTML = "";
+        const seen = new Set();
+        for (const [label, date] of candidates) {
+          if (!date || seen.has(date)) continue;
+          seen.add(date);
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip";
+          chip.textContent = label + " " + date.slice(5).replace("-", "/");
+          chip.addEventListener("click", () => {
+            closeCalendar();
+            setBaseDate(date, true);
+          });
+          quickChips.appendChild(chip);
+        }
+      }
 
       function pct(value) {
         return (value * 100).toFixed(2) + "%";
@@ -430,18 +667,14 @@
       async function loadDates() {
         try {
           const data = await fetchJson(new URLSearchParams({ dates: "1" }));
-          const dates = (data.availableBaseDates || []).slice().reverse();
+          const dates = (data.availableBaseDates || []).slice().sort();
           if (!dates.length) {
             setStatus("暂无可选基准日：历史快照还在累积中，请过几个交易日再来。");
             return;
           }
-          baseDateSelect.innerHTML = "";
-          for (const date of dates) {
-            const option = document.createElement("option");
-            option.value = date;
-            option.textContent = date;
-            baseDateSelect.appendChild(option);
-          }
+          state.availableDates = dates;
+          state.availableSet = new Set(dates);
+          setBaseDate(dates[dates.length - 1], false);
           await loadStats();
         } catch (error) {
           setStatus("可选日期加载失败，请稍后刷新重试。");
@@ -451,7 +684,7 @@
 
       async function loadStats() {
         const requestId = ++state.requestId;
-        const baseDate = baseDateSelect.value;
+        const baseDate = state.baseDate;
         if (!baseDate) return;
         state.stats = null;
         state.openThreshold = null;
@@ -615,7 +848,7 @@
         try {
           const signed = state.direction === "down" ? -thresholdPct : thresholdPct;
           const data = await fetchJson(new URLSearchParams({
-            baseDate: baseDateSelect.value,
+            baseDate: state.baseDate,
             includeBse: includeBseInput.checked ? "true" : "false",
             list: String(signed),
             limit: "100",
@@ -647,7 +880,29 @@
 
       tabDown.addEventListener("click", () => selectDirection("down"));
       tabUp.addEventListener("click", () => selectDirection("up"));
-      baseDateSelect.addEventListener("change", loadStats);
+      baseDateButton.addEventListener("click", () => {
+        if (!state.availableDates.length) return;
+        if (calendarPanel.hidden) openCalendar();
+        else closeCalendar();
+      });
+      calPrev.addEventListener("click", () => {
+        state.calendarMonth = shiftMonth(state.calendarMonth, -1);
+        renderCalendar();
+      });
+      calNext.addEventListener("click", () => {
+        state.calendarMonth = shiftMonth(state.calendarMonth, 1);
+        renderCalendar();
+      });
+      document.addEventListener("click", (event) => {
+        if (calendarPanel.hidden) return;
+        if (!calendarPanel.contains(event.target) && event.target !== baseDateButton &&
+            !baseDateButton.contains(event.target)) {
+          closeCalendar();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !calendarPanel.hidden) closeCalendar();
+      });
       includeBseInput.addEventListener("change", () => {
         bseHint.textContent = includeBseInput.checked
           ? "当前比较池：沪深 A 股 + 北交所"

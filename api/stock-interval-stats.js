@@ -57,20 +57,58 @@ function createHandler(options = {}) {
 
   async function availableBaseDates(currentAsOf) {
     if (!datesCache || now() - datesCache.fetchedAt > DATES_CACHE_TTL_MS) {
+      const [snapshotDates, dailyDates] = await Promise.all([
+        store.listAvailableSnapshotDates(),
+        typeof store.listIntervalDailyDates === "function"
+          ? store.listIntervalDailyDates()
+          : []
+      ]);
       datesCache = {
         fetchedAt: now(),
-        dates: await store.listAvailableSnapshotDates()
+        dates: [...new Set([...snapshotDates, ...dailyDates])].sort()
       };
     }
     return datesCache.dates.filter((date) => date < currentAsOf);
   }
 
+  // 回填日频文件已是紧凑映射（backfill-qfq 高精度），
+  // 直接转换为与 extractYtdMap 相同的形状。
+  function dailyPayloadToMap(payload) {
+    const records = Object.create(null);
+    for (const symbol of Object.keys(payload.records)) {
+      const record = payload.records[symbol];
+      records[symbol] = {
+        code: symbol.slice(0, 6),
+        name: null,
+        exchange: record.exchange,
+        ytd: record.ytd,
+        lastPriceDate: record.lastPriceDate || null,
+        ineligibilityReason: null
+      };
+    }
+    return {
+      snapshotId: `interval-daily-${payload.asOf}`,
+      asOf: payload.asOf,
+      baseDate: payload.baseDate,
+      methodologyVersion: payload.methodologyVersion || null,
+      records
+    };
+  }
+
+  // 解析顺序：① 缓存 ② 回填日频文件（小且高精度） ③ 历史快照。
   async function resolveBaseMap(baseDate) {
     const cached = baseMapCache.get(baseDate);
     if (cached) return cached;
-    const loaded = await store.loadLatestSnapshotForDate(baseDate);
-    if (!loaded) return null;
-    const map = extractYtdMap(loaded.snapshot);
+    let map = null;
+    if (typeof store.loadIntervalDailyMap === "function") {
+      const daily = await store.loadIntervalDailyMap(baseDate);
+      if (daily) map = dailyPayloadToMap(daily);
+    }
+    if (!map) {
+      const loaded = await store.loadLatestSnapshotForDate(baseDate);
+      if (!loaded) return null;
+      map = extractYtdMap(loaded.snapshot);
+    }
     boundedSet(baseMapCache, baseDate, map, MAP_CACHE_MAX_ENTRIES);
     return map;
   }

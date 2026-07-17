@@ -263,6 +263,110 @@ async function run() {
   assert.strictEqual(response.data.error, "STOCK_PUBLISH_FAILED");
   assert.ok(!JSON.stringify(response.data).includes("private orphan inventory detail"));
 
+  // 区间统计逐日回填文件上传模式。
+  const intervalDailyPayload = (overrides = {}) => ({
+    version: "stock-ytd-interval-daily.v1",
+    asOf: "2026-03-18",
+    baseDate: BASE_DATE,
+    methodologyVersion: "backfill-qfq.v1",
+    generatedAt: GENERATED_AT,
+    records: {
+      "600000.SH": { exchange: "SH", ytd: -0.12 },
+      "000001.SZ": { exchange: "SZ", ytd: 0.08, lastPriceDate: "2026-03-17" },
+      "920001.BJ": { exchange: "BSE", ytd: 0.01 }
+    },
+    ...overrides
+  });
+  const gzipIntervalDaily = (overrides) =>
+    zlib.gzipSync(Buffer.from(JSON.stringify(intervalDailyPayload(overrides))));
+
+  const dailyWrites = [];
+  handler = stockPublishApi.createHandler({
+    env: { CRON_SECRET: "publish-secret", STOCK_INTERVAL_DAILY_MIN_RECORDS: "3" },
+    storage: {
+      async putIntervalDailyMap(asOf, payload) {
+        dailyWrites.push({ asOf, payload });
+      }
+    },
+    logger: { error() {} }
+  });
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily()
+  });
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.data.publish.status, "interval-daily");
+  assert.strictEqual(response.data.publish.asOf, "2026-03-18");
+  assert.strictEqual(response.data.publish.recordCount, 3);
+  assert.strictEqual(dailyWrites.length, 1);
+  assert.strictEqual(dailyWrites[0].asOf, "2026-03-18");
+  assert.strictEqual(dailyWrites[0].payload.records["000001.SZ"].lastPriceDate, "2026-03-17");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-19" },
+    body: gzipIntervalDaily()
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_DATE_MISMATCH");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-02-30" },
+    body: gzipIntervalDaily()
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_DATE_INVALID");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily({ version: "wrong.v9" })
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_BODY_INVALID");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily({
+      records: { "600000.SH": { exchange: "SH", ytd: -0.12 } }
+    })
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_COVERAGE_LOW");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily({
+      records: {
+        "600000.SH": { exchange: "SH", ytd: -1.5 },
+        "000001.SZ": { exchange: "SZ", ytd: 0.08 },
+        "920001.BJ": { exchange: "BSE", ytd: 0.01 }
+      }
+    })
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_BODY_INVALID");
+
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily({
+      records: {
+        "600000.SH": { exchange: "SH", ytd: -0.12, lastPriceDate: "2026-03-20" },
+        "000001.SZ": { exchange: "SZ", ytd: 0.08 },
+        "920001.BJ": { exchange: "BSE", ytd: 0.01 }
+      }
+    })
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_BODY_INVALID");
+
+  response = await invoke(handler, {
+    authorization: "Bearer wrong",
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily()
+  });
+  assert.strictEqual(response.status, 401);
+  assert.strictEqual(dailyWrites.length, 1, "非法请求不得触发写入");
+
   console.log("stock publish API tests passed");
 }
 

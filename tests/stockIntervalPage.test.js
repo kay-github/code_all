@@ -11,8 +11,20 @@ const home = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const vercel = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
 
 assert.ok(page.includes('name="viewport"'));
-assert.ok(page.includes('id="baseDate"'));
+assert.ok(page.includes('id="baseDateButton"'));
+assert.ok(page.includes('id="calendarPanel"'));
+assert.ok(page.includes('id="calPrev"'));
+assert.ok(page.includes('id="calNext"'));
+assert.ok(page.includes('id="calGrid"'));
+assert.ok(page.includes('id="quickChips"'));
+assert.ok(page.includes('role="dialog"'));
+assert.ok(page.includes("年初以来"));
+assert.ok(!page.includes('<select'), "原生下拉已替换为日历选择器");
 assert.ok(page.includes('id="includeBse"'));
+
+// 内联脚本必须语法有效。
+const script = page.match(/<script>([\s\S]*?)<\/script>/)[1];
+assert.doesNotThrow(() => new Function(script));
 assert.ok(page.includes('id="tabDown"'));
 assert.ok(page.includes('id="tabUp"'));
 assert.ok(page.includes('role="tablist"'));

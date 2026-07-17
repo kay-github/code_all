@@ -25,16 +25,16 @@ function requestHeader(req, name) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function parseRecoveryAsOf(req) {
+function parseDateParam(req, name, errorCode) {
   let values = null;
-  if (req && req.query && Object.prototype.hasOwnProperty.call(req.query, "recoverAsOf")) {
-    const value = req.query.recoverAsOf;
+  if (req && req.query && Object.prototype.hasOwnProperty.call(req.query, name)) {
+    const value = req.query[name];
     values = Array.isArray(value) ? value : [value];
   } else if (req && req.url) {
     try {
       values = new URL(req.url, "https://stock-publish.local")
         .searchParams
-        .getAll("recoverAsOf");
+        .getAll(name);
     } catch {
       values = null;
     }
@@ -43,16 +43,24 @@ function parseRecoveryAsOf(req) {
   const value = values.length === 1 ? values[0] : null;
   try {
     if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      throw new TypeError("recoverAsOf must be YYYY-MM-DD");
+      throw new TypeError(`${name} must be YYYY-MM-DD`);
     }
-    const normalized = normalizeDate(value, "recoverAsOf");
-    if (normalized !== value) throw new TypeError("recoverAsOf must be YYYY-MM-DD");
+    const normalized = normalizeDate(value, name);
+    if (normalized !== value) throw new TypeError(`${name} must be YYYY-MM-DD`);
     return normalized;
   } catch {
-    const error = new Error("recovery date is invalid");
-    error.code = "PUBLISH_RECOVERY_DATE_INVALID";
+    const error = new Error(`${name} date is invalid`);
+    error.code = errorCode;
     throw error;
   }
+}
+
+function parseRecoveryAsOf(req) {
+  return parseDateParam(req, "recoverAsOf", "PUBLISH_RECOVERY_DATE_INVALID");
+}
+
+function parseIntervalDailyDate(req) {
+  return parseDateParam(req, "intervalDailyDate", "PUBLISH_INTERVAL_DATE_INVALID");
 }
 
 async function readRawBody(req) {
@@ -147,6 +155,62 @@ function validatePublishPayload(payload) {
   };
 }
 
+// 区间统计逐日回填文件（INTERVAL_STATS.md §4）：与快照发布同一鉴权，
+// 校验后整体写入 interval/daily/<date>.json。
+function validateIntervalDailyPayload(payload, intervalDailyDate, env = process.env) {
+  const fail = (message, code = "PUBLISH_INTERVAL_BODY_INVALID") => {
+    const error = new Error(message);
+    error.code = code;
+    throw error;
+  };
+  if (payload.version !== "stock-ytd-interval-daily.v1") {
+    fail("interval daily payload version is unsupported");
+  }
+  if (payload.asOf !== intervalDailyDate) {
+    fail("interval daily asOf does not match the request date", "PUBLISH_INTERVAL_DATE_MISMATCH");
+  }
+  const baseDate = normalizeDate(payload.baseDate, "baseDate");
+  if (payload.asOf < baseDate) fail("interval daily asOf is before its base date");
+  if (typeof payload.methodologyVersion !== "string" || !payload.methodologyVersion) {
+    fail("interval daily methodologyVersion is missing");
+  }
+  if (!payload.records || typeof payload.records !== "object" || Array.isArray(payload.records)) {
+    fail("interval daily records are missing");
+  }
+  const symbols = Object.keys(payload.records);
+  const configuredFloor = Number(env.STOCK_INTERVAL_DAILY_MIN_RECORDS);
+  const minRecords = Number.isFinite(configuredFloor) && configuredFloor > 0
+    ? configuredFloor
+    : 1000;
+  if (symbols.length < minRecords) {
+    fail("interval daily record count is below the safety floor", "PUBLISH_INTERVAL_COVERAGE_LOW");
+  }
+  const records = Object.create(null);
+  for (const symbol of symbols) {
+    if (!/^\d{6}\.(SH|SZ|BJ)$/.test(symbol)) fail(`interval daily symbol is invalid: ${symbol.slice(0, 12)}`);
+    const record = payload.records[symbol];
+    if (!record || typeof record !== "object") fail("interval daily record is invalid");
+    const exchange = record.exchange;
+    if (!["SH", "SZ", "BSE"].includes(exchange)) fail("interval daily exchange is invalid");
+    if (!Number.isFinite(record.ytd) || record.ytd <= -1) fail("interval daily ytd is invalid");
+    if (record.lastPriceDate != null) {
+      const lastPriceDate = normalizeDate(record.lastPriceDate, "lastPriceDate");
+      if (lastPriceDate > payload.asOf) fail("interval daily lastPriceDate is in the future");
+      records[symbol] = { exchange, ytd: record.ytd, lastPriceDate };
+      continue;
+    }
+    records[symbol] = { exchange, ytd: record.ytd };
+  }
+  return {
+    version: "stock-ytd-interval-daily.v1",
+    asOf: payload.asOf,
+    baseDate,
+    methodologyVersion: payload.methodologyVersion,
+    generatedAt: payload.generatedAt || new Date().toISOString(),
+    records
+  };
+}
+
 function publicSummary(envelope, auth) {
   const snapshot = envelope.snapshot;
   return {
@@ -179,6 +243,28 @@ function createHandler(options = {}) {
       return;
     }
     try {
+      const intervalDailyDate = parseIntervalDailyDate(req);
+      if (intervalDailyDate) {
+        const payload = validateIntervalDailyPayload(
+          await parsePublishPayload(req),
+          intervalDailyDate,
+          env
+        );
+        const storage = options.storage || createStockSnapshotBlobStore({ env });
+        await storage.putIntervalDailyMap(intervalDailyDate, payload);
+        sendJson(res, 200, {
+          ok: true,
+          publish: {
+            status: "interval-daily",
+            asOf: payload.asOf,
+            baseDate: payload.baseDate,
+            methodologyVersion: payload.methodologyVersion,
+            recordCount: Object.keys(payload.records).length,
+            authorization: auth.type
+          }
+        });
+        return;
+      }
       const recoverAsOf = parseRecoveryAsOf(req);
       let envelope;
       if (recoverAsOf) {
@@ -226,6 +312,8 @@ module.exports.createHandler = createHandler;
 module.exports.readRawBody = readRawBody;
 module.exports.parsePublishPayload = parsePublishPayload;
 module.exports.parseRecoveryAsOf = parseRecoveryAsOf;
+module.exports.parseIntervalDailyDate = parseIntervalDailyDate;
+module.exports.validateIntervalDailyPayload = validateIntervalDailyPayload;
 module.exports.validatePublishPayload = validatePublishPayload;
 module.exports.publicSummary = publicSummary;
 module.exports.MAX_COMPRESSED_BYTES = MAX_COMPRESSED_BYTES;

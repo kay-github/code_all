@@ -34,6 +34,15 @@ on:
         required: false
         default: false
         type: boolean
+      backfill_daily:
+        description: Run the interval-stats daily YTD backfill instead of the snapshot refresh
+        required: false
+        default: false
+        type: boolean
+      backfill_end:
+        description: Optional YYYY-MM-DD backfill end trading date
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -45,6 +54,7 @@ concurrency:
 
 jobs:
   refresh:
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.backfill_daily }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -85,3 +95,53 @@ jobs:
             args+=(--publish-url="$STOCK_PUBLISH_URL")
           fi
           node scripts/refresh-stock-ytd-em.js "${args[@]}"
+
+  # 区间统计逐日 YTD 回填（INTERVAL_STATS.md Phase 2）：
+  # 手工触发一次性任务；Baostock 串行全量约 25-70 分钟。
+  backfill-interval-daily:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill_daily }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      STOCK_PUBLISH_URL: https://1.688680.xyz/api/stock-publish
+      BACKFILL_END: ${{ inputs.backfill_end || '' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          python -m pip install --quiet baostock requests openpyxl
+
+      - name: Test backfill pipeline
+        run: |
+          python tests/backfill_interval_daily_test.py
+          npm run test:stock-interval
+
+      - name: Build daily YTD backfill dataset
+        shell: bash
+        run: |
+          args=(--output .stock-ytd-data/interval-backfill.json --progress-every 1000)
+          if [[ -n "$BACKFILL_END" ]]; then
+            args+=(--end="$BACKFILL_END")
+          fi
+          python scripts/backfill_interval_daily.py "${args[@]}"
+
+      - name: Upload daily files
+        run: |
+          node scripts/upload-interval-daily.js \
+            --input=.stock-ytd-data/interval-backfill.json \
+            --publish-url="$STOCK_PUBLISH_URL"

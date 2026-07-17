@@ -58,10 +58,17 @@ function currentSnapshot() {
 
 function makeStore(overrides = {}) {
   return {
-    calls: { list: 0, load: 0 },
+    calls: { list: 0, load: 0, daily: 0 },
     async listAvailableSnapshotDates() {
       this.calls.list += 1;
       return ["2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16"];
+    },
+    async listIntervalDailyDates() {
+      return [];
+    },
+    async loadIntervalDailyMap() {
+      this.calls.daily += 1;
+      return null;
     },
     async loadLatestSnapshotForDate(asOf) {
       this.calls.load += 1;
@@ -274,6 +281,51 @@ async function run() {
     await invoke(handler, { baseDate: "2026-07-13" });
     await invoke(handler, { baseDate: "2026-07-13" });
     assert.strictEqual(store.calls.load, 1, "第二次命中映射缓存");
+  }
+
+  // 回填日频文件优先于历史快照，且可用日期合并两个来源。
+  {
+    const store = makeStore({
+      async listIntervalDailyDates() {
+        return ["2025-12-31", "2026-03-18"];
+      },
+      async loadIntervalDailyMap(asOf) {
+        if (asOf !== "2026-03-18") return null;
+        return {
+          version: "stock-ytd-interval-daily.v1",
+          asOf: "2026-03-18",
+          baseDate: "2025-12-31",
+          methodologyVersion: "backfill-qfq.v1",
+          records: {
+            "600000.SH": { exchange: "SH", ytd: 0.10 },
+            "000001.SZ": { exchange: "SZ", ytd: 0.00, lastPriceDate: "2026-03-17" },
+            "000002.SZ": { exchange: "SZ", ytd: 0.20 }
+          }
+        };
+      }
+    });
+    const handler = createHandler({
+      store,
+      loadStockSnapshot: async () => ({
+        snapshot: currentSnapshot(),
+        mode: "published",
+        warning: null
+      }),
+      logger: { error() {} }
+    });
+
+    let response = await invoke(handler, { dates: "1" });
+    assert.deepStrictEqual(response.data.availableBaseDates, [
+      "2025-12-31", "2026-03-18", "2026-07-13", "2026-07-14", "2026-07-15"
+    ]);
+
+    response = await invoke(handler, { baseDate: "2026-03-18" });
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.data.methodologyVersions.base, "backfill-qfq.v1");
+    assert.strictEqual(response.data.matchedCount, 3);
+    assert.strictEqual(store.calls.load, 0, "日频文件命中时不读快照");
+    const bucket40 = response.data.declines.find((entry) => entry.thresholdPct === 40);
+    assert.strictEqual(bucket40.count, 1, "600000.SH 区间 (1-0.30)/(1+0.10)-1 ≈ -36.4% 不入 40 档；000001.SZ -45% 入");
   }
 
   // isStale / 警告透传。

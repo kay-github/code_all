@@ -6,8 +6,8 @@
 
 | 字段 | 内容 |
 | --- | --- |
-| 版本 | v1.0 |
-| 状态 | 设计基线（Phase 1 实施中） |
+| 版本 | v1.1 |
+| 状态 | Phase 1 已上线；Phase 2（回填 + 日历选择器）已实现，待执行回填任务 |
 | 创建日期 | 2026-07-16 |
 | 依赖文档 | PRD.md §18 v2.1 决策记录、DATA_SOURCES.md §9.3 |
 | 数据来源 | 已发布的不可变 Published 快照（私有 Vercel Blob） |
@@ -24,9 +24,9 @@
 
 选一个基准日，一眼看到全市场自该日以来的涨跌分布与极端涨跌名单。
 
-### 2.3 功能范围（Phase 1）
+### 2.3 功能范围
 
-- 基准日：有已发布快照的交易日，最早 2026-07-13，且与当前快照同一年度 baseDate。
+- 基准日：可用日期 = 回填日频文件 ∪ 已发布快照的交易日（回填执行后最早可到上年末 2025-12-31，即"年初以来"），且与当前快照同一年度 baseDate。
 - 统计终点：最新已发布快照（`current.json`），不支持自选终点（API 预留 `to` 参数，本期不实现）。
 - 阈值梯度（累计计数，"跌超 30%" 包含 "跌超 50%"）：
 
@@ -35,7 +35,7 @@
 
 - 每档可展开名单：代码、名称、区间涨跌幅，按涨跌幅排序，分页。
 - 北交所开关：沿用现有产品 includeBse 口径，默认沪深。
-- 明确不做：盘中实时、跨年区间、自选终点日、2026-07-13 之前的基准日（见 §8 路线图）。
+- 明确不做：盘中实时、跨年区间、自选终点日（见 §8 路线图）。
 
 ## 3. 数学口径
 
@@ -97,10 +97,35 @@
             ↓ 只依赖 "日期 D → 全市场 YTD 紧凑映射"
     数据层  日期解析顺序：
             ① 进程内缓存（按 snapshotId，不可变、永不过期）
-            ② 已发布不可变快照  stock-ytd/snapshots/stock-ytd-YYYYMMDD-*.json
-            ③（Phase 2 预留）回填数据集  stock-ytd/interval/daily/<date>.json
+            ② 回填日频文件  stock-ytd/interval/daily/<date>.json（小、高精度，优先）
+            ③ 已发布不可变快照  stock-ytd/snapshots/stock-ytd-YYYYMMDD-*.json
 
-查询层不感知数据来自哪一层；Phase 2 扩展只往 ③ 增加数据，查询层与页面零改动。
+查询层不感知数据来自哪一层；可用基准日 = 两个来源的日期并集。
+
+### 4.3 回填日频文件（Phase 2，已实现）
+
+单日文件契约 `stock-ytd-interval-daily.v1`：
+
+```json
+{
+  "version": "stock-ytd-interval-daily.v1",
+  "asOf": "2026-03-18",
+  "baseDate": "2025-12-31",
+  "methodologyVersion": "backfill-qfq.v1",
+  "generatedAt": "...",
+  "records": {
+    "600519.SH": { "exchange": "SH", "ytd": -0.1069 },
+    "000001.SZ": { "exchange": "SZ", "ytd": 0.02, "lastPriceDate": "2026-03-17" }
+  }
+}
+```
+
+- 基准日当天（上年末收盘）文件 ytd 全为 0，使"年初以来"走同一查询路径。
+- 停牌日沿用最近可用收盘并记录 `lastPriceDate`；未上市/缺基准价的股票直接缺席。
+- 生成：`scripts/backfill_interval_daily.py`（沪深 Baostock qfq、北交所新浪原始价×因子，与日常管线同口径；单日覆盖率 <99.5% 的交易日整日丢弃）。
+- 上传：`scripts/upload-interval-daily.js` 逐日 gzip POST `/api/stock-publish?intervalDailyDate=<date>`，OIDC/CRON_SECRET 鉴权，服务端逐条校验（版本、日期一致、记录数下限、ytd 有界、symbol 白名单格式）后允许覆盖写（因子修订可重灌）。
+- 触发：GitHub Actions `stock-ytd.yml` 手工 dispatch，勾选 `backfill_daily`（必须在该 workflow 内运行——OIDC 只信任它的身份），全程约 25–70 分钟。
+- 回填文件为高精度 qfq 计算，凡命中即消除 §3.3/§3.4 中 f25 舍入与分红仿射两项误差。
 
 ### 4.2 约束（继承 DATA_SOURCES）
 
@@ -185,24 +210,31 @@
 
 ## 8. 路线图
 
-| 阶段 | 基准日范围 | 数据工作 | 查询层改动 |
+| 阶段 | 状态 | 基准日范围 | 数据工作 |
 | --- | --- | --- | --- |
-| Phase 1（本期） | ≥2026-07-13 的快照日，随时间自动变长 | 无 | 全量实现 |
-| Phase 2（回填） | 2026 年内任意交易日 | 一次性 Baostock 任务生成 `stock-ytd/interval/daily/<date>.json`（高精度 qfq，消除分红仿射误差）；发布管线顺带写当日文件作持久缓存 | 零改动（数据层加一个解析分支） |
-| Phase 3（跨年） | 任意历史日期 | 口径切换为纯价格区间收益，需独立立项与 PRD 决策 | 新增口径分支 |
+| Phase 1 | 已上线（2026-07-16） | ≥2026-07-13 的快照日 | 无 |
+| Phase 2 | 代码已实现，回填任务待执行 | 2025-12-31 起任意交易日（含"年初以来"） | dispatch `stock-ytd.yml` + `backfill_daily`（见 §4.3）；此后每次执行会覆盖到最新完整交易日，可按需重跑 |
+| Phase 2.5（可选） | 未实施 | — | 日常发布管线在发布快照后顺带写当日日频文件，把快照日期的冷查询也降到亚秒 |
+| Phase 3（跨年） | 未立项 | 任意历史日期 | 口径切换为纯价格区间收益，需独立立项与 PRD 决策 |
 
 ## 9. 代码与测试清单
 
 | 文件 | 职责 |
 | --- | --- |
 | lib/stockIntervalStats.js | 紧凑映射提取、区间收益合成、阈值分桶、样本资格 |
-| lib/stockSnapshotBlobStore.js（扩展） | `listAvailableSnapshotDates()`、`loadLatestSnapshotForDate(asOf)` 只读能力 |
-| api/stock-interval-stats.js | 三模式路由、参数校验、进程内缓存、错误脱敏 |
-| tools/stock-interval-stats/index.html | 移动优先分布页面（日期选择、跌/涨切换、北交所开关、名单钻取） |
+| lib/stockSnapshotBlobStore.js（扩展） | 历史快照只读能力 + 回填日频文件读写与日期列表 |
+| api/stock-interval-stats.js | 三模式路由、日频文件→快照解析顺序、参数校验、进程内缓存、错误脱敏 |
+| api/stock-publish.js（扩展） | `intervalDailyDate` 上传模式：鉴权、逐条校验、覆盖写 |
+| scripts/backfill_interval_daily.py | 回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪） |
+| scripts/upload-interval-daily.js | 回填数据集拆日上传（OIDC 换新、401 重试、失败清单） |
+| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、北交所开关、名单钻取） |
+| .github/workflows/stock-ytd.yml（扩展） | `backfill_daily` 手工任务：装依赖 → 测试 → 生成 → 上传 |
 | tests/stockIntervalStats.test.js | 恒等式（送转）、分红近似误差方向、资格规则、阈值边界、跨版本、跨年守卫 |
-| tests/stockSnapshotBlobStore.test.js（扩展） | 日期列表、同日多快照取最新、损坏快照跳过 |
-| tests/apiStockIntervalStats.test.js | 三模式契约、参数校验、404 附可用日期、分页稳定性、no-store、脱敏 |
-| tests/stockIntervalPage.test.js | 页面入口、控件、API 引用基线 |
+| tests/stockSnapshotBlobStore.test.js（扩展） | 快照历史读取 + 日频文件读写/列表/损坏兜底 |
+| tests/apiStockIntervalStats.test.js | 三模式契约、日频优先解析、日期并集、分页稳定性、脱敏 |
+| tests/apiStockPublish.test.js（扩展） | 日频上传模式鉴权、校验矩阵与响应契约 |
+| tests/backfill_interval_daily_test.py | 逐日序列构建、停牌沿用、缺基准价、新股旗标、交易日过滤 |
+| tests/stockIntervalPage.test.js | 页面入口、日历控件、API 引用与内联脚本语法基线 |
 
 ## 10. 验收清单
 

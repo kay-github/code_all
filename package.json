@@ -5,7 +5,7 @@
     "test:e2e": "playwright test",
     "test:stock-free": "node tests/stockSnapshot.test.js && node tests/stockPublishedSnapshot.test.js && node tests/stockBenchmark.test.js && node tests/stockPublishAuth.test.js && node tests/apiStockPublish.test.js && node tests/freeStockPublisher.test.js",
     "test:stock-interval": "node tests/stockIntervalStats.test.js && node tests/apiStockIntervalStats.test.js && node tests/stockIntervalPage.test.js && node tests/stockSnapshotBlobStore.test.js",
-    "test:stock-python": "python tests/free_stock_ytd_test.py"
+    "test:stock-python": "python tests/free_stock_ytd_test.py && python tests/backfill_interval_daily_test.py"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1"
