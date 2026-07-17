@@ -7,6 +7,10 @@ const {
   publishSnapshot,
   requestGithubOidcToken
 } = require("./publish-free-stock-ytd");
+const { uploadDay, resolveToken } = require("./upload-interval-daily");
+
+const INTERVAL_DAILY_VERSION = "stock-ytd-interval-daily.v1";
+const INTERVAL_DAILY_METHODOLOGY = "snapshot-em-f25.v1";
 
 const DEFAULT_SNAPSHOT_URL = "https://1.688680.xyz/api/stock-snapshot";
 
@@ -53,6 +57,47 @@ async function loadCurrentEnvelope(snapshotUrl, options = {}) {
   return payload;
 }
 
+// Phase 2.5：快照发布成功后顺带写当日 interval/daily 文件，让该日日后作为
+// 基准日时的冷查询走 ~100KB 日频快路径而非整包快照。精度与快照相同
+//（东财 f25 口径）；回填任务重跑时会以更高精度的 backfill-qfq.v1 覆盖同名文件。
+function snapshotIntervalDailyPayload(candidate) {
+  const records = {};
+  for (const record of candidate.records || []) {
+    if (!record || record.isEligible !== true) continue;
+    if (typeof record.symbol !== "string") continue;
+    if (!Number.isFinite(record.ytd) || record.ytd <= -1) continue;
+    const entry = { exchange: record.exchange, ytd: record.ytd };
+    if (record.lastPriceDate && record.lastPriceDate !== candidate.asOf) {
+      entry.lastPriceDate = record.lastPriceDate;
+    }
+    records[record.symbol] = entry;
+  }
+  return {
+    version: INTERVAL_DAILY_VERSION,
+    asOf: candidate.asOf,
+    baseDate: candidate.baseDate,
+    methodologyVersion: INTERVAL_DAILY_METHODOLOGY,
+    generatedAt: candidate.generatedAt || candidate.publishedAt,
+    records
+  };
+}
+
+// 上传失败不推翻已成功的快照发布：该日仅退回快照慢路径，正确性不受影响。
+async function uploadSnapshotIntervalDaily(candidate, publishUrl, options = {}) {
+  try {
+    const payload = snapshotIntervalDailyPayload(candidate);
+    const token = await resolveToken(options);
+    const result = await uploadDay(publishUrl, candidate.asOf, payload, token, options);
+    return { ok: true, day: result.day, recordCount: result.recordCount };
+  } catch (error) {
+    return {
+      ok: false,
+      day: candidate.asOf,
+      error: String(error && error.message || error).slice(0, 200)
+    };
+  }
+}
+
 function summary(build, extra = {}) {
   const snapshot = build.candidate;
   return {
@@ -69,7 +114,8 @@ function summary(build, extra = {}) {
     sentinel: build.sentinel ? build.sentinel.results : null,
     stats: build.stats || null,
     compressedBytes: extra.compressedBytes || null,
-    snapshotId: extra.snapshotId || null
+    snapshotId: extra.snapshotId || null,
+    intervalDaily: extra.intervalDaily || null
   };
 }
 
@@ -123,9 +169,11 @@ async function main(argv = process.argv.slice(2)) {
     },
     args.publishUrl
   );
+  const intervalDaily = await uploadSnapshotIntervalDaily(build.candidate, args.publishUrl);
   console.log(JSON.stringify(summary(build, {
     compressedBytes: published.compressedBytes,
-    snapshotId: published.result.publish && published.result.publish.snapshotId
+    snapshotId: published.result.publish && published.result.publish.snapshotId,
+    intervalDaily
   })));
 }
 
@@ -143,8 +191,11 @@ if (require.main === module) {
 
 module.exports = {
   DEFAULT_SNAPSHOT_URL,
+  INTERVAL_DAILY_METHODOLOGY,
   parseArguments,
   loadCurrentEnvelope,
+  snapshotIntervalDailyPayload,
+  uploadSnapshotIntervalDaily,
   summary,
   main
 };

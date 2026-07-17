@@ -18,7 +18,7 @@
 
 "从某月某日（比如前阵子大跌那天）到现在，跌幅超过 30%、35%、40%、45%、50% 的股票各有多少只？"
 
-用户会在市场大跌或大涨后反复查询同一个基准日；不需要盘中实时数据，日频（每交易日 18:35 后更新）足够；使用者是通过链接访问的普通朋友，无 AI、无账号。
+用户会在市场大跌或大涨后反复查询同一个基准日；不需要盘中实时数据，日频（每交易日收盘后 16:07 起更新）足够；使用者是通过链接访问的普通朋友，无 AI、无账号。
 
 ### 2.2 一句话定位
 
@@ -126,12 +126,13 @@
 - 上传：`scripts/upload-interval-daily.js` 逐日 gzip POST `/api/stock-publish?intervalDailyDate=<date>`，OIDC/CRON_SECRET 鉴权，服务端逐条校验（版本、日期一致、记录数下限、ytd 有界、symbol 白名单格式）后允许覆盖写（因子修订可重灌）。
 - 触发：GitHub Actions `stock-ytd.yml` 手工 dispatch，勾选 `backfill_daily`（必须在该 workflow 内运行——OIDC 只信任它的身份），全程约 25–70 分钟。
 - 回填文件为高精度 qfq 计算，凡命中即消除 §3.3/§3.4 中 f25 舍入与分红仿射两项误差。
+- Phase 2.5（已实现）：`scripts/refresh-stock-ytd-em.js` 在每晚快照发布成功后顺带生成并上传当日日频文件（methodologyVersion `snapshot-em-f25.v1`，精度与快照同为东财 f25 口径），使该日日后作为基准日时的冷查询走日频快路径；上传失败不推翻快照发布，仅该日退回快照慢路径。回填任务重跑时会以 `backfill-qfq.v1` 覆盖同名文件（更高精度，谁后写谁生效）。
 
 ### 4.2 约束（继承 DATA_SOURCES）
 
 - 用户查询只读已发布快照，**不在用户请求中抓取任何行情**。
 - 基准快照读取与 `api/stock-snapshot.js` 同一信任边界：服务端直读私有 Blob，不暴露 Blob URL、凭据或重定向。
-- 当前快照走现有 `loadStockSnapshot()`（HTTPS 网关 + L1 缓存 + 18:30 动态新鲜度），降级语义（isStale、SERVING_PREVIOUS、缓存降级警告）原样透传。
+- 当前快照走现有 `loadStockSnapshot()`（HTTPS 网关 + L1 缓存 + 16:00 动态新鲜度），降级语义（isStale、SERVING_PREVIOUS、缓存降级警告）原样透传。
 - 同日多份快照取上传时间最新且通过解析校验者（与 `promoteLatestSnapshot` 的候选选择规则一致）；解析失败的快照跳过并尝试次新。
 - 紧凑映射只保留 `symbol/code/name/exchange/ytd/lastPriceDate`，单日约 300KB，按 snapshotId 进程内缓存。
 
@@ -213,8 +214,8 @@
 | 阶段 | 状态 | 基准日范围 | 数据工作 |
 | --- | --- | --- | --- |
 | Phase 1 | 已上线（2026-07-16） | ≥2026-07-13 的快照日 | 无 |
-| Phase 2 | 代码已实现，回填任务待执行 | 2025-12-31 起任意交易日（含"年初以来"） | dispatch `stock-ytd.yml` + `backfill_daily`（见 §4.3）；此后每次执行会覆盖到最新完整交易日，可按需重跑 |
-| Phase 2.5（可选） | 未实施 | — | 日常发布管线在发布快照后顺带写当日日频文件，把快照日期的冷查询也降到亚秒 |
+| Phase 2 | 已上线（2026-07-17，128 个基准日） | 2025-12-31 起任意交易日（含"年初以来"） | dispatch `stock-ytd.yml` + `backfill_daily`（见 §4.3）；此后每次执行会覆盖到最新完整交易日，可按需重跑 |
+| Phase 2.5 | 已上线（2026-07-17） | 每个新交易日自动累积 | 日常发布管线在发布快照后顺带写当日日频文件（`snapshot-em-f25.v1`），新快照日期的基准冷查询走日频快路径 |
 | Phase 3（跨年） | 未立项 | 任意历史日期 | 口径切换为纯价格区间收益，需独立立项与 PRD 决策 |
 
 ## 9. 代码与测试清单
@@ -227,7 +228,7 @@
 | api/stock-publish.js（扩展） | `intervalDailyDate` 上传模式：鉴权、逐条校验、覆盖写 |
 | scripts/backfill_interval_daily.py | 回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪） |
 | scripts/upload-interval-daily.js | 回填数据集拆日上传（OIDC 换新、401 重试、失败清单） |
-| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、档位间隔 5/10/20% 切换、北交所开关、名单钻取） |
+| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、档位间隔 5/10/20% 切换、北交所开关、名单钻取、URL 状态共享、名单复制/导出 CSV） |
 | .github/workflows/stock-ytd.yml（扩展） | `backfill_daily` 手工任务：装依赖 → 测试 → 生成 → 上传 |
 | tests/stockIntervalStats.test.js | 恒等式（送转）、分红近似误差方向、资格规则、阈值边界、跨版本、跨年守卫 |
 | tests/stockSnapshotBlobStore.test.js（扩展） | 快照历史读取 + 日频文件读写/列表/损坏兜底 |

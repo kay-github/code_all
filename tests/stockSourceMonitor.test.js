@@ -70,7 +70,7 @@ const beforeCutoff = deriveExpectedDates(
     year: "2026",
     month: "07",
     day: "10",
-    hour: "17",
+    hour: "15",
     minute: "00"
   }
 );
@@ -87,7 +87,7 @@ const afterCutoff = deriveExpectedDates(
     year: "2026",
     month: "07",
     day: "10",
-    hour: "18",
+    hour: "16",
     minute: "30"
   }
 );

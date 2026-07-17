@@ -168,5 +168,6 @@ module.exports = {
   loadBackfillDataset,
   dailyPayload,
   uploadDay,
+  resolveToken,
   main
 };

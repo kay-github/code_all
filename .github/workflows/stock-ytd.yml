@@ -11,12 +11,15 @@ on:
       - lib/stockPublishedSnapshot.js
       - lib/stockSnapshot.js
       - lib/stockEmYtd.js
+      - lib/stockTradingDates.js
       - scripts/refresh-stock-ytd-em.js
+      - scripts/upload-interval-daily.js
   schedule:
-    # 北京时间工作日 18:35 主刷新；19:35 与 21:05 为自动重试窗口
+    # 北京时间工作日 16:07 主刷新（收盘 15:00 后 f25 即终值，配合 16:00
+    # 新鲜度截止点）；17:07 与 21:05 为自动重试窗口
     # （无新数据时 worker 以 no-op 结束，不重复发布）。
-    - cron: "35 10 * * 1-5"
-    - cron: "35 11 * * 1-5"
+    - cron: "7 8 * * 1-5"
+    - cron: "7 9 * * 1-5"
     - cron: "5 13 * * 1-5"
   workflow_dispatch:
     inputs:

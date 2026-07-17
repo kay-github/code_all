@@ -267,6 +267,32 @@ async function run() {
     );
   }
 
+  {
+    // Phase 2.5：快照 → 当日 interval/daily 文件（仅收合格记录，停牌带 lastPriceDate）。
+    const { snapshotIntervalDailyPayload } = require("../scripts/refresh-stock-ytd-em");
+    const payload = snapshotIntervalDailyPayload({
+      asOf: "2026-07-17",
+      baseDate: "2025-12-31",
+      generatedAt: "2026-07-17T08:10:00.000Z",
+      records: [
+        { symbol: "600000.SH", exchange: "SH", ytd: 0.1234, isEligible: true, lastPriceDate: "2026-07-17" },
+        { symbol: "300502.SZ", exchange: "SZ", ytd: -0.2, isEligible: true, lastPriceDate: "2026-07-10" },
+        { symbol: "830001.BJ", exchange: "BSE", ytd: null, isEligible: false, ineligibilityReason: "NEW_LISTING" }
+      ]
+    });
+    assert.strictEqual(payload.version, "stock-ytd-interval-daily.v1");
+    assert.strictEqual(payload.asOf, "2026-07-17");
+    assert.strictEqual(payload.baseDate, "2025-12-31");
+    assert.strictEqual(payload.methodologyVersion, "snapshot-em-f25.v1");
+    assert.deepStrictEqual(payload.records["600000.SH"], { exchange: "SH", ytd: 0.1234 });
+    assert.deepStrictEqual(payload.records["300502.SZ"], {
+      exchange: "SZ",
+      ytd: -0.2,
+      lastPriceDate: "2026-07-10"
+    });
+    assert.ok(!("830001.BJ" in payload.records), "不合格记录不进入日频文件");
+  }
+
   console.log("stock EM YTD tests passed");
 }
 

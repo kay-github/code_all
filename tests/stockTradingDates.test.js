@@ -22,8 +22,8 @@ let dates = deriveExpectedDatesFromCalendar(calendar, {
   year: "2026",
   month: "07",
   day: "13",
-  hour: "18",
-  minute: "29"
+  hour: "15",
+  minute: "59"
 });
 assert.strictEqual(dates.expectedAsOf, "2026-07-10");
 assert.strictEqual(dates.baseDate, "2025-12-31");
@@ -33,8 +33,8 @@ dates = deriveExpectedDatesFromCalendar(calendar, {
   year: "2026",
   month: "07",
   day: "13",
-  hour: "18",
-  minute: "30"
+  hour: "16",
+  minute: "00"
 });
 assert.strictEqual(dates.expectedAsOf, "2026-07-13");
 
@@ -48,8 +48,8 @@ dates = deriveExpectedDatesFromCalendar(rolloverCalendar, {
   year: "2026",
   month: "01",
   day: "01",
-  hour: "18",
-  minute: "30"
+  hour: "16",
+  minute: "00"
 });
 assert.strictEqual(dates.expectedAsOf, "2025-12-31");
 assert.strictEqual(dates.baseDate, "2025-12-31");
@@ -60,8 +60,8 @@ assert.throws(
     year: "2026",
     month: "09",
     day: "01",
-    hour: "18",
-    minute: "30"
+    hour: "16",
+    minute: "00"
   }),
   (error) => error.code === "TRADING_CALENDAR_COVERAGE_MISSING"
 );

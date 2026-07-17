@@ -389,6 +389,30 @@
       font-weight: 600;
     }
 
+    .list-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .list-actions { display: inline-flex; gap: 8px; }
+
+    .list-action {
+      min-height: 30px;
+      padding: 3px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-soft);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .list-action:not(:disabled):hover { border-color: var(--blue); color: var(--blue); }
+    .list-action:disabled { color: var(--muted); cursor: default; }
+
     .list-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 
     .list-table td {
@@ -470,7 +494,7 @@
     <header class="hero">
       <p class="eyebrow">A股市场统计</p>
       <h1>区间涨跌分布</h1>
-      <p class="subtitle">选一个基准日，看全市场自该日以来跌超或涨超某个幅度的股票各有多少只。每个交易日晚间更新。</p>
+      <p class="subtitle">选一个基准日，看全市场自该日以来跌超或涨超某个幅度的股票各有多少只。每个交易日收盘后更新（约 16:10）。</p>
     </header>
 
     <section class="panel" aria-label="统计条件">
@@ -559,6 +583,29 @@
         step: 5
       };
 
+      // URL 状态共享：base/dir/step/bse 均可通过链接直达；仅记录非默认值。
+      const initialParams = new URLSearchParams(location.search);
+      const initialBase = /^\d{4}-\d{2}-\d{2}$/.test(initialParams.get("base") || "")
+        ? initialParams.get("base")
+        : null;
+
+      function syncUrl() {
+        const params = new URLSearchParams();
+        if (state.baseDate) params.set("base", state.baseDate);
+        if (state.direction === "up") params.set("dir", "up");
+        if (state.step !== 5) params.set("step", String(state.step));
+        if (includeBseInput.checked) params.set("bse", "1");
+        const query = params.toString();
+        history.replaceState(null, "", query ? "?" + query : location.pathname);
+      }
+
+      function applyStep(step) {
+        state.step = step;
+        for (const button of stepSwitch.querySelectorAll(".step-option")) {
+          button.setAttribute("aria-checked", String(Number(button.dataset.step) === step));
+        }
+      }
+
       const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
 
       function monthKey(date) {
@@ -588,6 +635,7 @@
         state.baseDate = date;
         baseDateText.textContent = date || "选择日期";
         if (date) state.calendarMonth = monthKey(date);
+        syncUrl();
         if (reload) loadStats();
       }
 
@@ -720,7 +768,12 @@
           }
           state.availableDates = dates;
           state.availableSet = new Set(dates);
-          setBaseDate(dates[dates.length - 1], false);
+          setBaseDate(
+            initialBase && state.availableSet.has(initialBase)
+              ? initialBase
+              : dates[dates.length - 1],
+            false
+          );
           await loadStats();
         } catch (error) {
           setStatus("可选日期加载失败，请稍后刷新重试。");
@@ -828,15 +881,110 @@
         content.appendChild(rows);
       }
 
+      // 复制/导出前把该档位名单全量翻页取回（服务端单页上限 200，命中缓存后很快）。
+      async function fetchFullList(thresholdPct, onProgress) {
+        const signed = state.direction === "down" ? -thresholdPct : thresholdPct;
+        const items = [];
+        let total = Infinity;
+        while (items.length < total) {
+          const data = await fetchJson(new URLSearchParams({
+            baseDate: state.baseDate,
+            includeBse: includeBseInput.checked ? "true" : "false",
+            list: String(signed),
+            limit: "200",
+            offset: String(items.length)
+          }));
+          total = data.list.total;
+          if (!data.list.items.length) break;
+          items.push(...data.list.items);
+          if (onProgress) onProgress(items.length, total);
+        }
+        return items;
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+
+      function listActionButton(label, thresholdPct, run) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "list-action";
+        button.textContent = label;
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          try {
+            const items = await fetchFullList(thresholdPct, (count, total) => {
+              button.textContent = "获取中 " + count + "/" + total + "…";
+            });
+            await run(items);
+            button.textContent = "已完成";
+          } catch (error) {
+            button.textContent = label;
+            button.disabled = false;
+            setBanner("名单获取失败：" + error.message, "error");
+            return;
+          }
+          setTimeout(() => {
+            button.textContent = label;
+            button.disabled = false;
+          }, 1600);
+        });
+        return button;
+      }
+
+      function downloadCsv(items, thresholdPct) {
+        const isDown = state.direction === "down";
+        const lines = ["代码,名称,区间涨跌幅,停牌"];
+        for (const item of items) {
+          const name = String(item.name || item.symbol).replace(/"/g, '""');
+          lines.push(item.code + ',"' + name + '",' +
+            signedPct(item.intervalReturn) + "," + (item.isSuspended ? "是" : ""));
+        }
+        // BOM 让 Excel 按 UTF-8 识别中文。
+        const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = (isDown ? "跌超" : "涨超") + thresholdPct + "%_" +
+          state.baseDate + "_至_" + state.stats.asOf + ".csv";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
       function buildListPanel(bucket) {
         const isDown = state.direction === "down";
         const panel = document.createElement("div");
         panel.className = "list-panel";
+        const head = document.createElement("div");
+        head.className = "list-head";
         const title = document.createElement("p");
         title.className = "list-title";
         title.textContent = (isDown ? "跌超 " : "涨超 ") + bucket.thresholdPct +
           "% 名单（共 " + state.listTotal + " 只，按幅度排序）";
-        panel.appendChild(title);
+        head.appendChild(title);
+        const actions = document.createElement("div");
+        actions.className = "list-actions";
+        actions.append(
+          listActionButton("复制代码", bucket.thresholdPct, async (items) => {
+            await copyText(items.map((item) => item.code).join("\n"));
+          }),
+          listActionButton("导出 CSV", bucket.thresholdPct, async (items) => {
+            downloadCsv(items, bucket.thresholdPct);
+          })
+        );
+        head.appendChild(actions);
+        panel.appendChild(head);
 
         const table = document.createElement("table");
         table.className = "list-table";
@@ -923,6 +1071,7 @@
         state.openThreshold = null;
         tabDown.setAttribute("aria-selected", String(direction === "down"));
         tabUp.setAttribute("aria-selected", String(direction === "up"));
+        syncUrl();
         if (state.stats) renderRows();
       }
 
@@ -933,14 +1082,12 @@
         if (!option) return;
         const step = Number(option.dataset.step);
         if (!step || step === state.step) return;
-        state.step = step;
-        for (const button of stepSwitch.querySelectorAll(".step-option")) {
-          button.setAttribute("aria-checked", String(Number(button.dataset.step) === step));
-        }
+        applyStep(step);
         // 展开的名单档位在新间隔下不可见时收起。
         if (state.openThreshold !== null && state.openThreshold % step !== 0) {
           state.openThreshold = null;
         }
+        syncUrl();
         renderRows();
       });
       baseDateButton.addEventListener("click", () => {
@@ -970,9 +1117,22 @@
         bseHint.textContent = includeBseInput.checked
           ? "当前比较池：沪深 A 股 + 北交所"
           : "当前比较池：沪深 A 股";
+        syncUrl();
         loadStats();
       });
 
+      if (initialParams.get("dir") === "up") {
+        state.direction = "up";
+        tabDown.setAttribute("aria-selected", "false");
+        tabUp.setAttribute("aria-selected", "true");
+      }
+      if (["10", "20"].includes(initialParams.get("step"))) {
+        applyStep(Number(initialParams.get("step")));
+      }
+      if (initialParams.get("bse") === "1") {
+        includeBseInput.checked = true;
+        bseHint.textContent = "当前比较池：沪深 A 股 + 北交所";
+      }
       loadDates();
     })();
   </script>

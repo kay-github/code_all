@@ -27,6 +27,13 @@ assert.ok(page.includes('data-step="10"'));
 assert.ok(page.includes('data-step="20"'));
 assert.ok(page.includes("档位间隔"));
 
+// URL 状态共享与名单复制/导出。
+assert.ok(page.includes("URLSearchParams(location.search)"));
+assert.ok(page.includes("history.replaceState"));
+assert.ok(page.includes("复制代码"));
+assert.ok(page.includes("导出 CSV"));
+assert.ok(page.includes("\\uFEFF"), "CSV 需带 BOM 供 Excel 识别 UTF-8");
+
 // 内联脚本必须语法有效。
 const script = page.match(/<script>([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new Function(script));
