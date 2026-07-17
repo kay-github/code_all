@@ -153,6 +153,49 @@ def sina_daily_ytd(
     return series_to_daily(adjusted, base_date, trading_days)
 
 
+def baostock_index_closes(
+    bs: Any,
+    symbol: str,
+    start: str,
+    end: str,
+    *,
+    retries: int = 2,
+    sleep: Callable[[float], None] = time.sleep,
+) -> dict[str, float]:
+    """指数日线收盘价（沪深300 基准对比锚点）。指数无复权概念，取原始收盘。"""
+    rows = None
+    last_error: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            query = bs.query_history_k_data_plus(
+                symbol,
+                "date,close",
+                start_date=start,
+                end_date=end,
+                frequency="d",
+                adjustflag="3",
+            )
+            rows = fsy.collect_baostock_rows(query)
+            break
+        except Exception as error:
+            last_error = error
+            if attempt < retries:
+                sleep(0.5 * (attempt + 1))
+    if rows is None:
+        raise fsy.FreeStockSourceError(
+            "BAOSTOCK_INDEX_FAILED", "Baostock index history failed", source="baostock"
+        ) from last_error
+    closes: dict[str, float] = {}
+    for row in rows:
+        if len(row) < 2:
+            continue
+        value = fsy.parse_number(row[1])
+        if value is None or value <= 0:
+            continue
+        closes[fsy.normalize_date(row[0])] = value
+    return closes
+
+
 def _trading_days_between(
     calendar_rows: list[list[str]], start: str, end: str
 ) -> list[str]:
@@ -213,6 +256,17 @@ def build_backfill(options: argparse.Namespace) -> dict[str, Any]:
         trading_days = _trading_days_between(calendar_rows, base_date, end_date)
         if not trading_days or trading_days[0] != base_date:
             trading_days = [base_date, *[d for d in trading_days if d > base_date]]
+
+        # 指数抓取失败不拖垮全量回填：基准对比降级缺席，个股数据照常。
+        try:
+            csi300 = baostock_index_closes(bs, "sh.000300", base_date, end_date)
+        except Exception as error:
+            csi300 = {}
+            failures.append({
+                "symbol": "sh.000300",
+                "source": "baostock",
+                "code": getattr(error, "code", "BAOSTOCK_INDEX_FAILED"),
+            })
 
         sh_sz = [record for record in masters if record.exchange in {"SH", "SZ"}]
         for index, master in enumerate(sh_sz, start=1):
@@ -303,6 +357,7 @@ def build_backfill(options: argparse.Namespace) -> dict[str, Any]:
         "endDate": trading_days[-1],
         "expectedUniverseCount": expected_count,
         "masterCounts": master_counts,
+        "csi300": {day: csi300[day] for day in trading_days if day in csi300},
         "days": days,
         "quality": {
             "dayCoverage": day_coverage,

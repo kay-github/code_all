@@ -274,6 +274,7 @@ async function run() {
       asOf: "2026-07-17",
       baseDate: "2025-12-31",
       generatedAt: "2026-07-17T08:10:00.000Z",
+      benchmark: { symbol: "000300.SH", currentClose: 3888.5 },
       records: [
         { symbol: "600000.SH", exchange: "SH", ytd: 0.1234, isEligible: true, lastPriceDate: "2026-07-17" },
         { symbol: "300502.SZ", exchange: "SZ", ytd: -0.2, isEligible: true, lastPriceDate: "2026-07-10" },
@@ -291,6 +292,7 @@ async function run() {
       lastPriceDate: "2026-07-10"
     });
     assert.ok(!("830001.BJ" in payload.records), "不合格记录不进入日频文件");
+    assert.strictEqual(payload.csi300Close, 3888.5, "沪深300 当日收盘随日频文件入库");
   }
 
   console.log("stock EM YTD tests passed");

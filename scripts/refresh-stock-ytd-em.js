@@ -72,7 +72,7 @@ function snapshotIntervalDailyPayload(candidate) {
     }
     records[record.symbol] = entry;
   }
-  return {
+  const payload = {
     version: INTERVAL_DAILY_VERSION,
     asOf: candidate.asOf,
     baseDate: candidate.baseDate,
@@ -80,6 +80,9 @@ function snapshotIntervalDailyPayload(candidate) {
     generatedAt: candidate.generatedAt || candidate.publishedAt,
     records
   };
+  const close = candidate.benchmark && candidate.benchmark.currentClose;
+  if (Number.isFinite(close) && close > 0) payload.csi300Close = close;
+  return payload;
 }
 
 // 上传失败不推翻已成功的快照发布：该日仅退回快照慢路径，正确性不受影响。

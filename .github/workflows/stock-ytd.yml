@@ -21,6 +21,10 @@ on:
     - cron: "7 8 * * 1-5"
     - cron: "7 9 * * 1-5"
     - cron: "5 13 * * 1-5"
+    # 21:35 数据完整性自检（最后一个重试窗口之后，失败即 run 红 = 告警邮件）。
+    - cron: "35 13 * * 1-5"
+    # 周六 10:35 全量回填：f25 精度日期每周洗成 qfq、修补空洞、重建演变聚合。
+    - cron: "35 2 * * 6"
   workflow_dispatch:
     inputs:
       require_as_of:
@@ -57,7 +61,12 @@ concurrency:
 
 jobs:
   refresh:
-    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.backfill_daily }}
+    if: >-
+      ${{ github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && !inputs.backfill_daily) ||
+          (github.event_name == 'schedule' &&
+           github.event.schedule != '35 2 * * 6' &&
+           github.event.schedule != '35 13 * * 1-5') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -99,10 +108,31 @@ jobs:
           fi
           node scripts/refresh-stock-ytd-em.js "${args[@]}"
 
+  # 数据完整性自检（只读公开接口）：READY、asOf 为最新交易日、
+  # 基准日无空洞、演变聚合含当日。失败即 run 红，GitHub 邮件即告警。
+  verify:
+    if: ${{ github.event_name == 'schedule' && github.event.schedule == '35 13 * * 1-5' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify production data integrity
+        run: node scripts/verify-stock-live.js
+
   # 区间统计逐日 YTD 回填（INTERVAL_STATS.md Phase 2）：
-  # 手工触发一次性任务；Baostock 串行全量约 25-70 分钟。
+  # 周六自动全量重灌（qfq 精度收敛 + 演变聚合重建），也可手工 dispatch；
+  # Baostock 串行全量约 25-70 分钟。
   backfill-interval-daily:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill_daily }}
+    if: >-
+      ${{ (github.event_name == 'workflow_dispatch' && inputs.backfill_daily) ||
+          (github.event_name == 'schedule' && github.event.schedule == '35 2 * * 6') }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     env:

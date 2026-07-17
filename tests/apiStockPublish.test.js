@@ -281,11 +281,20 @@ async function run() {
     zlib.gzipSync(Buffer.from(JSON.stringify(intervalDailyPayload(overrides))));
 
   const dailyWrites = [];
+  const seriesWrites = [];
+  let storedSeries = null;
   handler = stockPublishApi.createHandler({
     env: { CRON_SECRET: "publish-secret", STOCK_INTERVAL_DAILY_MIN_RECORDS: "3" },
     storage: {
       async putIntervalDailyMap(asOf, payload) {
         dailyWrites.push({ asOf, payload });
+      },
+      async loadIntervalSeries() {
+        return storedSeries;
+      },
+      async putIntervalSeries(payload) {
+        seriesWrites.push(payload);
+        storedSeries = payload;
       }
     },
     logger: { error() {} }
@@ -302,6 +311,35 @@ async function run() {
   assert.strictEqual(dailyWrites.length, 1);
   assert.strictEqual(dailyWrites[0].asOf, "2026-03-18");
   assert.strictEqual(dailyWrites[0].payload.records["000001.SZ"].lastPriceDate, "2026-03-17");
+  // 灌入时顺带维护逐日演变聚合：两池计数与中位数、csi300 锚点。
+  assert.strictEqual(seriesWrites.length, 1);
+  assert.strictEqual(storedSeries.version, "stock-ytd-interval-series.v1");
+  assert.strictEqual(storedSeries.yearBaseDate, BASE_DATE);
+  const seriesDay = storedSeries.days["2026-03-18"];
+  assert.strictEqual(seriesDay.hs.count, 2);
+  assert.strictEqual(seriesDay.all.count, 3);
+  assert.ok(Math.abs(seriesDay.hs.median - -0.02) < 1e-12);
+  assert.strictEqual(seriesDay.all.median, 0.01);
+  assert.strictEqual(seriesDay.csi300Close, undefined);
+  assert.strictEqual(response.data.publish.seriesDayCount, 1);
+
+  // 带 csi300Close 的灌入更新同一聚合文件并保留已有日期。
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-19" },
+    body: gzipIntervalDaily({ asOf: "2026-03-19", csi300Close: 3888.5 })
+  });
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.data.publish.seriesDayCount, 2);
+  assert.strictEqual(storedSeries.days["2026-03-19"].csi300Close, 3888.5);
+  assert.ok(storedSeries.days["2026-03-18"]);
+
+  // csi300Close 非法值被拒。
+  response = await invoke(handler, {
+    query: { intervalDailyDate: "2026-03-18" },
+    body: gzipIntervalDaily({ csi300Close: -1 })
+  });
+  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.data.error, "PUBLISH_INTERVAL_BODY_INVALID");
 
   response = await invoke(handler, {
     query: { intervalDailyDate: "2026-03-19" },
@@ -365,7 +403,7 @@ async function run() {
     body: gzipIntervalDaily()
   });
   assert.strictEqual(response.status, 401);
-  assert.strictEqual(dailyWrites.length, 1, "非法请求不得触发写入");
+  assert.strictEqual(dailyWrites.length, 2, "非法请求不得触发写入");
 
   console.log("stock publish API tests passed");
 }

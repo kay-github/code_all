@@ -7,6 +7,11 @@ const { assertBenchmarkPublishable } = require("../lib/stockBenchmark");
 const { validateTradingCalendar } = require("../lib/stockTradingDates");
 const { authorizeStockPublish } = require("../lib/stockPublishAuth");
 const { normalizeDate } = require("../lib/stockSnapshot");
+const {
+  DECLINE_THRESHOLDS_PCT,
+  GAIN_THRESHOLDS_PCT,
+  summarizeIntervalDay
+} = require("../lib/stockIntervalStats");
 
 const MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
 const MAX_JSON_BYTES = 30 * 1024 * 1024;
@@ -201,7 +206,7 @@ function validateIntervalDailyPayload(payload, intervalDailyDate, env = process.
     }
     records[symbol] = { exchange, ytd: record.ytd };
   }
-  return {
+  const validated = {
     version: "stock-ytd-interval-daily.v1",
     asOf: payload.asOf,
     baseDate,
@@ -209,6 +214,35 @@ function validateIntervalDailyPayload(payload, intervalDailyDate, env = process.
     generatedAt: payload.generatedAt || new Date().toISOString(),
     records
   };
+  // 当日沪深300收盘价（可选）：区间基准对比与演变曲线的指数锚点。
+  if (payload.csi300Close != null) {
+    if (!Number.isFinite(payload.csi300Close) || payload.csi300Close <= 0) {
+      fail("interval daily csi300Close is invalid");
+    }
+    validated.csi300Close = payload.csi300Close;
+  }
+  return validated;
+}
+
+// 灌入日频文件时顺带维护逐日演变聚合（年初为基准的市场宽度切面）。
+// 上传方串行调用，read-modify-write 无并发冲突；跨年度基期时整体重置。
+function upsertIntervalSeries(series, payload) {
+  const base = series &&
+    series.version === "stock-ytd-interval-series.v1" &&
+    series.yearBaseDate === payload.baseDate
+    ? series
+    : {
+        version: "stock-ytd-interval-series.v1",
+        yearBaseDate: payload.baseDate,
+        declineThresholdsPct: DECLINE_THRESHOLDS_PCT,
+        gainThresholdsPct: GAIN_THRESHOLDS_PCT,
+        days: {}
+      };
+  const day = summarizeIntervalDay(payload.records);
+  if (payload.csi300Close != null) day.csi300Close = payload.csi300Close;
+  base.days[payload.asOf] = day;
+  base.updatedAt = new Date().toISOString();
+  return base;
 }
 
 function publicSummary(envelope, auth) {
@@ -252,6 +286,11 @@ function createHandler(options = {}) {
         );
         const storage = options.storage || createStockSnapshotBlobStore({ env });
         await storage.putIntervalDailyMap(intervalDailyDate, payload);
+        const series = upsertIntervalSeries(
+          await storage.loadIntervalSeries(),
+          payload
+        );
+        await storage.putIntervalSeries(series);
         sendJson(res, 200, {
           ok: true,
           publish: {
@@ -260,6 +299,7 @@ function createHandler(options = {}) {
             baseDate: payload.baseDate,
             methodologyVersion: payload.methodologyVersion,
             recordCount: Object.keys(payload.records).length,
+            seriesDayCount: Object.keys(series.days).length,
             authorization: auth.type
           }
         });
@@ -314,6 +354,7 @@ module.exports.parsePublishPayload = parsePublishPayload;
 module.exports.parseRecoveryAsOf = parseRecoveryAsOf;
 module.exports.parseIntervalDailyDate = parseIntervalDailyDate;
 module.exports.validateIntervalDailyPayload = validateIntervalDailyPayload;
+module.exports.upsertIntervalSeries = upsertIntervalSeries;
 module.exports.validatePublishPayload = validatePublishPayload;
 module.exports.publicSummary = publicSummary;
 module.exports.MAX_COMPRESSED_BYTES = MAX_COMPRESSED_BYTES;

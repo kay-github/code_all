@@ -313,6 +313,28 @@ async function run() {
     ["2025-12-31", "2026-03-18", "2026-03-19"]
   );
 
+  // 逐日演变聚合文件：允许覆盖，版本不符按缺失处理。
+  assert.strictEqual(await store.loadIntervalSeries(), null);
+  const seriesPayload = {
+    version: "stock-ytd-interval-series.v1",
+    yearBaseDate: "2025-12-31",
+    declineThresholdsPct: [10],
+    gainThresholdsPct: [10],
+    updatedAt: "2026-07-17T12:00:00.000Z",
+    days: { "2026-03-18": { hs: { count: 1, median: -0.12, declines: [1], gains: [0] } } }
+  };
+  await store.putIntervalSeries(seriesPayload);
+  assert.ok(client.objects.has("stock-ytd/interval/series.json"));
+  assert.deepStrictEqual(await store.loadIntervalSeries(), seriesPayload);
+  await store.putIntervalSeries({ ...seriesPayload, updatedAt: "2026-07-18T12:00:00.000Z" });
+  assert.strictEqual((await store.loadIntervalSeries()).updatedAt, "2026-07-18T12:00:00.000Z");
+  client.objects.set("stock-ytd/interval/series.json", {
+    body: JSON.stringify({ version: "wrong.v9", days: {} }),
+    etag: "bad-series",
+    uploadedAt: new Date()
+  });
+  assert.strictEqual(await store.loadIntervalSeries(), null);
+
   console.log("stock snapshot Blob store tests passed");
 }
 

@@ -49,7 +49,7 @@ function loadBackfillDataset(inputPath) {
 }
 
 function dailyPayload(dataset, day) {
-  return {
+  const payload = {
     version: DAILY_VERSION,
     asOf: day,
     baseDate: dataset.baseDate,
@@ -57,6 +57,9 @@ function dailyPayload(dataset, day) {
     generatedAt: dataset.generatedAt,
     records: dataset.days[day]
   };
+  const close = dataset.csi300 && dataset.csi300[day];
+  if (Number.isFinite(close) && close > 0) payload.csi300Close = close;
+  return payload;
 }
 
 async function uploadDay(publishUrl, day, payload, token, options = {}) {

@@ -297,6 +297,36 @@
       color: var(--up);
     }
 
+    .tab[aria-selected="true"].tab-series {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .series-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .series-chart-wrap { overflow: hidden; }
+    .series-chart { width: 100%; height: auto; display: block; }
+
+    .series-caption {
+      margin: 8px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
     .meta-line {
       display: flex;
       flex-wrap: wrap;
@@ -525,11 +555,12 @@
     </section>
 
     <section class="panel" aria-label="分布结果">
-      <div class="tabs" role="tablist" aria-label="方向切换">
+      <div class="tabs" role="tablist" aria-label="视图切换">
         <button class="tab tab-down" id="tabDown" role="tab" aria-selected="true">跌幅分布</button>
         <button class="tab tab-up" id="tabUp" role="tab" aria-selected="false">涨幅分布</button>
+        <button class="tab tab-series" id="tabSeries" role="tab" aria-selected="false">逐日演变</button>
       </div>
-      <div class="step-line">
+      <div class="step-line" id="stepLine">
         <span class="step-label">档位间隔</span>
         <div class="step-switch" id="stepSwitch" role="radiogroup" aria-label="阈值档位间隔">
           <button type="button" class="step-option" data-step="5" aria-checked="true" role="radio">5%</button>
@@ -564,12 +595,15 @@
       const bseHint = document.getElementById("bseHint");
       const tabDown = document.getElementById("tabDown");
       const tabUp = document.getElementById("tabUp");
+      const tabSeries = document.getElementById("tabSeries");
+      const stepLine = document.getElementById("stepLine");
       const stepSwitch = document.getElementById("stepSwitch");
       const banner = document.getElementById("banner");
       const metaLine = document.getElementById("metaLine");
       const content = document.getElementById("content");
 
       const state = {
+        view: "dist",
         direction: "down",
         stats: null,
         openThreshold: null,
@@ -580,8 +614,20 @@
         availableDates: [],
         availableSet: new Set(),
         calendarMonth: null,
-        step: 5
+        step: 5,
+        series: null,
+        seriesMetric: "d20"
       };
+
+      // 演变曲线可选指标：全市场自年初跌超/涨超 X% 的家数。
+      const SERIES_METRICS = [
+        { key: "d10", dir: "down", pct: 10, label: "跌超 10%" },
+        { key: "d20", dir: "down", pct: 20, label: "跌超 20%" },
+        { key: "d30", dir: "down", pct: 30, label: "跌超 30%" },
+        { key: "d50", dir: "down", pct: 50, label: "跌超 50%" },
+        { key: "g10", dir: "up", pct: 10, label: "涨超 10%" },
+        { key: "g30", dir: "up", pct: 30, label: "涨超 30%" }
+      ];
 
       // URL 状态共享：base/dir/step/bse 均可通过链接直达；仅记录非默认值。
       const initialParams = new URLSearchParams(location.search);
@@ -591,10 +637,15 @@
 
       function syncUrl() {
         const params = new URLSearchParams();
-        if (state.baseDate) params.set("base", state.baseDate);
-        if (state.direction === "up") params.set("dir", "up");
-        if (state.step !== 5) params.set("step", String(state.step));
-        if (includeBseInput.checked) params.set("bse", "1");
+        if (state.view === "series") {
+          params.set("view", "series");
+          if (state.seriesMetric !== "d20") params.set("metric", state.seriesMetric);
+        } else {
+          if (state.baseDate) params.set("base", state.baseDate);
+          if (state.direction === "up") params.set("dir", "up");
+          if (state.step !== 5) params.set("step", String(state.step));
+          if (includeBseInput.checked) params.set("bse", "1");
+        }
         const query = params.toString();
         history.replaceState(null, "", query ? "?" + query : location.pathname);
       }
@@ -787,9 +838,11 @@
         if (!baseDate) return;
         state.stats = null;
         state.openThreshold = null;
-        setBanner(null);
-        metaLine.hidden = true;
-        setStatus("正在统计…");
+        if (state.view === "dist") {
+          setBanner(null);
+          metaLine.hidden = true;
+          setStatus("正在统计…");
+        }
         try {
           const data = await fetchJson(new URLSearchParams({
             baseDate,
@@ -797,13 +850,14 @@
           }));
           if (requestId !== state.requestId) return;
           state.stats = data;
+          if (state.view !== "dist") return;
           renderMeta(data);
           if (data.warning || data.isStale) {
             setBanner(data.warning || "数据非最新交易日，按上一份已校验快照展示。", "warning");
           }
           renderRows();
         } catch (error) {
-          if (requestId !== state.requestId) return;
+          if (requestId !== state.requestId || state.view !== "dist") return;
           const payload = error.payload || {};
           if (payload.error === "BASE_SNAPSHOT_MISSING") {
             setStatus("该日期没有历史快照，请换一个基准日。");
@@ -822,21 +876,35 @@
         const parts = [
           ["区间", data.baseDate + " 收盘 → " + data.asOf + " 收盘"],
           ["样本", data.matchedCount + " 只"],
+          ["中位数", Number.isFinite(data.medianIntervalReturn)
+            ? signedPct(data.medianIntervalReturn)
+            : null],
+          ["同期沪深300", data.benchmark && Number.isFinite(data.benchmark.intervalReturn)
+            ? signedPct(data.benchmark.intervalReturn)
+            : null],
           ["其中停牌", data.suspendedCount + " 只"],
           ["排除", (data.excluded.newSinceBase + data.excluded.missingCurrent + data.excluded.ineligible) + " 只（新股/退市/无效）"]
         ];
         for (const [label, value] of parts) {
+          if (value == null) continue;
           const span = document.createElement("span");
           const strong = document.createElement("strong");
           strong.textContent = value;
           span.append(label + "：", strong);
           metaLine.appendChild(span);
         }
+        if (Array.isArray(data.byBoard) && data.byBoard.length > 1) {
+          const span = document.createElement("span");
+          span.append("板块中位数：" + data.byBoard
+            .map((entry) => entry.board + " " + signedPct(entry.medianIntervalReturn))
+            .join("，"));
+          metaLine.appendChild(span);
+        }
       }
 
       function renderRows() {
         const data = state.stats;
-        if (!data) return;
+        if (!data || state.view !== "dist") return;
         const isDown = state.direction === "down";
         // 档位间隔为纯展示配置：接口始终返回完整阶梯，这里只筛显示档。
         const buckets = (isDown ? data.declines : data.gains)
@@ -1065,10 +1133,197 @@
         }
       }
 
+      async function loadSeries() {
+        if (state.series) {
+          renderSeries();
+          return;
+        }
+        setBanner(null);
+        metaLine.hidden = true;
+        setStatus("正在加载演变数据…");
+        try {
+          const data = await fetchJson(new URLSearchParams({ series: "1" }));
+          if (state.view !== "series") return;
+          state.series = data.series;
+          renderSeries();
+        } catch (error) {
+          if (state.view !== "series") return;
+          const payload = error.payload || {};
+          setStatus(payload.error === "SERIES_UNAVAILABLE"
+            ? "演变数据还在累积中，请过几个交易日再来。"
+            : "演变数据加载失败，请稍后重试。");
+        }
+      }
+
+      function metricValue(day, metric, thresholds) {
+        const pool = includeBseInput.checked ? day.all : day.hs;
+        if (!pool) return null;
+        const list = metric.dir === "down" ? pool.declines : pool.gains;
+        const index = thresholds.indexOf(metric.pct);
+        return index >= 0 && Array.isArray(list) ? list[index] : null;
+      }
+
+      function renderSeries() {
+        const series = state.series;
+        if (!series) return;
+        metaLine.hidden = true;
+        const metric = SERIES_METRICS.find((item) => item.key === state.seriesMetric) ||
+          SERIES_METRICS[0];
+        const thresholds = metric.dir === "down"
+          ? series.declineThresholdsPct
+          : series.gainThresholdsPct;
+        const points = series.days
+          .map((day) => ({ date: day.date, value: metricValue(day, metric, thresholds) }))
+          .filter((point) => Number.isFinite(point.value));
+
+        content.innerHTML = "";
+
+        const chips = document.createElement("div");
+        chips.className = "series-chips";
+        for (const item of SERIES_METRICS) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip";
+          chip.setAttribute("aria-pressed", String(item.key === metric.key));
+          chip.textContent = item.label;
+          chip.addEventListener("click", () => {
+            state.seriesMetric = item.key;
+            syncUrl();
+            renderSeries();
+          });
+          chips.appendChild(chip);
+        }
+        content.appendChild(chips);
+
+        if (points.length < 2) {
+          const div = document.createElement("div");
+          div.className = "status";
+          div.textContent = "演变数据还在累积中（当前 " + points.length + " 个交易日）。";
+          content.appendChild(div);
+          return;
+        }
+
+        content.appendChild(buildSeriesChart(points, metric));
+
+        const last = points[points.length - 1];
+        const prev = points[points.length - 2];
+        const delta = last.value - prev.value;
+        const caption = document.createElement("p");
+        caption.className = "series-caption";
+        caption.textContent = "自年初（" + series.yearBaseDate + " 收盘）" + metric.label +
+          " 的家数：" + last.date + " 为 " + last.value + " 只，较上一交易日" +
+          (delta === 0 ? "持平" : (delta > 0 ? "增加 " : "减少 ") + Math.abs(delta) + " 只") +
+          "。比较池：" + (includeBseInput.checked ? "沪深 A 股 + 北交所" : "沪深 A 股") + "。";
+        content.appendChild(caption);
+      }
+
+      // 零依赖 SVG 折线：横轴交易日序号（非日历），纵轴家数。
+      function buildSeriesChart(points, metric) {
+        const width = 680;
+        const height = 300;
+        const pad = { top: 16, right: 14, bottom: 34, left: 52 };
+        const innerW = width - pad.left - pad.right;
+        const innerH = height - pad.top - pad.bottom;
+        const maxValue = Math.max(...points.map((point) => point.value), 1);
+        const x = (index) => pad.left +
+          (points.length === 1 ? 0 : index / (points.length - 1) * innerW);
+        const y = (value) => pad.top + innerH - value / maxValue * innerH;
+        const svgNs = "http://www.w3.org/2000/svg";
+        const el = (name, attrs) => {
+          const node = document.createElementNS(svgNs, name);
+          for (const key of Object.keys(attrs)) node.setAttribute(key, attrs[key]);
+          return node;
+        };
+
+        const svg = el("svg", {
+          class: "series-chart",
+          viewBox: "0 0 " + width + " " + height,
+          role: "img",
+          "aria-label": metric.label + " 家数逐日演变"
+        });
+
+        const gridSteps = 4;
+        for (let i = 0; i <= gridSteps; i += 1) {
+          const value = Math.round(maxValue / gridSteps * i);
+          const gy = y(value);
+          svg.appendChild(el("line", {
+            x1: pad.left, y1: gy, x2: width - pad.right, y2: gy,
+            stroke: "#ebeef2", "stroke-width": 1
+          }));
+          const label = el("text", {
+            x: pad.left - 8, y: gy + 4, "text-anchor": "end",
+            "font-size": 11, fill: "#667085"
+          });
+          label.textContent = String(value);
+          svg.appendChild(label);
+        }
+
+        const tickCount = Math.min(6, points.length);
+        for (let i = 0; i < tickCount; i += 1) {
+          const index = Math.round(i / (tickCount - 1 || 1) * (points.length - 1));
+          const label = el("text", {
+            x: x(index), y: height - 10, "text-anchor": "middle",
+            "font-size": 11, fill: "#667085"
+          });
+          label.textContent = points[index].date.slice(5).replace("-", "/");
+          svg.appendChild(label);
+        }
+
+        const color = metric.dir === "down" ? "#087a55" : "#d92d20";
+        const coords = points.map((point, index) => x(index) + "," + y(point.value));
+        svg.appendChild(el("polyline", {
+          points: coords.join(" "),
+          fill: "none", stroke: color, "stroke-width": 2,
+          "stroke-linejoin": "round", "stroke-linecap": "round"
+        }));
+        svg.appendChild(el("polygon", {
+          points: pad.left + "," + (pad.top + innerH) + " " + coords.join(" ") + " " +
+            x(points.length - 1) + "," + (pad.top + innerH),
+          fill: color, opacity: 0.08
+        }));
+        const lastPoint = points[points.length - 1];
+        svg.appendChild(el("circle", {
+          cx: x(points.length - 1), cy: y(lastPoint.value), r: 3.5, fill: color
+        }));
+        const lastLabel = el("text", {
+          x: x(points.length - 1) - 6, y: y(lastPoint.value) - 8,
+          "text-anchor": "end", "font-size": 12, "font-weight": 700, fill: color
+        });
+        lastLabel.textContent = String(lastPoint.value);
+        svg.appendChild(lastLabel);
+
+        const wrap = document.createElement("div");
+        wrap.className = "series-chart-wrap";
+        wrap.appendChild(svg);
+        return wrap;
+      }
+
+      function selectView(view) {
+        state.view = view;
+        const isSeries = view === "series";
+        tabSeries.setAttribute("aria-selected", String(isSeries));
+        tabDown.setAttribute("aria-selected", String(!isSeries && state.direction === "down"));
+        tabUp.setAttribute("aria-selected", String(!isSeries && state.direction === "up"));
+        stepLine.hidden = isSeries;
+        syncUrl();
+        if (isSeries) {
+          loadSeries();
+        } else if (state.stats) {
+          renderMeta(state.stats);
+          renderRows();
+        } else {
+          loadStats();
+        }
+      }
+
       function selectDirection(direction) {
-        if (state.direction === direction) return;
+        if (state.view !== "series" && state.direction === direction) return;
         state.direction = direction;
         state.openThreshold = null;
+        if (state.view === "series") {
+          selectView("dist");
+          return;
+        }
         tabDown.setAttribute("aria-selected", String(direction === "down"));
         tabUp.setAttribute("aria-selected", String(direction === "up"));
         syncUrl();
@@ -1077,6 +1332,9 @@
 
       tabDown.addEventListener("click", () => selectDirection("down"));
       tabUp.addEventListener("click", () => selectDirection("up"));
+      tabSeries.addEventListener("click", () => {
+        if (state.view !== "series") selectView("series");
+      });
       stepSwitch.addEventListener("click", (event) => {
         const option = event.target.closest(".step-option");
         if (!option) return;
@@ -1118,7 +1376,10 @@
           ? "当前比较池：沪深 A 股 + 北交所"
           : "当前比较池：沪深 A 股";
         syncUrl();
-        loadStats();
+        // 分布统计按池缓存失效；演变数据两池同存，切换只需重绘。
+        state.stats = null;
+        if (state.view === "series") renderSeries();
+        else loadStats();
       });
 
       if (initialParams.get("dir") === "up") {
@@ -1132,6 +1393,12 @@
       if (initialParams.get("bse") === "1") {
         includeBseInput.checked = true;
         bseHint.textContent = "当前比较池：沪深 A 股 + 北交所";
+      }
+      if (SERIES_METRICS.some((item) => item.key === initialParams.get("metric"))) {
+        state.seriesMetric = initialParams.get("metric");
+      }
+      if (initialParams.get("view") === "series") {
+        selectView("series");
       }
       loadDates();
     })();

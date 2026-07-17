@@ -271,7 +271,7 @@ Raw、Candidate 和 Published 三层数据不能混用。
 
 `current.json` 条件写冲突时必须重新读取最新 envelope，确认快照日期不倒退后用新 ETag 重试；如果完整不可变快照已经写入但 current 尚未切换，可以由 GitHub Actions OIDC 或人工 `CRON_SECRET` 通过 `/api/stock-publish?recoverAsOf=YYYY-MM-DD` 提升该日期最新且重新通过生产校验的快照。恢复只复用 current 中仍覆盖目标日期的交易日历，不暴露 Blob URL，也不得跨日期选择候选。
 
-`stock-ytd/interval/daily/<date>.json` 保存区间统计的逐日 YTD 回填文件（契约与灌入流程见 INTERVAL_STATS.md §4.3）：写入仅经 `/api/stock-publish?intervalDailyDate=` 鉴权入口且允许覆盖（因子修订重灌）；读取由区间统计接口作为基准日数据源，优先于同日期完整快照。
+`stock-ytd/interval/daily/<date>.json` 保存区间统计的逐日 YTD 回填文件（契约与灌入流程见 INTERVAL_STATS.md §4.3）：写入仅经 `/api/stock-publish?intervalDailyDate=` 鉴权入口且允许覆盖（因子修订重灌）；读取由区间统计接口作为基准日数据源，优先于同日期完整快照。`stock-ytd/interval/series.json` 为随灌入增量维护的逐日演变聚合（两池阈值计数/中位数/沪深300收盘），同一鉴权边界，供 `?series=1` 与同区间基准对比读取。
 
 `refresh.lock` 使用禁止覆盖获取租约，内容包含随机 owner token、创建时间和心跳时间。持有者通过 ETag 条件写续租，并只在 owner token 仍匹配时条件删除；超过失效阈值的租约通过 ETag 条件删除后竞争重建。`/api/stock-snapshot` 只返回 current envelope，不返回私有 Blob URL、存储凭据或重定向；大响应对支持 gzip 的调用方使用确定性压缩，并基于实际响应字节生成 ETag。`/api/stock-publish` 的正常发布只接受 gzip 候选快照，按日期恢复只接受无正文的显式恢复参数；两者都校验 GitHub Actions OIDC 或人工 `CRON_SECRET`，并只返回白名单批次摘要。
 

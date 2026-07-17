@@ -12,6 +12,7 @@ const {
 } = require("../lib/stockIntervalStats");
 
 const DATES_CACHE_TTL_MS = 60 * 60 * 1000;
+const SERIES_CACHE_TTL_MS = 10 * 60 * 1000;
 const MAP_CACHE_MAX_ENTRIES = 16;
 const STATS_CACHE_MAX_ENTRIES = 32;
 const PRECISION_NOTE = "区间涨跌幅为前复权口径合成值，整体精度约 ±0.5 个百分点，个股精确值以行情软件为准。";
@@ -54,6 +55,36 @@ function createHandler(options = {}) {
   const currentMapCache = new Map();
   const statsCache = new Map();
   let datesCache = null;
+  let seriesCache = null;
+
+  async function loadSeries() {
+    if (!seriesCache || now() - seriesCache.fetchedAt > SERIES_CACHE_TTL_MS) {
+      seriesCache = {
+        fetchedAt: now(),
+        series: typeof store.loadIntervalSeries === "function"
+          ? await store.loadIntervalSeries()
+          : null
+      };
+    }
+    return seriesCache.series;
+  }
+
+  // 同区间沪深300：基准日收盘价取自演变聚合（回填时随日频文件入库）；
+  // 年初基准可直接用当前快照 benchmark 的年初端点，无需聚合文件。
+  function benchmarkInterval(benchmark, baseDate, series) {
+    if (!benchmark || !Number.isFinite(benchmark.currentClose)) return null;
+    let baseClose = null;
+    if (baseDate === benchmark.baseDate && Number.isFinite(benchmark.baseClose)) {
+      baseClose = benchmark.baseClose;
+    } else if (series && series.days && series.days[baseDate] &&
+        Number.isFinite(series.days[baseDate].csi300Close)) {
+      baseClose = series.days[baseDate].csi300Close;
+    }
+    if (!baseClose || baseClose <= 0) return null;
+    const intervalReturn = benchmark.currentClose / baseClose - 1;
+    if (!Number.isFinite(intervalReturn)) return null;
+    return { name: benchmark.name || "沪深300", symbol: benchmark.symbol || null, intervalReturn };
+  }
 
   async function availableBaseDates(currentAsOf) {
     if (!datesCache || now() - datesCache.fetchedAt > DATES_CACHE_TTL_MS) {
@@ -162,6 +193,31 @@ function createHandler(options = {}) {
         return;
       }
 
+      if (readQueryValue(req, "series") === "1") {
+        const series = await loadSeries();
+        if (!series) {
+          sendJson(res, 404, {
+            error: "SERIES_UNAVAILABLE",
+            message: "演变数据还在累积中，请过几个交易日再来"
+          });
+          return;
+        }
+        sendJson(res, 200, {
+          ...meta,
+          series: {
+            yearBaseDate: series.yearBaseDate,
+            declineThresholdsPct: series.declineThresholdsPct,
+            gainThresholdsPct: series.gainThresholdsPct,
+            updatedAt: series.updatedAt || null,
+            days: Object.keys(series.days).sort().map((date) => ({
+              date,
+              ...series.days[date]
+            }))
+          }
+        });
+        return;
+      }
+
       const baseDate = String(readQueryValue(req, "baseDate") || "").trim();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(baseDate) || baseDate >= snapshot.asOf) {
         sendJson(res, 400, {
@@ -241,6 +297,14 @@ function createHandler(options = {}) {
         methodologyVersions: stats.methodologyVersions,
         includeBse,
         matchedCount: stats.matchedCount,
+        medianIntervalReturn: stats.medianIntervalReturn,
+        byBoard: stats.byBoard,
+        benchmark: benchmarkInterval(
+          snapshot.benchmark,
+          stats.baseDate,
+          // 聚合文件读取失败只降级掉基准对比，不影响分布主数据。
+          await loadSeries().catch(() => null)
+        ),
         suspendedCount: stats.suspendedCount,
         excluded: stats.excluded,
         declines: stats.declines,

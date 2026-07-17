@@ -126,6 +126,8 @@
 - 上传：`scripts/upload-interval-daily.js` 逐日 gzip POST `/api/stock-publish?intervalDailyDate=<date>`，OIDC/CRON_SECRET 鉴权，服务端逐条校验（版本、日期一致、记录数下限、ytd 有界、symbol 白名单格式）后允许覆盖写（因子修订可重灌）。
 - 触发：GitHub Actions `stock-ytd.yml` 手工 dispatch，勾选 `backfill_daily`（必须在该 workflow 内运行——OIDC 只信任它的身份），全程约 25–70 分钟。
 - 回填文件为高精度 qfq 计算，凡命中即消除 §3.3/§3.4 中 f25 舍入与分红仿射两项误差。
+- 日频文件可携带可选 `csi300Close`（当日沪深300收盘价，回填端 Baostock `sh.000300`、刷新端快照 benchmark）——"同期沪深300"对比的基准日锚点。
+- 逐日演变聚合 `interval/series.json`（`stock-ytd-interval-series.v1`）：灌入日频文件时在鉴权入口增量维护，按日存 hs（沪深）/all（含北交所）两池的阈值计数与年内中位数及 csi300Close；`?series=1` 直接返回，用户请求不逐日读 Blob。跨年度基期整体重置；周六全量回填即全量重建。
 - Phase 2.5（已实现）：`scripts/refresh-stock-ytd-em.js` 在每晚快照发布成功后顺带生成并上传当日日频文件（methodologyVersion `snapshot-em-f25.v1`，精度与快照同为东财 f25 口径），使该日日后作为基准日时的冷查询走日频快路径；上传失败不推翻快照发布，仅该日退回快照慢路径。回填任务重跑时会以 `backfill-qfq.v1` 覆盖同名文件（更高精度，谁后写谁生效）。
 
 ### 4.2 约束（继承 DATA_SOURCES）
@@ -216,6 +218,8 @@
 | Phase 1 | 已上线（2026-07-16） | ≥2026-07-13 的快照日 | 无 |
 | Phase 2 | 已上线（2026-07-17，128 个基准日） | 2025-12-31 起任意交易日（含"年初以来"） | dispatch `stock-ytd.yml` + `backfill_daily`（见 §4.3）；此后每次执行会覆盖到最新完整交易日，可按需重跑 |
 | Phase 2.5 | 已上线（2026-07-17） | 每个新交易日自动累积 | 日常发布管线在发布快照后顺带写当日日频文件（`snapshot-em-f25.v1`），新快照日期的基准冷查询走日频快路径 |
+| 精度收敛 | 已上线（2026-07-17） | 每周六 10:35 全量回填 | f25 精度日期逐周洗成 qfq、修补空洞、重建演变聚合；单日增量与全量成本相同（耗时在每股查询而非天数） |
+| 逐日演变 | 已上线（2026-07-17） | 年初基准宽度指标 | 页面"逐日演变"页签：跌超/涨超 X% 家数逐日曲线（series 聚合，O(1) 查询） |
 | Phase 3（跨年） | 未立项 | 任意历史日期 | 口径切换为纯价格区间收益，需独立立项与 PRD 决策 |
 
 ## 9. 代码与测试清单
@@ -228,14 +232,16 @@
 | api/stock-publish.js（扩展） | `intervalDailyDate` 上传模式：鉴权、逐条校验、覆盖写 |
 | scripts/backfill_interval_daily.py | 回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪） |
 | scripts/upload-interval-daily.js | 回填数据集拆日上传（OIDC 换新、401 重试、失败清单） |
-| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、档位间隔 5/10/20% 切换、北交所开关、名单钻取、URL 状态共享、名单复制/导出 CSV） |
+| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨/演变切换、档位间隔切换、北交所开关、名单钻取、URL 状态共享、名单复制/导出 CSV、零依赖 SVG 演变曲线） |
 | .github/workflows/stock-ytd.yml（扩展） | `backfill_daily` 手工任务：装依赖 → 测试 → 生成 → 上传 |
 | tests/stockIntervalStats.test.js | 恒等式（送转）、分红近似误差方向、资格规则、阈值边界、跨版本、跨年守卫 |
 | tests/stockSnapshotBlobStore.test.js（扩展） | 快照历史读取 + 日频文件读写/列表/损坏兜底 |
 | tests/apiStockIntervalStats.test.js | 三模式契约、日频优先解析、日期并集、分页稳定性、脱敏 |
 | tests/apiStockPublish.test.js（扩展） | 日频上传模式鉴权、校验矩阵与响应契约 |
 | tests/backfill_interval_daily_test.py | 逐日序列构建、停牌沿用、缺基准价、新股旗标、交易日过滤 |
-| tests/stockIntervalPage.test.js | 页面入口、日历控件、API 引用与内联脚本语法基线 |
+| tests/stockIntervalPage.test.js | 页面入口、日历控件、演变视图、API 引用与内联脚本语法基线 |
+| scripts/verify-stock-live.js | 生产完整性自检（READY/asOf/基准日空洞/series 覆盖），21:35 调度失败即告警 |
+| tests/verifyStockLive.test.js | 自检脚本的覆盖计算与全流程桩测试 |
 
 ## 10. 验收清单
 

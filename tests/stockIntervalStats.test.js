@@ -6,6 +6,7 @@ const {
   GAIN_THRESHOLDS_PCT,
   extractYtdMap,
   computeIntervalStats,
+  summarizeIntervalDay,
   sliceThresholdList
 } = require("../lib/stockIntervalStats");
 
@@ -209,6 +210,60 @@ function run() {
       record("600000.SH", { ytd: -1.2 })
     ]));
     assert.strictEqual(map.records["600000.SH"].ytd, null);
+  }
+
+  {
+    // 中位数与板块拆分：板块由代码前缀推导，中位数取自升序 matched。
+    const base = snapshot("2026-07-13", [
+      record("600001.SH", { ytd: 0 }),
+      record("300001.SZ", { ytd: 0 }),
+      record("688001.SH", { ytd: 0 }),
+      record("920001.BJ", { ytd: 0 })
+    ]);
+    const current = snapshot("2026-07-16", [
+      record("600001.SH", { ytd: -0.10 }),
+      record("300001.SZ", { ytd: -0.30 }),
+      record("688001.SH", { ytd: -0.20 }),
+      record("920001.BJ", { ytd: 0.40 })
+    ]);
+    const stats = computeIntervalStats(
+      extractYtdMap(base),
+      extractYtdMap(current),
+      { includeBse: true }
+    );
+    assert.ok(Math.abs(stats.medianIntervalReturn - -0.15) < 1e-9, "偶数个取中间两值均值");
+    const boards = Object.fromEntries(stats.byBoard.map((entry) => [entry.board, entry]));
+    assert.strictEqual(boards["主板"].matchedCount, 1);
+    assert.ok(Math.abs(boards["主板"].medianIntervalReturn - -0.10) < 1e-9);
+    assert.ok(Math.abs(boards["创业板"].medianIntervalReturn - -0.30) < 1e-9);
+    assert.ok(Math.abs(boards["科创板"].medianIntervalReturn - -0.20) < 1e-9);
+    assert.ok(Math.abs(boards["北交所"].medianIntervalReturn - 0.40) < 1e-9);
+    const shSz = computeIntervalStats(extractYtdMap(base), extractYtdMap(current));
+    assert.ok(!shSz.byBoard.some((entry) => entry.board === "北交所"), "未纳入北交所时无该板块");
+  }
+
+  {
+    // 逐日演变聚合：hs 池不含北交所，all 池含；阈值为严格超过。
+    const day = summarizeIntervalDay({
+      "600001.SH": { exchange: "SH", ytd: -0.12 },
+      "000001.SZ": { exchange: "SZ", ytd: -0.35 },
+      "300001.SZ": { exchange: "SZ", ytd: 0.22 },
+      "920001.BJ": { exchange: "BSE", ytd: -0.55 },
+      "999999.SH": { exchange: "SH", ytd: null }
+    });
+    assert.strictEqual(day.hs.count, 3);
+    assert.strictEqual(day.all.count, 4);
+    const d10 = DECLINE_THRESHOLDS_PCT.indexOf(10);
+    const d30 = DECLINE_THRESHOLDS_PCT.indexOf(30);
+    const d50 = DECLINE_THRESHOLDS_PCT.indexOf(50);
+    const g20 = GAIN_THRESHOLDS_PCT.indexOf(20);
+    assert.strictEqual(day.hs.declines[d10], 2);
+    assert.strictEqual(day.hs.declines[d30], 1);
+    assert.strictEqual(day.hs.declines[d50], 0);
+    assert.strictEqual(day.all.declines[d50], 1);
+    assert.strictEqual(day.hs.gains[g20], 1);
+    assert.ok(Math.abs(day.hs.median - -0.12) < 1e-12);
+    assert.ok(Math.abs(day.all.median - -0.235) < 1e-12);
   }
 
   console.log("stockIntervalStats tests passed");

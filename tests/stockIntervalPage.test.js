@@ -34,6 +34,15 @@ assert.ok(page.includes("复制代码"));
 assert.ok(page.includes("导出 CSV"));
 assert.ok(page.includes("\\uFEFF"), "CSV 需带 BOM 供 Excel 识别 UTF-8");
 
+// 逐日演变视图与 meta 扩展。
+assert.ok(page.includes('id="tabSeries"'));
+assert.ok(page.includes("逐日演变"));
+assert.ok(page.includes('series: "1"'));
+assert.ok(page.includes("SERIES_METRICS"));
+assert.ok(page.includes("http://www.w3.org/2000/svg"));
+assert.ok(page.includes("同期沪深300"));
+assert.ok(page.includes("板块中位数"));
+
 // 内联脚本必须语法有效。
 const script = page.match(/<script>([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new Function(script));

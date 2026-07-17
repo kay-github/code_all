@@ -70,6 +70,9 @@ function makeStore(overrides = {}) {
       this.calls.daily += 1;
       return null;
     },
+    async loadIntervalSeries() {
+      return null;
+    },
     async loadLatestSnapshotForDate(asOf) {
       this.calls.load += 1;
       if (asOf !== "2026-07-13") return null;
@@ -341,6 +344,109 @@ async function run() {
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.data.isStale, true);
     assert.strictEqual(response.data.warning, "服务上一份快照");
+  }
+
+  // 中位数、板块拆分与同区间沪深300（基准日收盘取自演变聚合）。
+  {
+    const store = makeStore({
+      async loadIntervalSeries() {
+        return {
+          version: "stock-ytd-interval-series.v1",
+          yearBaseDate: "2025-12-31",
+          declineThresholdsPct: [10, 30],
+          gainThresholdsPct: [10, 30],
+          updatedAt: "2026-07-16T12:00:00.000Z",
+          days: {
+            "2026-07-13": {
+              hs: { count: 3, median: -0.1, declines: [2, 1], gains: [0, 0] },
+              all: { count: 4, median: -0.15, declines: [3, 1], gains: [0, 0] },
+              csi300Close: 4000
+            },
+            "2026-07-16": {
+              hs: { count: 3, median: -0.2, declines: [3, 1], gains: [0, 0] },
+              all: { count: 4, median: -0.25, declines: [4, 2], gains: [0, 0] },
+              csi300Close: 3800
+            }
+          }
+        };
+      }
+    });
+    const handler = createHandler({
+      store,
+      loadStockSnapshot: async () => {
+        const snapshot = currentSnapshot();
+        snapshot.benchmark = {
+          symbol: "000300.SH",
+          name: "沪深300（价格指数）",
+          ytd: -0.05,
+          baseDate: "2025-12-31",
+          asOf: "2026-07-16",
+          baseClose: 4200,
+          currentClose: 3800
+        };
+        return { snapshot, mode: "published", warning: null };
+      },
+      logger: { error() {} }
+    });
+
+    let response = await invoke(handler, { baseDate: "2026-07-13" });
+    assert.strictEqual(response.status, 200);
+    assert.ok(Number.isFinite(response.data.medianIntervalReturn));
+    assert.ok(Array.isArray(response.data.byBoard) && response.data.byBoard.length > 0);
+    assert.strictEqual(response.data.byBoard[0].board, "主板");
+    assert.ok(Math.abs(response.data.benchmark.intervalReturn - (3800 / 4000 - 1)) < 1e-12);
+
+    // 年初基准直接用快照 benchmark 端点，无需聚合文件。
+    const bare = makeHandler({
+      loadStockSnapshot: async () => {
+        const snapshot = currentSnapshot();
+        snapshot.benchmark = {
+          baseDate: "2025-12-31", asOf: "2026-07-16",
+          ytd: -0.05, baseClose: 4000, currentClose: 3800
+        };
+        return { snapshot, mode: "published", warning: null };
+      },
+      storeOverrides: {
+        async listIntervalDailyDates() { return ["2025-12-31"]; },
+        async loadIntervalDailyMap(asOf) {
+          if (asOf !== "2025-12-31") return null;
+          return {
+            version: "stock-ytd-interval-daily.v1",
+            asOf: "2025-12-31",
+            baseDate: "2025-12-31",
+            methodologyVersion: "backfill-qfq.v1",
+            records: {
+              "600000.SH": { exchange: "SH", ytd: 0 },
+              "000001.SZ": { exchange: "SZ", ytd: 0 },
+              "000002.SZ": { exchange: "SZ", ytd: 0 }
+            }
+          };
+        }
+      }
+    });
+    response = await invoke(bare, { baseDate: "2025-12-31" });
+    assert.strictEqual(response.status, 200);
+    assert.ok(Math.abs(response.data.benchmark.intervalReturn - -0.05) < 1e-12);
+
+    // 无聚合、无年初端点匹配时基准对比缺席而非报错。
+    response = await invoke(makeHandler(), { baseDate: "2026-07-13" });
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.data.benchmark, null);
+
+    // ?series=1 返回排序后的逐日数组。
+    response = await invoke(handler, { series: "1" });
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.data.series.yearBaseDate, "2025-12-31");
+    assert.deepStrictEqual(
+      response.data.series.days.map((day) => day.date),
+      ["2026-07-13", "2026-07-16"]
+    );
+    assert.strictEqual(response.data.series.days[1].all.declines[0], 4);
+    assert.strictEqual(response.data.series.days[1].csi300Close, 3800);
+
+    response = await invoke(makeHandler(), { series: "1" });
+    assert.strictEqual(response.status, 404);
+    assert.strictEqual(response.data.error, "SERIES_UNAVAILABLE");
   }
 
   console.log("apiStockIntervalStats tests passed");

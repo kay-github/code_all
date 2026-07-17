@@ -110,6 +110,24 @@ class BaostockDailyTests(unittest.TestCase):
         )
 
 
+class IndexClosesTests(unittest.TestCase):
+    def test_index_closes_parse_and_skip_invalid(self):
+        class Provider:
+            def query_history_k_data_plus(self, code, fields, **options):
+                assert code == "sh.000300"
+                assert fields == "date,close"
+                return FakeResult([
+                    ["2025-12-31", "3999.99"],
+                    ["2026-01-05", "0"],
+                    ["2026-01-06", "3888.50"],
+                ])
+
+        closes = backfill.baostock_index_closes(
+            Provider(), "sh.000300", "2025-12-31", "2026-01-06"
+        )
+        self.assertEqual(closes, {"2025-12-31": 3999.99, "2026-01-06": 3888.5})
+
+
 class TradingDaysTests(unittest.TestCase):
     def test_trading_days_between_filters_open_days(self):
         rows = [
