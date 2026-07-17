@@ -21,6 +21,11 @@ assert.ok(page.includes('role="dialog"'));
 assert.ok(page.includes("年初以来"));
 assert.ok(!page.includes('<select'), "原生下拉已替换为日历选择器");
 assert.ok(page.includes('id="includeBse"'));
+assert.ok(page.includes('id="stepSwitch"'));
+assert.ok(page.includes('data-step="5"'));
+assert.ok(page.includes('data-step="10"'));
+assert.ok(page.includes('data-step="20"'));
+assert.ok(page.includes("档位间隔"));
 
 // 内联脚本必须语法有效。
 const script = page.match(/<script>([\s\S]*?)<\/script>/)[1];

@@ -227,7 +227,7 @@
 | api/stock-publish.js（扩展） | `intervalDailyDate` 上传模式：鉴权、逐条校验、覆盖写 |
 | scripts/backfill_interval_daily.py | 回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪） |
 | scripts/upload-interval-daily.js | 回填数据集拆日上传（OIDC 换新、401 重试、失败清单） |
-| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、北交所开关、名单钻取） |
+| tools/stock-interval-stats/index.html | 移动优先分布页面（日历选择器 + 快捷日期、跌/涨切换、档位间隔 5/10/20% 切换、北交所开关、名单钻取） |
 | .github/workflows/stock-ytd.yml（扩展） | `backfill_daily` 手工任务：装依赖 → 测试 → 生成 → 上传 |
 | tests/stockIntervalStats.test.js | 恒等式（送转）、分红近似误差方向、资格规则、阈值边界、跨版本、跨年守卫 |
 | tests/stockSnapshotBlobStore.test.js（扩展） | 快照历史读取 + 日频文件读写/列表/损坏兜底 |

@@ -203,6 +203,42 @@
       border-top: 1px solid var(--line-soft);
     }
 
+    .step-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 12px 0 4px;
+    }
+
+    .step-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .step-switch {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .step-option {
+      min-height: 34px;
+      padding: 4px 14px;
+      border: 0;
+      background: #fff;
+      color: var(--text-soft);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .step-option + .step-option { border-left: 1px solid var(--line); }
+    .step-option[aria-checked="true"] {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
     .chip {
       min-height: 32px;
       padding: 4px 12px;
@@ -469,6 +505,14 @@
         <button class="tab tab-down" id="tabDown" role="tab" aria-selected="true">跌幅分布</button>
         <button class="tab tab-up" id="tabUp" role="tab" aria-selected="false">涨幅分布</button>
       </div>
+      <div class="step-line">
+        <span class="step-label">档位间隔</span>
+        <div class="step-switch" id="stepSwitch" role="radiogroup" aria-label="阈值档位间隔">
+          <button type="button" class="step-option" data-step="5" aria-checked="true" role="radio">5%</button>
+          <button type="button" class="step-option" data-step="10" aria-checked="false" role="radio">10%</button>
+          <button type="button" class="step-option" data-step="20" aria-checked="false" role="radio">20%</button>
+        </div>
+      </div>
       <div id="banner"></div>
       <div class="meta-line" id="metaLine" hidden></div>
       <div id="content"><div class="status">正在加载可选日期…</div></div>
@@ -496,6 +540,7 @@
       const bseHint = document.getElementById("bseHint");
       const tabDown = document.getElementById("tabDown");
       const tabUp = document.getElementById("tabUp");
+      const stepSwitch = document.getElementById("stepSwitch");
       const banner = document.getElementById("banner");
       const metaLine = document.getElementById("metaLine");
       const content = document.getElementById("content");
@@ -510,7 +555,8 @@
         baseDate: null,
         availableDates: [],
         availableSet: new Set(),
-        calendarMonth: null
+        calendarMonth: null,
+        step: 5
       };
 
       const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
@@ -739,7 +785,9 @@
         const data = state.stats;
         if (!data) return;
         const isDown = state.direction === "down";
-        const buckets = isDown ? data.declines : data.gains;
+        // 档位间隔为纯展示配置：接口始终返回完整阶梯，这里只筛显示档。
+        const buckets = (isDown ? data.declines : data.gains)
+          .filter((bucket) => bucket.thresholdPct % state.step === 0);
         const denominator = Math.max(1, data.matchedCount);
         content.innerHTML = "";
         const rows = document.createElement("div");
@@ -880,6 +928,21 @@
 
       tabDown.addEventListener("click", () => selectDirection("down"));
       tabUp.addEventListener("click", () => selectDirection("up"));
+      stepSwitch.addEventListener("click", (event) => {
+        const option = event.target.closest(".step-option");
+        if (!option) return;
+        const step = Number(option.dataset.step);
+        if (!step || step === state.step) return;
+        state.step = step;
+        for (const button of stepSwitch.querySelectorAll(".step-option")) {
+          button.setAttribute("aria-checked", String(Number(button.dataset.step) === step));
+        }
+        // 展开的名单档位在新间隔下不可见时收起。
+        if (state.openThreshold !== null && state.openThreshold % step !== 0) {
+          state.openThreshold = null;
+        }
+        renderRows();
+      });
       baseDateButton.addEventListener("click", () => {
         if (!state.availableDates.length) return;
         if (calendarPanel.hidden) openCalendar();
