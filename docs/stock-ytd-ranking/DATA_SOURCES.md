@@ -302,10 +302,11 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | lib/stockEmYtd.js | 东财 f25 全市场直取、腾讯哨兵闸门、盘中结算闸门与 reported 快照构建 |
 | scripts/refresh-stock-ytd-em.js | reported 管线命令行入口：读取网关日历、构建快照、OIDC 发布与 no-op 幂等；发布成功后顺带上传当日区间日频文件（snapshot-em-f25.v1，失败不推翻快照发布） |
 | lib/stockIntervalStats.js | 区间涨跌分布：快照紧凑映射提取、YTD 比值合成、阈值分桶与样本资格（见 INTERVAL_STATS.md） |
-| api/stock-interval-stats.js | 区间涨跌分布查询接口：分布统计、名单钻取、可用基准日列表（日频文件优先于快照） |
-| tools/stock-interval-stats/index.html | 区间涨跌分布移动优先页面（日历式基准日选择器） |
-| scripts/backfill_interval_daily.py | 区间统计回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪） |
-| scripts/upload-interval-daily.js | 回填数据集拆日 gzip 上传至 stock-publish intervalDailyDate 模式 |
+| api/stock-interval-stats.js | 区间涨跌分布查询接口：分布统计（含中位数/板块/同期沪深300）、名单钻取、可用基准日列表、?series=1 演变聚合（日频文件优先于快照） |
+| tools/stock-interval-stats/index.html | 区间涨跌分布移动优先页面（日历选择器、档位间隔、演变曲线、URL 共享、名单复制/导出） |
+| scripts/backfill_interval_daily.py | 区间统计回填 Worker：全年逐交易日 qfq YTD 矩阵（沪深 Baostock、北交所新浪）+ 沪深300 日线收盘；周六 10:35 自动全量重灌 |
+| scripts/upload-interval-daily.js | 回填数据集拆日 gzip 上传至 stock-publish intervalDailyDate 模式（含 csi300Close） |
+| scripts/verify-stock-live.js | 生产完整性自检（只读公开接口）：READY、asOf 为最新交易日、基准日无空洞、series 含当日；工作日 21:35 调度，失败即 run 红/邮件告警 |
 | scripts/check-stock-sources.js | 在线哨兵与全市场抓取检查 |
 | scripts/refresh-stock-ytd.js | 日终 Worker 命令行入口，支持本地目录和同日强制重跑 |
 | scripts/run-stock-ytd-first-batch.js | 首次真实数据严格验收、shadow 发布与脱敏质量报告 |
@@ -342,7 +343,8 @@ Raw、Candidate 和 Published 三层数据不能混用。
 | tests/stockIntervalStats.test.js | 区间合成恒等式、分红仿射误差方向、样本资格、阈值边界和跨年守卫测试 |
 | tests/apiStockIntervalStats.test.js | 区间分布接口契约、参数校验、名单分页、可用日期和脱敏测试 |
 | tests/stockIntervalPage.test.js | 区间分布页面入口、日历控件和接口引用基线测试 |
-| tests/backfill_interval_daily_test.py | 回填逐日序列、停牌沿用、缺基准价和交易日过滤单元测试 |
+| tests/backfill_interval_daily_test.py | 回填逐日序列、停牌沿用、缺基准价、指数收盘与交易日过滤单元测试 |
+| tests/verifyStockLive.test.js | 自检脚本覆盖计算与全流程桩测试 |
 
 测试：
 

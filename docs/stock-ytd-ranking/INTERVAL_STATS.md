@@ -157,6 +157,13 @@
       "methodologyVersions": { "base": "...", "current": "reported-ytd.v1" },
       "includeBse": false,
       "matchedCount": 5432,
+      "medianIntervalReturn": -0.0435,     // 全场区间中位数
+      "byBoard": [                          // 板块由代码前缀推导，按主板/创业板/科创板/北交所排序
+        { "board": "主板", "matchedCount": 3175, "medianIntervalReturn": -0.041 }, ...
+      ],
+      "benchmark": {                        // 同期沪深300；基准日收盘缺失时为 null（降级不报错）
+        "name": "沪深300（价格指数）", "symbol": "000300.SH", "intervalReturn": -0.036
+      },
       "suspendedCount": 12,
       "excluded": { "newSinceBase": 3, "missingCurrent": 1, "ineligible": 91 },
       "declines": [ { "thresholdPct": 10, "count": 812 }, ... ],   // 累计
@@ -176,9 +183,31 @@
 
     200 { "availableBaseDates": ["2026-07-13", ...], "asOf": "2026-07-16" }
 
-来源：list Blob `snapshots/` 前缀解析文件名日期，排除 ≥ 当前 asOf 的日期；进程内缓存 1 小时。
+来源：list Blob `snapshots/` 前缀解析文件名日期，与 `interval/daily/` 日频文件日期取并集，排除 ≥ 当前 asOf 的日期；进程内缓存 1 小时。
 
-### 5.4 错误码
+### 5.4 逐日演变（宽度指标）
+
+    GET /api/stock-interval-stats?series=1
+
+    200 {
+      "series": {
+        "yearBaseDate": "2025-12-31",
+        "declineThresholdsPct": [10, 15, ...],
+        "gainThresholdsPct": [10, 15, ...],
+        "updatedAt": "...",
+        "days": [
+          { "date": "2026-01-05",
+            "hs":  { "count": 5100, "median": -0.01, "declines": [...], "gains": [...] },
+            "all": { "count": 5350, "median": -0.012, "declines": [...], "gains": [...] },
+            "csi300Close": 4630.1 },
+          ...
+        ]
+      }
+    }
+
+数据来自 `interval/series.json`（灌入日频文件时增量维护，见 §4.3），O(1) 读取，进程内缓存 10 分钟。曲线口径固定为年初基准（任意基准日曲线需平方级预计算，产品上收敛为年初）；中位数无法跨池合成，hs/all 两池分存。聚合文件尚未建立时返回 404 `SERIES_UNAVAILABLE`。
+
+### 5.5 错误码
 
 | 码 | HTTP | 场景 |
 | --- | --- | --- |
@@ -186,6 +215,7 @@
 | `INVALID_INCLUDE_BSE` / `INVALID_LIST_PARAMS` | 400 | 参数非法 |
 | `BASE_SNAPSHOT_MISSING` | 404 | 该日期无可用快照；响应附 `availableBaseDates` 供前端引导 |
 | `BASE_YEAR_MISMATCH` | 409 | 基准快照与当前快照年度基期不同 |
+| `SERIES_UNAVAILABLE` | 404 | 演变聚合尚未建立（引导期） |
 | `STOCK_DATA_UNAVAILABLE` | 503 | 当前快照不可用（沿用现有语义） |
 | `INTERNAL_ERROR` | 500 | 其他，脱敏 |
 
@@ -197,7 +227,7 @@
 | 冷查询（新基准日/冷启动） | 2–4s | 读 ~10MiB 基准快照 + 解析 + 提取映射 |
 | 名单分页 | <100ms | 统计结果按 (baseDate, snapshotId, includeBse) 进程内缓存后切片 |
 
-用户模式是"反复查同一基准日"，热路径覆盖绝大多数请求。若冷查询体验不达标，Phase 2 的 `interval/daily/*.json` 持久化派生缓存（单日 ~50KB gzip）可把冷查询降到 ~300ms，属于既定扩展点而非重构。
+用户模式是"反复查同一基准日"，热路径覆盖绝大多数请求。命中 `interval/daily/*.json` 的基准日（Phase 2/2.5 后为全部日期）冷查询约 2s，快照回退路径约 7s。演变模式读单个聚合文件，冷热均为亚秒级。
 
 ## 7. 边界情况
 

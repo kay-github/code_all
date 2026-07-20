@@ -12,7 +12,7 @@
 - 沪深300接口：`GET /api/stock-benchmark`，与个股结果独立加载和失败重试。
 - 数据健康接口：`GET /api/stock-health`，状态为 `READY`、`DEGRADED`、`DEMO` 或 `NOT_READY`。
 - 快照网关：`GET /api/stock-snapshot`，从私有 Vercel Blob 返回带 ETag 的 Published envelope。
-- 日终刷新：GitHub Actions `stock-ytd.yml` 工作日北京时间 16:07 主刷新（17:07/21:05 幂等重试窗口），经 OIDC 鉴权发布；遗留 `GET /api/stock-refresh` 仅接受 `CRON_SECRET` Bearer 鉴权。
+- 日终刷新：GitHub Actions `stock-ytd.yml` 工作日北京时间 16:07 主刷新（17:07/21:05 幂等重试窗口），经 OIDC 鉴权发布；21:35 生产完整性自检（失败即 run 红），周六 10:35 区间日频全量回填。遗留 `GET /api/stock-refresh` 仅接受 `CRON_SECRET` Bearer 鉴权。
 - 本地与 Preview 未配置正式快照时使用明确标注的 Fixture；Vercel Production 和普通生产运行时无条件禁止 Fixture。
 - 生产查询只读取 `STOCK_SNAPSHOT_URL` 指向的 Published envelope，不在用户请求中抓取或计算全市场行情。
 - 正式统计口径、数据职责和质量闸门以 `docs/stock-ytd-ranking/PRD.md` 与 `DATA_SOURCES.md` 为准。
