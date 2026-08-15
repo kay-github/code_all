@@ -66,10 +66,9 @@
 - 上方原文中把本次发现的疑似错字或错误标点标红。
 - 如果未发现错误，返回原文并提示未发现明显错误。
 
-## Planned Stock YTD Ranking Tool
+## Retired Stock Services
 
-- 股票 YTD 与市场排名工具的产品、统计口径、UI 和验收基线位于 docs/stock-ytd-ranking/PRD.md。
-- 多源数据职责、复权规则、质量闸门和容灾基线位于 docs/stock-ytd-ranking/DATA_SOURCES.md；历次数据管线重构的经验教训见 docs/stock-ytd-ranking/LESSONS.md。
-- 2026-07-16 起主数据源为东财 f25 直取（reported-ytd.v1，`lib/stockEmYtd.js` + `scripts/refresh-stock-ytd-em.js`），Baostock/新浪自算管线保留为回退路径。
-- 开始设计或开发 /tools/stock-ytd-ranking/ 前必须完整阅读以上两份文档。
-- 如需改变 YTD 公式、比较股票池、北交所规则、排名分母、沪深300口径或 UI 颜色语义，应先更新 PRD 的决策与变更记录，不要只修改代码。
+- 2026-08-15，A 股年内表现和区间涨跌分布因 Vercel Blob 免费额度限制而永久下线。
+- `stock-ytd-snapshots` Blob 商店、全部历史快照和 GitHub `stock-ytd.yml` 定时任务均已删除或停用。
+- 所有 `/api/stock-*` 请求必须由 `api/retired-stock-service.js` 返回 HTTP 410；旧页面和 `/qjfb` 必须只展示静态下线说明。
+- 不得恢复、重新连接或新增股票 Blob 商店、股票定时任务或股票快照读取逻辑，除非用户明确重新授权并先确认新的存储预算。
