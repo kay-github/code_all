@@ -1,76 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/stock-benchmark",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-health",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-interval-stats",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-publish",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-refresh",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-search",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-snapshot",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/api/stock-ytd",
-      "destination": "/api/retired-stock-service"
-    },
-    {
-      "source": "/tools/stock-ytd-ranking",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/tools/stock-ytd-ranking/",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/tools/stock-ytd-ranking/:path*",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/tools/stock-interval-stats",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/tools/stock-interval-stats/",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/tools/stock-interval-stats/:path*",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
       "source": "/cbz",
       "destination": "/tools/typo-proofreader/"
     },
     {
       "source": "/cbz/",
       "destination": "/tools/typo-proofreader/"
-    },
-    {
-      "source": "/qjfb",
-      "destination": "/tools/stock-service-retired/"
-    },
-    {
-      "source": "/qjfb/",
-      "destination": "/tools/stock-service-retired/"
     }
   ]
 }

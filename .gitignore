@@ -9,10 +9,6 @@ __pycache__/
 venv/
 
 .vercel
-.stock-ytd-data/
 node_modules/
-test-results/
-playwright-report/
-blob-report/
 
 .env*.local
