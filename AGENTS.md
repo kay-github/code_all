@@ -3,9 +3,10 @@
 ## Project Overview
 
 - 项目名称：大杂烩工具站。
-- 当前核心功能：移动端优先的中文错别字校对工具。
-- 前端入口：`index.html` 和 `tools/typo-proofreader/index.html`。
-- 线上 API：Vercel Serverless Functions，主要在 `api/proofread.js` 和 `api/health.js`。
+- 当前核心功能：移动端优先的中文错别字校对工具和网格交易管理器。
+- 前端入口：`index.html`、`tools/typo-proofreader/index.html`、`tools/grid-trading-manager/index.html`。
+- 网格交易源码：`apps/grid-trading-manager/`；构建产物复制到 `tools/grid-trading-manager/index.html`。
+- 线上 API：Vercel Serverless Functions，包括 `api/proofread.js`、`api/health.js`、`api/grid/auth.js`、`api/grid/state.js`。
 - 线上域名：`https://1.688680.xyz/tools/typo-proofreader/`。
 - GitHub 推送到 `main` 后，Vercel 会自动部署生产环境。
 
@@ -18,6 +19,13 @@
 - 模型返回修正文后，后端用 diff 生成 `corrections`，前端据此把原文错误字/标点标红。
 - 典型验证句：`反映物业不足为，要求物业旅行指责` 应修正为 `反映物业不作为，要求物业履行职责`。
 
+## Grid Trading Manager
+
+- 未登录可以离线使用，登录只增加云备份和多设备同步；前端只请求同源 `/api/grid/`，不接 Workbuddy 服务。
+- 用户名和密码开放注册，恢复码只在注册/重置成功时显示一次。各账号在本机按用户 ID 分键，服务端按已验证会话隔离私有 Blob 快照。
+- 同步使用版本号和 Blob ETag 条件写入；两端冲突交给用户选择，不自动合并。原 Workbuddy 账号和数据不迁移。
+- 修改前端后运行 `npm test` 和 `npm run build`（目录 `apps/grid-trading-manager`），再复制 `dist/index.html` 到 `tools/grid-trading-manager/index.html`。
+
 ## Environment And Secrets
 
 - 不要把 API Key、APISecret、APPID、token、cookie 或任何私密配置写入仓库。
@@ -29,6 +37,7 @@
   - Google Gemini：`GEMINI_API_KEY`、`GEMINI_BASE_URL`、`GEMINI_MODEL`
   - 顺序与冷却：`TYPO_PROVIDER_ORDER`、`TYPO_QUOTA_COOLDOWN_MS`、`TYPO_FAILOVER_COOLDOWN_MS`
 - `.vercel/`、`.env*`、`.venv/` 等本地文件不要提交。
+- 网格交易云备份的 `BLOB_READ_WRITE_TOKEN` 和 `GRID_SESSION_SECRET` 只放在 Vercel Production 环境变量中。
 - 如果密钥在聊天、日志或截图中暴露，应提醒用户去平台控制台轮换密钥。
 
 ## Development Principles
@@ -46,6 +55,7 @@
 - 运行规则和 diff 测试：`node tests/proofreader.test.js`
 - 运行模型调用封装测试：`node tests/modelProofreader.test.js`
 - 运行 API 集成测试：`node tests/apiProofread.test.js`
+- 运行网格账号与数据隔离测试：`node --test tests/gridService.test.js`
 - Vercel 构建验证：`vercel build --yes`
 - 查看线上部署：`vercel ls --scope chenxiaokais-projects`
 - 查看生产环境变量列表：`vercel env ls --scope chenxiaokais-projects`

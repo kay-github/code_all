@@ -20,6 +20,10 @@
 
 更完整的接口、模型和监控说明见 [docs/typo-proofreader/README.md](docs/typo-proofreader/README.md)。
 
+## 网格交易管理器
+
+源码和构建说明见 [apps/grid-trading-manager/README.md](apps/grid-trading-manager/README.md)。前端构建为单文件，发布文件是 `tools/grid-trading-manager/index.html`；账号与云备份使用同源 `/api/grid/` 接口。
+
 ## 运行与验证
 
 ```bash
@@ -29,6 +33,8 @@ node tests/proofreader.test.js
 node tests/modelProofreader.test.js
 node tests/apiProofread.test.js
 node tests/proofreadMonitor.test.js
+node tests/gridService.test.js
+# 网格交易前端：在 apps/grid-trading-manager 中运行 npm test && npm run build
 vercel build --yes
 ```
 
@@ -36,4 +42,4 @@ vercel build --yes
 
 推送到 GitHub `main` 后，Vercel 会自动部署；也可以使用 `vercel --prod --yes` 直接发布。模型密钥、监控密钥和通知配置只放在 Vercel 环境变量或 GitHub Actions Secrets 中，绝不写入仓库。
 
-`@vercel/blob` 仅用于校对服务监控状态，不承载行情、YTD 或其他股票数据。
+`@vercel/blob` 用于校对服务监控状态和网格交易管理器的私有账号快照。网格交易的 `BLOB_READ_WRITE_TOKEN`、`GRID_SESSION_SECRET` 仅放在 Vercel Production 环境变量中。
