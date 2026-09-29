@@ -7,6 +7,7 @@
 1. 错别字校对：`/tools/typo-proofreader/`，短链接 `/cbz`。
 2. 临时笔记本：跳转至 <https://note.688680.xyz/>。
 3. 飞机大战：`/shooter.html`。
+4. 网格交易管理器：跳转至 <https://grid-trading-manager.app.workbuddy.host/>，保留原站点的账号和云端同步功能。
 
 ## 错别字校对
 
