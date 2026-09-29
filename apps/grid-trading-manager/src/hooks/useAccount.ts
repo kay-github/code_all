@@ -87,7 +87,7 @@ export function useAccount(): AccountApi {
       setUser(result.user);
       setMarker(true);
       setStep('idle');
-      if (result.recoveryCode) setRecoveryCode(result.recoveryCode);
+      setRecoveryCode(result.recoveryCode ?? null);
       setNotice(action === 'login' ? '已登录' : action === 'register' ? '注册成功，已登录' : '密码已更新，已登录');
       return true;
     } catch (reason) {
@@ -105,7 +105,7 @@ export function useAccount(): AccountApi {
     setBusy(true); setError(null); setNotice(null);
     try {
       await api('auth', 'POST', { action: 'logout' });
-      setUser(null); setMarker(false); setStep('idle'); setBusy(false);
+      setUser(null); setRecoveryCode(null); setMarker(false); setStep('idle'); setBusy(false);
       setNotice('已退出登录');
     } catch (reason) { setError(message(reason)); }
     finally { setBusy(false); }
