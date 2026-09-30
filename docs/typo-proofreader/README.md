@@ -100,7 +100,7 @@
 - `PUSHPLUS_TOKEN`：可选，配置后在等级变化时发送通知。
 - `PUSHPLUS_ENDPOINT`、`PUSHPLUS_TOPIC`、`PUSHPLUS_TIMEOUT_MS`：可选 PushPlus 配置。
 - `MONITOR_CONFIRM_ROUNDS`、`MONITOR_FALLBACK_KEYS`、`MONITOR_QUIET_START`、`MONITOR_QUIET_END`、`MONITOR_HEALTH_URL`：可选监控策略配置。
-- `BLOB_READ_WRITE_TOKEN`：由 Vercel Blob 连接注入，仅用于持久化监控状态。
+- `BLOB_READ_WRITE_TOKEN`：由 Vercel 私有 Blob 连接注入；本工具用它持久化监控状态，网格交易管理器也使用同一服务端配置保存账号记录和云端快照，按不同路径存储。
 
 不要将上述密钥写入仓库、截图、聊天记录或浏览器前端。若密钥已暴露，应立即在对应平台轮换。
 

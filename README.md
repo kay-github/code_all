@@ -2,6 +2,12 @@
 
 移动端优先的轻量工具站，线上地址为 <https://1.688680.xyz/>。
 
+## 最新关键进度（截至 2026-09-30）
+
+网格交易管理器已于 2026-09-29 完成 Vercel 独立部署：首页入口直接打开本站页面，注册、登录、恢复密码和云备份均使用同域接口，不再依赖 Workbuddy。任何人都可注册，各账号的本机缓存与云端快照分别隔离。
+
+迁移同时修复了本地保存失败未提示、账号切换可能混用数据，以及切换账号时恢复码未清除的问题。2026-09-30 复查生产部署为 `Ready`，首页、两项工具页面和健康接口均返回 `200`；未登录访问网格账号与数据接口返回 `401`。核心功能验收、已确认决策和当前限制见 [项目进度记录](docs/project-status.md)。
+
 首页当前按顺序提供：
 
 1. 错别字校对：`/tools/typo-proofreader/`，短链接 `/cbz`。
@@ -33,7 +39,7 @@ node tests/proofreader.test.js
 node tests/modelProofreader.test.js
 node tests/apiProofread.test.js
 node tests/proofreadMonitor.test.js
-node tests/gridService.test.js
+node --test tests/gridService.test.js
 # 网格交易前端：在 apps/grid-trading-manager 中运行 npm test && npm run build
 vercel build --yes
 ```
