@@ -11,6 +11,9 @@
   <style>
     :root { color-scheme: light; --ink:#243b50; --muted:#667c8c; --blue:#2564d4; --line:#dfebef; }
     * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    .load-status { color:#78909d; font-size:13px; padding:24px 0; }
+    .retry-load { border:0; border-radius:8px; background:#2564d4; color:white; padding:10px 18px; cursor:pointer; }
     body { margin:0; min-height:100vh; color:var(--ink); font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:#f6f9fb; -webkit-font-smoothing:antialiased; }
     a { color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
     svg { display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
@@ -68,33 +71,35 @@
     <main>
       <section aria-labelledby="links-title">
         <div class="section-head"><h1 id="links-title">常用功能 <span class="count">6</span></h1><span class="section-note">选择一项，即刻前往</span></div>
-        <div class="grid">
-          <a class="card" href="https://f.wps.cn/g/A5hI2Xf5/" target="_blank" rel="noopener noreferrer" aria-label="加班登记，在新标签页打开">
+        <p id="load-status" class="load-status" role="status">正在加载常用功能…</p>
+        <button id="retry-load" class="retry-load" type="button" hidden>重新加载</button>
+        <div class="grid" hidden>
+          <a class="card" data-id="overtime" href="https://f.wps.cn/g/A5hI2Xf5/" target="_blank" rel="noopener noreferrer" aria-label="加班登记，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span><span class="number">01</span></div>
             <div class="title-row"><h2>加班登记</h2></div><p>记录加班时间与工作事项</p>
             <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
           </a>
-          <a class="card mint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnYrO20vTPU8RHdSG4m5iubf" target="_blank" rel="noopener noreferrer" aria-label="委屈登记，在新标签页打开">
+          <a class="card mint" data-id="grievance" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnYrO20vTPU8RHdSG4m5iubf" target="_blank" rel="noopener noreferrer" aria-label="委屈登记，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 7.5H8l-5 3v-7a8 8 0 1 1 17-3.5Z"/><path d="M8 9.5h8M8 13h5"/></svg></span><span class="number">02</span></div>
             <div class="title-row"><h2>委屈登记</h2></div><p>说出工作中遇到的委屈</p>
             <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
           </a>
-          <a class="card" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnEDuwKmxBMkvYYQm77iwsFd" target="_blank" rel="noopener noreferrer" aria-label="投诉登记，在新标签页打开">
+          <a class="card" data-id="complaint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnEDuwKmxBMkvYYQm77iwsFd" target="_blank" rel="noopener noreferrer" aria-label="投诉登记，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-3"/><rect x="9" y="2" width="6" height="4" rx="1.5"/><path d="M12 10v4m0 3h.01"/></svg></span><span class="number">03</span></div>
             <div class="title-row"><h2>投诉登记</h2></div><p>反馈问题，提交投诉事项</p>
             <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
           </a>
-          <a class="card mint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnltOf69UelZhe8ebJA3J3Sc" target="_blank" rel="noopener noreferrer" aria-label="表扬登记，在新标签页打开">
+          <a class="card mint" data-id="praise" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnltOf69UelZhe8ebJA3J3Sc" target="_blank" rel="noopener noreferrer" aria-label="表扬登记，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg></span><span class="number">04</span></div>
             <div class="title-row"><h2>表扬登记</h2></div><p>记录出色表现，传递认可</p>
             <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
           </a>
-          <a class="card" href="http://10.1.235.190:18082/houback/xlogin" target="_blank" rel="noopener noreferrer" aria-label="登录系统，需连接单位内网，在新标签页打开">
+          <a class="card" data-id="system" href="http://10.1.235.190:18082/houback/xlogin" target="_blank" rel="noopener noreferrer" aria-label="登录系统，需连接单位内网，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M9 10h6m-3-3 3 3-3 3"/></svg></span><span class="number">05</span></div>
             <div class="title-row"><h2>登录系统</h2><span class="badge">内网</span></div><p>连接单位内网后访问系统</p>
             <div class="card-bottom"><span class="source">业务系统</span><span class="button">进入系统<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
           </a>
-          <a class="card mint" href="https://f.wps.cn/g/Kp0hUkLQ/" target="_blank" rel="noopener noreferrer" aria-label="10月质检更改，在新标签页打开">
+          <a class="card mint" data-id="inspection" href="https://f.wps.cn/g/Kp0hUkLQ/" target="_blank" rel="noopener noreferrer" aria-label="10月质检更改，在新标签页打开">
             <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M14 3v6h6M14 3l6 6M8 15l2.5 2.5L16 12"/></svg></span><span class="number">06</span></div>
             <div class="title-row"><h2>10月质检更改</h2></div><p>提交10月质检更改事项</p>
             <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往更改<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
@@ -103,7 +108,8 @@
         <p class="notice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></svg>所有入口均在新标签页打开；“登录系统”需要连接单位内网。</p>
       </section>
     </main>
-    <footer><span class="footer-mark"><svg aria-hidden="true"><use href="#squares"/></svg>工作台 · 让日常更简单</span><span>每一件小事，都有入口。</span></footer>
+    <footer><span class="footer-mark"><svg aria-hidden="true"><use href="#squares"/></svg>工作台 · 让日常更简单</span><a href="https://b2.688680.xyz/" target="_blank" rel="noopener noreferrer">后台管理 ↗</a></footer>
   </div>
+  <script src="/tools/work-portal/portal.js" defer></script>
 </body>
 </html>

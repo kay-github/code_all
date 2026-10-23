@@ -2,6 +2,16 @@
   "routes": [
     {
       "src": "^/$",
+      "has": [{ "type": "host", "value": "b2.688680.xyz" }],
+      "dest": "/tools/work-portal/houtai.html"
+    },
+    {
+      "src": "^/houtai/?$",
+      "has": [{ "type": "host", "value": "b.688680.xyz" }],
+      "dest": "/tools/work-portal/houtai.html"
+    },
+    {
+      "src": "^/$",
       "has": [
         {
           "type": "host",

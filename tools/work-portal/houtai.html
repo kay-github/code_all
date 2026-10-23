@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#edf6fa">
+  <title>工作台后台 · 功能配置</title>
+  <link rel="stylesheet" href="/tools/work-portal/admin.css">
+  <script src="/tools/work-portal/admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-icon" aria-hidden="true">▦</span><span>工作台<span class="brand-label">后台管理</span></span></div><a class="preview" href="https://b.688680.xyz/" target="_blank" rel="noopener noreferrer">查看前台 ↗</a></header>
+  <main>
+    <section id="login-panel" class="login-panel" aria-labelledby="login-title">
+      <span class="lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg></span>
+      <h1 id="login-title">进入管理后台</h1><p class="muted">输入授权密码，管理常用功能入口。</p>
+      <form id="login-form">
+        <label>授权密码<input id="password" name="password" type="password" required maxlength="128" autocomplete="current-password" placeholder="请输入授权密码" spellcheck="false"></label>
+        <p id="login-message" class="message" role="status" aria-live="polite">正在检查登录状态…</p>
+        <button id="login-button" class="primary" type="submit" disabled>进入后台</button>
+      </form>
+    </section>
+    <section id="editor" class="editor" aria-labelledby="editor-title" hidden>
+      <div class="editor-heading"><div><p class="eyebrow">WORKSPACE SETTINGS</p><h1 id="editor-title">功能配置</h1><p class="muted">修改名称、链接和备注，保存后前台刷新即生效。</p></div><button id="logout" class="quiet" type="button">退出后台</button></div>
+      <p id="editor-message" class="message" role="status" aria-live="polite"></p>
+      <form id="config-form">
+        <fieldset id="config-fields"><div id="items" class="items"></div></fieldset>
+        <div class="save-bar"><div><p id="save-state">正在读取配置…</p><span id="updated-at" class="muted"></span></div><div class="save-actions"><button id="reload" class="quiet" type="button">重新加载</button><button id="save" class="primary" type="submit" disabled>保存全部修改</button></div></div>
+      </form>
+    </section>
+  </main>
+  <template id="item-template"><section class="edit-card"><div class="card-heading"><span class="number"></span><h2></h2></div><label>功能名称<input name="name" required maxlength="40" autocomplete="off"></label><label>URL 地址<input name="url" type="url" required maxlength="2048" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://"></label><label>备注<textarea name="remark" rows="2" maxlength="160" placeholder="可填写简短说明"></textarea></label></section></template>
+  <footer>工作台 · 配置管理</footer>
+</body>
+</html>
