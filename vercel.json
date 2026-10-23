@@ -1,22 +1,21 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/",
+      "src": "^/$",
       "has": [
         {
           "type": "host",
           "value": "b.688680.xyz"
         }
       ],
-      "destination": "/tools/work-portal/index.html"
+      "dest": "/tools/work-portal/index.html"
     },
     {
-      "source": "/cbz",
-      "destination": "/tools/typo-proofreader/"
+      "handle": "filesystem"
     },
     {
-      "source": "/cbz/",
-      "destination": "/tools/typo-proofreader/"
+      "src": "^/cbz/?$",
+      "dest": "/tools/typo-proofreader/index.html"
     }
   ]
 }
