@@ -1,6 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "b.688680.xyz"
+        }
+      ],
+      "destination": "/tools/work-portal/index.html"
+    },
+    {
       "source": "/cbz",
       "destination": "/tools/typo-proofreader/"
     },

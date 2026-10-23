@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf6fa">
+  <meta name="description" content="加班登记、委屈登记、投诉登记、表扬登记、登录系统和10月质检更改的统一入口。">
+  <meta name="referrer" content="no-referrer">
+  <title>工作台 · 日常事务入口</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23286ce5'/%3E%3Cpath d='M17 17h12v12H17zm18 0h12v12H35zM17 35h12v12H17zm18 0h12v12H35z' fill='white'/%3E%3C/svg%3E">
+  <style>
+    :root { color-scheme: light; --ink:#243b50; --muted:#667c8c; --blue:#2564d4; --line:#dfebef; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:#f6f9fb; -webkit-font-smoothing:antialiased; }
+    a { color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
+    svg { display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+    .wrap { width:min(1080px,calc(100% - 80px)); margin-inline:auto; }
+    header { height:98px; display:flex; align-items:center; justify-content:space-between; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-icon { width:40px; height:40px; display:grid; place-items:center; background:#e4eefc; color:var(--blue); border-radius:13px; }
+    .brand-icon svg { width:22px; height:22px; }
+    .brand-name { font-size:18px; font-weight:700; letter-spacing:1px; }
+    .brand-en { margin-left:12px; color:#8295a4; font-size:10px; font-weight:600; letter-spacing:2.5px; }
+    .header-note { display:flex; align-items:center; gap:8px; font-size:12px; color:#6c8490; }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:#69bda1; }
+    .section-head { display:flex; align-items:center; justify-content:space-between; margin:10px 2px 18px; }
+    h1 { margin:0; display:flex; align-items:center; gap:10px; font-size:17px; font-weight:650; letter-spacing:.5px; }
+    .count { display:grid; place-items:center; width:24px; height:21px; border:1px solid #dce8ee; border-radius:6px; font-size:11px; color:#6c8394; font-weight:500; background:#edf3f7; }
+    .section-note { color:#7a8e9c; font-size:12px; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+    .card { position:relative; display:flex; flex-direction:column; min-height:228px; padding:24px; border:1px solid var(--line); border-radius:18px; background:#fff; box-shadow:0 3px 8px #284c6b02; transition:transform .2s,border-color .2s,box-shadow .2s; }
+    .card:hover { transform:translateY(-4px); border-color:#a9c9ed; box-shadow:0 10px 24px #477a9d0c; }
+    .card:focus-visible { outline:3px solid #4283e6; outline-offset:4px; }
+    .card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:17px; }
+    .icon { width:43px; height:43px; border-radius:13px; display:grid; place-items:center; color:#427cca; background:#edf4ff; }
+    .mint .icon { color:#39856e; background:#eaf6ef; }
+    .number { color:#a2b1bc; font-size:11px; font-variant-numeric:tabular-nums; letter-spacing:1px; }
+    .title-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    h2 { margin:0; font-size:19px; font-weight:650; letter-spacing:.4px; line-height:1.5; }
+    .card p { margin:7px 0 22px; color:var(--muted); font-size:13px; line-height:1.7; }
+    .card-bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; }
+    .source { color:#8a9ba7; font-size:11px; letter-spacing:.3px; }
+    .button { display:flex; align-items:center; justify-content:center; gap:12px; min-height:34px; padding:8px 13px; border-radius:8px; color:#fff; background:var(--blue); font-size:12px; font-weight:600; white-space:nowrap; box-shadow:0 2px 4px #2564d416; transition:background .2s; }
+    .button svg { width:14px; height:14px; stroke-width:1.8; }
+    .card:hover .button { background:#174fb8; }
+    .badge { border:1px solid #d8e9e4; border-radius:4px; padding:1px 5px; color:#578273; background:#f0f8f4; font-size:10px; white-space:nowrap; }
+    .notice { display:flex; align-items:center; gap:9px; margin:21px 2px 0; color:#78909d; font-size:12px; line-height:1.8; }
+    .notice svg { flex-shrink:0; width:15px; height:15px; }
+    footer { display:flex; align-items:center; justify-content:space-between; margin-top:34px; padding:21px 1px 26px; border-top:1px solid #e2ebef; color:#92a2ad; font-size:11px; letter-spacing:.6px; }
+    .footer-mark { display:flex; gap:7px; align-items:center; }
+    .footer-mark svg { width:12px; height:12px; }
+    @media(min-width:1500px) { header { height:112px; } .card { min-height:240px; } .section-head { margin-top:10px; } }
+    @media(max-width:850px) { .wrap { width:calc(100% - 48px); } .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:520px) { .wrap { width:calc(100% - 32px); } header { height:78px; } .brand-name { font-size:17px; } .brand-en { font-size:8px; margin-left:8px; letter-spacing:1.6px; } .brand-icon { width:34px; height:34px; border-radius:11px; } .brand { gap:9px; } .header-note { font-size:10px; gap:5px; } .section-head { margin-top:8px; margin-bottom:15px; } h1 { font-size:16px; } .section-note { font-size:10px; } .grid { gap:12px; } .card { min-height:218px; padding:17px 15px; border-radius:15px; } .card-top { margin-bottom:15px; } .icon { width:38px; height:38px; border-radius:11px; } .icon svg { width:22px; height:22px; } .number { font-size:9px; } h2 { font-size:17px; letter-spacing:0; } .title-row { gap:5px; } .badge { font-size:9px; } .card p { font-size:11px; margin:7px 0 18px; line-height:1.8; } .card-bottom { flex-wrap:wrap; gap:9px; } .source { display:none; } .button { width:100%; min-height:34px; font-size:11px; justify-content:space-between; padding-inline:11px; } .notice { align-items:flex-start; font-size:10px; margin-top:18px; gap:7px; } .notice svg { margin-top:2px; width:13px; height:13px; } footer { font-size:9px; margin-top:24px; padding-top:18px; letter-spacing:.3px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } .card:hover { transform:none; } }
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="squares" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  </svg>
+  <div class="wrap">
+    <header>
+      <div class="brand"><span class="brand-icon"><svg aria-hidden="true"><use href="#squares"/></svg></span><div><span class="brand-name">工作台</span><span class="brand-en">WORKSPACE</span></div></div>
+      <div class="header-note"><span class="status-dot"></span>日常事务入口</div>
+    </header>
+    <main>
+      <section aria-labelledby="links-title">
+        <div class="section-head"><h1 id="links-title">常用功能 <span class="count">6</span></h1><span class="section-note">选择一项，即刻前往</span></div>
+        <div class="grid">
+          <a class="card" href="https://f.wps.cn/g/A5hI2Xf5/" target="_blank" rel="noopener noreferrer" aria-label="加班登记，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span><span class="number">01</span></div>
+            <div class="title-row"><h2>加班登记</h2></div><p>记录加班时间与工作事项</p>
+            <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+          <a class="card mint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnYrO20vTPU8RHdSG4m5iubf" target="_blank" rel="noopener noreferrer" aria-label="委屈登记，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 7.5H8l-5 3v-7a8 8 0 1 1 17-3.5Z"/><path d="M8 9.5h8M8 13h5"/></svg></span><span class="number">02</span></div>
+            <div class="title-row"><h2>委屈登记</h2></div><p>说出工作中遇到的委屈</p>
+            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+          <a class="card" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnEDuwKmxBMkvYYQm77iwsFd" target="_blank" rel="noopener noreferrer" aria-label="投诉登记，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-3"/><rect x="9" y="2" width="6" height="4" rx="1.5"/><path d="M12 10v4m0 3h.01"/></svg></span><span class="number">03</span></div>
+            <div class="title-row"><h2>投诉登记</h2></div><p>反馈问题，提交投诉事项</p>
+            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+          <a class="card mint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnltOf69UelZhe8ebJA3J3Sc" target="_blank" rel="noopener noreferrer" aria-label="表扬登记，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg></span><span class="number">04</span></div>
+            <div class="title-row"><h2>表扬登记</h2></div><p>记录出色表现，传递认可</p>
+            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+          <a class="card" href="http://10.1.235.190:18082/houback/xlogin" target="_blank" rel="noopener noreferrer" aria-label="登录系统，需连接单位内网，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M9 10h6m-3-3 3 3-3 3"/></svg></span><span class="number">05</span></div>
+            <div class="title-row"><h2>登录系统</h2><span class="badge">内网</span></div><p>连接单位内网后访问系统</p>
+            <div class="card-bottom"><span class="source">业务系统</span><span class="button">进入系统<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+          <a class="card mint" href="https://f.wps.cn/g/Kp0hUkLQ/" target="_blank" rel="noopener noreferrer" aria-label="10月质检更改，在新标签页打开">
+            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M14 3v6h6M14 3l6 6M8 15l2.5 2.5L16 12"/></svg></span><span class="number">06</span></div>
+            <div class="title-row"><h2>10月质检更改</h2></div><p>提交10月质检更改事项</p>
+            <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往更改<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
+          </a>
+        </div>
+        <p class="notice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></svg>所有入口均在新标签页打开；“登录系统”需要连接单位内网。</p>
+      </section>
+    </main>
+    <footer><span class="footer-mark"><svg aria-hidden="true"><use href="#squares"/></svg>工作台 · 让日常更简单</span><span>每一件小事，都有入口。</span></footer>
+  </div>
+</body>
+</html>
