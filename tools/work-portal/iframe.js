@@ -4,6 +4,14 @@
   let active = null;
   let loading = false;
   let version = null;
+  function setFullscreen(value) {
+    if (value && $('viewer').hidden) return;
+    document.body.classList.toggle('frame-fullscreen', value);
+    $('exit-fullscreen').hidden = !value;
+    $('enter-fullscreen').setAttribute('aria-pressed', String(value));
+    if (value) document.querySelector('.embed-help').open = false;
+    (value ? $('exit-fullscreen') : $('enter-fullscreen')).focus({ preventScroll: true });
+  }
   function updateButtons(id) {
     for (const button of $('switch-buttons').children) {
       const selected = button.dataset.id === id;
@@ -57,6 +65,7 @@
         $('switch-buttons').append(button);
       });
       if (!items.length) {
+        if (document.body.classList.contains('frame-fullscreen')) setFullscreen(false);
         active = null;
         $('viewer').hidden = true;
         $('content-frame').removeAttribute('src');
@@ -81,6 +90,9 @@
     } finally { loading = false; }
   }
   $('reload-frame').addEventListener('click', () => { if (active) select(active); });
+  $('enter-fullscreen').addEventListener('click', () => setFullscreen(true));
+  $('exit-fullscreen').addEventListener('click', () => setFullscreen(false));
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && document.body.classList.contains('frame-fullscreen')) setFullscreen(false); });
   $('retry-load').addEventListener('click', load);
   window.addEventListener('pageshow', load);
   window.addEventListener('hashchange', () => { const item = items.find(item => item.id === hashId()); if (item && item.id !== active?.id) select(item, false); });
