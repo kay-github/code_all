@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#edf6fa">
-  <meta name="description" content="加班登记、委屈登记、投诉登记、表扬登记、登录系统和10月质检更改的统一入口。">
+  <meta name="description" content="常用工作功能的统一入口，支持新窗口打开或内嵌模式切换。">
   <meta name="referrer" content="no-referrer">
   <title>工作台 · 日常事务入口</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23286ce5'/%3E%3Cpath d='M17 17h12v12H17zm18 0h12v12H35zM17 35h12v12H17zm18 0h12v12H35z' fill='white'/%3E%3C/svg%3E">
@@ -30,6 +30,13 @@
     h1 { margin:0; display:flex; align-items:center; gap:10px; font-size:17px; font-weight:650; letter-spacing:.5px; }
     .count { display:grid; place-items:center; width:24px; height:21px; border:1px solid #dce8ee; border-radius:6px; font-size:11px; color:#6c8394; font-weight:500; background:#edf3f7; }
     .section-note { color:#7a8e9c; font-size:12px; }
+    .section-actions { display:flex; align-items:center; gap:18px; }
+    .mode-switch { display:flex; align-items:center; gap:15px; padding:10px 15px; border:1px solid #c9ddf4; border-radius:9px; background:#e8f1ff; color:#2564d4; font-size:12px; font-weight:600; white-space:nowrap; }
+    .mode-switch:hover { background:#dceaff; }
+    .mode-switch:focus-visible { outline:3px solid #89b6ff; outline-offset:3px; }
+    .empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; color:#78909d; border:1px dashed #d3e2ea; border-radius:16px; font-size:14px; }
+    .card h2 { overflow-wrap:anywhere; }
+    @media(max-width:600px) { .section-actions .section-note { display:none; } .mode-switch { padding:8px 12px; font-size:11px; } }
     .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
     .card { position:relative; display:flex; flex-direction:column; min-height:228px; padding:24px; border:1px solid var(--line); border-radius:18px; background:#fff; box-shadow:0 3px 8px #284c6b02; transition:transform .2s,border-color .2s,box-shadow .2s; }
     .card:hover { transform:translateY(-4px); border-color:#a9c9ed; box-shadow:0 10px 24px #477a9d0c; }
@@ -62,6 +69,12 @@
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
     <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
     <symbol id="squares" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="icon-overtime" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="icon-grievance" viewBox="0 0 24 24"><path d="M20 11.5a8 8 0 0 1-8 7.5H8l-5 3v-7a8 8 0 1 1 17-3.5Z"/><path d="M8 9.5h8M8 13h5"/></symbol>
+    <symbol id="icon-complaint" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-3"/><rect x="9" y="2" width="6" height="4" rx="1.5"/><path d="M12 10v4m0 3h.01"/></symbol>
+    <symbol id="icon-praise" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
+    <symbol id="icon-system" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M9 10h6m-3-3 3 3-3 3"/></symbol>
+    <symbol id="icon-inspection" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M14 3v6h6M14 3l6 6M8 15l2.5 2.5L16 12"/></symbol>
   </svg>
   <div class="wrap">
     <header>
@@ -70,46 +83,17 @@
     </header>
     <main>
       <section aria-labelledby="links-title">
-        <div class="section-head"><h1 id="links-title">常用功能 <span class="count">6</span></h1><span class="section-note">选择一项，即刻前往</span></div>
+        <div class="section-head"><h1 id="links-title">常用功能 <span class="count">—</span></h1><div class="section-actions"><span class="section-note">选择一项，即刻前往</span><a class="mode-switch" href="/iframe">内嵌模式 <span aria-hidden="true">→</span></a></div></div>
         <p id="load-status" class="load-status" role="status">正在加载常用功能…</p>
         <button id="retry-load" class="retry-load" type="button" hidden>重新加载</button>
-        <div class="grid" hidden>
-          <a class="card" data-id="overtime" href="https://f.wps.cn/g/A5hI2Xf5/" target="_blank" rel="noopener noreferrer" aria-label="加班登记，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span><span class="number">01</span></div>
-            <div class="title-row"><h2>加班登记</h2></div><p>记录加班时间与工作事项</p>
-            <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-          <a class="card mint" data-id="grievance" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnYrO20vTPU8RHdSG4m5iubf" target="_blank" rel="noopener noreferrer" aria-label="委屈登记，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 7.5H8l-5 3v-7a8 8 0 1 1 17-3.5Z"/><path d="M8 9.5h8M8 13h5"/></svg></span><span class="number">02</span></div>
-            <div class="title-row"><h2>委屈登记</h2></div><p>说出工作中遇到的委屈</p>
-            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-          <a class="card" data-id="complaint" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnEDuwKmxBMkvYYQm77iwsFd" target="_blank" rel="noopener noreferrer" aria-label="投诉登记，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-3"/><rect x="9" y="2" width="6" height="4" rx="1.5"/><path d="M12 10v4m0 3h.01"/></svg></span><span class="number">03</span></div>
-            <div class="title-row"><h2>投诉登记</h2></div><p>反馈问题，提交投诉事项</p>
-            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-          <a class="card mint" data-id="praise" href="https://rcnvsexb7hbh.feishu.cn/share/base/form/shrcnltOf69UelZhe8ebJA3J3Sc" target="_blank" rel="noopener noreferrer" aria-label="表扬登记，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg></span><span class="number">04</span></div>
-            <div class="title-row"><h2>表扬登记</h2></div><p>记录出色表现，传递认可</p>
-            <div class="card-bottom"><span class="source">飞书表单</span><span class="button">前往登记<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-          <a class="card" data-id="system" href="http://10.1.235.190:18082/houback/xlogin" target="_blank" rel="noopener noreferrer" aria-label="登录系统，需连接单位内网，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M9 10h6m-3-3 3 3-3 3"/></svg></span><span class="number">05</span></div>
-            <div class="title-row"><h2>登录系统</h2><span class="badge">内网</span></div><p>连接单位内网后访问系统</p>
-            <div class="card-bottom"><span class="source">业务系统</span><span class="button">进入系统<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-          <a class="card mint" data-id="inspection" href="https://f.wps.cn/g/Kp0hUkLQ/" target="_blank" rel="noopener noreferrer" aria-label="10月质检更改，在新标签页打开">
-            <div class="card-top"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M14 3v6h6M14 3l6 6M8 15l2.5 2.5L16 12"/></svg></span><span class="number">06</span></div>
-            <div class="title-row"><h2>10月质检更改</h2></div><p>提交10月质检更改事项</p>
-            <div class="card-bottom"><span class="source">WPS 表单</span><span class="button">前往更改<svg aria-hidden="true"><use href="#arrow"/></svg></span></div>
-          </a>
-        </div>
+        <div class="grid" hidden></div>
+        <template id="card-template"><a class="card" target="_blank" rel="noopener noreferrer"><div class="card-top"><span class="icon"><svg aria-hidden="true"><use href="#squares"/></svg></span><span class="number"></span></div><div class="title-row"><h2></h2></div><p></p><div class="card-bottom"><span class="source"></span><span class="button">打开功能<svg aria-hidden="true"><use href="#arrow"/></svg></span></div></a></template>
         <p class="notice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></svg>所有入口均在新标签页打开；“登录系统”需要连接单位内网。</p>
       </section>
     </main>
     <footer><span class="footer-mark"><svg aria-hidden="true"><use href="#squares"/></svg>工作台 · 让日常更简单</span><a href="https://b2.688680.xyz/" target="_blank" rel="noopener noreferrer">后台管理 ↗</a></footer>
   </div>
+  <script src="/tools/work-portal/shared.js" defer></script>
   <script src="/tools/work-portal/portal.js" defer></script>
 </body>
 </html>

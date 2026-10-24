@@ -22,15 +22,15 @@
       </form>
     </section>
     <section id="editor" class="editor" aria-labelledby="editor-title" hidden>
-      <div class="editor-heading"><div><p class="eyebrow">WORKSPACE SETTINGS</p><h1 id="editor-title">功能配置</h1><p class="muted">修改名称、链接和备注，保存后前台刷新即生效。</p></div><button id="logout" class="quiet" type="button">退出后台</button></div>
+      <div class="editor-heading"><div><p class="eyebrow">WORKSPACE SETTINGS</p><h1 id="editor-title">功能配置</h1><p class="muted">新增、删除或调整入口顺序，保存后同步到首页和内嵌模式。</p></div><button id="logout" class="quiet" type="button">退出后台</button></div>
       <p id="editor-message" class="message" role="status" aria-live="polite"></p>
       <form id="config-form">
-        <fieldset id="config-fields"><div id="items" class="items"></div></fieldset>
+        <fieldset id="config-fields"><div class="list-toolbar"><span id="item-count" class="muted"></span><button id="add-item" class="primary" type="button">＋ 新增入口</button></div><div id="items" class="items"></div><p id="empty-items" class="empty-items" hidden>还没有功能入口，点击“新增入口”开始配置。</p></fieldset>
         <div class="save-bar"><div><p id="save-state">正在读取配置…</p><span id="updated-at" class="muted"></span></div><div class="save-actions"><button id="reload" class="quiet" type="button">重新加载</button><button id="save" class="primary" type="submit" disabled>保存全部修改</button></div></div>
       </form>
     </section>
   </main>
-  <template id="item-template"><section class="edit-card"><div class="card-heading"><span class="number"></span><h2></h2></div><label>功能名称<input name="name" required maxlength="40" autocomplete="off"></label><label>URL 地址<input name="url" type="url" required maxlength="2048" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://"></label><label>备注<textarea name="remark" rows="2" maxlength="160" placeholder="可填写简短说明"></textarea></label></section></template>
+  <template id="item-template"><section class="edit-card"><div class="card-heading"><span class="number"></span><h2></h2></div><label>功能名称<input name="name" required maxlength="40" autocomplete="off"></label><label>URL 地址<input name="url" type="url" required maxlength="2048" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://"></label><label>备注<textarea name="remark" rows="2" maxlength="160" placeholder="可填写简短说明"></textarea></label><div class="item-actions"><button type="button" class="quiet" data-action="up">↑ 上移</button><button type="button" class="quiet" data-action="down">↓ 下移</button><button type="button" class="danger" data-action="delete">删除入口</button></div></section></template>
   <footer>工作台 · 配置管理</footer>
 </body>
 </html>

@@ -1,6 +1,11 @@
 {
   "routes": [
     {
+      "src": "^/iframe/?$",
+      "has": [{ "type": "host", "value": "b.688680.xyz" }],
+      "dest": "/tools/work-portal/iframe.html"
+    },
+    {
       "src": "^/$",
       "has": [{ "type": "host", "value": "b2.688680.xyz" }],
       "dest": "/tools/work-portal/houtai.html"

@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { scryptSync } = require('node:crypto');
-const { makePortalService, DEFAULT_ITEMS, STORE_KEY, SESSION_MS } = require('../lib/portalService');
+const { makePortalService, DEFAULT_ITEMS, STORE_KEY, SESSION_MS, MAX_ITEMS } = require('../lib/portalService');
 
 const salt = '00112233445566778899aabbccddeeff';
 const passwordHash = `${salt}:${scryptSync('test-admin-password', salt, 32).toString('hex')}`;
@@ -63,11 +63,51 @@ test('unsafe URLs and malformed fields cannot be stored', async () => {
     const data = await portal.read(); data.items[0].url = url;
     await assert.rejects(portal.save(token, data), { status: 400, code: 'url' });
   }
-  for (const change of [data => { data.items[0].name = ''; }, data => { data.items[0].remark = 'x'.repeat(161); }, data => { data.items[1].id = data.items[0].id; }, data => { data.items.pop(); }, data => { data.version = -1; }]) {
+  for (const change of [data => { data.items[0].name = ''; }, data => { data.items[0].remark = 'x'.repeat(161); }, data => { data.items[1].id = data.items[0].id; }, data => { data.items[0].id = '<invalid>'; }, data => { data.items = null; }, data => { data.items[0] = null; }, data => { data.version = -1; }]) {
     const data = await portal.read(); change(data);
     await assert.rejects(portal.save(token, data), { status: 400 });
   }
   assert.equal(store.rows.size, 0);
+});
+
+test('existing configuration supports adding, ordering and deleting arbitrary entries, including an empty list', async () => {
+  const { portal, settings } = setup();
+  const token = portal.login('test-admin-password');
+  let data = await portal.read();
+  // Keep IDs and user edits from the previous six-entry format.
+  data.items[0].name = '已有的自定义名称';
+  data = await portal.save(token, data);
+  const added = { id: 'entry-new-123', name: ' 新功能 ', url: 'https://example.com/form', remark: ' 自定义备注 ' };
+  data.items.push(added);
+  data = await portal.save(token, data);
+  assert.equal(data.items.length, 7);
+  assert.equal(data.items.at(-1).name, '新功能');
+  assert.equal(data.items[0].name, '已有的自定义名称');
+  data.items.unshift(data.items.pop());
+  data = await portal.save(token, data);
+  assert.equal((await makePortalService(settings).read()).items[0].id, added.id);
+  data.items = data.items.filter(item => item.id !== 'complaint');
+  data = await portal.save(token, data);
+  assert.equal(data.items.some(item => item.id === 'complaint'), false);
+  assert.equal(data.items.some(item => item.id === added.id), true);
+  data.items = [];
+  data = await portal.save(token, data);
+  assert.deepEqual((await makePortalService(settings).read()).items, []);
+  data.items = [added];
+  assert.equal((await portal.save(token, data)).items.length, 1);
+});
+
+test('entry count and request sizes allow the supported list while bounding abuse', async () => {
+  const { portal } = setup();
+  const token = portal.login('test-admin-password');
+  const items = Array.from({ length: MAX_ITEMS }, (_, index) => ({ id: `entry-${index}`, name: '新'.repeat(40), url: `https://example.com/${'a'.repeat(2000)}`, remark: '备'.repeat(160) }));
+  const { jsonBody } = require('../lib/portalHttp');
+  const data = { version: 0, items };
+  assert.deepEqual(jsonBody({ headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) }), data);
+  const saved = await portal.save(token, data);
+  assert.equal(saved.items.length, MAX_ITEMS);
+  await assert.rejects(portal.save(token, { version: saved.version, items: [...items, { ...items[0], id: 'one-too-many' }] }), { status: 400, code: 'items' });
+  assert.throws(() => jsonBody({ headers: { 'content-type': 'application/json', 'content-length': '200001' }, body: data }), { status: 413 });
 });
 
 test('stale edits and simultaneous writes cannot overwrite a newer configuration', async () => {
