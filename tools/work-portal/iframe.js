@@ -4,6 +4,13 @@
   let active = null;
   let loading = false;
   let version = null;
+  function updateButtons(id) {
+    for (const button of $('switch-buttons').children) {
+      const selected = button.dataset.id === id;
+      button.setAttribute('aria-pressed', String(selected));
+      if (selected) button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }
   function select(item, updateHash = true) {
     active = item;
     $('active-name').textContent = item.name;
@@ -11,7 +18,7 @@
     $('open-page').href = item.url;
     $('fallback-open').href = item.url;
     $('content-frame').title = item.name;
-    for (const button of $('switch-buttons').children) button.setAttribute('aria-pressed', String(button.dataset.id === item.id));
+    updateButtons(item.id);
     const { url, intranet } = Portal.describe(item);
     const mixed = location.protocol === 'https:' && url.protocol === 'http:';
     $('content-frame').hidden = mixed;
@@ -42,6 +49,7 @@
         button.type = 'button';
         button.className = 'switch-button';
         button.dataset.id = item.id;
+        button.title = item.name;
         const number = document.createElement('span');
         number.textContent = String(index + 1).padStart(2, '0');
         button.append(number, document.createTextNode(item.name));
@@ -63,7 +71,7 @@
           $('active-name').textContent = next.name;
           $('active-remark').textContent = next.remark;
           $('content-frame').title = next.name;
-          for (const button of $('switch-buttons').children) button.setAttribute('aria-pressed', String(button.dataset.id === next.id));
+          updateButtons(next.id);
         }
       }
     } catch {
