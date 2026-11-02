@@ -54,6 +54,10 @@
     {
       "src": "^/cbz/?$",
       "dest": "/tools/typo-proofreader/index.html"
+    },
+    {
+      "src": "^/txdp/?$",
+      "dest": "/tools/optical-decline-board/index.html"
     }
   ]
 }

@@ -15,6 +15,7 @@
 3. 飞机大战：`/shooter.html`。
 4. 网格交易管理器：<https://1.688680.xyz/tools/grid-trading-manager/>，独立账号与云端同步，数据保存在 Vercel 私有 Blob 存储。
 5. 股票回撤研究室：<https://1.688680.xyz/tools/stock-rebound-lab/>，真实沪深京行情、历史回撤、反弹估值、事件回测与本机持仓测算。
+6. 光通信跌幅榜：`/tools/optical-decline-board/`，短链接 `/txdp`。A股光通信产业链 54 只标的跌幅榜单，页面内置 420 日历史序列并每 30 秒 JSONP 拉取腾讯实时行情自算全部指标；每个交易日 15:01 由本地自动化重新生成后推送本仓库更新内嵌历史。
 
 ## 首页入口管理
 
