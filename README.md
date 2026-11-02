@@ -14,6 +14,11 @@
 2. 临时笔记本：跳转至 <https://note.688680.xyz/>。
 3. 飞机大战：`/shooter.html`。
 4. 网格交易管理器：<https://1.688680.xyz/tools/grid-trading-manager/>，独立账号与云端同步，数据保存在 Vercel 私有 Blob 存储。
+5. 股票回撤研究室：<https://1.688680.xyz/tools/stock-rebound-lab/>，真实沪深京行情、历史回撤、反弹估值、事件回测与本机持仓测算。
+
+## 股票回撤研究室
+
+使用说明、行情复权约定、API、算法和本地启动见 [tools/stock-rebound-lab/README.md](tools/stock-rebound-lab/README.md)。本地执行 `npm run dev:stocks`，测试执行 `npm run test:stocks`。在线版无需登录，持仓与研究记录保存在浏览器；支持 JSON/CSV 导入导出及 Excel 情景导出。
 
 ## 错别字校对
 
