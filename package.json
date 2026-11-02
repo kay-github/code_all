@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev:stocks": "node scripts/serve-stock-lab.cjs",
-    "test:stocks": "node --test tests/stockAnalysis.test.mjs tests/stockMarket.test.js"
+    "test:stocks": "node --test tests/stockAnalysis.test.mjs tests/stockMarket.test.js tests/stockWaves.test.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.6.1"

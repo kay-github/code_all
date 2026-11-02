@@ -1,18 +1,21 @@
 import { finite, validateBars, simulate, maxDrawdown, drawdownEvents, eventStudy, mapEvent, debtPlan, valuations, aggregateBars, movingAverage } from './analysis.mjs';
+import { abcScenario, fifthScenario, ABC_RATIOS, FIFTH_RATIOS } from './waves.mjs';
 import * as storage from './storage.mjs';
 import { escapeHTML as esc, download, csv, parseCSV, makeXLSX } from './export.mjs';
 const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
 const fmt = (n, d = 2) => finite(n) ? Number(n).toLocaleString('zh-CN',{ minimumFractionDigits:d, maximumFractionDigits:d }) : '—';
 const pct = (n,d = 2) => finite(n) ? (n > 0 ? '+' : '') + fmt(n * 100,d) + '%' : '—';
+const ratioText = n => finite(n) ? Number(n).toLocaleString('zh-CN',{maximumFractionDigits:6}) : '—';
 const tone = n => n > 0 ? 'up' : n < 0 ? 'down' : '';
 const money = n => finite(n) ? Math.abs(n) >= 10000 ? fmt(n/10000) + ' 万元' : fmt(n) + ' 元' : '—';
 const dateText = v => v ? new Date(v).toLocaleString('zh-CN',{ timeZone:'Asia/Shanghai', hour12:false }) : '未知';
 const today = () => new Intl.DateTimeFormat('sv-SE',{ timeZone:'Asia/Shanghai' }).format(new Date());
 const currentYear = () => Number(today().slice(0,4));
 const defaults = [{symbol:'300502.SZ',name:'新易盛'},{symbol:'300308.SZ',name:'中际旭创'},{symbol:'300394.SZ',name:'天孚通信'},{symbol:'601138.SH',name:'工业富联'},{symbol:'300476.SZ',name:'胜宏科技'}];
-const simIds = ['low','rebound','shares','cost','base','capital','profit'];
+const simIds = ['reference-high','low','rebound','shares','cost','base','capital','profit'];
+const waveIds = ['wave-high','wave-low','wave-b-ratio','wave-c-ratio','wave-third-start','wave-third-end','wave-fourth-low','wave-fifth-ratio','wave-show-c'];
 const riskIds = ['cash','debt','debt-type','due','sell-price','sell-qty','fee','cushion','lot'];
-const state = { stock:defaults[0], watch:[], quote:null, history:null, nominal:null, bars:[], tab:'overview', period:'day', range:'all', generation:0, forecasts:[], scenarios:[], positions:[], events:[], selectedEvent:0, form:{}, autoBase:true, autoCapital:true, autoSell:true, settings:{}, study:null, chart:null, candles:null, marker:null, mappingChart:null, start:'', end:'', picking:false, picks:[], warnings:new Map(), busy:false };
+const state = { stock:defaults[0], watch:[], quote:null, history:null, nominal:null, bars:[], tab:'overview', period:'day', range:'all', generation:0, forecasts:[], scenarios:[], positions:[], events:[], selectedEvent:0, form:{}, autoHigh:true, waveMode:'abc', waveAutoHigh:true, waveAutoThird:true, autoBase:true, autoCapital:true, autoSell:true, settings:{}, study:null, chart:null, candles:null, marker:null, mappingChart:null, start:'', end:'', picking:false, picks:[], warnings:new Map(), busy:false };
 let saveTimer, toastTimer, searchTimer, searchGeneration = 0;
 function toast(message) { $('toast').textContent = message; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true,3200); }
 function warn(key, message) { if (message) state.warnings.set(key,message); else state.warnings.delete(key); $('message').textContent = [...state.warnings.values()].join(' · '); $('message').hidden = state.warnings.size === 0; }
@@ -20,11 +23,11 @@ async function persist(key,value) { try { await storage.set(key,value); } catch 
 function fieldValues(ids) { return Object.fromEntries(ids.map(id => [id,$(id).type === 'checkbox' ? $(id).checked : $(id).value])); }
 function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveForm,180); }
 async function saveForm() {
-  const value = { ...fieldValues([...simIds,...riskIds]), forecasts:state.forecasts, autoBase:state.autoBase, autoCapital:state.autoCapital, autoSell:state.autoSell };
+  const value = { ...fieldValues([...simIds,...riskIds]), forecasts:state.forecasts, autoHigh:state.autoHigh, wave:{...fieldValues(waveIds),mode:state.waveMode,autoHigh:state.waveAutoHigh,autoThird:state.waveAutoThird}, autoBase:state.autoBase, autoCapital:state.autoCapital, autoSell:state.autoSell };
   await persist('form:' + state.stock.symbol,value); state.form = value;
 }
 function parameters() { return Object.fromEntries(simIds.map(id => [id,$(id).value])); }
-function simParams() { return { ...parameters(), high:nominalHigh() }; }
+function simParams() { return { ...parameters(), high:$('reference-high').value }; }
 function nominalHigh() { const b = state.nominal?.bars || (state.history?.adjust === 'qfq' ? state.history.bars : []); return b.length ? Math.max(...b.map(b => b.high)) : null; }
 function nominalLow() { const b = state.nominal?.bars || []; return b.length ? Math.min(...b.map(b => b.low)) : null; }
 function nominalFrom(h) {
@@ -70,10 +73,14 @@ async function applyForm() {
   const symbol = state.stock.symbol, form = await storage.get('form:'+symbol) || {};
   if (symbol !== state.stock.symbol) return;
   const initial = symbol === '300502.SZ';
-  const values = { low:initial?194:'', rebound:100, shares:initial?7000:0, cost:'', base:'', capital:'', profit:initial?180:'', cash:0, debt:0, 'debt-type':'ordinary', due:'', 'sell-price':'', 'sell-qty':'', fee:.1, cushion:0, lot:true,...form };
-  for (const id of [...simIds,...riskIds]) { if ($(id).type==='checkbox') $(id).checked = Boolean(values[id]); else $(id).value = values[id] ?? ''; }
+  const values = { 'reference-high':'', low:initial?194:'', rebound:100, shares:initial?7000:0, cost:'', base:'', capital:'', profit:initial?180:'', cash:0, debt:0, 'debt-type':'ordinary', due:'', 'sell-price':'', 'sell-qty':'', fee:.1, cushion:0, lot:true,...form };
+  for (const id of [...simIds,...riskIds]) { if ($(id).type==='checkbox') $(id).checked = Boolean(values[id]); else $(id).value = id==='rebound'&&finite(values[id])?Number(Number(values[id]).toFixed(6)):values[id]??''; }
   state.autoBase = form.autoBase !== false; state.autoCapital = form.autoCapital !== false; state.autoSell = form.autoSell !== false;
   state.forecasts = Array.from({length:5},(_,i)=>{ const year = currentYear()+i, saved = Array.isArray(form.forecasts) ? form.forecasts.find(f=>f.year===year) : null; return {year, profit:saved?.profit ?? (initial&&i===0?180:''), conservative:saved?.conservative ?? '', optimistic:saved?.optimistic ?? ''}; });
+  state.autoHigh=form.autoHigh!==false;
+  const wave=form.wave||{};state.waveMode=wave.mode==='fifth'?'fifth':'abc';state.waveAutoHigh=wave.autoHigh!==false;state.waveAutoThird=wave.autoThird!==false;
+  const waveValues={'wave-high':'','wave-low':initial?190:'','wave-b-ratio':38.2,'wave-c-ratio':61.8,'wave-third-start':initial?33.5:'','wave-third-end':'','wave-fourth-low':initial?192:'','wave-fifth-ratio':78.6,'wave-show-c':false,...wave};
+  for(const id of waveIds){if($(id).type==='checkbox')$(id).checked=Boolean(waveValues[id]);else $(id).value=waveValues[id]??'';}
   state.form = form;
   $('rebound-range').value = Math.min(200,Number($('rebound').value));
 }
@@ -82,7 +89,8 @@ function setFromQuote(q) {
   if (state.autoCapital || !$('capital').value) $('capital').value = finite(q.capital) ? Number(q.capital).toFixed(6) : '';
   if (state.autoSell || !$('sell-price').value) $('sell-price').value = q.price;
   if (!$('low').value) $('low').value = q.low || q.price;
-  $('assumption-note').textContent = '利润为用户假设；股本' + (state.autoCapital?'取自行情，可手动覆盖':'已手动设定') + (state.stock.symbol==='300502.SZ'?'。194 元起涨价与初始 7000 股为演示研究参数。':'。');
+  if(!$('wave-low').value)$('wave-low').value=q.low||q.price;
+  if(!$('wave-fourth-low').value)$('wave-fourth-low').value=q.low||q.price;
 }
 async function loadStock(stock, force=false) {
   clearTimeout(saveTimer);
@@ -132,7 +140,7 @@ function updateHistory() {
 }
 function adjustLabel(v){return {qfq:'前复权',hfq:'后复权',none:'不复权'}[v]||'未知口径';}
 function chartColors(){const style=getComputedStyle(document.documentElement);return Object.fromEntries(['panel','text','muted','line','up','down','accent'].map(k=>[k,style.getPropertyValue('--'+k).trim()]));}
-function chartOptions(height){const c=chartColors();return {autoSize:true,height,layout:{background:{type:'solid',color:c.panel},textColor:c.muted,fontSize:10,attributionLogo:false},grid:{vertLines:{color:c.line+'55'},horzLines:{color:c.line+'88'}},rightPriceScale:{borderColor:c.line,scaleMargins:{top:.1,bottom:.24}},timeScale:{borderColor:c.line,timeVisible:false,rightOffset:5},crosshair:{mode:0},localization:{locale:'zh-CN'}};}
+function chartOptions(height){const c=chartColors();return {autoSize:true,height,layout:{background:{type:'solid',color:c.panel},textColor:c.muted,fontSize:10,attributionLogo:false},grid:{vertLines:{color:c.line+'55'},horzLines:{color:c.line+'88'}},rightPriceScale:{borderColor:c.line,scaleMargins:{top:.1,bottom:$('chart-indicators').checked?.24:.08}},timeScale:{borderColor:c.line,timeVisible:false,rightOffset:5},crosshair:{mode:0},localization:{locale:'zh-CN'}};}
 function drawChart(){
   if(!window.LightweightCharts)return;
   const L=window.LightweightCharts,c=chartColors(),bars=aggregateBars(state.bars,state.period);
@@ -140,8 +148,10 @@ function drawChart(){
   if(!bars.length)return;
   const chart=L.createChart($('chart'),chartOptions($('chart').clientHeight));state.chart=chart;
   const candles=chart.addSeries(L.CandlestickSeries,{upColor:c.up,downColor:c.down,borderVisible:false,wickUpColor:c.up,wickDownColor:c.down,priceFormat:{type:'price',precision:3,minMove:.001}});state.candles=candles;candles.setData(bars);
+  if($('chart-indicators').checked){
   const volume=chart.addSeries(L.HistogramSeries,{priceFormat:{type:'volume'},priceScaleId:'volume',lastValueVisible:false,priceLineVisible:false});volume.priceScale().applyOptions({scaleMargins:{top:.82,bottom:0}});volume.setData(bars.map(b=>({time:b.time,value:b.volume,color:(b.close>=b.open?c.up:c.down)+'55'})));
   [5,10,20,60].forEach((n,i)=>{const series=chart.addSeries(L.LineSeries,{color:['#c9df8a','#7db9c2','#c4a0d3','#cfa36b'][i],lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});series.setData(movingAverage(bars,n));});
+  }
   const high=bars.reduce((p,b,i)=>b.high>bars[p].high?i:p,0),low=bars.reduce((p,b,i)=>b.low<bars[p].low?i:p,0),dd=maxDrawdown(bars);
   const markers=[{time:bars[high].time,position:'aboveBar',color:c.accent,shape:'arrowDown',text:'高 '+fmt(bars[high].high)},{time:bars[low].time,position:'belowBar',color:c.muted,shape:'arrowUp',text:'低 '+fmt(bars[low].low)}].sort((a,b)=>a.time.localeCompare(b.time));
   state.marker=L.createSeriesMarkers(candles,markers);
@@ -158,16 +168,68 @@ function renderLowPresets(){
     for(const d of[60,65,70,75,76.8,80])opts.push([high*(1-d/100),'复权参考高点回撤 '+d+'%（假设映射）']);}
   $('low-presets').innerHTML='<option value="">选择历史价格 / 回撤幅度</option>'+opts.map(([v,t])=>'<option value="'+v+'">'+t+' · '+fmt(v)+' 元</option>').join('');
 }
-function matrixRows(){const p=simParams();return[10,20,30,40,50,60,70,80,100,110,150,200].map(r=>{const s=simulate({...p,rebound:r});return {r,...s};});}
+function matrixRows(){const p=simParams();return [...new Set([20,30,50,70,100,110,...(finite(p.rebound)&&Number(p.rebound)>=0?[Number(p.rebound)]:[])])].sort((a,b)=>a-b).map(r=>{const s=simulate({...p,rebound:r});return {r,...s};});}
+function syncReferencePrices(){
+  const high=nominalHigh();
+  if(high>0){if(state.autoHigh)$('reference-high').value=Number(high.toFixed(5));if(state.waveAutoHigh)$('wave-high').value=Number(high.toFixed(5));if(state.waveAutoThird)$('wave-third-end').value=Number(high.toFixed(5));}
+}
+function renderCorePosition(){
+  const shares=Number($('shares').value),price=state.quote?.price;
+  $('header-position').innerHTML='持有 <b>'+fmt(shares,0)+'</b> 股 <span>·</span> 当前持仓市值 <b>'+money(price==null?null:price*shares)+'</b>';
+}
+function renderMarket(){
+  const p=simParams(),s=simulate(p);
+  $('position-detail').innerHTML=resultLine('比较基准价对应持仓市值',Number(p.base)>0?money(s.currentValue):'—')+resultLine('相对实际成本盈亏',finite(p.cost)&&Number(p.base)>0?money((Number(p.base)-Number(p.cost))*Number(p.shares)):'未填持仓成本');
+}
 function renderSim(){
-  const p=simParams(),s=simulate(p),valid=Number(p.low)>0,hasBase=Number(p.base)>0;
-  $('assumption-note').textContent='利润为用户假设；股本'+(state.autoCapital?'取自行情':'已手动设定')+'。'+(state.nominal?.referenceLabel||'复权参考待获取')+(state.nominal?.referenceDate?' · 以 '+state.nominal.referenceDate+' 不复权收盘价等比归一':'')+'。'+(state.stock.symbol==='300502.SZ'?'初始194元、7000股和180亿元利润均为演示研究假设。':'');
+  syncReferencePrices();
+  const p=simParams(),s=simulate(p),valid=Number(p.low)>0,hasBase=Number(p.base)>0,high=Number(p.high),drop=high>0&&valid?Number(p.low)/high-1:null;
+  renderCorePosition();
+  $('assumption-note').textContent=(state.autoHigh?'高点来自行情':'高点为手动假设')+' · '+(state.nominal?.referenceLabel||'复权参考待获取')+(state.nominal?.referenceDate?' · 归一至 '+state.nominal.referenceDate:'')+'。'+(state.stock.symbol==='300502.SZ'?'初始194元和7000股仅为研究示例。':'');
+  $('drop-summary').innerHTML='高点 → 假设低点 <b class="'+tone(drop)+'">'+pct(drop)+'</b>';
   $('rebound-range').value=Math.min(200,Math.max(0,Number(p.rebound)||0));
-  $('rebound-presets').innerHTML=[10,20,30,40,50,60,70,80,100,110,150,200].map(n=>'<button data-rebound="'+n+'" class="'+(Number(p.rebound)===n?'active':'')+'">'+n+'%</button>').join('');
-  $('sim-result').innerHTML='<div class="target-label"><span>理论目标股价</span><span>+'+fmt(Number(p.rebound),0)+'%</span></div><div class="target-price">'+(valid?fmt(s.target):'—')+'<small>元 / 股</small></div>'+resultLine('基准价对应持仓市值',hasBase?money(s.currentValue):'—')+resultLine('个人目标持仓市值',valid?money(s.value):'—')+resultLine('目标价相对持仓成本盈亏',valid&&finite(p.cost)?money(s.pnl):'未填持仓成本',tone(s.pnl))+resultLine('相对比较基准价的市值变化',valid&&hasBase?money(s.change):'—',tone(s.change))+resultLine('公司当前总市值',state.quote?.marketCap!=null?fmt(state.quote.marketCap)+' 亿元':'—')+resultLine('公司目标总市值',valid&&s.marketCap!=null?fmt(s.marketCap)+' 亿元':'—')+resultLine('当前利润假设下 PE',valid&&s.pe!=null?fmt(s.pe)+' 倍':'不适用')+resultLine('距复权参考高点',valid?pct(s.fromHigh):'—');
-  if(valid){$('scenario-matrix').innerHTML=rowsTable(['反弹幅度','目标股价 · 元','持仓市值','较基准变化','公司市值 · 亿','假设 PE'],matrixRows().map(s=>{const r=['<button data-rebound="'+s.r+'">+'+s.r+'%</button>',fmt(s.target),money(s.value),'<span class="'+tone(s.change)+'">'+(hasBase?money(s.change):'—')+'</span>',fmt(s.marketCap),s.pe==null?'不适用':fmt(s.pe)+'×'];if(s.r===Number(p.rebound))r.className='highlight';return r;}));}else $('scenario-matrix').innerHTML='<div class="empty">输入一个大于零的起涨价，即可开始测算。</div>';
-  const high=nominalHigh();$('cross-matrix').innerHTML=high?rowsTable(['复权参考高点回撤','假设低点','反弹20%','反弹50%','反弹100%','反弹110%'],[60,65,70,75,76.8,80].map(d=>{const low=high*(1-d/100);return[d+'%',fmt(low),...[20,50,100,110].map(r=>'<button data-map-low="'+low+'" data-map-rebound="'+r+'">'+fmt(low*(1+r/100))+'</button>')];})):'<div class="empty">获取前复权历史数据后可显示高点回撤矩阵。</div>';
-  if(state.tab==='valuation')renderValuation();if(state.tab==='risk')renderRisk();
+  $('rebound-presets').innerHTML=[20,30,50,70,100,110].map(n=>'<button data-rebound="'+n+'" class="'+(Number(p.rebound)===n?'active':'')+'">+'+n+'%</button>').join('');
+  $('sim-result').innerHTML='<div class="core-result-grid"><div><span>目标股价 · 元</span><b>'+(valid?fmt(s.target):'—')+'</b></div><div><span>目标持仓市值</span><b>'+(valid?fmt(s.value/10000):'—')+'<small>万元</small></b></div></div>'+resultLine('较'+(state.autoBase?'现价':'手动基准')+' '+fmt(p.base)+' 元',valid&&hasBase?pct(s.fromBase):'—',tone(s.fromBase))+resultLine('目标价较参考高点',valid?pct(s.fromHigh):'—',tone(s.fromHigh));
+  $('scenario-matrix').innerHTML=valid?rowsTable(['从低点反弹','目标价 · 元','较比较基准','持仓市值'],matrixRows().map(v=>{const r=['<button data-rebound="'+v.r+'">+'+fmt(v.r,finite(v.r)&&v.r%1?2:0)+'%</button>',fmt(v.target),'<span class="'+tone(v.fromBase)+'">'+(hasBase?pct(v.fromBase):'—')+'</span>',money(v.value)];if(v.r===Number(p.rebound))r.className='highlight';return r;})):'<div class="empty">填写假设低点，即可测算价格与持仓市值。</div>';
+  $('cross-matrix').innerHTML=high>0?rowsTable(['高点回撤','假设低点','反弹20%','反弹50%','反弹100%','反弹110%'],[60,65,70,75,76.8,80].map(d=>{const low=high*(1-d/100);return[d+'%',fmt(low),...[20,50,100,110].map(r=>'<button data-map-low="'+low+'" data-map-rebound="'+r+'">'+fmt(low*(1+r/100))+'</button>')];})):'<div class="empty">填写参考高点后可显示回撤矩阵。</div>';
+  if(state.tab==='valuation')renderValuation();if(state.tab==='risk')renderRisk();if(state.tab==='market')renderMarket();renderWave();
+}
+function waveInputs(){return{high:$('wave-high').value,low:$('wave-low').value,bPercent:$('wave-b-ratio').value,cPercent:$('wave-c-ratio').value,thirdStart:$('wave-third-start').value,thirdEnd:$('wave-third-end').value,fourthLow:$('wave-fourth-low').value,extensionPercent:$('wave-fifth-ratio').value,shares:$('shares').value};}
+function waveCalculation(){const p=waveInputs();return state.waveMode==='fifth'?fifthScenario(p):abcScenario(p);}
+function waveSamples(){const p=waveInputs(),fifth=state.waveMode==='fifth',key=fifth?'extensionPercent':'bPercent',chosen=Number(p[key]);return [...new Set([...(fifth?FIFTH_RATIOS:ABC_RATIOS),...(finite(p[key])&&chosen>=0?[chosen]:[])])].sort((a,b)=>a-b).map(r=>({ratio:r,...(fifth?fifthScenario({...p,[key]:r}):abcScenario({...p,[key]:r}))}));}
+function wavePath(points){
+  points=points.filter(p=>finite(p.price)&&Number(p.price)>0);if(points.length<2)return '';
+  const prices=points.map(p=>Number(p.price)),min=Math.min(...prices),max=Math.max(...prices),spread=max-min||1;
+  const coords=points.map((p,i)=>({...p,x:58+i*564/(points.length-1),y:163-(Number(p.price)-min)/spread*114}));
+  return '<svg viewBox="0 0 680 214" role="img" aria-label="'+esc(points.map(p=>p.name+' '+fmt(p.price)+'元').join('，'))+'"><line x1="35" x2="645" y1="184" y2="184" stroke="var(--line)"/><polyline points="'+coords.map(p=>p.x+','+p.y).join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="6 5"/>'+coords.map((p,i)=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="'+p.x+'" y="'+(p.y-19)+'" text-anchor="middle" fill="var(--text)" font-size="14">'+fmt(p.price)+'</text><text x="'+p.x+'" y="204" text-anchor="middle" fill="var(--muted)" font-size="11">'+esc(p.name)+'</text>').join('')+'</svg>';
+}
+function renderWave(){
+  const fifth=state.waveMode==='fifth',p=waveInputs(),s=waveCalculation(),ratios=fifth?FIFTH_RATIOS:ABC_RATIOS,selected=fifth?p.extensionPercent:p.bPercent;
+  $$('[data-wave-fields]').forEach(el=>el.hidden=el.dataset.waveFields!==state.waveMode);$$('[data-wave-mode]').forEach(el=>el.classList.toggle('active',el.dataset.waveMode===state.waveMode));
+  $('wave-c-details').hidden=fifth;$('wave-shares').value=$('shares').value;
+  $('wave-assumption-note').textContent=state.stock.symbol==='300502.SZ'?'190 / 33.5 / 192 元为截图研究示例，可自行修改。':'请使用同一复权口径，自行指定各浪段的价格。';
+  $('wave-ratio-presets').innerHTML=ratios.map(r=>'<button data-wave-ratio="'+r+'" class="'+(Number(selected)===r?'active':'')+'">'+r+'%</button>').join('');
+  $('wave-table-title').textContent=fifth?'五浪目标对照':'B 浪目标对照';
+  $('wave-apply').disabled=!s.valid;$('wave-save').disabled=!s.valid;$('wave-export').disabled=!s.valid;
+  if(!s.valid){$('wave-result').innerHTML='<div class="empty">'+esc(s.error)+'</div>';$('wave-table').innerHTML='<div class="empty">填写有效的浪段价格后，显示目标与持仓市值。</div>';$('wave-path').innerHTML='';$('wave-leg-summary').textContent='';$('wave-c-result').textContent='';return;}
+  const formula=fifth?fmt(p.fourthLow)+' + ('+fmt(p.thirdEnd)+' − '+fmt(p.thirdStart)+') × '+ratioText(p.extensionPercent)+'%':fmt(p.low)+' + ('+fmt(p.high)+' − '+fmt(p.low)+') × '+ratioText(p.bPercent)+'%';
+  $('wave-result').innerHTML='<div class="eyebrow">'+(fifth?'五浪 / 三浪长度假设':'B 浪回补 A 浪跌幅')+' · '+ratioText(selected)+'%</div><div class="core-result-grid"><div><span>'+(fifth?'五浪目标价':'B 浪目标价')+' · 元</span><b>'+fmt(s.target)+'</b></div><div><span>目标持仓市值</span><b>'+fmt(s.value==null?null:s.value/10000)+'<small>万元</small></b></div></div>'+resultLine(fifth?'较四浪假设底部涨幅':'较 A 浪假设终点涨幅',pct(s.rise),'up')+resultLine('较当前股价',state.quote?.price>0?pct(s.target/state.quote.price-1):'—',tone(state.quote?.price>0?s.target/state.quote.price-1:0))+'<p class="wave-formula">'+formula+'</p>';
+  $('wave-leg-summary').innerHTML=fifth?'三浪长度 <b>'+fmt(s.length)+' 元</b> · 四浪回补三浪涨幅 <b>'+fmt(s.fourthRetracement*100)+'%</b>':'A 浪下跌 <b class="down">'+pct(s.drawdown)+'</b> · 下跌金额 <b>'+fmt(s.length)+' 元</b>';
+  $('wave-table').innerHTML=rowsTable([fifth?'五浪 / 三浪长度':'B 浪回补 A 浪跌幅',fifth?'五浪目标价 · 元':'B 浪目标价 · 元',fifth?'较四浪底部涨幅':'较 A 浪终点涨幅','持仓市值'],waveSamples().map(v=>{const row=['<button data-wave-ratio="'+v.ratio+'">'+ratioText(v.ratio)+'%</button>',fmt(v.target),'<span class="up">'+pct(v.rise)+'</span>',money(v.value)];if(v.ratio===Number(selected))row.className='highlight';return row;}));
+  const showC=!fifth&&$('wave-show-c').checked;
+  $('wave-c-result').innerHTML=showC?(s.cValid?resultLine('C 浪假设目标',fmt(s.cTarget)+' 元')+resultLine('该价持仓市值',money(s.cValue))+resultLine('较 B 浪目标回落',pct(s.cChange),'down'):'<p class="field-note down">'+esc(s.cError)+'</p>'):'<p class="field-note">开启后，用 B 目标价减去 A 浪下跌金额 × 所填比例。</p>';
+  const points=fifth?[{name:'三浪起点',price:p.thirdStart},{name:'三浪终点',price:p.thirdEnd},{name:'假设四浪底部',price:p.fourthLow},{name:'五浪目标',price:s.target}]:[{name:'A 浪起点',price:p.high},{name:'假设 A 浪终点',price:p.low},{name:'B 浪目标',price:s.target},...(showC&&s.cValid?[{name:'C 浪假设目标',price:s.cTarget}]:[])];
+  $('wave-path').innerHTML=wavePath(points);
+}
+function restoreWave(w){for(const id of waveIds){if(w[id]==null)continue;if($(id).type==='checkbox')$(id).checked=Boolean(w[id]);else $(id).value=w[id];}state.waveMode=w.mode==='fifth'?'fifth':'abc';state.waveAutoHigh=false;state.waveAutoThird=false;renderWave();}
+function wavePriceParameters(){const p=waveInputs(),s=waveCalculation();if(!s.valid)return null;const fifth=state.waveMode==='fifth';return{...simParams(),high:fifth?p.thirdEnd:p.high,'reference-high':fifth?p.thirdEnd:p.high,low:fifth?p.fourthLow:p.low,rebound:Number((s.rise*100).toFixed(6))};}
+function bindWave(){
+  document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.waveMode){state.waveMode=el.dataset.waveMode;renderWave();scheduleSave();}if(el.dataset.waveRatio){$(state.waveMode==='fifth'?'wave-fifth-ratio':'wave-b-ratio').value=el.dataset.waveRatio;renderWave();scheduleSave();}});
+  waveIds.forEach(id=>$(id).addEventListener('input',()=>{if(id==='wave-high')state.waveAutoHigh=false;if(id==='wave-third-end')state.waveAutoThird=false;renderWave();scheduleSave();}));
+  $('wave-shares').addEventListener('input',()=>{$('shares').value=$('wave-shares').value;renderSim();scheduleSave();});
+  $('wave-apply').onclick=()=>{const p=wavePriceParameters();if(!p)return;for(const id of['reference-high','low','rebound'])$(id).value=p[id];state.autoHigh=false;renderSim();activateTab('overview');scheduleSave();toast('已应用价格与实际反弹涨幅');};
+  $('wave-save').onclick=async()=>{const p=wavePriceParameters();if(!p)return;state.scenarios.unshift({id:crypto.randomUUID(),stock:{...state.stock},name:state.waveMode==='fifth'?'五浪长度 '+$('wave-fifth-ratio').value+'%':'ABC 回补 '+$('wave-b-ratio').value+'%',at:new Date().toISOString(),params:p,wave:{...fieldValues(waveIds),mode:state.waveMode},historyBasis:state.history?.basis||null});await persist('scenarios',state.scenarios);renderSaved();toast('浪型情景已保存，可在更多数据中载入');};
+  $('wave-export').onclick=()=>{const p=waveInputs(),fifth=state.waveMode==='fifth',s=waveCalculation();if(!s.valid)return;const rows=[['股票',state.stock.name,state.stock.symbol],['场景',fifth?'手动五浪 / 三浪长度假设':'手动熊市 ABC 假设'],...(fifth?[['三浪起点',Number(p.thirdStart)],['三浪终点',Number(p.thirdEnd)],['四浪假设底部',Number(p.fourthLow)]]:[['A浪起点',Number(p.high)],['假设A浪终点',Number(p.low)]]),['持有股数',Number(p.shares)],[],[fifth?'五浪/三浪长度（%）':'B浪回补A浪跌幅（%）','目标价（元）','从假设低点上涨（%）','持仓市值（元）'],...waveSamples().map(v=>[v.ratio,v.target,v.rise*100,v.value]),[],['说明','手动浪型假设；锚点须使用同一复权口径；比例不是未来概率。']];if(!fifth&&$('wave-show-c').checked)rows.push(['C/A长度（%）',Number(p.cPercent)],['C假设目标（元）',s.cTarget??'非正价格，假设无效'],['C价持仓市值（元）',s.cValue??'不适用']);download(state.stock.symbol+'-'+(fifth?'五浪':'ABC')+'-推演.xlsx',makeXLSX(rows,'浪型推演'));toast('浪型价格与持仓市值已导出');};
 }
 function renderHistory(){
   const b=state.bars,mode=$('dd-mode').value,threshold=Math.min(.99,Math.max(.01,Number($('dd-threshold').value)/100||.3)),dd=maxDrawdown(b,mode);
@@ -205,6 +267,7 @@ function renderBacktest(){
 }
 function renderValuation(){
   const p=simParams(),s=simulate(p),rows=valuations(state.forecasts,{capital:Number(p.capital),base:Number(p.base),target:s.target,pe:Number($('valuation-pe').value)});
+  $('valuation-scenario').innerHTML=resultLine('公司当前总市值',state.quote?.marketCap!=null?fmt(state.quote.marketCap)+' 亿元':'—')+resultLine('反弹目标价对应总市值',s.marketCap!=null?fmt(s.marketCap)+' 亿元':'—')+resultLine('所填利润对应目标 PE',s.pe!=null?fmt(s.pe)+' 倍':'不适用');
   $('valuation-basis').textContent='股本 '+fmt(Number(p.capital),4)+' 亿股 · 所有利润均为手动假设';
   const year=$('valuation-year').value;$('valuation-year').innerHTML=state.forecasts.map(r=>'<option value="'+r.year+'">'+r.year+' 年</option>').join('');if(state.forecasts.some(r=>r.year===Number(year)))$('valuation-year').value=year;
   function forecastInput(r,k){return '<input class="table-input" type="number" step=".1" data-year="'+r.year+'" data-forecast="'+k+'" aria-label="'+r.year+'年'+({profit:'中性',conservative:'保守',optimistic:'乐观'}[k])+'利润假设（亿元）" value="'+esc(r[k])+'" placeholder="自行填写">';}
@@ -232,10 +295,15 @@ function renderRisk(){
 function renderSaved(){
   $('saved-table').innerHTML=rowsTable(['股票 / 情景','起涨价','反弹幅度','目标价','个人持仓市值','公司市值 · 亿','假设 PE','保存时基准',''],state.scenarios.map(v=>{const s=simulate(v.params);return[esc(v.stock.name)+' · '+esc(v.name)+'<small>'+dateText(v.at)+'</small>',fmt(v.params.low),fmt(v.params.rebound,0)+'%',fmt(s.target),money(s.value),fmt(s.marketCap),fmt(s.pe),fmt(v.params.base),'<button data-load-scenario="'+esc(v.id)+'">载入</button>　<button data-delete-scenario="'+esc(v.id)+'">删除</button>'];}));
 }
-function activateTab(tab){state.tab=tab;$$('[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));$$('[data-panel]').forEach(el=>el.hidden=el.dataset.panel!==tab);renderActive();if(tab==='overview')drawChart();}
-function renderActive(){if(state.tab==='history'){renderHistory();renderMapping();}if(state.tab==='backtest')renderBacktest();if(state.tab==='valuation')renderValuation();if(state.tab==='risk')renderRisk();if(state.tab==='saved')renderSaved();}
+function activateTab(tab){
+  state.tab=tab;const auxiliary=!['overview','wave'].includes(tab);$('more-tabs').hidden=!auxiliary;
+  $$('.primary-tabs [data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===(auxiliary?'market':tab)));
+  $$('.secondary-tabs [data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+  $$('[data-panel]').forEach(el=>el.hidden=el.dataset.panel!==tab);renderActive();if(tab==='overview')drawChart();
+}
+function renderActive(){if(state.tab==='wave')renderWave();if(state.tab==='market')renderMarket();if(state.tab==='history'){renderHistory();renderMapping();}if(state.tab==='backtest')renderBacktest();if(state.tab==='valuation')renderValuation();if(state.tab==='risk')renderRisk();if(state.tab==='saved')renderSaved();}
 function applyTheme(){document.documentElement.dataset.theme=state.settings.theme||'dark';if(state.settings.reverse){const style=chartColors();document.documentElement.style.setProperty('--up',state.settings.theme==='light'?'#21845e':'#78c6a2');document.documentElement.style.setProperty('--down',state.settings.theme==='light'?'#c24f43':'#f18c7f');}else{document.documentElement.style.removeProperty('--up');document.documentElement.style.removeProperty('--down');}$('color-toggle').textContent=state.settings.reverse?'绿涨红跌':'红涨绿跌';$('theme-toggle').textContent=state.settings.theme==='light'?'☾':'☼';renderQuote();drawChart();renderActive();}
-function scenarioRows(){const p=simParams();return[['股票',state.stock.name,state.stock.symbol],['数据获取时间',dateText(state.history?.fetchedAt)],['最新行情时间',dateText(state.quote?.time)],['起涨价（元）',Number(p.low)],['持股（股）',Number(p.shares)],['股本（亿股）',finite(p.capital)?Number(p.capital):'未填'],['年度利润假设（亿元）',finite(p.profit)?Number(p.profit):'未填'],['利润来源','用户手动假设'],['历史参考口径',state.nominal?.referenceLabel||'未获取'],[],['反弹幅度（%）','目标价（元）','持仓市值（元）','较基准增加（元）','公司市值（亿元）','假设PE'],...matrixRows().map(v=>[v.r,v.target,v.value,Number(p.base)>0?v.change:'未填基准',v.marketCap??'',v.pe??'不适用']),[],['说明','情景模拟不代表未来价格，公开行情可能延迟。']];}
+function scenarioRows(){const p=simParams();return[['股票',state.stock.name,state.stock.symbol],['最新行情时间',dateText(state.quote?.time)],['参考高点（元）',finite(p.high)?Number(p.high):'未填'],['假设低点（元）',Number(p.low)],['持股（股）',Number(p.shares)],['比较基准价（元）',finite(p.base)?Number(p.base):'未填'],['历史参考口径',state.nominal?.referenceLabel||'未获取'],[],['从低点反弹（%）','目标价（元）','较比较基准（%）','持仓市值（元）'],...matrixRows().map(v=>[v.r,v.target,Number(p.base)>0?v.fromBase*100:'未填基准',v.value]),[],['说明','数学情景，不代表未来价格。']];}
 async function exportBackup(){await saveForm();const data=await storage.getAll();download('回撤研究室-本机备份-'+today()+'.json',JSON.stringify({app:'stock-rebound-lab',version:1,exportedAt:new Date().toISOString(),data},null,2),'application/json');toast('备份已导出，包含本机持仓设置');}
 function historyCSV(){const h=state.history;if(!h)return toast('暂无历史数据可导出');const rows=[['symbol','adjust','time','open','high','low','close','volume','amount'],...h.bars.map(b=>[state.stock.symbol,h.adjust,b.time,b.open,b.high,b.low,b.close,b.volume,b.amount])];download(state.stock.symbol+'-'+h.adjust+'-日线.csv',csv(rows),'text/csv;charset=utf-8');}
 async function importData(file){
@@ -278,17 +346,18 @@ function bind(){
     if(el.dataset.period){state.period=el.dataset.period;$$('[data-period]').forEach(b=>b.classList.toggle('active',b===el));drawChart();}
     if(el.dataset.range){state.range=el.dataset.range;$$('[data-range]').forEach(b=>b.classList.toggle('active',b===el));drawChart();}
     if(el.dataset.event){state.selectedEvent=Number(el.dataset.event);renderEventDetail();}
-    if(el.id==='apply-event'){const e=state.events[state.selectedEvent],a=Number($('mapping-anchor').value),m=mapEvent(e,a);if(!(a>0)||m.firstLow==null)return toast('请先输入有效映射锚点');$('low').value=m.firstLow.toFixed(3);$('rebound').value=(m.reboundGain*100).toFixed(2);activateTab('overview');renderSim();scheduleSave();toast('历史比例已应用，仅作为假设路径');}
-    if(el.dataset.loadScenario){const s=state.scenarios.find(s=>s.id===el.dataset.loadScenario);if(s){if(s.stock.symbol!==state.stock.symbol)await loadStock({...s.stock});for(const id of simIds)$(id).value=s.params[id]??'';state.autoBase=false;state.autoCapital=false;renderSim();scheduleSave();activateTab('overview');toast('已载入保存时的假设参数');}}
+    if(el.id==='apply-event'){const e=state.events[state.selectedEvent],a=Number($('mapping-anchor').value),m=mapEvent(e,a);if(!(a>0)||m.firstLow==null)return toast('请先输入有效映射锚点');$('reference-high').value=a;state.autoHigh=false;$('low').value=m.firstLow.toFixed(3);$('rebound').value=(m.reboundGain*100).toFixed(2);activateTab('overview');renderSim();scheduleSave();toast('历史比例已应用，仅作为假设路径');}
+    if(el.dataset.loadScenario){const s=state.scenarios.find(s=>s.id===el.dataset.loadScenario);if(s){if(s.stock.symbol!==state.stock.symbol)await loadStock({...s.stock});for(const id of simIds)$(id).value=s.params[id]??(id==='reference-high'?s.params.high:'')??'';state.autoHigh=false;state.autoBase=false;state.autoCapital=false;renderSim();scheduleSave();if(s.wave){restoreWave(s.wave);activateTab('wave');}else activateTab('overview');toast('已载入保存时的假设参数');}}
     if(el.dataset.deleteScenario){state.scenarios=state.scenarios.filter(s=>s.id!==el.dataset.deleteScenario);await persist('scenarios',state.scenarios);renderSaved();toast('情景已移除');}
-    if(el.dataset.position){const p=state.positions.find(p=>p.id===el.dataset.position);if(p){for(const id of [...simIds,...riskIds]){if($(id).type==='checkbox')$(id).checked=p.form[id]!==false;else $(id).value=p.form[id]??'';}state.autoBase=false;state.autoCapital=false;state.autoSell=false;renderSim();renderRisk();scheduleSave();toast('持仓方案已载入');}}
+    if(el.dataset.position){const p=state.positions.find(p=>p.id===el.dataset.position);if(p){for(const id of [...simIds,...riskIds]){if($(id).type==='checkbox')$(id).checked=p.form[id]!==false;else $(id).value=p.form[id]??'';}state.autoHigh=!finite(p.form['reference-high']);state.autoBase=false;state.autoCapital=false;state.autoSell=false;renderSim();renderRisk();scheduleSave();toast('持仓方案已载入');}}
     if(el.dataset.deletePosition){state.positions=state.positions.filter(p=>p.id!==el.dataset.deletePosition);await persist('positions',state.positions);renderRisk();toast('持仓方案已移除');}
   }catch(e){toast(e.message||'操作未完成');}});
   $('search-form').addEventListener('submit',e=>{e.preventDefault();clearTimeout(searchTimer);searchStocks();});$('search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchStocks,450);});$('search').addEventListener('keydown',e=>{if(e.key==='Escape'){$('search-results').innerHTML='';searchGeneration++;}});
+  bindWave();$('chart-indicators').onchange=drawChart;$('use-history-high').onclick=()=>{state.autoHigh=true;renderSim();scheduleSave();};
   $('refresh').onclick=()=>refreshData(true);
   $('favorite').onclick=async()=>{const found=state.watch.some(s=>s.symbol===state.stock.symbol);state.watch=found?state.watch.filter(s=>s.symbol!==state.stock.symbol):[...state.watch,{...state.stock}];await persist('watch',state.watch);renderWatch();renderQuote();toast(found?'已移出自选':'已加入自选');};
   $('theme-toggle').onclick=()=>{state.settings.theme=state.settings.theme==='light'?'dark':'light';applyTheme();persist('settings',state.settings);};$('color-toggle').onclick=()=>{state.settings.reverse=!state.settings.reverse;applyTheme();persist('settings',state.settings);};
-  simIds.forEach(id=>$(id).addEventListener('input',()=>{if(id==='base')state.autoBase=false;if(id==='capital')state.autoCapital=false;renderSim();scheduleSave();}));$('rebound-range').oninput=()=>{$('rebound').value=$('rebound-range').value;renderSim();scheduleSave();};
+  simIds.forEach(id=>$(id).addEventListener('input',()=>{if(id==='reference-high')state.autoHigh=false;if(id==='base')state.autoBase=false;if(id==='capital')state.autoCapital=false;renderSim();scheduleSave();}));$('rebound-range').oninput=()=>{$('rebound').value=$('rebound-range').value;renderSim();scheduleSave();};
   $('low-presets').onchange=()=>{if($('low-presets').value){$('low').value=Number($('low-presets').value).toFixed(3);renderSim();scheduleSave();}};
   $('adjust').onchange=async()=>{state.generation++;const generation=state.generation;state.history=null;state.bars=[];updateHistory();const h=await storage.get('history:'+state.stock.symbol+':'+$('adjust').value);if(generation!==state.generation)return;if(h){state.history={...h,local:true};updateHistory();}await refreshData(false,generation);};
   $('range-apply').onclick=()=>{const a=$('range-start').value,z=$('range-end').value;if(a&&z&&a>z)return toast('起日应早于或等于止日');state.start=a;state.end=z;updateHistory();renderSim();};$('range-reset').onclick=()=>{state.start='';state.end='';$('range-start').value='';$('range-end').value='';updateHistory();renderSim();};
@@ -299,7 +368,7 @@ function bind(){
   $('valuation-table').addEventListener('input',e=>{const k=e.target.dataset.forecast,year=Number(e.target.dataset.year);if(k){const r=state.forecasts.find(r=>r.year===year);r[k]=e.target.value;updateForecastResults();scheduleSave();}});
   riskIds.forEach(id=>$(id).addEventListener('input',()=>{if(id==='sell-price')state.autoSell=false;renderRisk();scheduleSave();}));
   $('save-scenario').onclick=async()=>{if(!(Number($('low').value)>0))return toast('先填写有效的起涨价格');const s={id:crypto.randomUUID(),stock:{...state.stock},name:fmt(Number($('low').value))+' 起涨 / +'+$('rebound').value+'%',at:new Date().toISOString(),params:simParams(),source:state.history?.source||null,historyBasis:state.history?.basis||null,quoteTime:state.quote?.time||null};state.scenarios.unshift(s);await persist('scenarios',state.scenarios);renderSaved();toast('情景已保存到本机，可在情景档案并排比较');};
-  $('copy-result').onclick=async()=>{const p=simParams(),s=simulate(p),text=`${state.stock.name} ${state.stock.symbol}\n研究假设：起涨价 ${p.low} 元，反弹 ${p.rebound}%，持股 ${p.shares} 股\n目标价 ${fmt(s.target)} 元；个人市值 ${money(s.value)}；公司市值 ${fmt(s.marketCap)} 亿元；利润假设 ${p.profit||'未填'} 亿元（用户假设），PE ${fmt(s.pe)}\n行情时间：${dateText(state.quote?.time)}；仅为数学情景，不代表未来走势。`;try{await navigator.clipboard.writeText(text);toast('研究结果已复制');}catch{showInfo('<h3>复制研究结果</h3><p style="user-select:text;white-space:pre-wrap">'+esc(text)+'</p>');}};
+  $('copy-result').onclick=async()=>{const p=simParams(),s=simulate(p),text=state.stock.name+' '+state.stock.symbol+'\n参考高点 '+fmt(p.high)+' 元；假设低点 '+fmt(p.low)+' 元；从低点反弹 '+p.rebound+'%；持股 '+p.shares+' 股\n目标价 '+fmt(s.target)+' 元；持仓市值 '+money(s.value)+'\n数学情景，不代表未来走势。';try{await navigator.clipboard.writeText(text);toast('价格与持仓结果已复制');}catch{showInfo('<p style="white-space:pre-wrap">'+esc(text)+'</p>');}};
   $('save-position').onclick=async()=>{state.positions.unshift({id:crypto.randomUUID(),symbol:state.stock.symbol,name:'持仓 '+(state.positions.filter(p=>p.symbol===state.stock.symbol).length+1),at:new Date().toISOString(),form:fieldValues([...simIds,...riskIds])});await persist('positions',state.positions);renderRisk();toast('持仓方案已保存');};
   $('export-xlsx').onclick=()=>{download(state.stock.symbol+'-反弹情景-'+today()+'.xlsx',makeXLSX(scenarioRows()));toast('Excel 情景文件已导出');};$('backup').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async()=>{try{await importData($('import-file').files[0]);}catch(e){toast(e.message);}finally{$('import-file').value='';}};
   $('backup-mobile').onclick=exportBackup;$('import-mobile').onclick=()=>$('import-file').click();$('export-history').onclick=historyCSV;$('report').onclick=report;$('export-backtest').onclick=()=>{const s=state.study;if(!s?.signals.length)return toast('没有可导出的事件样本');download(state.stock.symbol+'-事件回测.csv',csv([['日期','基准收盘','窗口完整','后续涨跌比例','MFE比例','MAE比例','再创新低'],...s.signals.map(v=>[v.date,v.entry,v.complete?'是':'否',v.return,v.mfe,v.mae,v.newLow==null?'':v.newLow?'是':'否'])]),'text/csv;charset=utf-8');};

@@ -1,5 +1,5 @@
-const CACHE = 'rebound-lab-v1';
-const ASSETS = ['./','./index.html','./style.css','./app.mjs','./analysis.mjs','./storage.mjs','./export.mjs','./vendor/lightweight-charts.js'];
+const CACHE = 'rebound-lab-v2';
+const ASSETS = ['./','./index.html','./style.css','./app.mjs','./analysis.mjs','./waves.mjs','./storage.mjs','./export.mjs','./vendor/lightweight-charts.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('rebound-lab-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
