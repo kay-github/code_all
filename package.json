@@ -2,11 +2,12 @@
   "name": "mixed-tools-site",
   "private": true,
   "scripts": {
-    "test:site": "node --test tests/siteService.test.js",
+    "test:site": "node --test tests/siteService.test.js tests/siteImages.test.js",
     "dev:stocks": "node scripts/serve-stock-lab.cjs",
     "test:stocks": "node --test tests/stockAnalysis.test.mjs tests/stockMarket.test.js tests/stockWaves.test.mjs"
   },
   "dependencies": {
-    "@vercel/blob": "^2.6.1"
+    "@vercel/blob": "^2.6.1",
+    "sharp": "^0.35.5"
   }
 }
