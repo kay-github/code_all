@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>入口管理 · 大杂烩工具站</title>
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/site-admin.css">
+  <script src="/assets/site-cards.js" defer></script>
+  <script src="/assets/site-admin.js" defer></script>
+</head>
+<body>
+  <main class="admin-page">
+    <header class="admin-header">
+      <a href="/" class="brand"><span class="brand-mark" aria-hidden="true">集</span><span>大杂烩工具站<small>入口管理</small></span></a>
+      <nav aria-label="后台操作"><a href="/" target="_blank" rel="noopener">查看首页 ↗</a><button id="logout" class="quiet" hidden>退出登录</button></nav>
+    </header>
+    <p id="status" class="status" role="status" aria-live="polite">正在检查登录状态…</p>
+    <section id="login-panel" class="login-panel" hidden>
+      <span class="eyebrow">站点后台</span>
+      <h1>管理你的工具入口</h1>
+      <p class="muted">调整首页内容与排列，让常用的工具更顺手。</p>
+      <form id="login-form">
+        <label for="password">管理员密码</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="请输入密码">
+        <button id="login-button" class="primary" type="submit">登录后台 <span aria-hidden="true">→</span></button>
+      </form>
+    </section>
+    <form id="editor" hidden>
+      <div class="heading"><div><span class="eyebrow">首页设置</span><h1>每个入口，恰到好处。</h1><p class="muted">编辑后点击保存，首页刷新即可看到更新。</p></div><span id="save-state" class="badge">已保存</span></div>
+      <div class="workspace">
+        <div class="editor-column">
+          <section class="panel site-settings" aria-labelledby="settings-title">
+            <h2 id="settings-title">网站信息</h2>
+            <label for="site-title">网站名称</label><input id="site-title" required maxlength="60">
+            <label for="site-subtitle">首页简介</label><input id="site-subtitle" maxlength="160">
+          </section>
+          <section aria-labelledby="entries-title">
+            <div class="section-heading"><h2 id="entries-title">功能入口 <span id="count" class="count"></span></h2><button id="add" type="button" class="secondary">＋ 新增入口</button></div>
+            <p class="hint">使用 ↑ ↓ 调整顺序。关闭「首页显示」可暂时隐藏入口。</p>
+            <div id="entries"></div>
+            <p id="empty-editor" class="panel muted" hidden>还没有入口，点击「新增入口」添加第一个。</p>
+          </section>
+        </div>
+        <aside class="preview-panel panel" aria-label="首页预览">
+          <div class="preview-label"><span class="preview-dot"></span>首页预览 <small>保存后生效</small></div>
+          <h2 id="preview-title"></h2><p id="preview-subtitle" class="muted"></p>
+          <div id="preview" class="tool-grid"></div>
+        </aside>
+      </div>
+      <footer class="save-bar"><div><strong id="changes">所有更改已保存</strong><small id="updated">加载中</small></div><div class="save-actions"><button id="reload" type="button" class="quiet">重新加载</button><button id="save" type="submit" class="primary">保存更改</button></div></footer>
+    </form>
+    <noscript>请开启 JavaScript 后使用后台。</noscript>
+  </main>
+  <dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">确认操作</h2><p id="confirm-message"></p><div class="dialog-actions"><button value="cancel" class="secondary">取消</button><button value="confirm" id="confirm-button" class="primary">确认</button></div></form></dialog>
+</body>
+</html>

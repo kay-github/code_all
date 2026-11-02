@@ -2,6 +2,28 @@
   "functions": { "api/stock.js": { "maxDuration": 60 } },
   "routes": [
     {
+      "src": "^/(?:admin(?:/.*)?|index\\.html)?$",
+      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "no-referrer",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        "Cache-Control": "no-store"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/admin(?:/.*)?$",
+      "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+      "continue": true
+    },
+    {
+      "src": "^/admin/?$",
+      "dest": "/admin/index.html"
+    },
+    {
       "src": "^/iframe/?$",
       "has": [{ "type": "host", "value": "b.688680.xyz" }],
       "dest": "/tools/work-portal/iframe.html"

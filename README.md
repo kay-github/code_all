@@ -16,6 +16,18 @@
 4. 网格交易管理器：<https://1.688680.xyz/tools/grid-trading-manager/>，独立账号与云端同步，数据保存在 Vercel 私有 Blob 存储。
 5. 股票回撤研究室：<https://1.688680.xyz/tools/stock-rebound-lab/>，真实沪深京行情、历史回撤、反弹估值、事件回测与本机持仓测算。
 
+## 首页入口管理
+
+后台地址：<https://1.688680.xyz/admin>。可修改网站名称和简介，新增、删除、排序、隐藏入口，编辑名称、描述、链接、文字图标、配色、可选图片链接，以及是否新窗口打开。更改仅在点击「保存更改」后发布；首页保持原有默认入口作为网络故障时的兜底。
+
+前端只调用同源 `/api/site/auth` 和 `/api/site/config`。配置、登录限流和会话保存在已有 Vercel 私有 Blob 的独立 `tool-site/` 路径，不影响网格账号或工作门户。公开配置接口只返回显示中的入口；后台完整配置和写入操作需要有效会话。并发编辑通过版本号和 ETag 检查，冲突时要求重新加载。
+
+仅在 Vercel Production 中配置 `SITE_ADMIN_PASSWORD_HASH` 和 `SITE_SESSION_SECRET`，另需已有的 `BLOB_READ_WRITE_TOKEN`。密码区分大小写，不做空格或大小写转换；不在代码中设置默认密码。哈希格式为 `scrypt:32768:<16字节盐的hex>:<32字节派生密钥的hex>`，scrypt 使用 N=32768、r=8、p=1，盐按 hex 文本作为输入；会话密钥至少 32 个字符，建议使用 32 字节随机值的 hex。所有密钥或哈希均不可提交。修改哈希或会话密钥会使已有会话失效。
+
+登录限制跨函数实例共享：每 IP 每 15 分钟最多 8 次失败尝试，全站每 15 分钟最多 40 次尝试。成功登录重置该 IP 的失败计数，但保留全站计数。会话 4 小时过期，退出会在服务端撤销；令牌仅通过 `__Host-` 前缀的 Secure、HttpOnly、SameSite=Strict Cookie 传递。写入另有严格同源校验和 CSRF 令牌，页面设置 CSP、禁止嵌入和搜索收录。后台认证只接受主域名 `1.688680.xyz`，本地测试允许 localhost/127.0.0.1。
+
+验证：`npm run test:site`，发布前执行 `vercel build --yes`。固定密码仍应保密；若泄露，需重新生成哈希并更新生产环境变量，然后重新部署。
+
 ## 股票回撤研究室
 
 使用说明、行情复权约定、API、算法和本地启动见 [tools/stock-rebound-lab/README.md](tools/stock-rebound-lab/README.md)。本地执行 `npm run dev:stocks`，测试执行 `npm run test:stocks`。在线版无需登录，持仓与研究记录保存在浏览器；支持 JSON/CSV 导入导出及 Excel 情景导出。
