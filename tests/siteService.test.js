@@ -77,7 +77,7 @@ test('edits survive restarts: ordering, images, visibility, links, new windows, 
   const { site, settings } = setup();
   const session = await site.login(password, 'ip');
   const data = await site.read();
-  assert.equal(data.items.length, 5);
+  assert.equal(data.items.length, defaults.items.length);
   data.items.reverse();
   Object.assign(data.items[0], { name: ' 自定义名称 ', image: 'https://example.com/icon.png', visible: false, newTab: true, color: 'purple', url: '/new-tool/' });
   data.items.push({ ...defaults.items[0], id: 'custom', name: '新增入口' });
@@ -150,7 +150,7 @@ test('HTTP APIs enforce CSRF, origin, host, secure cookies, logout and hidden it
   }
   try {
     assert.deepEqual((await request(auth, 'GET')).body, { authenticated: false });
-    assert.equal((await request(config, 'GET')).body.items.length, 5);
+    assert.equal((await request(config, 'GET')).body.items.length, defaults.items.length);
     assert.equal((await request(config, 'GET', null, {}, { admin: '1' })).status, 401);
     assert.equal((await request(config, 'PUT', defaults)).status, 401);
     for (const headers of [{ origin: '' }, { origin: 'https://b.688680.xyz' }, { origin: 'https://evil.example' }, { 'sec-fetch-site': 'cross-site' }, { host: 'b.688680.xyz', origin: 'https://b.688680.xyz' }]) assert.equal((await request(auth, 'POST', { password }, headers)).status, 403);
@@ -170,8 +170,8 @@ test('HTTP APIs enforce CSRF, origin, host, secure cookies, logout and hidden it
     const data = (await request(config, 'GET', null, headers, { admin: '1' })).body;
     data.items[0].visible = false;
     assert.equal((await request(config, 'PUT', data, headers)).status, 200);
-    assert.equal((await request(config, 'GET')).body.items.length, 4);
-    assert.equal((await request(config, 'GET', null, headers, { admin: '1' })).body.items.length, 5);
+    assert.equal((await request(config, 'GET')).body.items.length, defaults.items.length - 1);
+    assert.equal((await request(config, 'GET', null, headers, { admin: '1' })).body.items.length, defaults.items.length);
     assert.equal((await request(config, 'PUT', { ...data, version: 1 }, { ...headers, origin: 'https://b.688680.xyz' })).status, 403);
     assert.equal((await request(config, 'PATCH')).status, 405);
     const logout = await request(auth, 'DELETE', null, headers);

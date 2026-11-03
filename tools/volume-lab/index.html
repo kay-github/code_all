@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111816"><meta name="description" content="ETF与个股的盘中量能、历史均量及双图对比。支持同分钟比较，显示真实样本和数据时间。">
+  <title>量能观察台 · 大杂烩工具站</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%239ce7cf'/%3E%3Cpath d='M10 28V20M20 28V10M30 28V15' stroke='%23141e1c' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css"><script src="./vendor/echarts.min.js" defer></script><script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="workspace">
+    <header class="topbar"><a href="/" class="back-link">← 工具站</a><div><button id="theme" class="icon-button" aria-label="切换深浅主题">☼</button><button id="about" class="icon-button" aria-label="查看数据说明">ⓘ</button></div></header>
+    <div class="page-heading"><div><p class="eyebrow">VOLUME OBSERVATORY</p><h1>量能观察台<span class="live-dot"></span></h1><p class="subtitle">看清放量发生的时刻。</p></div><div class="heading-actions"><div class="segmented" aria-label="图表布局"><button data-layout="single">单图</button><button data-layout="double" class="active">双图对比</button></div><button id="refresh" class="button">⟳ 刷新</button></div></div>
+    <div class="watch-row"><span>自选</span><div id="watchlist" class="watch-chips"></div><button id="watch-add" class="add-watch" aria-label="搜索并添加自选">＋</button></div>
+    <div class="toolbar"><nav class="view-tabs" aria-label="量能视图"><button data-view="intraday" class="active">盘中量能</button><button data-view="history">量能历史</button></nav><div class="view-options"><div id="intraday-options" class="segmented"><button data-mode="cum" class="active">累计量</button><button data-mode="window">近 5 分钟</button></div><div id="history-options" class="segmented" hidden><button data-days="60">60 日</button><button data-days="120" class="active">120 日</button><button data-days="250">250 日</button></div></div></div>
+    <div class="workspace-state"><span id="poll-state">正在读取行情…</span><span id="compare-note">同一时间 · 双图联动</span></div>
+    <div id="panels" class="panels double"></div>
+    <details class="methodology"><summary>怎么看量能？</summary><div class="method-grid"><div><h3>盘中看同一分钟</h3><p>今日累计量与上一交易日、此前 20 个交易日同刻比较；近 5 分钟量按同一窗口比较，午休不跨窗。缺少的数据保留为空。</p></div><div><h3>历史看量的变化</h3><p>5 / 20 / 60 日均量使用已完成交易日，未收盘的当日柱单独标注。已收盘日的滚动均量包含该日，沿用原工作台口径。</p></div><div><h3>双图看相对放量</h3><p>个股以股、ETF 以份计量。跨品种优先比较各自的量比与涨跌幅；左右独立纵轴，日期和十字线联动。</p></div></div></details>
+    <footer><span>公开行情 · 本机自选 · 无需登录</span><span>图表由 Apache ECharts 驱动</span></footer>
+  </main>
+  <dialog id="search-dialog"><div class="dialog-header"><div><h2 id="search-title">选择对比标的</h2><p>支持沪深股票与场内 ETF</p></div><button id="search-close" class="icon-button" aria-label="关闭搜索">×</button></div><form id="search-form"><input id="search-input" aria-label="股票或ETF名称代码" placeholder="搜索名称或代码，如 510300" autocomplete="off"><button class="button primary">搜索</button></form><div id="search-results" class="search-results"></div><div class="favorites-heading"><span>我的自选</span><span>点击切换 · × 移除</span></div><div id="search-watchlist"></div></dialog>
+  <dialog id="about-dialog"><div class="dialog-header"><h2>数据与口径</h2><button id="about-close" class="icon-button" aria-label="关闭说明">×</button></div><p>分钟量能优先复用金融工作台的后台采集；本页通过同源只读接口取得公开量价，不包含持仓、提醒规则或账户配置。</p><p>已采集品种比较此前 20 个交易日的同分钟数据，每个时点按实际有效样本计算。短历史模式最多使用腾讯可得近五日分时，并明确标记；不将少量样本冒充完整 20 日。</p><p>盘中量比与每日量比是不同口径。盘中当日累计量不能直接与完整一天的量等同；历史页的未收盘当日量比只表示截至数据时间的进度，不作全天外推。</p><p>行情可能延迟。页面显示交易日、已完成分钟与报价时间；更新失败保留原始数据和时间。交易时段仅在页面可见时每 60 秒更新，切换或隐藏取消在途请求。</p><p>自选和布局保存在当前浏览器。新关注品种若不在后台采集池中，使用短历史模式；完整 20 日基线需要持续积累。</p><p class="muted">图表：Apache ECharts 6.1.0（Apache-2.0）。本页用于量价观察。</p></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+</body></html>
