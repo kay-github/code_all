@@ -17,3 +17,151 @@
 @media(max-width:1100px){.focus-overview .work-grid{grid-template-columns:minmax(0,1fr)}.focus-overview .sim-body{display:block}.focus-overview .simulator{max-width:none}.focus-overview .chart-wrap{height:340px}.wave-workspace{grid-template-columns:1fr}.wave-builder{border-right:0;border-bottom:1px solid var(--line)}.wave-builder .wide-label{max-width:none}.wave-output .core-result-grid b{font-size:36px}.wave-builder{padding:23px}.wave-output{padding:26px}}
 @media(max-width:650px){.stock-header{margin-bottom:20px}.stock-header p{max-width:230px}.header-position{font-size:11px;margin:-5px 0 13px}.header-position span{padding:0 7px}.primary-tabs{gap:29px;margin:4px 0 18px}.primary-tabs button{font-size:13px;padding:12px 0}.secondary-tabs{gap:23px;margin:0 0 16px}.focus-overview .chart-wrap{height:265px}.focus-overview .chart-toolbar{padding:11px 12px 10px}.focus-overview .sim-body{padding:17px}.focus-overview .sim-result{padding:19px 15px}.core-result-grid{gap:16px}.core-result-grid b{font-size:31px}.focus-overview .sim-body .chips{gap:5px}.focus-overview .chips button{font-size:10px}.focus-overview .matrix-panel h2{font-size:13px}.wave-heading{align-items:start;margin:20px 0 17px;flex-wrap:wrap;gap:17px}.wave-heading h2{font-size:22px}.wave-heading p{font-size:11px}.wave-switch{width:100%}.wave-switch button{flex:1;padding:7px 13px;font-size:12px}.wave-builder{padding:20px 17px}.wave-builder label{font-size:11px}.wave-builder .field-row{gap:12px}.wave-builder .chips{gap:7px}.wave-builder .chips button{font-size:10px;padding:4px 10px}.wave-output{padding:24px 18px}.wave-output .core-result-grid{gap:12px;margin:20px 0 24px}.wave-output .core-result-grid b{font-size:31px}.wave-output .result-line{font-size:11px}.wave-formula{font-size:10px}.wave-actions{gap:7px;margin-top:20px}.wave-actions .button{font-size:10px;padding:7px 10px}.wave-path-panel #wave-path{padding:17px 8px}.c-controls{padding:0 17px 20px;gap:15px}.c-controls #wave-c-result{min-width:100%}.c-controls label:not(.checkbox){flex:1}.secondary-parameters{grid-template-columns:1fr 1fr}.market-panel .quote-grid{padding:18px 14px}.secondary-results{padding:0 17px 20px}.secondary-results .result-line{font-size:11px}.focus-overview .sim-body>.field-row:last-child{margin-bottom:0}.chart-options summary{padding-left:13px}.quote-stat:nth-child(4){border:0}}
 @media(max-width:1100px){.focus-overview .simulator{order:-1}}
+
+/* One calculator, with the original research tools in a secondary dialog. */
+.workspace{max-width:980px;margin:0 auto;padding:26px 32px 22px}
+.workspace-header,.workspace-actions,.stock-strip,.workspace-status,.holding-summary,.dialog-heading,.more-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.workspace-header{margin-bottom:34px}
+.workspace-brand{font-size:14px;font-weight:600;letter-spacing:.5px}
+.workspace-brand span{color:var(--accent);font-size:22px;margin-right:9px}
+.workspace-actions{gap:8px}
+.stock-strip{align-items:flex-start}
+.stock-picker{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--text);padding:0;text-align:left}
+.stock-picker h1{font-size:30px;font-weight:550;letter-spacing:1px}
+#stock-code{font:12px Consolas,monospace;color:var(--muted)}
+.picker-arrow{color:var(--muted);font-size:16px}
+.stock-price{text-align:right}
+.stock-price>b{display:block;font-size:32px;font-weight:500;line-height:1.2;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+.stock-price small{font-size:11px;color:var(--muted);margin-left:7px}
+.stock-price>span{display:block;font-size:12px;margin-top:5px}
+.workspace-status{font-size:11px;color:var(--muted);margin:17px 0 25px;flex-wrap:wrap;gap:10px}
+.holding-summary{gap:10px;flex-wrap:wrap}
+.holding-summary b{font-weight:500;color:var(--text)}
+.holding-summary #header-position>span{margin:0 9px;opacity:.5}
+.single-workspace .text-button{font-size:11px;min-height:30px}
+.calculator{padding:27px 30px 22px;overflow:visible;margin-bottom:20px}
+.calculator-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;color:var(--muted);font-size:12px}
+.calculation-modes button{font-size:12px;padding:8px 16px;min-height:36px}
+.calculator-inputs{max-width:100%}
+.input-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.input-grid.abc-inputs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.single-workspace .input-grid label,.holding-dialog>label{font-size:12px;gap:8px}
+.calculator input[type=number],.holding-dialog input{height:46px;font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.compact-presets{margin:12px 0 0;gap:8px}
+.single-workspace .chips button{font-size:11px;padding:5px 13px;min-height:31px}
+.extra-ratios{margin-top:6px}
+.extra-ratios summary{padding:7px 0;width:max-content;font-size:10px}
+.extra-ratios .chips{margin-top:8px;margin-bottom:0}
+.extra-ratios input[type=range]{width:100%;height:20px;padding:0;margin:8px 0;accent-color:var(--accent)}
+.ratio-hint{font-size:10px;color:var(--muted);line-height:1.6;margin-top:11px}
+.wave-anchors{margin-top:11px}
+.wave-anchors summary{padding:5px 0;font-size:11px}
+.wave-anchors .input-grid{margin:12px 0 16px}
+.price-path{display:grid;grid-template-columns:1fr .9fr 1fr .9fr 1fr;gap:12px;align-items:center;margin:26px 0 0;padding:23px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.price-path:empty{display:none}
+.path-node{display:flex;flex-direction:column;gap:7px}
+.path-node small{font-size:10px;color:var(--muted);white-space:nowrap}
+.path-node b{font-size:21px;font-weight:500;font-variant-numeric:tabular-nums}
+.path-node:last-child{text-align:right}
+.path-edge{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted)}
+.path-edge b{font-size:11px;font-weight:400;white-space:nowrap}
+.path-edge>span{color:var(--muted);opacity:.5}
+.workspace-result{padding:26px 0 22px}
+.workspace-result .core-result-grid{margin:0;gap:32px;grid-template-columns:1fr 1fr}
+.workspace-result .core-result-grid span{font-size:12px;margin-bottom:12px}
+.workspace-result .core-result-grid b{font-size:46px;font-weight:500;letter-spacing:-1px}
+.workspace-result .core-result-grid small{font-size:13px;margin-left:7px}
+.holding-delta{font-size:11px;color:var(--muted);margin-top:18px}
+.holding-delta b{font-weight:400;margin-left:7px}
+.calculation-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.calculation-actions .primary{min-width:140px;min-height:40px}
+.action-menu{position:relative}
+.action-menu>summary{list-style:none;font-size:11px;padding:9px 0}
+.action-menu>summary::-webkit-details-marker{display:none}
+.action-menu-items{position:absolute;right:0;top:100%;z-index:5;min-width:220px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px;box-shadow:var(--shadow)}
+.action-menu-items button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--text);padding:12px;font-size:12px;border-radius:4px}
+.action-menu-items button:hover{background:var(--bg)}
+.workspace-disclosure{border-bottom:1px solid var(--line)}
+.workspace-disclosure>summary{padding:17px 2px;font-size:12px;color:var(--muted)}
+.workspace-disclosure[open]>summary{color:var(--text)}
+.workspace-disclosure>div{margin-bottom:20px}
+.workspace-disclosure .table-scroll{border:1px solid var(--line);border-radius:7px}
+.workspace-disclosure .matrix-details{margin:12px 0 0;border:0}
+.workspace-disclosure .matrix-details summary{padding-left:0}
+.workspace-disclosure .input-grid{margin:7px 0 13px}
+.single-workspace .field-note{font-size:11px;line-height:1.8;margin-top:10px}
+#wave-path{max-width:700px;margin:14px auto 0}
+#wave-path svg{display:block;width:100%;height:auto}
+#reference-results{padding:0;margin:15px 0}
+.workspace-disclosure .c-controls{padding:4px 0 20px;gap:20px}
+.workspace-disclosure .c-controls label:not(.checkbox){font-size:11px}
+.workspace-disclosure .chart-wrap{height:340px}
+.workspace-footer{display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:10px;color:var(--muted);padding-top:20px}
+.single-workspace .toast{left:50%;z-index:50}
+.dialog-heading{margin-bottom:22px}
+.dialog-heading h2,.more-heading h2{font-size:19px;font-weight:500;margin:0}
+.dialog-heading .dialog-close{position:static;min-width:30px;min-height:30px}
+.stock-dialog{width:min(460px,calc(100% - 28px));padding:24px}
+.stock-dialog .search{position:static;width:100%;margin:0;min-height:44px}
+.stock-dialog .search input{font-size:13px}
+.stock-dialog .search-results{position:static;max-height:240px;margin-top:10px;box-shadow:none}
+.stock-dialog .watch-header{display:flex;margin:24px 0 12px;font-size:11px}
+.stock-dialog .watchlist{display:block;margin:0;max-height:40vh;overflow:auto;padding:0}
+.stock-dialog .watch-item{width:100%;border:0;margin-bottom:5px;padding:13px 11px;gap:13px}
+.stock-dialog .watch-item b{font-size:13px}
+.stock-dialog .watch-item small{font-size:10px}
+.stock-dialog .watch-icon,.stock-dialog .watch-arrow{display:block!important}
+.holding-dialog{width:min(360px,calc(100% - 28px));padding:26px}
+.holding-dialog>.primary{margin-top:22px;width:100%}
+.more-dialog{width:min(1240px,calc(100% - 48px));max-height:90vh;padding:0}
+.more-heading{padding:23px 26px 16px;background:var(--panel);position:sticky;top:0;z-index:4}
+.more-dialog .secondary-tabs{padding:0 26px;margin:0;border-bottom:1px solid var(--line);gap:26px;position:sticky;top:73px;background:var(--panel);z-index:3}
+.more-dialog .secondary-tabs button{font-size:12px;padding:12px 0 16px}
+.more-content{padding:22px 26px 26px}
+.more-content .section-heading{margin-top:22px}
+.more-content .section-heading h2{font-size:23px}
+.more-content>.muted{font-size:10px}
+.preferences-actions{display:flex;gap:12px;margin:24px 0}
+.market-panel .quote-detail{padding:0 20px 18px;margin-top:0}
+.single-workspace button:focus-visible,.single-workspace summary:focus-visible,.single-workspace a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(max-width:650px){
+  .workspace{padding:18px 16px 24px}
+  .workspace-header{margin-bottom:26px}
+  .workspace-brand{font-size:12px;letter-spacing:0}.workspace-brand span{margin-right:5px;font-size:20px}
+  .workspace-actions{gap:5px}.workspace-actions .button{font-size:10px;padding:7px 9px;min-height:33px}
+  .stock-picker{gap:8px;flex-wrap:wrap;max-width:65%}.stock-picker h1{font-size:25px}
+  #stock-code{font-size:10px}.picker-arrow{font-size:12px}
+  .stock-price>b{font-size:27px}.stock-price small{font-size:9px}.stock-price>span{font-size:10px}
+  .workspace-status{font-size:10px;margin:15px 0 18px;gap:5px}.holding-summary{width:100%;justify-content:flex-start;gap:8px}
+  .holding-summary .text-button{font-size:10px;min-height:27px}
+  .calculator{padding:19px 16px 18px;border-radius:10px;margin-bottom:10px}
+  .calculator-heading{display:block;margin-bottom:20px}.calculator-heading>span{display:none}
+  .calculation-modes{width:100%}.calculation-modes button{flex:1;padding:7px 3px;font-size:11px;min-height:35px}
+  .input-grid,.input-grid.abc-inputs{gap:12px}
+  .input-grid.abc-inputs{grid-template-columns:1fr 1fr}.abc-inputs>label:last-child{grid-column:1 / -1}
+  .single-workspace .input-grid label{font-size:10px;gap:7px}
+  .calculator input[type=number]{height:43px;font-size:19px;padding:8px 10px}
+  .single-workspace .chips button{font-size:10px;padding:4px 11px;min-height:29px}
+  .ratio-hint{font-size:9px}.wave-anchors summary{font-size:10px}
+  .price-path{gap:4px;margin-top:21px;padding:19px 0;grid-template-columns:1fr .85fr 1fr .85fr 1fr}
+  .path-node small{font-size:8px;white-space:normal;line-height:1.5;min-height:24px}
+  .path-node b{font-size:15px}.path-edge{gap:6px}.path-edge b{font-size:8px}
+  .workspace-result{padding:23px 0 22px}
+  .workspace-result .core-result-grid{gap:12px;grid-template-columns:1fr 1.15fr}
+  .workspace-result .core-result-grid span{font-size:10px;margin-bottom:11px}
+  .workspace-result .core-result-grid b{font-size:30px;letter-spacing:-.8px}
+  .workspace-result .core-result-grid small{font-size:10px;margin-left:3px}
+  .holding-delta{font-size:10px;margin-top:17px}
+  .calculation-actions .primary{min-width:110px;font-size:11px;min-height:38px}
+  .action-menu>summary{font-size:10px}.action-menu-items button{font-size:11px}
+  .workspace-disclosure>summary{padding:16px 1px;font-size:11px}
+  .workspace-disclosure .chart-wrap{height:270px}
+  .workspace-footer{font-size:8px;gap:8px;padding-top:18px}.workspace-footer .text-button{font-size:9px}
+  .single-workspace .field-note{font-size:10px}
+  .more-dialog{width:calc(100% - 16px);max-height:94vh;border-radius:10px}
+  .more-heading{padding:18px 15px 12px;gap:8px}.more-heading h2{font-size:16px}.more-heading .button{font-size:10px;min-height:32px;padding:6px 8px}
+  .more-dialog .secondary-tabs{padding:0 15px;gap:23px;top:63px}
+  .more-dialog .secondary-tabs button{font-size:11px;padding:11px 0 14px}
+  .more-content{padding:17px 14px 22px}.more-content .section-heading h2{font-size:20px}
+  .stock-dialog{padding:21px}.stock-dialog .watch-icon{font-size:11px}.stock-dialog .watch-item{padding:13px 10px}
+}

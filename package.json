@@ -4,7 +4,7 @@
   "scripts": {
     "test:site": "node --test tests/siteService.test.js tests/siteImages.test.js",
     "dev:stocks": "node scripts/serve-stock-lab.cjs",
-    "test:stocks": "node --test tests/stockAnalysis.test.mjs tests/stockMarket.test.js tests/stockWaves.test.mjs"
+    "test:stocks": "node --test tests/stockAnalysis.test.mjs tests/stockMarket.test.js tests/stockWaves.test.mjs tests/stockWorkspace.test.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.6.1",
