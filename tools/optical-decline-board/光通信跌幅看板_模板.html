@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__TITLE__</title>
+<style>
+  :root{
+    --bg:#080B11; --bg2:#0B1017; --panel:#0F151E; --panel2:#141B26;
+    --line:rgba(148,163,184,.13); --line2:rgba(148,163,184,.26);
+    --text:#E8EEF6; --dim:#93A1B4; --faint:#5B6879;
+    --down:#2ED47A; --up:#F2555A;
+    --teal:#2DD4BF; --amber:#F5B942; --blue:#5B9CF6;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--text); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.5;
+    background-image:
+      radial-gradient(900px 420px at 12% -8%, rgba(45,212,191,.075), transparent 62%),
+      radial-gradient(760px 380px at 92% 0%, rgba(91,156,246,.06), transparent 60%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1340px;margin:0 auto;padding:26px 22px 64px}
+
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:22px}
+  .hgroup{flex:1 1 auto;min-width:280px}
+  h1{font-size:25px;font-weight:650;letter-spacing:-.4px;line-height:1.25}
+  h1 .accent{color:var(--teal)}
+  .sub{margin-top:7px;color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .stamp{
+    display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+    background:rgba(245,185,66,.1);border:1px solid rgba(245,185,66,.28);color:var(--amber);
+    font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px rgba(245,185,66,.16)}
+  .livebadge{
+    display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+    background:rgba(46,212,122,.1);border:1px solid rgba(46,212,122,.32);color:var(--down);
+    font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;cursor:default;
+  }
+  .livebadge.off{background:rgba(148,163,184,.08);border-color:var(--line);color:var(--dim)}
+  .livebadge .ld{width:6px;height:6px;border-radius:50%;background:var(--down);box-shadow:0 0 0 3px rgba(46,212,122,.16)}
+  .livebadge.off .ld{background:var(--faint);box-shadow:0 0 0 3px rgba(148,163,184,.12)}
+  .livebadge .btn{
+    margin-left:4px;padding:0 7px;border-radius:6px;font-size:11px;cursor:pointer;user-select:none;
+    border:1px solid rgba(46,212,122,.3);color:inherit;background:transparent;font-weight:600;
+  }
+  .livebadge .btn:hover{background:rgba(46,212,122,.12)}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:11px;margin-bottom:20px}
+  .kpi{
+    background:linear-gradient(160deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:12px; padding:14px 15px 13px;
+    position:relative; overflow:hidden;
+  }
+  .kpi::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+  .kpi .k{font-size:11.5px;color:var(--faint);letter-spacing:.3px;margin-bottom:6px;font-weight:600}
+  .kpi .v{font-family:var(--mono);font-size:23px;font-weight:600;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .kpi .s{margin-top:5px;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .dn{color:var(--down)} .upc{color:var(--up)} .nu{color:var(--text)}
+
+  .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);
+    color:var(--dim);font-size:12.5px;cursor:pointer;white-space:nowrap;
+    transition:.16s ease; user-select:none; font-weight:500;
+  }
+  .chip:hover{border-color:var(--line2);color:var(--text)}
+  .chip.on{background:rgba(45,212,191,.13);border-color:rgba(45,212,191,.42);color:var(--teal);font-weight:600}
+  .chip .cnt{font-size:10.5px;margin-left:6px;padding:1px 5px;border-radius:4px;
+    background:rgba(148,163,184,.15);color:var(--dim);font-family:var(--mono);opacity:1}
+  .chip.on .cnt{background:rgba(45,212,191,.2);color:var(--teal)}
+  .search{
+    margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:6px 11px;min-width:190px
+  }
+  .search input{background:none;border:0;outline:0;color:var(--text);font-size:13px;width:100%;font-family:inherit}
+  .search input::placeholder{color:var(--faint)}
+  .search svg{flex:0 0 auto;opacity:.45}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .tscroll{overflow-x:auto;overflow-y:visible}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  thead th{
+    position:sticky;top:0;z-index:2;background:#0C121A;
+    font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:.4px;
+    padding:11px 10px;text-align:right;white-space:nowrap;
+    border-bottom:1px solid var(--line2);cursor:pointer;user-select:none;transition:.14s
+  }
+  thead th:hover{color:var(--text);background:#101823}
+  thead th.l{text-align:left}
+  thead th.on{color:var(--teal)}
+  thead th .ar{font-size:9px;margin-left:3px;opacity:.85}
+  tbody td{padding:0 10px;height:36px;border-bottom:1px solid rgba(148,163,184,.07);text-align:right;white-space:nowrap}
+  tbody tr:hover td{background:rgba(45,212,191,.045)}
+  tbody tr.ext td{opacity:.62}
+  tbody tr.ext:hover td{opacity:1}
+  tbody tr:last-child td{border-bottom:0}
+  thead th:last-child,tbody td:last-child{padding-right:16px}
+  td.l{text-align:left}
+  .code{font-family:var(--mono);font-size:12.5px;color:var(--dim);letter-spacing:.2px}
+  .nm{font-weight:600;font-size:13.5px}
+  .tag{
+    display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;color:var(--dim);
+    background:rgba(148,163,184,.09);border:1px solid rgba(148,163,184,.1);white-space:nowrap
+  }
+  .px{font-family:var(--mono);font-size:13px;color:var(--text)}
+  .cell{position:relative;display:flex;justify-content:flex-end;align-items:center;height:36px;width:100%}
+  .cell .bar{position:absolute;right:0;top:10px;bottom:10px;border-radius:2px;opacity:.34;pointer-events:none}
+  .cell .bar.d{background:linear-gradient(90deg,rgba(46,212,122,.05),rgba(46,212,122,.85))}
+  .cell .bar.u{background:linear-gradient(90deg,rgba(242,85,90,.05),rgba(242,85,90,.85))}
+  .cell span.v{font-family:var(--mono);font-size:12.5px;font-weight:600;position:relative;z-index:1;
+    padding-left:4px;background:transparent}
+  .muted{color:var(--faint);font-family:var(--mono);font-size:12.5px}
+  .nl{
+    display:inline-block;margin-left:6px;padding:1px 5px;border-radius:4px;font-size:10px;
+    color:var(--amber);background:rgba(245,185,66,.12);border:1px solid rgba(245,185,66,.25);
+    vertical-align:1px
+  }
+  .empty{padding:40px;text-align:center;color:var(--faint)}
+
+  .sec{margin-top:30px}
+  .sec h2{font-size:15px;font-weight:650;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+  .sec h2::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--teal)}
+  .sec .hint{color:var(--faint);font-size:12px;margin-bottom:13px;padding-left:12px}
+
+  .gt{width:100%;border-collapse:collapse;table-layout:fixed}
+  .gt th{font-size:11.5px;color:var(--faint);font-weight:600;padding:10px;text-align:right;
+    border-bottom:1px solid var(--line2);white-space:nowrap}
+  .gt th:first-child,.gt td:first-child{text-align:left}
+  .gt td{padding:11px 10px;text-align:right;border-bottom:1px solid rgba(148,163,184,.07);
+    font-family:var(--mono);font-size:12.5px;font-weight:600;white-space:nowrap}
+  .gt td:first-child{font-family:inherit;font-weight:600;font-size:13px;color:var(--text);min-width:132px}
+  .gt tbody tr:hover td{background:rgba(45,212,191,.04)}
+  .mini{position:relative;display:inline-block;width:58px;height:6px;border-radius:3px;
+    background:rgba(148,163,184,.08);vertical-align:middle;margin-right:8px;overflow:hidden}
+  .mini i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+
+  .ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+  .ins .box{
+    background:linear-gradient(160deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:12px;padding:16px 17px;position:relative
+  }
+  .ins .box h3{font-size:13.5px;font-weight:650;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+  .ins .box .idx{
+    display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:5px;
+    background:rgba(45,212,191,.14);color:var(--teal);font-size:11px;font-weight:700;font-family:var(--mono)
+  }
+  .ins .box p{font-size:12.8px;color:var(--dim);line-height:1.72}
+  .ins .box b{color:var(--text);font-weight:600}
+  .ins .box .hl{color:var(--down);font-family:var(--mono);font-weight:600}
+
+  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;line-height:1.85}
+  footer b{color:var(--dim);font-weight:600}
+  @media (max-width:720px){
+    .wrap{padding:18px 13px 48px} h1{font-size:20px}
+    .kpi .v{font-size:19px} .search{margin-left:0;width:100%}
+    thead th,tbody td{padding-left:7px;padding-right:7px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="hgroup">
+      <h1>A股 <span class="accent">光通信产业链</span> · 跌幅榜单</h1>
+      <div class="sub">
+        <span class="stamp"><span class="dot"></span>__STAMP__</span>
+        <span class="livebadge off" id="liveBadge"><span class="ld"></span><span id="liveTxt">连接行情源…</span>
+          <button class="btn" id="liveToggle">暂停</button></span>
+        <span>光模块 · 光器件 · 光芯片 · 光学元件 · 光纤光缆 · 连接器线缆 · 设备接入</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="ctrl">
+    <div class="chips" id="chips"></div>
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/>
+      </svg>
+      <input id="q" placeholder="搜索代码 / 名称" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tscroll">
+      <table id="tbl">
+        <thead><tr id="thr"></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="cnt" style="margin-top:9px;color:var(--faint);font-size:11.5px;text-align:right"></div>
+
+  <div class="sec">
+    <h2>细分环节汇总</h2>
+    <div class="hint">等权口径，各环节成分股中位数；条形长度按近 20 日跌幅归一</div>
+    <div class="card" style="padding:4px 6px 2px">
+      <table class="gt">
+        <colgroup>
+          <col style="width:20%"><col style="width:9%"><col style="width:12%">
+          <col style="width:23%"><col style="width:12%"><col style="width:13%"><col style="width:11%">
+        </colgroup>
+        <thead><tr>
+          <th>环节</th><th>只数</th><th class="d1h">当日</th><th>近20日</th><th>近60日</th><th>年初至今</th><th>平均回撤</th>
+        </tr></thead>
+        <tbody id="gtb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>关键判断</h2>
+    <div class="hint">按跌幅结构与分布特征归纳，非投资建议</div>
+    <div class="ins" id="ins"></div>
+  </div>
+
+  <footer>
+    <b>口径说明</b>：__CALIBER__；「近20日／近60日」为对应交易日数前的收盘对比；
+    「年初至今」基准为上一年最后一个交易日收盘；「距250日高点」以近 250 个交易日<b>盘中最高价</b>为基准（前复权，与东财/工作台软件口径一致）。<br>
+    <b>实时机制</b>：本页面内嵌近 420 个交易日收盘/最低价序列，打开及每 30 秒自动直连行情源刷新现价并重算全部指标；
+    历史序列由每日 15:01 自动任务滚动更新；若本页数据日已落后多个交易日，请以最新生成的文件为准。<br>
+    <b>颜色约定</b>：按 A 股惯例，<span style="color:var(--up)">红=上涨</span>、<span style="color:var(--down)">绿=下跌</span>，与欧美市场相反。<br>
+    <b>样本</b>：自建产业链池 __N__ 只（核心 __NC__ 只 + 关联延伸 __NX__ 只：PCB／覆铜板／交换芯片），非交易所概念板块成分，可能存在个别标的遗漏。<br>
+    <b>校验</b>：__XCHECK__<br>
+    <span style="opacity:.8">本页仅为公开行情数据的技术性统计，不构成任何投资建议。</span>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/;
+const META = DATA.meta, CAL = DATA.cal || [];
+let ROWS = DATA.rows;
+const GORDER = DATA.gorder;
+const D1_LABEL = META.intraday ? "当前" : "当日";
+
+const COLS = [
+  {k:"c",  t:"代码",    cls:"l", w:74,  type:"code"},
+  {k:"n",  t:"名称",    cls:"l", w:96,  type:"name"},
+  {k:"t",  t:"细分环节",cls:"l", w:104, type:"tag"},
+  {k:"p",  t:"现价",    w:80,  type:"px"},
+  {k:"d1", t:D1_LABEL,  w:88,  type:"pct", hot:true},
+  {k:"d5", t:"近5日",   w:86,  type:"pct", hot:true},
+  {k:"d20",t:"近20日",  w:92,  type:"pct", hot:true},
+  {k:"d60",t:"近60日",  w:92,  type:"pct", hot:true},
+  {k:"ytd",t:"年初至今",w:96,  type:"pct", hot:true},
+  {k:"dd", t:"距高点",  w:92,  type:"pct", hot:true},
+  {k:"to", t:"换手",    w:70,  type:"num"},
+  {k:"mcap",t:"市值(亿)",w:88, type:"num"},
+];
+let sortKey = "d1", sortAsc = true, group = "全部", q = "";
+
+/* ---------------- 工具 ---------------- */
+const fmt = v => (v === null || v === undefined || !isFinite(v)) ? "—" : (v > 0 ? "+" : "") + v.toFixed(2) + "%";
+const cls = v => (v === null || v === undefined || !isFinite(v)) ? "muted" : (v > 0 ? "upc" : v < 0 ? "dn" : "muted");
+function med(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1;
+  return s.length%2 ? s[m] : (s[m-1]+s[m])/2; }
+function mean(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; }
+function todayStr(){ const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+/* ---------------- 实时状态 ---------------- */
+let LIVE = false, DATA_DAY = META.data_date || todayStr(), LIVE_TS = "";
+let liveTimer = null, livePaused = false, liveFailN = 0;
+const REFRESH_SEC = 30;
+
+function sym(code){ return code.startsWith("60")||code.startsWith("68")||code.startsWith("90")
+  ? "sh"+code : (code.startsWith("4")||code.startsWith("8")) ? "bj"+code : "sz"+code; }
+
+function setBadge(state, txt){
+  const b = document.getElementById("liveBadge"), t = document.getElementById("liveTxt");
+  b.classList.toggle("off", state === "off");
+  t.textContent = txt;
+}
+
+/* JSONP：qt.gtimg.cn 返回 v_XXXXXX="..." 赋值语句，script 标签执行后读全局变量，绕过 CORS */
+function loadLive(){
+  if (livePaused || META.freeze) return;
+  const codes = ROWS.map(r => sym(r.c)).join(",");
+  const s = document.createElement("script");
+  s.charset = "gbk";
+  s.src = "https://qt.gtimg.cn/q=" + codes + "&r=" + Date.now();
+  const to = setTimeout(() => { liveFailN++; afterLive(false); s.remove(); }, 8000);
+  s.onload  = () => { clearTimeout(to); s.remove(); afterLive(true); };
+  s.onerror = () => { clearTimeout(to); s.remove(); liveFailN++; afterLive(false); };
+  document.head.appendChild(s);
+}
+
+function afterLive(ok){
+  if (ok){
+    const votes = {};
+    let got = 0;
+    ROWS.forEach(r => {
+      const v = window["v_" + sym(r.c)];
+      if (!v) return;
+      const f = v.split("~");
+      if (f.length < 50) return;
+      let p = parseFloat(f[3]); if (!(p > 0)) p = parseFloat(f[4]) || null;   // 停牌用昨收
+      const ts = f[30] || "";
+      const day = ts.length >= 8 ? ts.slice(0,4)+"-"+ts.slice(4,6)+"-"+ts.slice(6,8) : null;
+      if (day) votes[day] = (votes[day]||0)+1;
+      r._live = {
+        p, chg: parseFloat(f[32]), to: parseFloat(f[38]), mcap: parseFloat(f[45]),
+      };
+      got++;
+    });
+    let best = null, bn = 0;
+    for (const k in votes) if (votes[k] > bn){ bn = votes[k]; best = k; }
+    if (best) DATA_DAY = best;
+    if (got > ROWS.length * 0.5){
+      LIVE = true; liveFailN = 0;
+      LIVE_TS = new Date().toTimeString().slice(0,8);
+      setBadge("on", "实时 " + LIVE_TS + " · " + DATA_DAY);
+    } else { liveFailN++; afterLiveFail(); }
+  } else { afterLiveFail(); }
+  recalcAll(); renderAll();
+  if (!livePaused && liveFailN < 3){
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(loadLive, REFRESH_SEC * 1000);
+  }
+}
+function afterLiveFail(){
+  if (liveFailN >= 3) setBadge("off", "实时刷新失败 · 显示快照");
+  else setBadge("off", "重连中(" + liveFailN + "/3)…");
+}
+document.getElementById("liveToggle").addEventListener("click", function(){
+  livePaused = !livePaused;
+  this.textContent = livePaused ? "恢复" : "暂停";
+  if (livePaused){ clearTimeout(liveTimer); setBadge("off", "已暂停 · 数据日 " + DATA_DAY); }
+  else { liveFailN = 0; loadLive(); }
+});
+
+/* ---------------- 核心：内嵌序列 + 实时价重算全部指标 ---------------- */
+function recalcAll(){
+  const off = (DATA_DAY > (CAL[CAL.length-1] || "")) ? 1 : 0;   // 行情日超出内嵌日历 → 今日为新交易日
+  const yrCut = (new Date().getFullYear() - 1) + "-12-31";
+  let jy = -1;
+  for (let i = 0; i < CAL.length; i++) if (CAL[i] < yrCut) jy = i;
+
+  ROWS.forEach(r => {
+    if (!r.cs) return;
+    const cs = r.cs, ls = r.ls, hs = r.hs || r.cs, n = cs.length;
+    const L = r._live;
+    if (L){
+      if (L.p > 0) r.p = L.p;
+      if (L.to != null && isFinite(L.to)) r.to = L.to;
+      if (L.mcap != null && isFinite(L.mcap)) r.mcap = L.mcap;
+    }
+    const b = k => { const i = n - (k + 1 - off); return (i >= 0 && cs[i] != null) ? cs[i] : null; };
+    const pctB = k => { const v = b(k); return (v && r.p) ? (r.p / v - 1) * 100 : null; };
+
+    r.d1 = (L && L.chg != null && isFinite(L.chg)) ? L.chg : pctB(1);
+    r.d5 = pctB(5); r.d20 = pctB(20); r.d60 = pctB(60);
+
+    if (jy >= 0 && cs[jy] != null && r.p) r.ytd = (r.p / cs[jy] - 1) * 100;
+    const hw = hs.slice(Math.max(0, n - 250)).filter(v => v != null);   // 前复权·盘中最高价口径（与工作台/东财一致）
+    if (hw.length && r.p) r.dd = (r.p / Math.max(...hw) - 1) * 100;
+    const lw = ls.slice(Math.max(0, n - 59)).filter(v => v != null);
+    r.nl = (lw.length && r.p && r.p < Math.min(...lw)) ? 1 : 0;
+  });
+}
+
+/* ---------------- 派生统计 ---------------- */
+function computeKpi(){
+  const core = ROWS.filter(r => r.g !== "关联延伸" && r.cs);
+  const v = k => core.map(r => r[k]).filter(x => x != null && isFinite(x));
+  return {
+    n: ROWS.length, ncore: core.length,
+    d1_med: med(v("d1")), d1_down: v("d1").filter(x=>x<0).length, d1_5: v("d1").filter(x=>x<=-5).length,
+    d20_med: med(v("d20")), d20_30: v("d20").filter(x=>x<=-30).length,
+    dd_med: med(v("dd")), dd_50: v("dd").filter(x=>x<=-50).length,
+    ytd_med: med(v("ytd")), ytd_up: v("ytd").filter(x=>x>0).length,
+    nl: core.filter(r => r.nl).length,
+  };
+}
+function computeGs(){
+  const groups = {};
+  ROWS.forEach(r => { if (r.g !== "关联延伸" && r.cs) (groups[r.g] = groups[r.g] || []).push(r); });
+  return GORDER.filter(g => groups[g]).map(g => {
+    const rs = groups[g];
+    const med2 = k => med(rs.map(x => x[k]).filter(x => x != null && isFinite(x)));
+    return { g, n: rs.length, d1: med2("d1"), d20: med2("d20"), d60: med2("d60"), ytd: med2("ytd"),
+             dd: mean(rs.map(x => x.dd).filter(x => x != null && isFinite(x))) };
+  });
+}
+
+/* ---------------- KPI ---------------- */
+function renderKpi(){
+  const K = computeKpi();
+  document.getElementById("kpis").innerHTML = [
+    {k:"样本标的", v:K.n+" 只", s:`核心光通信 ${K.ncore} 只`, c:"nu"},
+    {k:LIVE?"当前中位涨跌":D1_LABEL+"中位涨跌", v:fmt(K.d1_med), s:`${K.d1_down}/${K.ncore} 下跌 · ${K.d1_5} 只跌超5%`, c:cls(K.d1_med)},
+    {k:"近20日中位", v:fmt(K.d20_med), s:`${K.d20_30} 只跌超30%`, c:cls(K.d20_med)},
+    {k:"距250日高点", v:fmt(K.dd_med), s:`${K.dd_50} 只回撤超50%`, c:cls(K.dd_med)},
+    {k:"年初至今中位", v:fmt(K.ytd_med), s:`${K.ytd_up}/${K.ncore} 仍为正收益`, c:cls(K.ytd_med)},
+    {k:"创60日新低", v:K.nl+" 只", s:`核心 ${K.ncore} 只中 · 技术面破位`, c:"nu"},
+  ].map(o => `<div class="kpi"><div class="k">${o.k}</div>
+    <div class="v ${o.c}">${o.v}</div><div class="s">${o.s}</div></div>`).join("");
+}
+
+/* ---------------- 表格 ---------------- */
+const thr = document.getElementById("thr");
+function renderHead(){
+  thr.innerHTML = COLS.map(c => `<th class="${c.cls||""}${c.k===sortKey?" on":""}" data-k="${c.k}"
+    style="min-width:${c.w}px">${c.t}<span class="ar">${c.k===sortKey?(sortAsc?"▲":"▼"):""}</span></th>`).join("");
+}
+thr.addEventListener("click", e => {
+  const th = e.target.closest("th"); if (!th) return;
+  const k = th.dataset.k;
+  if (k === sortKey) sortAsc = !sortAsc; else { sortKey = k; sortAsc = k === "c" || k === "n"; }
+  renderHead(); render();
+});
+
+const maxAbs = {};
+COLS.filter(c => c.hot).forEach(c => {
+  maxAbs[c.k] = Math.max(...ROWS.map(r => Math.abs(r[c.k] || 0)), 1);
+});
+
+function cell(r, c) {
+  const v = r[c.k];
+  if (c.type === "code") return `<td class="l"><span class="code">${v}</span></td>`;
+  if (c.type === "name") return `<td class="l"><span class="nm">${v}</span>${r.nl?'<span class="nl">新低</span>':''}</td>`;
+  if (c.type === "tag") return `<td class="l"><span class="tag">${v}</span></td>`;
+  if (c.type === "px")  return `<td><span class="px">${v == null ? "—" : v.toFixed(2)}</span></td>`;
+  if (c.type === "pct") {
+    if (v == null || !isFinite(v)) return `<td><span class="muted">—</span></td>`;
+    const w = Math.max(2, Math.abs(v) / maxAbs[c.k] * 86);
+    return `<td><div class="cell"><div class="bar ${v < 0 ? "d" : "u"}" style="width:${w}%"></div>
+      <span class="v ${cls(v)}">${fmt(v)}</span></div></td>`;
+  }
+  return `<td><span style="font-family:var(--mono);font-size:12.5px;color:var(--faint)">
+    ${v == null ? "—" : (c.k==='mcap'?v.toFixed(0):v.toFixed(2))}</span></td>`;
+}
+
+function render(){
+  let rs = ROWS.filter(r => (group === "全部" || r.g === group) &&
+    (!q || r.n.toLowerCase().includes(q) || r.c.includes(q) || r.t.includes(q)));
+  rs = rs.slice().sort((a, b) => {
+    let x = a[sortKey], y = b[sortKey];
+    if (typeof x === "string" || typeof y === "string") {
+      x = x || ""; y = y || "";
+      return sortAsc ? x.localeCompare(y, "zh") : y.localeCompare(x, "zh");
+    }
+    if (x == null) return 1; if (y == null) return -1;
+    return sortAsc ? x - y : y - x;
+  });
+  const tb = document.getElementById("tb");
+  tb.innerHTML = rs.length ? rs.map(r =>
+      `<tr class="${r.g === "关联延伸" ? "ext" : ""}">` + COLS.map(c => cell(r, c)).join("") + "</tr>").join("")
+    : `<tr><td colspan="${COLS.length}" class="empty">无匹配标的</td></tr>`;
+  document.getElementById("cnt").textContent =
+    `显示 ${rs.length} / ${ROWS.length} 只 · 点击表头可切换排序` + (LIVE ? ` · 实时价 ${LIVE_TS}` : "");
+}
+
+/* ---------------- 环节汇总 ---------------- */
+function renderGs(){
+  const GS = computeGs();
+  const gmax = Math.max(...GS.map(g => Math.abs(g.d20 || 0)), 1);
+  document.getElementById("gtb").innerHTML = GS.map(g => {
+    const w = Math.abs(g.d20 || 0) / gmax * 84;
+    return `<tr>
+      <td>${g.g}</td>
+      <td style="color:var(--faint)">${g.n}</td>
+      <td class="${cls(g.d1)}">${fmt(g.d1)}</td>
+      <td><span class="mini"><i style="width:${w}%;background:${(g.d20||0)<0?'var(--down)':'var(--up)'};opacity:.65"></i></span><span class="${cls(g.d20)}">${fmt(g.d20)}</span></td>
+      <td class="${cls(g.d60)}">${fmt(g.d60)}</td>
+      <td class="${cls(g.ytd)}">${fmt(g.ytd)}</td>
+      <td class="${cls(g.dd)}">${fmt(g.dd)}</td>
+    </tr>`;
+  }).join("");
+}
+
+/* ---------------- 洞察 ---------------- */
+function renderIns(){
+  const K = computeKpi();
+  const core = ROWS.filter(r => r.g !== "关联延伸" && r.cs);
+  const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
+  const b20 = core.filter(r => r.d20 != null).sort((a,b)=>b.d20-a.d20)[0];
+  const topYtd = core.filter(r => r.ytd != null).sort((a,b)=>b.ytd-a.ytd).slice(0,3);
+  const breadth = K.d1_down >= K.ncore * 0.75
+    ? "仍属无差别抛售下的普跌，抗跌者多因光模块业务占比低"
+    : (K.d1_down <= K.ncore * 0.35
+        ? "多数标的翻红，杀跌动能明显衰减，但反弹尚未形成合力"
+        : "涨跌分化，资金在龙头与高弹性品种之间来回切换");
+
+  document.getElementById("ins").innerHTML = [
+    {h:"是「高位崩」，不是「全年阴跌」",
+     p:`核心 ${K.ncore} 只年初至今中位仅 <span class="hl">${fmt(K.ytd_med)}</span>，仍有 <b>${K.ytd_up} 只</b>维持正收益（最高 ${topYtd.map(x=>x.n+" "+fmt(x.ytd)).join("、")}）。
+        真正的杀伤集中在近 20 个交易日：中位 <span class="hl">${fmt(K.d20_med)}</span>，${K.d20_30} 只跌超 30%。`},
+    {h:"越靠近上游，杀得越狠",
+     p:`光芯片／激光器近 20 日中位跌幅居首，光器件封装紧随其后；光纤光缆与连接器线缆相对抗跌。
+        杀跌强度与估值弹性高度正相关，而非与业绩确定性相关——上游是本轮抱团最集中、估值抬升最快的环节。`},
+    {h:"个股分化极端",
+     p:`近 20 日最惨的 <b>${w20 ? w20.n : "—"}</b> ${w20?fmt(w20.d20):""}，最抗跌的 <b>${b20 ? b20.n : "—"}</b> 仅 ${b20?fmt(b20.d20):""}，
+        首尾相差约 <b>${w20&&b20?Math.abs(b20.d20-w20.d20).toFixed(0):"—"} 个百分点</b>。
+        ${D1_LABEL} ${K.d1_down}/${K.ncore} 下跌、${K.d1_5} 只跌超 5%，${breadth}。`},
+    {h:"技术面全面破位",
+     p:`${K.dd_50} 只距 250 日高点回撤超 50%，中位回撤 <span class="hl">${fmt(K.dd_med)}</span>；
+        ${K.nl} 只创 60 日新低。指数级别的修复需要新的基本面催化，单纯的估值修复空间已被打开但缺乏触发条件。`},
+  ].map((o, i) => `<div class="box"><h3><span class="idx">${i+1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");
+}
+
+/* ---------------- 筛选 ---------------- */
+const allGroups = ["全部", ...GORDER.filter(g => ROWS.some(r => r.g === g))];
+document.getElementById("chips").innerHTML = allGroups.map(g => {
+  const n = g === "全部" ? ROWS.length : ROWS.filter(r => r.g === g).length;
+  return `<div class="chip${g===group?" on":""}" data-g="${g}">${g}<span class="cnt">${n}</span></div>`;
+}).join("");
+document.getElementById("chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  group = c.dataset.g;
+  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x.dataset.g === group));
+  render();
+});
+document.getElementById("q").addEventListener("input", e => { q = e.target.value.trim().toLowerCase(); render(); });
+
+/* ---------------- 汇总表头随盘中切换 ---------------- */
+function fixGsHead(){
+  document.querySelectorAll(".gt thead th").forEach(th => {
+    if (th.classList.contains("d1h")) th.textContent = LIVE ? "当前" : D1_LABEL;
+  });
+}
+
+/* ---------------- 启动 ---------------- */
+function renderAll(){ renderKpi(); renderHead(); render(); renderGs(); renderIns(); fixGsHead(); }
+renderAll();          // 静态快照首屏
+recalcAll();          // 用内嵌序列对齐一次口径
+renderAll();
+if (META.freeze){
+  setBadge("off", "定格快照 · " + META.data_date);
+} else {
+  loadLive();         // 拉实时价，之后每 30 秒自动刷新
+}
+</script>
+</body>
+</html>

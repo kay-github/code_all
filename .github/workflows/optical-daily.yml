@@ -1,0 +1,54 @@
+name: optical-daily-update
+
+# 北京时间周一至周五 15:01（UTC 07:01）；GitHub cron 可能有几分钟延迟
+on:
+  schedule:
+    - cron: '1 7 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: optical-daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests pandas akshare
+
+      - name: Fetch & build board
+        working-directory: tools/optical-decline-board
+        env:
+          OPTICAL_BASE: .
+        run: |
+          python pipeline/光通信跌幅扫描_抓数.py
+          python pipeline/光通信跌幅扫描_出表.py
+          python pipeline/光通信跌幅看板_生成.py
+          cp 光通信板块跌幅榜_最新.html index.html
+          mkdir -p archive
+          find . -maxdepth 1 -name '光通信板块跌幅榜_2*' -exec mv {} archive/ \;
+          echo "---- 产物 ----"
+          ls -la index.html archive/ | head -20
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/optical-decline-board
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "Daily optical decline board update $(date -u +%F)"
+            git push
+          fi
