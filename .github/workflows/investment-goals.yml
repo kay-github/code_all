@@ -1,0 +1,33 @@
+name: Investment goal reminders
+
+on:
+  schedule:
+    # Trading sessions and a short window after the close, China Standard Time.
+    - cron: '30,45 1 * * 1-5'
+    - cron: '0,15,30,45 2,5,6 * * 1-5'
+    - cron: '0,15,30 3 * * 1-5'
+    - cron: '0,15 7 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: investment-goal-reminders
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check investment goals
+        env:
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          test -n "$MONITOR_SECRET"
+          endpoint='https://1.688680.xyz/api/investment-market?view=goal-alerts'
+          if [ "$EVENT_NAME" = workflow_dispatch ]; then endpoint="${endpoint}&dryRun=1"; fi
+          curl --silent --show-error --fail --max-time 45 -X POST \
+            --header "Authorization: Bearer $MONITOR_SECRET" "$endpoint"

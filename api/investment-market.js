@@ -1,10 +1,18 @@
 const { numeric } = require('../lib/stockMarket');
 const { sendJson } = require('../lib/gridHttp');
+const store = require('../lib/gridStore');
+const { CONFIG, matchesSecret, matchesImport, runGoalAlerts } = require('../lib/investmentAlerts');
+const { sendPushplus } = require('../lib/pushplus');
 
 const FINANCE = 'https://finance.688680.xyz';
 const cache = new Map();
 const pending = new Map();
-const labels = { market: '中证全指', szzs: '上证指数', cybz: '创业板指' };
+const SNAPSHOT_TTL = 15 * 60_000;
+const indices = [
+  ['szzs', '上证指数'], ['cybz', '创业板指'], ['kc50', '科创50'], ['hs300', '沪深300'],
+];
+const industryNames = ['电子', '通信', '计算机', '传媒', '电力设备', '汽车', '国防军工'];
+const themeIds = ['tonghuashun:concept:885756', 'tonghuashun:concept:886069'];
 
 async function cached(key, ttl, load) {
   const old = cache.get(key);
@@ -28,22 +36,47 @@ async function upstream(path) {
   return res.json();
 }
 
+function scoreOf(value) {
+  const score = numeric(value);
+  return score !== null && score >= 0 && score <= 100 ? score : null;
+}
+
+function fearItem(name, row, stale = false) {
+  return {
+    name, date: row?.trade_date ?? null, score: scoreOf(row?.score),
+    zone: row?.zone?.label ?? null, zoneKey: row?.zone?.key ?? null,
+    stale: stale || row?.stale === true,
+  };
+}
+
 async function sentiment() {
-  const results = await Promise.allSettled([
-    cached('fear', 15 * 60_000, async () => {
-      const data = await upstream('/api/fear-greed/overview');
-      return { date: data.trade_date, model: data.model_version, items: data.targets
-        .filter(row => Object.hasOwn(labels, row.key))
-        .map(row => ({ name: labels[row.key], date: row.trade_date, score: numeric(row.score), zone: row.zone?.label })) };
-    }),
-    cached('crowding', 15 * 60_000, async () => {
-      const data = await upstream('/api/market-structure/crowding?limit=6');
-      return { date: data.target_trade_date, items: data.items.slice(0, 6).map(row => ({
-        name: row.native_name || row.provider_name, date: row.trade_date, score: numeric(row.heat?.value), stale: row.stale === true,
-      })) };
-    }),
-  ]);
-  return { fear: results[0].value ?? null, crowding: results[1].value ?? null };
+  const [overview, kc50, hs300, major, themes] = (await Promise.allSettled([
+    cached('fear-overview', SNAPSHOT_TTL, () => upstream('/api/fear-greed/overview')),
+    cached('fear-kc50', SNAPSHOT_TTL, () => upstream('/api/fear-greed/targets/kc50')),
+    cached('fear-hs300', SNAPSHOT_TTL, () => upstream('/api/fear-greed/targets/hs300')),
+    cached('major-industries', SNAPSHOT_TTL, () => upstream('/api/fear-greed/sectors?level=major&limit=40')),
+    cached('broad-themes', SNAPSHOT_TTL, () => upstream('/api/market-structure/crowding?limit=50')),
+  ])).map(result => result.value ?? null);
+  const details = { kc50, hs300 };
+  const items = indices.map(([key, name]) => ({
+    key, ...fearItem(name, details[key] ?? overview?.targets?.find(row => row.key === key), key === 'szzs' || key === 'cybz' ? overview?.stale === true : false),
+  }));
+  return {
+    fear: { date: overview?.trade_date ?? null, model: overview?.model_version ?? kc50?.model_version ?? hs300?.model_version, items },
+    industry: major && {
+      model: major.model_version,
+      items: industryNames.map(name => fearItem(name, major.items?.find(row => row.name === name), major.stale === true)),
+    },
+    crowding: themes && {
+      date: themes.target_trade_date, stale: themes.stale === true,
+      items: themeIds.flatMap(id => {
+        const row = themes.items?.find(item => item.sector_id === id);
+        return row ? [{
+          name: row.native_name, date: row.trade_date, score: scoreOf(row.heat?.value), stale: row.stale === true,
+        }] : [];
+      }),
+    },
+  };
 }
 
 function parseQuote(fields) {
@@ -92,6 +125,23 @@ async function quotes(raw) {
 
 module.exports = async function handler(req, res) {
   try {
+    if (req.query?.view === 'goal-alerts' && req.method === 'POST') {
+      if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+        return sendJson(res, 401, { error: '未授权' });
+      }
+      const config = (await store.read(CONFIG))?.value;
+      if (!config?.alertIds?.length) return sendJson(res, 503, { error: '目标提醒尚未配置' });
+      if (!process.env.PUSHPLUS_TOKEN) return sendJson(res, 503, { error: '推加尚未配置' });
+      return sendJson(res, 200, await runGoalAlerts({
+        store, config, quotes, send: sendPushplus, dryRun: req.query.dryRun === '1',
+      }));
+    }
+    if (req.query?.view === 'goal-template' && req.method === 'GET') {
+      const token = req.headers?.authorization?.match(/^Bearer ([a-f0-9]{48})$/)?.[1];
+      const config = token && (await store.read(CONFIG))?.value;
+      if (!matchesImport(token, config)) return sendJson(res, 401, { error: '目标导入链接无效或已过期' });
+      return sendJson(res, 200, { goals: config.goals });
+    }
     if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
     const data = req.query?.view === 'sentiment' ? await sentiment() : await quotes(req.query?.symbols);
     res.statusCode = 200;

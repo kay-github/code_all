@@ -367,20 +367,60 @@ async function refreshQuotes(showStatus = false) {
     if (key !== storageKey || holder !== holderId) void refreshQuotes();
   }
 }
-function snapshotCard(title, data, showZone = false) {
+function svgNode(tag, attributes) {
+  const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+  return node;
+}
+function fearGauge(item) {
+  const card = el('article', 'fear-card');
+  const svg = svgNode('svg', { viewBox: '0 0 120 69', role: 'img', 'aria-label': Number.isFinite(item.score) ? `${item.score} 分` : '暂无分数' });
+  // Use the five fg-v2 boundaries so the marker and upstream zone label agree.
+  const zones = [[0, 25], [25, 45], [45, 55], [55, 75], [75, 100]];
+  zones.forEach(([from, to], index) => svg.append(svgNode('path', {
+    d: 'M 12 61 A 48 48 0 0 1 108 61', pathLength: 100,
+    'stroke-dasharray': `${to - from - 1} 100`, 'stroke-dashoffset': -from,
+    class: `fear-arc fear-arc-${index}`,
+  })));
+  if (Number.isFinite(item.score)) {
+    const angle = Math.PI * (1 - item.score / 100);
+    svg.append(svgNode('circle', { cx: 60 + 48 * Math.cos(angle), cy: 61 - 48 * Math.sin(angle), r: 4, class: 'fear-pointer' }));
+  }
+  const value = svgNode('text', { x: 60, y: 56, 'text-anchor': 'middle', class: 'fear-value' });
+  value.textContent = Number.isFinite(item.score) ? fmt.format(item.score) : '—';
+  svg.append(value);
+  card.append(el('h4', '', item.name), svg, el('p', 'fear-zone', item.zone ?? '暂无数据'));
+  card.append(el('p', 'meta', [item.date, item.stale ? '缓存' : null].filter(Boolean).join(' · ')));
+  return card;
+}
+function fearPanel(data) {
+  const panel = el('div', 'fear-panel');
+  panel.append(el('h3', '', '核心指数恐贪仪表盘'));
+  const gauges = el('div', 'fear-gauges');
+  gauges.append(...(data?.items ?? []).map(fearGauge));
+  panel.append(gauges, el('p', 'meta', ['金融工作台', data?.model, '0 偏恐慌 · 100 偏贪婪'].filter(Boolean).join(' · ')));
+  return panel;
+}
+function boardPanel(title, data, subtitle) {
   const card = el('div');
   card.append(el('h3', '', title));
   if (!data?.items?.length) { card.append(el('p', 'muted', '快照暂不可用')); return card; }
-  const list = el('ul');
+  card.append(el('p', 'meta', subtitle));
+  const list = el('ul', 'board-scores');
   for (const item of data.items) {
     const entry = el('li');
-    entry.append(el('span', '', item.name), el('span', 'meta', [
-      Number.isFinite(item.score) ? fmt.format(item.score) : '暂无分数',
-      showZone ? item.zone : null, item.date, item.stale ? '旧快照' : null,
-    ].filter(Boolean).join(' · ')));
+    const bar = el('span', 'board-track');
+    const fill = el('span', 'board-fill');
+    bar.setAttribute('aria-hidden', 'true');
+    fill.style.width = `${item.score ?? 0}%`;
+    bar.append(fill);
+    entry.append(el('strong', '', item.name), bar,
+      el('span', 'board-value', Number.isFinite(item.score) ? fmt.format(item.score) : '—'),
+      el('span', 'meta', [item.zone, item.date, item.stale || data.stale ? '缓存' : null].filter(Boolean).join(' · ') ||
+        (Number.isFinite(item.score) ? '日期未提供' : '暂无快照')));
     list.append(entry);
   }
-  card.append(el('p', 'meta', ['金融工作台快照', data.model, data.stale ? '缓存' : null].filter(Boolean).join(' · ')), list);
+  card.append(list);
   return card;
 }
 async function refreshSnapshot(force = false) {
@@ -389,7 +429,12 @@ async function refreshSnapshot(force = false) {
   $('sentiment-refresh').disabled = true;
   try {
     snapshot = await api('/api/investment-market?view=sentiment');
-    $('sentiment').replaceChildren(snapshotCard('恐贪指数', snapshot.fear, true), snapshotCard('关注板块拥挤度', snapshot.crowding));
+    const boards = el('div', 'board-panels');
+    boards.append(
+      boardPanel('一级行业情绪', snapshot.industry, 'TMT（电子、通信、计算机、传媒）及其他大行业 · 恐贪分'),
+      boardPanel('大主题拥挤度', snapshot.crowding, '精选主题 · 金融工作台拥挤度快照'),
+    );
+    $('sentiment').replaceChildren(fearPanel(snapshot.fear), boards);
   } catch { $('sentiment').replaceChildren(el('p', 'muted', '快照暂不可用，可稍后刷新。')); }
   finally { loadingSnapshot = false; $('sentiment-refresh').disabled = false; }
 }
@@ -462,6 +507,30 @@ function selectTab(active) {
     $(tab.dataset.tab).hidden = !selected;
   }
   if (active.dataset.tab === 'direction') void refreshSnapshot();
+}
+async function importLinkedGoals() {
+  const token = location.hash.match(/^#add-goals=([a-f0-9]{48})$/)?.[1];
+  if (!token || !storageKey) return;
+  selectTab($('tab-goal'));
+  const keyAtStart = storageKey;
+  try {
+    const response = await fetch('/api/investment-market?view=goal-template', {
+      headers: { Authorization: 'Bearer ' + token }, cache: 'no-store', signal: AbortSignal.timeout(12_000),
+    });
+    if (!response.ok) throw Error('导入链接无效、过期或服务暂不可用。');
+    const { goals } = await response.json();
+    if (storageKey !== keyAtStart) throw Error('账本已切换，请重新打开导入链接。');
+    const key = row => [row.horizon, row.symbol, Boolean(row.index), row.metric, row.operator, row.threshold].join('/');
+    const existing = new Set(state.goals.map(key));
+    const added = goals.filter(goal => !existing.has(key(goal)) && !state.goals.some(row => row.id === goal.id));
+    if (added.length) {
+      persist({ ...state, goals: [...state.goals, ...added] });
+      renderGoals();
+      void refreshQuotes();
+    }
+    history.replaceState(null, '', location.pathname + location.search);
+    notice(added.length ? `已添加 ${added.length} 个投资目标。` : '这些目标已存在。');
+  } catch (error) { notice(error.message, true); }
 }
 tabs.forEach((tab, index) => {
   tab.addEventListener('click', () => selectTab(tab));
@@ -594,4 +663,7 @@ $('sentiment-refresh').addEventListener('click', () => refreshSnapshot(true));
 tradeFields();
 goalFields();
 account(await api('/api/grid/auth').then(result => result.user).catch(() => null));
+if (new URLSearchParams(location.search).get('tab') === 'goal') selectTab($('tab-goal'));
+window.addEventListener('hashchange', () => { void importLinkedGoals(); });
+void importLinkedGoals();
 setInterval(() => { if (visible() && tradingWindow()) void refreshQuotes(); }, 60_000);

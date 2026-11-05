@@ -1,5 +1,5 @@
 {
-  "functions": { "api/stock.js": { "maxDuration": 60 }, "api/volume.js": { "maxDuration": 30 } },
+  "functions": { "api/stock.js": { "maxDuration": 60 }, "api/volume.js": { "maxDuration": 30 }, "api/investment-market.js": { "maxDuration": 45 } },
   "routes": [
     {
       "src": "^/(?:admin(?:/.*)?|index\\.html)?$",
