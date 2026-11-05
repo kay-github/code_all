@@ -184,16 +184,29 @@ function renderPositions() {
     const group = el('details', 'panel holding-group');
     group.open = true;
     group.dataset.bucket = bucket;
-    group.append(el('summary', '', `${bucketName(bucket)} · ${rows.length} 个持仓`));
+    const summary = el('summary');
+    summary.append(el('span', 'group-title', bucketName(bucket)), el('span', 'count', `${rows.length} 个持仓`));
+    group.append(summary);
     for (const row of rows) {
-      const position = el('div', 'position-row');
+      const position = el('article', 'position-row');
+      const identity = el('div', 'position-identity');
+      identity.append(el('strong', '', row.quote?.name || row.symbol));
+      if (row.quote?.name) identity.append(el('span', 'meta symbol', row.symbol));
+      const metrics = el('dl', 'position-metrics');
       const quoteStatus = row.quote?.stale ? ' · 缓存' : row.quote?.suspended ? ' · 停牌' : '';
-      position.append(
-        el('strong', '', row.quote?.name ? `${row.quote.name} · ${row.symbol}` : row.symbol),
-        el('p', 'meta', `${fmt.format(row.qty)} 股/份 · 成本 ¥${(row.cost / row.qty / 100).toFixed(3)}`),
-        el('p', 'meta', `现价 ${row.quote?.price ?? '—'}${quoteStatus} · 市值 ${money(row.market)}`),
-        el('p', difference(row.profit), `浮盈亏 ${money(row.profit)}`),
-      );
+      const values = [
+        ['股数 / 份额', fmt.format(row.qty)],
+        ['每股成本', `¥${(row.cost / row.qty / 100).toFixed(3)}`],
+        [`现价${quoteStatus}`, row.quote?.price ?? '—'],
+        ['市值', money(row.market)],
+        ['浮动盈亏', money(row.profit), difference(row.profit)],
+      ];
+      for (const [label, value, color] of values) {
+        const metric = el('div');
+        metric.append(el('dt', '', label), el('dd', color, value));
+        metrics.append(metric);
+      }
+      position.append(identity, metrics);
       group.append(position);
     }
     groups.push(group);
@@ -203,6 +216,7 @@ function renderPositions() {
   $('allocations').replaceChildren(...cards);
   const closed = new Set([...$('holdings').querySelectorAll('details:not([open])')].map(group => group.dataset.bucket));
   for (const group of groups) if (closed.has(group.dataset.bucket)) group.open = false;
+  $('holding-section').hidden = !groups.length;
   $('holdings').replaceChildren(...groups);
 }
 function renderAllocationEditor() {
@@ -239,9 +253,11 @@ function renderTrades() {
 function renderGoals() {
   $('goals').replaceChildren(...horizons.map(horizon => {
     const group = el('section', 'goal-group');
-    group.append(el('h3', '', horizon));
     const rows = state.goals.filter(row => row.horizon === horizon);
-    if (!rows.length) group.append(el('p', 'muted', '暂无目标'));
+    const heading = el('div', 'goal-heading');
+    heading.append(el('h3', '', horizon), el('span', 'count', `${rows.length} 项`));
+    group.append(heading);
+    if (!rows.length) group.append(el('p', 'goal-empty muted', '暂无目标'));
     for (const row of rows) {
       const quote = row.symbol ? quotes[quoteKey(row.symbol, row.index)] : null;
       const condition = row.symbol ? `${row.symbol} · ${metrics[row.metric]} ${row.operator} ${row.threshold}` : '文字目标';
@@ -409,7 +425,7 @@ function fearPanel(data) {
   return panel;
 }
 function boardPanel(title, data, subtitle) {
-  const card = el('div');
+  const card = el('section');
   card.append(el('h3', '', title));
   if (!data?.items?.length) { card.append(el('p', 'muted', '快照暂不可用')); return card; }
   card.append(el('p', 'meta', subtitle));

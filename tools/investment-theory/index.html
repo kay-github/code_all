@@ -47,18 +47,22 @@
     <p id="status" class="status" role="status" hidden></p>
 
     <section id="position" role="tabpanel" aria-labelledby="tab-position">
-      <div class="position-header">
-        <label for="holder-select" class="holder-picker">持有人<select id="holder-select" disabled></select></label>
-        <div class="position-actions">
-          <button id="holder-add" type="button" disabled>＋ 持有人</button>
-          <button id="holder-edit" type="button" hidden>改名</button>
-          <button class="refresh-quotes" type="button">刷新行情</button>
-          <button id="share-open" type="button" disabled>收益图</button>
-          <button id="trade-open" class="primary" type="button" disabled>记一笔</button>
+      <section class="panel position-overview" aria-label="仓位总览">
+        <div class="position-header">
+          <div class="position-actions">
+            <label for="holder-select" class="holder-picker">持有人<select id="holder-select" disabled></select></label>
+            <button id="holder-add" type="button" disabled>＋ 持有人</button>
+            <button id="holder-edit" type="button" hidden>改名</button>
+          </div>
+          <div class="position-actions">
+            <button class="refresh-quotes" type="button">刷新行情</button>
+            <button id="share-open" type="button" disabled>收益图</button>
+            <button id="trade-open" class="primary" type="button" disabled>记一笔</button>
+          </div>
         </div>
-      </div>
-      <p id="quote-status" class="muted quote-status">录入持仓后可刷新行情。</p>
-      <dl id="kpis" class="kpis"></dl>
+        <dl id="kpis" class="kpis"></dl>
+        <p id="quote-status" class="muted quote-status">录入持仓后可刷新行情。</p>
+      </section>
       <section class="panel allocation-panel" aria-labelledby="allocation-title">
         <div class="section-head">
           <h2 id="allocation-title">仓位分布</h2>
@@ -67,8 +71,11 @@
         <div id="allocations" class="allocations"></div>
         <p id="allocation-foot" class="muted"></p>
       </section>
-      <div id="holdings" aria-label="持仓明细"></div>
-      <details class="panel">
+      <section id="holding-section" class="holding-section" aria-labelledby="holdings-title" hidden>
+        <h2 id="holdings-title">持仓明细</h2>
+        <div id="holdings"></div>
+      </section>
+      <details class="panel fold">
         <summary>设置三个仓位的目标比例</summary>
         <p class="muted">现金仓跟随该持有人的账本现金。三个仓位的实际占比均按该持有人的投资净资产计算。</p>
         <form id="allocation-form">
@@ -76,7 +83,7 @@
           <button class="primary">保存仓位设置</button>
         </form>
       </details>
-      <details class="panel" id="trade-editor" hidden>
+      <details class="panel fold" id="trade-editor" hidden>
         <summary>新增账本流水</summary>
         <form id="trade-form">
           <p class="muted trade-holder">记入 <strong id="trade-holder"></strong> 的账本</p>
@@ -95,16 +102,16 @@
           <button class="primary">保存流水</button>
         </form>
       </details>
-      <details class="panel"><summary>查看账本流水 <span id="trade-count"></span></summary><div id="trades"></div></details>
+      <details class="panel fold"><summary>查看账本流水 <span id="trade-count" class="muted"></span></summary><div id="trades"></div></details>
     </section>
 
     <section id="goal" role="tabpanel" aria-labelledby="tab-goal" hidden>
-      <div class="section-head"><div><h2>投资目标</h2><p class="muted">远期、中期、短期各自记录，条件触发时保留当时的数值和行情时间。</p></div><button class="refresh-quotes" type="button">检查条件</button></div>
+      <div class="section-head tab-head"><div><h2>投资目标</h2><p class="muted">远期、中期、短期各自记录，条件触发时保留当时的数值和行情时间。</p></div><button class="refresh-quotes" type="button">检查条件</button></div>
       <div id="goals" class="goal-groups"></div>
-      <details class="panel" open>
+      <details class="panel fold" open>
         <summary>新增投资目标</summary>
         <form id="goal-form">
-          <div class="fields">
+          <div class="fields goal-fields">
             <label>期限<select name="horizon"><option>远期</option><option>中期</option><option>短期</option></select></label>
             <label>目标名称<input name="title" maxlength="80" required></label>
             <label>标的类型<select name="kind"><option value="security">股票 / ETF</option><option value="index">指数</option></select></label>
@@ -121,7 +128,7 @@
     </section>
 
     <section id="direction" role="tabpanel" aria-labelledby="tab-direction" hidden>
-      <div class="section-head"><div><h2>投资方向</h2><p class="muted">分别记录已披露数据、机构预测、技术与资金观察。</p></div></div>
+      <div class="section-head tab-head"><div><h2>投资方向</h2><p class="muted">分别记录已披露数据、机构预测、技术与资金观察。</p></div></div>
       <section class="panel" aria-labelledby="sentiment-title">
         <div class="section-head"><h3 id="sentiment-title">市场情绪与拥挤度</h3><button id="sentiment-refresh" type="button">刷新快照</button></div>
         <div id="sentiment" class="sentiment" aria-live="polite"><p class="muted">打开方向标签页后加载快照。</p></div>
@@ -131,7 +138,7 @@
         <a class="text-link" href="/?tool=gjd" target="_top">国家队 ETF 追踪 ↗</a>
       </div>
       <div id="research"></div>
-      <details class="panel" open>
+      <details class="panel fold" open>
         <summary>新增方向观察</summary>
         <form id="research-form">
           <div class="fields">
