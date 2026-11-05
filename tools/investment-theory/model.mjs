@@ -1,4 +1,5 @@
 export const buckets = ['base', 'flex', 'core'];
+export const SELF = 'self';
 export const defaults = [
   { name: '基础仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '主仓', target: 30 },
 ];
@@ -9,7 +10,7 @@ export const tradeTypes = {
   opening: '期初持仓', buy: '买入', sell: '卖出', deposit: '入金',
   withdrawal: '出金', dividend: '现金分红', adjustment: '送转 / 股数调整',
 };
-export const initialState = () => ({ version: 1, allocation: structuredClone(defaults), trades: [], goals: [], research: [] });
+export const initialState = () => ({ version: 2, allocation: structuredClone(defaults), holders: [], trades: [], goals: [], research: [] });
 export const chinaDay = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai' }).format(new Date());
 
 function number(value, label, min, max) {
@@ -52,9 +53,11 @@ export const quoteKey = (symbol, index) => index ? `index:${symbol}` : symbol;
 const cents = (value, label) => Math.round(number(value, label, 0, 1e9) * 100);
 const id = value => text(value, '记录编号', 60, true);
 
-function trade(row) {
+function trade(row, holders) {
   const type = choice(row.type, Object.keys(tradeTypes), '流水类型');
-  const base = { id: id(row.id), type, date: day(row.date), note: text(row.note ?? '', '备注', 240) };
+  const holderId = row.holderId === undefined ? SELF : row.holderId;
+  if (!holders.has(holderId)) throw Error('流水持有人不存在');
+  const base = { id: id(row.id), holderId, type, date: day(row.date), note: text(row.note ?? '', '备注', 240) };
   if (type === 'deposit' || type === 'withdrawal') return { ...base, amount: cents(row.amount, '金额') / 100 };
   const held = { ...base, bucket: choice(row.bucket, buckets, '所属仓位'), symbol: instrument(row.symbol) };
   if (type === 'dividend') return { ...held, amount: cents(row.amount, '金额') / 100 };
@@ -62,10 +65,14 @@ function trade(row) {
   return { ...held, qty: int(row.qty, '股数', 1, 1e8), price: number(row.price, '价格', 0, 1e5), fee: cents(row.fee || 0, '费用') / 100 };
 }
 
-export function replay(trades) {
+export function holderTrades(trades, holderId) {
+  return trades.filter(row => (row.holderId ?? SELF) === holderId);
+}
+
+export function replay(trades, holderId = SELF) {
   const positions = new Map();
   let cash = 0, realized = 0;
-  for (const row of [...trades].sort((a, b) => a.date.localeCompare(b.date))) {
+  for (const row of holderTrades(trades, holderId).sort((a, b) => a.date.localeCompare(b.date))) {
     if (row.type === 'deposit' || row.type === 'withdrawal') {
       cash += Math.round(row.amount * 100) * (row.type === 'deposit' ? 1 : -1);
       continue;
@@ -125,15 +132,46 @@ function checkedRows(rows, parse, max) {
   if (new Set(items.map(row => row.id)).size !== items.length) throw Error('记录编号重复');
   return items;
 }
-export function validateState(state) {
-  if (state?.version !== 1 || !Array.isArray(state.allocation) || state.allocation.length !== 3) throw Error('投资账本格式不兼容');
-  const allocation = state.allocation.map(row => ({
+function allocationOf(input) {
+  if (!Array.isArray(input) || input.length !== 3) throw Error('需要设置三个仓位');
+  const allocation = input.map(row => ({
     name: text(row.name, '仓位名称', 16, true), target: number(row.target, '目标占比', 0, 100),
   }));
   if (allocation.reduce((sum, row) => sum + row.target, 0) > 100 + 1e-8) throw Error('三个仓位目标占比之和不能超过 100%');
-  const trades = checkedRows(state.trades, trade, 2000);
-  replay(trades);
-  return { version: 1, allocation, trades, goals: checkedRows(state.goals, goal, 200), research: checkedRows(state.research, research, 300) };
+  return allocation;
+}
+export function validateState(state) {
+  if (state?.version !== 1 && state?.version !== 2) throw Error('投资账本格式不兼容');
+  const allocation = allocationOf(state.allocation);
+  const holders = checkedRows(state.holders ?? [], row => ({
+    id: id(row.id), name: text(row.name, '持有人姓名', 24, true), allocation: allocationOf(row.allocation ?? defaults),
+  }), 50);
+  const ids = new Set([SELF, ...holders.map(row => row.id)]);
+  const names = new Set(['本人', ...holders.map(row => row.name)]);
+  if (ids.size <= holders.length || names.size <= holders.length) throw Error('持有人姓名或编号重复');
+  const trades = checkedRows(state.trades, row => trade(row, ids), 2000);
+  for (const holderId of ids) replay(trades, holderId);
+  return { version: 2, allocation, holders, trades, goals: checkedRows(state.goals, goal, 200), research: checkedRows(state.research, research, 300) };
+}
+
+export function portfolio(trades, holderId, quotes) {
+  const { cash, realized, positions } = replay(trades, holderId);
+  const rows = positions.map(position => {
+    const quote = quotes[position.symbol];
+    const market = Number.isFinite(quote?.price) && quote.price > 0 ? Math.round(quote.price * position.qty * 100) : null;
+    return { ...position, quote, market, profit: market === null ? null : market - position.cost };
+  });
+  const complete = rows.every(row => row.market !== null);
+  const market = complete ? rows.reduce((sum, row) => sum + row.market, 0) : null;
+  const cost = rows.reduce((sum, row) => sum + row.cost, 0);
+  const floating = complete ? market - cost : null;
+  const times = rows.map(row => Date.parse(row.quote?.time)).filter(Number.isFinite);
+  return {
+    rows, cash, realized, market, cost, floating, basis: complete ? cash + market : null,
+    returnPct: complete && cost > 0 ? floating / cost * 100 : null,
+    oldestQuote: times.length ? Math.min(...times) : null,
+    newestQuote: times.length ? Math.max(...times) : null,
+  };
 }
 
 export function evaluateGoals(goals, quotes, now = Date.now()) {

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>333投资理论</title>
+  <script src="/assets/site-theme.js"></script>
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.mjs"></script>
 </head>
@@ -19,7 +20,7 @@
     </header>
     <section id="data-panel" class="panel" hidden aria-label="账本与备份">
       <h2 id="account-status">本机账本</h2>
-      <p class="muted">本机自动保存。登录网格交易账号后，可手动上传或恢复独立的 333 云备份。</p>
+      <p class="muted">本机自动保存。登录网格交易账号后，可上传或恢复独立云备份。备份包含所有持有人，发给单个持有人请使用「收益图」。</p>
       <form id="login-form" class="fields">
         <label>账号<input name="username" autocomplete="username" required></label>
         <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
@@ -46,20 +47,39 @@
     <p id="status" class="status" role="status" hidden></p>
 
     <section id="position" role="tabpanel" aria-labelledby="tab-position">
-      <div class="section-head"><div><h2>仓位总览</h2><p id="quote-status" class="muted">录入持仓后可刷新行情。</p></div><button class="refresh-quotes" type="button">刷新行情</button></div>
+      <div class="position-header">
+        <label for="holder-select" class="holder-picker">持有人<select id="holder-select" disabled></select></label>
+        <div class="position-actions">
+          <button id="holder-add" type="button" disabled>＋ 持有人</button>
+          <button id="holder-edit" type="button" hidden>改名</button>
+          <button class="refresh-quotes" type="button">刷新行情</button>
+          <button id="share-open" type="button" disabled>收益图</button>
+          <button id="trade-open" class="primary" type="button">记一笔</button>
+        </div>
+      </div>
+      <p id="quote-status" class="muted quote-status">录入持仓后可刷新行情。</p>
       <dl id="kpis" class="kpis"></dl>
-      <div id="allocations" class="allocations"></div>
+      <section class="panel allocation-panel" aria-labelledby="allocation-title">
+        <div class="section-head">
+          <h2 id="allocation-title">仓位分布</h2>
+          <p class="allocation-legend"><span class="legend-fill"></span>实际占比 <span class="legend-marker"></span>目标</p>
+        </div>
+        <div id="allocations" class="allocations"></div>
+        <p id="allocation-foot" class="muted"></p>
+      </section>
+      <div id="holdings" aria-label="持仓明细"></div>
       <details class="panel">
         <summary>设置三个仓位的目标比例</summary>
-        <p class="muted">仓位比例按个人投资净资产计算。未分配目标单列显示。</p>
+        <p class="muted">目标比例和仓位名称按持有人保存。实际占比按该持有人的投资净资产计算。</p>
         <form id="allocation-form">
           <div id="allocation-fields" class="fields"></div>
           <button class="primary">保存仓位设置</button>
         </form>
       </details>
-      <details class="panel" id="trade-editor" open>
+      <details class="panel" id="trade-editor">
         <summary>新增账本流水</summary>
         <form id="trade-form">
+          <p class="muted trade-holder">记入 <strong id="trade-holder"></strong> 的账本</p>
           <div class="fields">
             <label>类型<select name="type" id="trade-type"></select></label>
             <label>日期<input name="date" type="date" required></label>
@@ -128,5 +148,26 @@
       </details>
     </section>
   </main>
+  <dialog id="holder-dialog" class="ledger-dialog" aria-labelledby="holder-dialog-title">
+    <form id="holder-form">
+      <h2 id="holder-dialog-title">新增持有人</h2>
+      <label>姓名或备注名<input name="name" maxlength="24" required autocomplete="off"></label>
+      <p id="holder-error" class="muted" role="alert"></p>
+      <div class="actions">
+        <button type="button" id="holder-cancel">取消</button>
+        <button class="primary">保存持有人</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="share-dialog" class="ledger-dialog share-dialog" aria-labelledby="share-title">
+    <h2 id="share-title">持仓收益图</h2>
+    <p class="muted">图片只包含当前持有人的数据。发送前可预览。</p>
+    <label class="share-choice"><input id="share-details" type="checkbox">附持仓明细（最多 10 个标的）</label>
+    <canvas id="share-canvas" aria-label="收益图预览"></canvas>
+    <div class="actions">
+      <form method="dialog"><button>关闭</button></form>
+      <button id="share-save" class="primary" type="button">下载 PNG</button>
+    </div>
+  </dialog>
 </body>
 </html>

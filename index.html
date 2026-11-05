@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>大杂烩工具站</title>
+  <script src="/assets/site-theme.js"></script>
   <link rel="stylesheet" href="/assets/site.css">
   <script src="/assets/site-defaults.js" defer></script>
   <script src="/assets/site-cards.js" defer></script>
@@ -16,7 +17,13 @@
       工具
     </button>
     <span id="workspace-title" class="workspace-title" aria-live="polite">首页</span>
-    <a id="bar-home" class="home-link" href="/">首页</a>
+    <div class="bar-actions">
+      <button id="theme-toggle" class="menu-button theme-toggle" type="button" aria-label="切换深浅色">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.9 14.7A9 9 0 0 1 9.3 3.1a9 9 0 1 0 11.6 11.6Z"/></svg>
+        <span id="theme-label">深色</span>
+      </button>
+      <a id="bar-home" class="home-link" href="/">首页</a>
+    </div>
   </header>
 
   <main id="workspace-main" class="workspace-main">

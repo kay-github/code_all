@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialState, instrument, validateState, replay, evaluateGoals } from '../tools/investment-theory/model.mjs';
+import { SELF, initialState, instrument, validateState, replay, evaluateGoals, portfolio } from '../tools/investment-theory/model.mjs';
 
 const symbol = '300502.SZ';
 const row = (id, type, extras) => ({ id, type, date: '2026-11-05', bucket: 'core', symbol, ...extras });
@@ -25,6 +25,32 @@ test('investment ledger replays opening cost, weighted sales, cash, split and di
   assert.throws(() => validateState({ ...initialState(), trades: trades.filter(row => row.id !== '3' && row.id !== '2') }));
   assert.throws(() => validateState({ ...initialState(), trades: [...trades, row('8', 'sell', { qty: 301, price: 1 })] }), /超过/);
   assert.throws(() => validateState({ ...initialState(), allocation: [{ name: 'A', target: 50 }, { name: 'B', target: 30 }, { name: 'C', target: 21 }] }), /100%/);
+});
+
+test('legacy snapshots become the personal ledger and holders have separate balances and positions', () => {
+  const { holders, ...base } = initialState();
+  const old = { ...base, version: 1, trades: [
+    row('1', 'deposit', { amount: 500 }),
+    row('2', 'opening', { qty: 100, price: 10 }),
+  ] };
+  const upgraded = validateState(old);
+  assert.equal(upgraded.version, 2);
+  assert.deepEqual(upgraded.holders, []);
+  assert.equal(upgraded.trades[0].holderId, SELF);
+  const state = validateState({ ...upgraded, holders: [{ id: 'person-1', name: '代持示例' }], trades: [
+    ...upgraded.trades,
+    row('3', 'deposit', { amount: 1200, holderId: 'person-1' }),
+    row('4', 'opening', { qty: 20, price: 15, holderId: 'person-1' }),
+  ] });
+  const quotes = { [symbol]: { price: 20, time: '2026-11-05T10:00:00+08:00' } };
+  const self = portfolio(state.trades, SELF, quotes);
+  const other = portfolio(state.trades, 'person-1', quotes);
+  assert.deepEqual([self.cash, self.market, self.floating], [50000, 200000, 100000]);
+  assert.deepEqual([other.cash, other.market, other.floating], [120000, 40000, 10000]);
+  assert.equal(other.rows[0].qty, 20);
+  assert.equal(portfolio(state.trades, 'person-1', {}).floating, null);
+  assert.throws(() => validateState({ ...state, trades: [...state.trades, row('5', 'sell', { qty: 21, price: 20, holderId: 'person-1' })] }), /超过/);
+  assert.throws(() => validateState({ ...state, holders: [] }), /不存在/);
 });
 
 test('investment conditions distinguish indices, fire once per crossing, and reject stale quotes', () => {

@@ -21,6 +21,15 @@
   let siteTitle;
   let activeFrame;
 
+  function updateThemeButton() {
+    const label = document.documentElement.dataset.siteTheme === 'dark' ? '浅色' : '深色';
+    byId('theme-label').textContent = label;
+    byId('theme-toggle').setAttribute('aria-label', '切换到' + label);
+  }
+  byId('theme-toggle').addEventListener('click', () => window.ToolSiteTheme.toggle());
+  document.addEventListener('sitethemechange', updateThemeButton);
+  updateThemeButton();
+
   function toolId(url) {
     const link = new URL(url, location.origin);
     if (link.origin !== location.origin || link.search || link.hash) return null;

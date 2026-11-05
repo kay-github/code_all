@@ -1,7 +1,8 @@
 import {
   buckets, horizons, directions, metrics, tradeTypes, initialState, chinaDay,
-  replay, validateState, evaluateGoals, quoteKey,
+  SELF, holderTrades, portfolio, replay, validateState, evaluateGoals, quoteKey,
 } from './model.mjs';
+import { drawShare } from './share.mjs';
 
 const $ = id => document.getElementById(id);
 const field = (form, name) => form.elements.namedItem(name);
@@ -23,7 +24,14 @@ let fetchingQuotes = false;
 let loadingSnapshot = false;
 let snapshot = null;
 let accountBusy = false;
+let holderId = SELF;
+let editingHolder = false;
+let shareSnapshot = null;
+const drafts = new Map();
 const path = '/api/grid/investment';
+const activeHolder = () => state.holders.find(holder => holder.id === holderId);
+const holderName = () => activeHolder()?.name ?? '本人';
+const allocationForHolder = () => activeHolder()?.allocation ?? state.allocation;
 
 function el(tag, className, value) {
   const node = document.createElement(tag);
@@ -72,6 +80,10 @@ function account(nextUser) {
   storageKey = key;
   quotes = {};
   state = initialState();
+  holderId = SELF;
+  drafts.clear();
+  resetTradeForm();
+  closeHolderDialogs();
   remoteRev = null;
   savedLocal = null;
   try {
@@ -82,8 +94,7 @@ function account(nextUser) {
       remoteRev = Number.isSafeInteger(saved.remoteRev) && saved.remoteRev > 0 ? saved.remoteRev : null;
     }
   } catch { notice('读取本机账本失败，可以从 JSON 或云备份恢复。', true); }
-  renderAllocationEditor();
-  render();
+  renderLedger();
   void refreshQuotes();
 }
 function accountAction(callback) {
@@ -125,37 +136,49 @@ function rowCard(title, meta, body, collection, id) {
   if (body) article.append(el('p', 'body', body));
   return article;
 }
+function allocationBar(actual, target) {
+  const track = el('div', 'allocation-track');
+  track.setAttribute('aria-hidden', 'true');
+  const fill = el('span', 'allocation-fill');
+  fill.style.width = `${Math.min(100, Math.max(0, actual ?? 0))}%`;
+  const marker = el('span', 'allocation-marker');
+  marker.style.left = `${target}%`;
+  track.append(fill, marker);
+  return track;
+}
 function renderPositions() {
-  const { cash, realized, positions } = replay(state.trades);
-  const marked = positions.map(position => {
-    const quote = quotes[position.symbol];
-    const market = quote ? Math.round(quote.price * position.qty * 100) : null;
-    return { ...position, quote, market, profit: market === null ? null : market - position.cost };
-  });
-  const full = marked.every(row => row.market !== null);
-  const market = marked.reduce((sum, row) => sum + (row.market ?? 0), 0);
-  const basis = cash + market;
-  const floating = marked.reduce((sum, row) => sum + (row.profit ?? 0), 0);
+  const { rows: marked, cash, realized, basis, floating, returnPct } = portfolio(state.trades, holderId, quotes);
+  const allocation = allocationForHolder();
   const kpis = [
-    ['个人投资净资产', full ? money(basis) : '待完整行情', ''],
+    ['投资净资产', money(basis), ''],
     ['账本现金', money(cash), cash < 0 ? 'negative' : ''],
     ['已实现盈亏', money(realized), difference(realized)],
-    ['持仓浮动盈亏', full ? money(floating) : '待完整行情', difference(floating)],
+    ['持仓浮动盈亏', money(floating), difference(floating)],
+    ['持仓收益率', pct(returnPct), difference(returnPct)],
   ];
   $('kpis').replaceChildren(...kpis.map(([label, value, color]) => {
     const item = el('div');
     item.append(el('dt', '', label), el('dd', color, value));
     return item;
   }));
-  const cards = state.allocation.map((allocation, index) => {
+  const groups = [];
+  const cards = allocation.map((bucket, index) => {
     const rows = marked.filter(row => row.bucket === buckets[index]);
-    const value = rows.reduce((sum, row) => sum + (row.market ?? 0), 0);
-    const actual = full && basis > 0 ? value / basis * 100 : null;
+    const value = rows.some(row => row.market === null) ? null : rows.reduce((sum, row) => sum + row.market, 0);
+    const actual = basis > 0 ? value / basis * 100 : null;
     const card = el('section', 'bucket');
-    const heading = el('h3', '', allocation.name);
-    heading.append(el('span', 'target', `目标 ${pct(allocation.target)}`));
-    card.append(heading, el('p', 'meta', `实际 ${pct(actual)} · 市值 ${rows.some(row => row.market === null) ? '待行情' : money(value)}`));
-    if (actual !== null) card.append(el('p', 'meta', `偏离目标 ${actual > allocation.target ? '+' : ''}${fmt.format(actual - allocation.target)} 个百分点`));
+    const heading = el('h3', '', bucket.name);
+    heading.append(el('span', 'target', `目标 ${pct(bucket.target)}`));
+    const stats = el('p', 'bucket-stats');
+    stats.append(el('strong', '', pct(actual)), el('span', 'meta', money(value)));
+    const delta = actual === null ? null : actual - bucket.target;
+    card.append(heading, stats, allocationBar(actual, bucket.target), el('p', 'meta', delta === null
+      ? (rows.length ? '占比待行情或净资产' : '暂无持仓') : `偏离目标 ${delta > 0 ? '+' : ''}${fmt.format(delta)} 个百分点`));
+    if (!rows.length) return card;
+    const group = el('details', 'panel holding-group');
+    group.open = true;
+    group.dataset.bucket = buckets[index];
+    group.append(el('summary', '', `${bucket.name} · ${rows.length} 个持仓`));
     for (const row of rows) {
       const position = el('div', 'position-row');
       const quoteStatus = row.quote?.stale ? ' · 缓存' : row.quote?.suspended ? ' · 停牌' : '';
@@ -165,20 +188,21 @@ function renderPositions() {
         el('p', 'meta', `现价 ${row.quote?.price ?? '—'}${quoteStatus} · 市值 ${money(row.market)}`),
         el('p', difference(row.profit), `浮盈亏 ${money(row.profit)}`),
       );
-      card.append(position);
+      group.append(position);
     }
-    if (!rows.length) card.append(el('p', 'muted', '暂无持仓'));
+    groups.push(group);
     return card;
   });
-  const residual = 100 - state.allocation.reduce((sum, row) => sum + row.target, 0);
-  const remainder = el('section', 'bucket');
-  const remainderTitle = el('h3', '', '未分配目标');
-  remainderTitle.append(el('span', 'target', pct(Math.max(0, residual))));
-  remainder.append(remainderTitle, el('p', 'meta', `账本现金占比 ${pct(full && basis > 0 ? cash / basis * 100 : null)}`));
-  $('allocations').replaceChildren(...cards, remainder);
+  const residual = 100 - allocation.reduce((sum, row) => sum + row.target, 0);
+  $('allocation-foot').textContent = `未分配目标 ${pct(Math.max(0, residual))} · 账本现金占比 ${pct(basis > 0 ? cash / basis * 100 : null)}`;
+  $('allocations').replaceChildren(...cards);
+  const closed = new Set([...$('holdings').querySelectorAll('details:not([open])')].map(group => group.dataset.bucket));
+  for (const group of groups) if (closed.has(group.dataset.bucket)) group.open = false;
+  $('holdings').replaceChildren(...groups);
 }
 function renderAllocationEditor() {
-  const fields = state.allocation.flatMap((row, index) => [
+  const allocation = allocationForHolder();
+  const fields = allocation.flatMap((row, index) => [
     [`name-${index}`, `仓位 ${index + 1} 名称`, row.name],
     [`target-${index}`, `仓位 ${index + 1} 目标占比（%）`, row.target],
   ]);
@@ -193,12 +217,14 @@ function renderAllocationEditor() {
     wrap.append(input);
     return wrap;
   }));
-  options(field($('trade-form'), 'bucket'), buckets.map((bucket, index) => [bucket, state.allocation[index].name]));
+  options(field($('trade-form'), 'bucket'), buckets.map((bucket, index) => [bucket, allocation[index].name]));
 }
 function renderTrades() {
-  $('trade-count').textContent = `（${state.trades.length}）`;
-  $('trades').replaceChildren(...[...state.trades].reverse().sort((a, b) => b.date.localeCompare(a.date)).map(row => {
-    const details = [row.date, row.symbol, state.allocation[buckets.indexOf(row.bucket)]?.name,
+  const trades = holderTrades(state.trades, holderId);
+  const allocation = allocationForHolder();
+  $('trade-count').textContent = `（${trades.length}）`;
+  $('trades').replaceChildren(...trades.reverse().sort((a, b) => b.date.localeCompare(a.date)).map(row => {
+    const details = [row.date, row.symbol, allocation[buckets.indexOf(row.bucket)]?.name,
       row.qty !== undefined ? `${fmt.format(row.qty)} 股/份` : null,
       row.price !== undefined ? `¥${row.price} / 股` : null,
       row.amount !== undefined ? money(Math.round(row.amount * 100)) : null,
@@ -240,6 +266,51 @@ function renderResearch() {
 }
 function render() { renderPositions(); renderTrades(); renderGoals(); renderResearch(); }
 
+function renderLedger() {
+  options($('holder-select'), [[SELF, '本人'], ...state.holders.map(holder => [holder.id, holder.name])]);
+  $('holder-select').value = holderId;
+  $('holder-select').disabled = false;
+  $('holder-add').disabled = state.holders.length >= 50;
+  $('holder-edit').hidden = holderId === SELF;
+  $('share-open').disabled = false;
+  $('trade-holder').textContent = holderName();
+  renderAllocationEditor();
+  render();
+}
+function resetTradeForm() {
+  const form = $('trade-form');
+  form.reset();
+  field(form, 'date').value = chinaDay();
+  tradeFields();
+}
+function selectHolder(next) {
+  if (next === holderId) return;
+  const form = $('trade-form');
+  drafts.set(holderId, Object.fromEntries([...form.elements].filter(input => input.name).map(input => [input.name, input.value])));
+  holderId = next;
+  $('holdings').replaceChildren();
+  resetTradeForm();
+  renderLedger();
+  for (const [name, value] of Object.entries(drafts.get(next) ?? {})) field(form, name).value = value;
+  tradeFields();
+  void refreshQuotes();
+}
+function closeHolderDialogs() {
+  $('holder-dialog').close();
+  $('share-dialog').close();
+  shareSnapshot = null;
+}
+function replaceLedger(data, revision) {
+  persist(data, revision);
+  if (holderId !== SELF && !activeHolder()) holderId = SELF;
+  drafts.clear();
+  resetTradeForm();
+  closeHolderDialogs();
+  $('holdings').replaceChildren();
+  renderLedger();
+  void refreshQuotes();
+}
+
 function visible() { return !document.hidden && !window.frameElement?.hasAttribute('hidden'); }
 function tradingWindow() {
   const china = new Date(Date.now() + 8 * 3600_000);
@@ -249,7 +320,7 @@ function tradingWindow() {
 async function refreshQuotes(showStatus = false) {
   if (fetchingQuotes || !storageKey) return;
   const keys = [...new Set([
-    ...replay(state.trades).positions.map(row => row.symbol),
+    ...replay(state.trades, holderId).positions.map(row => row.symbol),
     ...state.goals.filter(row => row.symbol).map(row => quoteKey(row.symbol, row.index)),
   ])];
   if (!keys.length) {
@@ -259,6 +330,7 @@ async function refreshQuotes(showStatus = false) {
   }
   fetchingQuotes = true;
   const key = storageKey;
+  const holder = holderId;
   const buttons = [...document.querySelectorAll('.refresh-quotes')];
   buttons.forEach(button => { button.disabled = true; });
   $('quote-status').textContent = '正在读取行情…';
@@ -269,7 +341,7 @@ async function refreshQuotes(showStatus = false) {
       const results = await Promise.allSettled(batches.map(batch => api('/api/investment-market?' + new URLSearchParams({ symbols: batch.join(',') }))));
       for (const result of results) if (result.status === 'fulfilled') Object.assign(received, result.value.quotes);
     }
-    if (key !== storageKey) return;
+    if (key !== storageKey || holder !== holderId) return;
     for (const symbol of keys) {
       if (received[symbol]) quotes[symbol] = received[symbol];
       else if (quotes[symbol]) quotes[symbol] = { ...quotes[symbol], stale: true };
@@ -290,7 +362,7 @@ async function refreshQuotes(showStatus = false) {
   finally {
     fetchingQuotes = false;
     buttons.forEach(button => { button.disabled = false; });
-    if (key !== storageKey) void refreshQuotes();
+    if (key !== storageKey || holder !== holderId) void refreshQuotes();
   }
 }
 function snapshotCard(title, data, showZone = false) {
@@ -356,7 +428,10 @@ function bindForm(id, submit) {
 }
 bindForm('allocation-form', form => {
   const input = readForm(form);
-  persist({ ...state, allocation: buckets.map((_, index) => ({ name: input[`name-${index}`], target: input[`target-${index}`] })) });
+  const allocation = buckets.map((_, index) => ({ name: input[`name-${index}`], target: input[`target-${index}`] }));
+  persist(holderId === SELF ? { ...state, allocation } : {
+    ...state, holders: state.holders.map(holder => holder.id === holderId ? { ...holder, allocation } : holder),
+  });
   renderAllocationEditor();
   render();
   notice('仓位设置已保存。');
@@ -364,7 +439,7 @@ bindForm('allocation-form', form => {
 for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goals'], ['research-form', 'research']]) {
   bindForm(formId, form => {
     const input = readForm(form);
-    const row = { ...input, id: uuid(), index: input.kind === 'index' };
+    const row = { ...input, id: uuid(), index: input.kind === 'index', holderId };
     persist({ ...state, [collection]: [...state[collection], row] });
     render();
     form.reset();
@@ -426,11 +501,8 @@ $('cloud-load').addEventListener('click', accountAction(async () => {
   const saved = await api(path);
   if (saved.kind === 'empty') return notice('当前账号还没有云备份。');
   if (!confirm('用云备份替换当前本机账本？可以先导出本机账本。')) return;
-  persist(saved.data, saved.rev);
-  renderAllocationEditor();
-  render();
+  replaceLedger(saved.data, saved.rev);
   notice('云备份已恢复。');
-  void refreshQuotes();
 }));
 $('export').addEventListener('click', () => {
   const link = el('a');
@@ -449,12 +521,64 @@ $('import-file').addEventListener('change', async event => {
     if (file.size > 4 * 1024 * 1024) throw Error('备份文件超过 4 MB。');
     const imported = validateState(JSON.parse(await file.text()));
     if (key !== storageKey || !confirm('用此文件替换当前本机账本？')) return;
-    persist(imported);
-    renderAllocationEditor();
-    render();
+    replaceLedger(imported);
     notice('JSON 备份已恢复。');
-    void refreshQuotes();
   } catch (error) { notice(error.message, true); }
+});
+
+$('holder-select').addEventListener('change', event => selectHolder(event.target.value));
+function openHolderDialog(edit) {
+  editingHolder = edit;
+  $('holder-dialog-title').textContent = edit ? '修改持有人姓名' : '新增持有人';
+  $('holder-error').textContent = '';
+  field($('holder-form'), 'name').value = edit ? holderName() : '';
+  $('holder-dialog').showModal();
+}
+$('holder-add').addEventListener('click', () => openHolderDialog(false));
+$('holder-edit').addEventListener('click', () => openHolderDialog(true));
+$('holder-cancel').addEventListener('click', () => $('holder-dialog').close());
+$('holder-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const name = field(event.currentTarget, 'name').value;
+  const holder = editingHolder ? activeHolder() : { id: uuid() };
+  if (!holder) return;
+  try {
+    const update = { ...holder, name };
+    const holders = editingHolder ? state.holders.map(row => row.id === holderId ? update : row) : [...state.holders, update];
+    persist({ ...state, holders });
+    $('holder-dialog').close();
+    if (editingHolder) renderLedger();
+    else selectHolder(holder.id);
+  } catch (error) { $('holder-error').textContent = error.message; }
+});
+$('trade-open').addEventListener('click', () => {
+  $('trade-editor').open = true;
+  $('trade-type').focus();
+});
+function renderShare() {
+  if (shareSnapshot) drawShare($('share-canvas'), shareSnapshot, $('share-details').checked);
+}
+$('share-open').addEventListener('click', () => {
+  shareSnapshot = { name: holderName(), book: portfolio(state.trades, holderId, quotes), createdAt: Date.now() };
+  $('share-details').checked = false;
+  try {
+    renderShare();
+    $('share-dialog').showModal();
+  } catch (error) { notice(error.message, true); }
+});
+$('share-details').addEventListener('change', renderShare);
+$('share-dialog').addEventListener('close', () => { shareSnapshot = null; });
+$('share-save').addEventListener('click', () => {
+  const name = shareSnapshot?.name;
+  if (!name) return;
+  $('share-canvas').toBlob(blob => {
+    if (!blob) return notice('生成图片失败，请重试。', true);
+    const link = el('a');
+    link.download = `持仓收益-${name}-${chinaDay()}.png`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  }, 'image/png');
 });
 
 options($('trade-type'), Object.entries(tradeTypes));
