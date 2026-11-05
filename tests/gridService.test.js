@@ -69,7 +69,9 @@ test('registration, login, account isolation, revision conflict, and recovery', 
 
 test('invalid sessions and large or malformed state are rejected', async () => {
   const service = makeGridService({ store: memoryStore(), secret });
-  const account = await service.register({ username: 'tester', password: 'a long password' });
+  await assert.rejects(service.register({ username: 'tester', password: 'Test12' }), { code: 'password' });
+  const account = await service.register({ username: 'tester', password: 'Test123' });
+  assert.deepEqual((await service.login({ username: 'tester', password: 'Test123' })).user, account.user);
   await assert.rejects(service.me('forged.session'), { code: 'unauthenticated' });
   await assert.rejects(service.push(account.token, { baseRev: null, data: { version: 2, varieties: [] } }), { code: 'data' });
   await assert.rejects(service.push(account.token, { baseRev: null, data: { version: 1, varieties: [{ name: 'x'.repeat(2_100_000) }] } }), { code: 'too_large' });

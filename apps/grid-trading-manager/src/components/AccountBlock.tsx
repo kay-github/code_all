@@ -32,8 +32,8 @@ export default function AccountBlock({ account, sync }: Props) {
     return true;
   };
   const validPassword = () => {
-    if (password.length < 10 || password.length > 128) {
-      account.fail('密码须为 10–128 位');
+    if (password.length < 7 || password.length > 128) {
+      account.fail('密码须为 7–128 位');
       return false;
     }
     return true;
@@ -157,7 +157,7 @@ export default function AccountBlock({ account, sync }: Props) {
           <label className="field"><span>{step === 'reset' ? '新密码' : '密码'}</span>
             <input className="input" type="password" autoComplete={step === 'login' ? 'current-password' : 'new-password'}
               value={password} onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') void submit(); }} placeholder="至少 10 位" />
+              onKeyDown={(e) => { if (e.key === 'Enter') void submit(); }} placeholder="至少 7 位" />
           </label>
         </div>
         {errorBox}{noticeBox}
