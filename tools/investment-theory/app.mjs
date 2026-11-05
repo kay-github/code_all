@@ -1,6 +1,6 @@
 import {
-  buckets, horizons, directions, metrics, tradeTypes, initialState, chinaDay,
-  SELF, holderTrades, portfolio, replay, validateState, evaluateGoals, quoteKey,
+  buckets, legacyBucket, horizons, directions, metrics, tradeTypes, initialState, chinaDay,
+  SELF, holderTrades, portfolio, replay, validateState, mergeImport, evaluateGoals, quoteKey,
 } from './model.mjs';
 import { drawShare } from './share.mjs';
 
@@ -32,6 +32,7 @@ const path = '/api/grid/investment';
 const activeHolder = () => state.holders.find(holder => holder.id === holderId);
 const holderName = () => activeHolder()?.name ?? '本人';
 const allocationForHolder = () => activeHolder()?.allocation ?? state.allocation;
+const bucketName = bucket => bucket === legacyBucket ? '原基础仓' : allocationForHolder()[buckets.indexOf(bucket)]?.name;
 
 function el(tag, className, value) {
   const node = document.createElement(tag);
@@ -163,9 +164,10 @@ function renderPositions() {
   }));
   const groups = [];
   const cards = allocation.map((bucket, index) => {
-    const rows = marked.filter(row => row.bucket === buckets[index]);
-    const value = rows.some(row => row.market === null) ? null : rows.reduce((sum, row) => sum + row.market, 0);
-    const actual = basis > 0 ? value / basis * 100 : null;
+    const isCash = index === 0;
+    const rows = isCash ? [] : marked.filter(row => row.bucket === buckets[index]);
+    const value = isCash ? cash : rows.some(row => row.market === null) ? null : rows.reduce((sum, row) => sum + row.market, 0);
+    const actual = basis > 0 && value !== null ? value / basis * 100 : null;
     const card = el('section', 'bucket');
     const heading = el('h3', '', bucket.name);
     heading.append(el('span', 'target', `目标 ${pct(bucket.target)}`));
@@ -173,12 +175,16 @@ function renderPositions() {
     stats.append(el('strong', '', pct(actual)), el('span', 'meta', money(value)));
     const delta = actual === null ? null : actual - bucket.target;
     card.append(heading, stats, allocationBar(actual, bucket.target), el('p', 'meta', delta === null
-      ? (rows.length ? '占比待行情或净资产' : '暂无持仓') : `偏离目标 ${delta > 0 ? '+' : ''}${fmt.format(delta)} 个百分点`));
-    if (!rows.length) return card;
+      ? (isCash || rows.length ? '占比待行情或净资产' : '暂无持仓') : `偏离目标 ${delta > 0 ? '+' : ''}${fmt.format(delta)} 个百分点`));
+    return card;
+  });
+  for (const bucket of [...buckets.slice(1), legacyBucket]) {
+    const rows = marked.filter(row => row.bucket === bucket);
+    if (!rows.length) continue;
     const group = el('details', 'panel holding-group');
     group.open = true;
-    group.dataset.bucket = buckets[index];
-    group.append(el('summary', '', `${bucket.name} · ${rows.length} 个持仓`));
+    group.dataset.bucket = bucket;
+    group.append(el('summary', '', `${bucketName(bucket)} · ${rows.length} 个持仓`));
     for (const row of rows) {
       const position = el('div', 'position-row');
       const quoteStatus = row.quote?.stale ? ' · 缓存' : row.quote?.suspended ? ' · 停牌' : '';
@@ -191,10 +197,9 @@ function renderPositions() {
       group.append(position);
     }
     groups.push(group);
-    return card;
-  });
+  }
   const residual = 100 - allocation.reduce((sum, row) => sum + row.target, 0);
-  $('allocation-foot').textContent = `未分配目标 ${pct(Math.max(0, residual))} · 账本现金占比 ${pct(basis > 0 ? cash / basis * 100 : null)}`;
+  $('allocation-foot').textContent = `未分配目标 ${pct(Math.max(0, residual))}${marked.some(row => row.bucket === legacyBucket) ? ' · 原基础仓持仓见下方明细' : ''}`;
   $('allocations').replaceChildren(...cards);
   const closed = new Set([...$('holdings').querySelectorAll('details:not([open])')].map(group => group.dataset.bucket));
   for (const group of groups) if (closed.has(group.dataset.bucket)) group.open = false;
@@ -203,8 +208,8 @@ function renderPositions() {
 function renderAllocationEditor() {
   const allocation = allocationForHolder();
   const fields = allocation.flatMap((row, index) => [
-    [`name-${index}`, `仓位 ${index + 1} 名称`, row.name],
-    [`target-${index}`, `仓位 ${index + 1} 目标占比（%）`, row.target],
+    ...(index === 0 ? [] : [[`name-${index}`, `仓位 ${index + 1} 名称`, row.name]]),
+    [`target-${index}`, `${row.name}目标占比（%）`, row.target],
   ]);
   $('allocation-fields').replaceChildren(...fields.map(([name, label, value]) => {
     const wrap = el('label', '', label);
@@ -217,14 +222,13 @@ function renderAllocationEditor() {
     wrap.append(input);
     return wrap;
   }));
-  options(field($('trade-form'), 'bucket'), buckets.map((bucket, index) => [bucket, allocation[index].name]));
+  tradeFields();
 }
 function renderTrades() {
   const trades = holderTrades(state.trades, holderId);
-  const allocation = allocationForHolder();
   $('trade-count').textContent = `（${trades.length}）`;
   $('trades').replaceChildren(...trades.reverse().sort((a, b) => b.date.localeCompare(a.date)).map(row => {
-    const details = [row.date, row.symbol, allocation[buckets.indexOf(row.bucket)]?.name,
+    const details = [row.date, row.symbol, bucketName(row.bucket) ?? allocationForHolder()[0].name,
       row.qty !== undefined ? `${fmt.format(row.qty)} 股/份` : null,
       row.price !== undefined ? `¥${row.price} / 股` : null,
       row.amount !== undefined ? money(Math.round(row.amount * 100)) : null,
@@ -293,8 +297,11 @@ function selectHolder(next) {
   $('holdings').replaceChildren();
   resetTradeForm();
   renderLedger();
-  for (const [name, value] of Object.entries(drafts.get(next) ?? {})) field(form, name).value = value;
+  const { bucket, ...draft } = drafts.get(next) ?? {};
+  for (const [name, value] of Object.entries(draft)) field(form, name).value = value;
   tradeFields();
+  const select = field(form, 'bucket');
+  if ([...select.options].some(option => option.value === bucket)) select.value = bucket;
   void refreshQuotes();
 }
 function closeHolderDialogs() {
@@ -442,6 +449,11 @@ async function refreshSnapshot(force = false) {
 function tradeFields() {
   const type = $('trade-type').value;
   const stock = !['deposit', 'withdrawal'].includes(type);
+  const choices = buckets.slice(1);
+  if (['sell', 'dividend', 'adjustment'].includes(type) && replay(state.trades, holderId).positions.some(row => row.bucket === legacyBucket)) {
+    choices.push(legacyBucket);
+  }
+  options(field($('trade-form'), 'bucket'), choices.map(bucket => [bucket, bucketName(bucket)]));
   const pricing = ['opening', 'buy', 'sell'].includes(type);
   const visibleFields = [
     ...(stock ? ['bucket', 'symbol'] : []), ...(pricing || type === 'adjustment' ? ['qty'] : []),
@@ -508,28 +520,33 @@ function selectTab(active) {
   }
   if (active.dataset.tab === 'direction') void refreshSnapshot();
 }
-async function importLinkedGoals() {
-  const token = location.hash.match(/^#add-goals=([a-f0-9]{48})$/)?.[1];
-  if (!token || !storageKey) return;
-  selectTab($('tab-goal'));
+async function importLinkedData() {
+  const match = location.hash.match(/^#add-(goals|ledger)=([a-f0-9]{48})$/);
+  if (!match || !storageKey) return;
+  const [, kind, token] = match;
+  const isLedger = kind === 'ledger';
   const keyAtStart = storageKey;
   try {
-    const response = await fetch('/api/investment-market?view=goal-template', {
+    const response = await fetch(`/api/investment-market?view=${isLedger ? 'ledger-import' : 'goal-template'}`, {
       headers: { Authorization: 'Bearer ' + token }, cache: 'no-store', signal: AbortSignal.timeout(12_000),
     });
     if (!response.ok) throw Error('导入链接无效、过期或服务暂不可用。');
-    const { goals } = await response.json();
+    const data = await response.json();
+    if (location.hash !== match[0]) return;
     if (storageKey !== keyAtStart) throw Error('账本已切换，请重新打开导入链接。');
-    const key = row => [row.horizon, row.symbol, Boolean(row.index), row.metric, row.operator, row.threshold].join('/');
-    const existing = new Set(state.goals.map(key));
-    const added = goals.filter(goal => !existing.has(key(goal)) && !state.goals.some(row => row.id === goal.id));
-    if (added.length) {
-      persist({ ...state, goals: [...state.goals, ...added] });
-      renderGoals();
-      void refreshQuotes();
-    }
+    const source = isLedger ? data.holders?.[0] : null;
+    if (isLedger && !source) throw Error('导入文件缺少持有人。');
+    const merged = mergeImport(state, data);
+    const addedGoals = merged.goals.length - state.goals.length;
+    const changed = addedGoals || merged.trades.length !== state.trades.length || merged.holders.length !== state.holders.length;
+    if (changed) persist(merged);
+    const imported = source && state.holders.find(row => row.id === source.id || row.name === source.name);
+    selectTab($(isLedger ? 'tab-position' : 'tab-goal'));
+    if (imported && imported.id !== holderId) selectHolder(imported.id);
+    else if (changed) { renderLedger(); void refreshQuotes(); }
     history.replaceState(null, '', location.pathname + location.search);
-    notice(added.length ? `已添加 ${added.length} 个投资目标。` : '这些目标已存在。');
+    notice(isLedger ? (changed ? '持仓、现金与目标已合并到当前账本。' : '这些记录已存在。') :
+      (addedGoals ? `已添加 ${addedGoals} 个投资目标。` : '这些目标已存在。'));
   } catch (error) { notice(error.message, true); }
 }
 tabs.forEach((tab, index) => {
@@ -664,6 +681,6 @@ tradeFields();
 goalFields();
 account(await api('/api/grid/auth').then(result => result.user).catch(() => null));
 if (new URLSearchParams(location.search).get('tab') === 'goal') selectTab($('tab-goal'));
-window.addEventListener('hashchange', () => { void importLinkedGoals(); });
-void importLinkedGoals();
+window.addEventListener('hashchange', () => { void importLinkedData(); });
+void importLinkedData();
 setInterval(() => { if (visible() && tradingWindow()) void refreshQuotes(); }, 60_000);

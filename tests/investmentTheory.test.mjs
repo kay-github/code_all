@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SELF, initialState, instrument, validateState, replay, evaluateGoals, portfolio } from '../tools/investment-theory/model.mjs';
+import { SELF, initialState, instrument, validateState, mergeImport, replay, evaluateGoals, portfolio } from '../tools/investment-theory/model.mjs';
 
 const symbol = '300502.SZ';
 const row = (id, type, extras) => ({ id, type, date: '2026-11-05', bucket: 'core', symbol, ...extras });
@@ -51,6 +51,39 @@ test('legacy snapshots become the personal ledger and holders have separate bala
   assert.equal(portfolio(state.trades, 'person-1', {}).floating, null);
   assert.throws(() => validateState({ ...state, trades: [...state.trades, row('5', 'sell', { qty: 21, price: 20, holderId: 'person-1' })] }), /超过/);
   assert.throws(() => validateState({ ...state, holders: [] }), /不存在/);
+});
+
+test('cash is the first allocation while legacy stock positions keep their cost and bucket', () => {
+  const oldAllocation = [{ name: '基础仓', target: 25 }, ...initialState().allocation.slice(1)];
+  const old = { ...initialState(), allocation: oldAllocation, trades: [
+    row('cash', 'deposit', { amount: 150 }),
+    row('old-stock', 'opening', { bucket: 'base', qty: 100, price: 10 }),
+    row('new-stock', 'opening', { qty: 30, price: 20 }),
+  ] };
+  const state = validateState(old);
+  assert.deepEqual(initialState().allocation.map(row => row.name), ['现金仓', '机动仓', '主仓']);
+  assert.deepEqual(state.allocation[0], { name: '现金仓', target: 25 });
+  const book = portfolio(state.trades, SELF, { [symbol]: { price: 20 } });
+  assert.equal(book.cash, 15000);
+  assert.equal(book.basis, 275000);
+  assert.deepEqual(book.rows.map(({ bucket, cost }) => [bucket, cost]), [['base', 100000], ['core', 60000]]);
+});
+
+test('private imports preserve existing records and can be reopened without duplicating positions or goals', () => {
+  const goal = { id: 'old-goal', title: '已有目标', horizon: '短期', symbol, metric: 'price', operator: '>=', threshold: 200 };
+  const state = validateState({ ...initialState(), holders: [{ id: 'existing', name: '持有人' }],
+    trades: [row('personal', 'deposit', { amount: 500 })], goals: [goal] });
+  const data = { holders: [{ id: 'source', name: '持有人' }], trades: [
+    row('import-cash', 'deposit', { amount: 50, holderId: 'source' }),
+    row('import-position', 'opening', { qty: 30, price: 15, holderId: 'source' }),
+  ], goals: [{ ...goal, id: 'duplicate' }, { ...goal, id: 'new-goal', threshold: 100 }] };
+  const merged = mergeImport(state, data);
+  assert.deepEqual(merged.holders, state.holders);
+  assert.deepEqual(merged.trades.map(row => row.holderId), [SELF, 'existing', 'existing']);
+  assert.deepEqual(merged.goals.map(row => row.id), ['old-goal', 'new-goal']);
+  assert.deepEqual(mergeImport(merged, data), merged);
+  assert.throws(() => mergeImport({ ...state, trades: [...state.trades,
+    row('manual', 'deposit', { amount: 50, holderId: 'existing' })] }, data), /已有流水/);
 });
 
 test('investment conditions distinguish indices, fire once per crossing, and reject stale quotes', () => {

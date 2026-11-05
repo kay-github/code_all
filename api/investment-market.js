@@ -136,11 +136,12 @@ module.exports = async function handler(req, res) {
         store, config, quotes, send: sendPushplus, dryRun: req.query.dryRun === '1',
       }));
     }
-    if (req.query?.view === 'goal-template' && req.method === 'GET') {
+    if (['goal-template', 'ledger-import'].includes(req.query?.view) && req.method === 'GET') {
+      const isLedger = req.query.view === 'ledger-import';
       const token = req.headers?.authorization?.match(/^Bearer ([a-f0-9]{48})$/)?.[1];
-      const config = token && (await store.read(CONFIG))?.value;
-      if (!matchesImport(token, config)) return sendJson(res, 401, { error: '目标导入链接无效或已过期' });
-      return sendJson(res, 200, { goals: config.goals });
+      const config = token && (await store.read(isLedger ? 'investment/v1/ledger-import.json' : CONFIG))?.value;
+      if (!matchesImport(token, config)) return sendJson(res, 401, { error: '导入链接无效或已过期' });
+      return sendJson(res, 200, isLedger ? config.data : { goals: config.goals });
     }
     if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
     const data = req.query?.view === 'sentiment' ? await sentiment() : await quotes(req.query?.symbols);

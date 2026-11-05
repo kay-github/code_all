@@ -1,7 +1,8 @@
 export const buckets = ['base', 'flex', 'core'];
+export const legacyBucket = 'base';
 export const SELF = 'self';
 export const defaults = [
-  { name: '基础仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '主仓', target: 30 },
+  { name: '现金仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '主仓', target: 30 },
 ];
 export const horizons = ['远期', '中期', '短期'];
 export const metrics = { price: '价格 / 点位', marketCap: '总市值（亿元）', peTTM: 'PE TTM', changePct: '日涨跌幅（%）' };
@@ -134,8 +135,9 @@ function checkedRows(rows, parse, max) {
 }
 function allocationOf(input) {
   if (!Array.isArray(input) || input.length !== 3) throw Error('需要设置三个仓位');
-  const allocation = input.map(row => ({
-    name: text(row.name, '仓位名称', 16, true), target: number(row.target, '目标占比', 0, 100),
+  const allocation = input.map((row, index) => ({
+    name: index === 0 ? defaults[0].name : text(row.name, '仓位名称', 16, true),
+    target: number(row.target, '目标占比', 0, 100),
   }));
   if (allocation.reduce((sum, row) => sum + row.target, 0) > 100 + 1e-8) throw Error('三个仓位目标占比之和不能超过 100%');
   return allocation;
@@ -152,6 +154,34 @@ export function validateState(state) {
   const trades = checkedRows(state.trades, row => trade(row, ids), 2000);
   for (const holderId of ids) replay(trades, holderId);
   return { version: 2, allocation, holders, trades, goals: checkedRows(state.goals, goal, 200), research: checkedRows(state.research, research, 300) };
+}
+
+export function mergeImport(state, { holders: incomingHolders = [], trades: incomingTrades = [], goals: incomingGoals = [] }) {
+  const incoming = validateState({ ...initialState(), holders: incomingHolders, trades: incomingTrades, goals: incomingGoals });
+  const holders = [...state.holders];
+  const trades = [...state.trades];
+  for (const source of incoming.holders) {
+    const existing = holders.find(holder => holder.id === source.id || holder.name === source.name);
+    const rows = holderTrades(incoming.trades, source.id);
+    if (existing) {
+      const current = holderTrades(trades, existing.id);
+      if (rows.some(row => current.some(item => item.id === row.id))) continue;
+      if (current.length) throw Error(`「${source.name}」已有流水，请核对后再导入。`);
+    } else {
+      holders.push(source);
+    }
+    trades.push(...rows.map(row => ({ ...row, holderId: existing?.id ?? source.id })));
+  }
+  const goalKey = row => [row.horizon, row.symbol, Boolean(row.index), row.metric, row.operator, row.threshold,
+    row.symbol ? '' : row.title].join('/');
+  const keys = new Set(state.goals.map(goalKey));
+  const goals = [...state.goals];
+  for (const row of incoming.goals) {
+    if (keys.has(goalKey(row)) || goals.some(item => item.id === row.id)) continue;
+    goals.push(row);
+    keys.add(goalKey(row));
+  }
+  return validateState({ ...state, holders, trades, goals });
 }
 
 export function portfolio(trades, holderId, quotes) {
