@@ -83,9 +83,10 @@ function renderPanel(i){
 function render(){controls();ensurePanels();for(let i=0;i<(state.layout==='double'?2:1);i++)renderPanel(i);}
 const observer=new ResizeObserver(entries=>{for(const e of entries){const i=Number(e.target.id.slice(-1));state.charts.get(i)?.resize();}});
 function stop(){clearTimeout(timer);controller?.abort();}
-function schedule(){clearTimeout(timer);if(document.hidden)return;timer=setTimeout(()=>marketWindow()?refresh():schedule(),60000);}
+function pageHidden(){return document.hidden||window.frameElement?.hidden;}
+function schedule(){clearTimeout(timer);if(pageHidden())return;timer=setTimeout(()=>marketWindow()?refresh():schedule(),60000);}
 async function refresh(force=false){
-  stop();if(document.hidden)return;controller=new AbortController();const signal=controller.signal,g=++state.generation;state.busy=true;$('refresh').disabled=true;$('refresh').textContent='⟳ 更新中';
+  stop();if(pageHidden())return;controller=new AbortController();const signal=controller.signal,g=++state.generation;state.busy=true;$('refresh').disabled=true;$('refresh').textContent='⟳ 更新中';
   $('poll-state').textContent='正在读取行情…';
   const actions=state.view==='history'?['detail','history']:['detail'],symbols=[...new Set(state.symbols.slice(0,state.layout==='double'?2:1))];
   render();
@@ -131,7 +132,9 @@ $('search-form').onsubmit=e=>{e.preventDefault();clearTimeout(searchTimer);searc
 $('search-close').onclick=()=>$('search-dialog').close();$('search-dialog').addEventListener('close',()=>{searchController?.abort();clearTimeout(searchTimer);searchGeneration++;});
 $('about').onclick=()=>$('about-dialog').showModal();$('about-close').onclick=()=>$('about-dialog').close();
 for(const id of ['search-dialog','about-dialog'])$(id).addEventListener('click',e=>{const r=$(id).getBoundingClientRect();if(e.target===$(id)&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))$(id).close();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();$('poll-state').textContent='页面隐藏 · 已暂停更新';}else refresh();});
+function onVisibility(){if(pageHidden()){stop();$('poll-state').textContent='页面隐藏 · 已暂停更新';}else refresh();}
+document.addEventListener('visibilitychange',onVisibility);
+document.addEventListener('toolvisibilitychange',onVisibility);
 window.addEventListener('offline',()=>{stop();$('poll-state').textContent='当前离线 · 显示已加载数据';});window.addEventListener('online',()=>refresh());
 window.addEventListener('pagehide',()=>{stop();searchController?.abort();observer.disconnect();for(const c of state.charts.values())c.dispose();state.charts.clear();state.chartKeys.clear();state.cache.clear();});
 window.addEventListener('pageshow',e=>{if(e.persisted)refresh();});

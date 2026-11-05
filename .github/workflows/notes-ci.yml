@@ -1,0 +1,80 @@
+name: Notes CI
+
+on:
+  push:
+    paths: ["apps/notes/**", ".github/workflows/notes-ci.yml"]
+  pull_request:
+    paths: ["apps/notes/**", ".github/workflows/notes-ci.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/notes
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quick_space?schema=public
+      ADMIN_PASSWORD: ci-only-admin-password
+      SESSION_SECRET: ci-only-session-secret-with-sufficient-length
+      DATA_ENCRYPTION_KEY: ci-only-data-encryption-key-with-sufficient-length
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: quick_space
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: bun audit
+
+      - name: Generate Prisma Client
+        run: bun run prisma:generate
+
+      - name: Validate Prisma schema
+        run: bunx prisma validate
+
+      - name: Replay migrations on ephemeral PostgreSQL
+        run: bunx prisma migrate deploy
+
+      - name: Check migration and schema parity
+        run: bun run prisma:migrate:check
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        run: bun run build

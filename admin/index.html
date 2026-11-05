@@ -38,7 +38,8 @@
           </section>
           <section aria-labelledby="entries-title">
             <div class="section-heading"><h2 id="entries-title">功能入口 <span id="count" class="count"></span></h2><button id="add" type="button" class="secondary">＋ 新增入口</button></div>
-            <p class="hint">使用 ↑ ↓ 调整顺序。关闭「首页显示」可暂时隐藏入口。</p>
+            <p class="hint">修改入口分类可移动到已有分类，输入新名称可创建分类。↑ ↓ 调整入口顺序，各分类按其中第一个可见入口的位置排列。</p>
+            <datalist id="category-options"></datalist>
             <div id="entries"></div>
             <p id="empty-editor" class="panel muted" hidden>还没有入口，点击「新增入口」添加第一个。</p>
           </section>
@@ -46,7 +47,7 @@
         <aside class="preview-panel panel" aria-label="首页预览">
           <div class="preview-label"><span class="preview-dot"></span>首页预览 <small>保存后生效</small></div>
           <h2 id="preview-title"></h2><p id="preview-subtitle" class="muted"></p>
-          <div id="preview" class="tool-grid"></div>
+          <div id="preview" class="tool-groups"></div>
         </aside>
       </div>
       <footer class="save-bar"><div><strong id="changes">所有更改已保存</strong><small id="updated">加载中</small></div><div class="save-actions"><button id="reload" type="button" class="quiet">重新加载</button><button id="save" type="submit" class="primary">保存更改</button></div></footer>

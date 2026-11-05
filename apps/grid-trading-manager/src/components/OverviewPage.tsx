@@ -76,7 +76,10 @@ export default function OverviewPage({ data, onOpen, onConfig, onCreate, onDupli
       <header className="page-head">
         <div>
           <h1>网格交易</h1>
-          <p className="muted sub">{data.varieties.length} 个品种 · 数据保存在本机</p>
+          <p className="muted sub">
+            {data.varieties.length} 个品种 · 数据保存在本机
+            {!window.frameElement && <> · <a href="/">工具首页</a></>}
+          </p>
         </div>
       </header>
 

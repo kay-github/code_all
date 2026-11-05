@@ -172,6 +172,7 @@
     <div class="hgroup">
       <h1>A股 <span class="accent">光通信产业链</span> · 跌幅榜单</h1>
       <div class="sub">
+        <a class="btn" href="/">工具首页</a>
         <span class="stamp"><span class="dot"></span>__STAMP__</span>
         <span class="livebadge off" id="liveBadge"><span class="ld"></span><span id="liveTxt">连接行情源…</span>
           <button class="btn" id="liveToggle">暂停</button></span>
@@ -286,6 +287,11 @@ function setBadge(state, txt){
 /* JSONP：qt.gtimg.cn 返回 v_XXXXXX="..." 赋值语句，script 标签执行后读全局变量，绕过 CORS */
 function loadLive(){
   if (livePaused || META.freeze) return;
+  if (document.hidden || window.frameElement?.hidden) {
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(loadLive, REFRESH_SEC * 1000);
+    return;
+  }
   const codes = ROWS.map(r => sym(r.c)).join(",");
   const s = document.createElement("script");
   s.charset = "gbk";

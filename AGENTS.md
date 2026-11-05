@@ -26,6 +26,11 @@
 - 同步使用版本号和 Blob ETag 条件写入；两端冲突交给用户选择，不自动合并。原 Workbuddy 账号和数据不迁移。
 - 修改前端后运行 `npm test` 和 `npm run build`（目录 `apps/grid-trading-manager`），再复制 `dist/index.html` 到 `tools/grid-trading-manager/index.html`。
 
+## Quick Space Notes
+
+- 笔记源码与 CI 在 `apps/notes/` 和 `.github/workflows/notes-ci.yml`。笔记使用 Next.js、PostgreSQL 和私有 Vercel Blob，应用路径为 `/notes`。
+- 发布沿用 `myapp-note` Vercel 项目的生产数据库、密码、会话密钥和加密密钥。普通构建只生成应用。生产迁移与域名切换按 `apps/notes/README.md` 验证。
+
 ## Environment And Secrets
 
 - 不要把 API Key、APISecret、APPID、token、cookie 或任何私密配置写入仓库。

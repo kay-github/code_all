@@ -142,7 +142,9 @@ export default function WorkbenchPage({ variety, theme, onToggleTheme, onBack, o
   // 轮询开关：开启后每 30s 刷新一次
   useEffect(() => {
     if (!autoQuote) return;
-    const t = setInterval(() => { void refreshQuote(); }, 30000);
+    const t = setInterval(() => {
+      if (!document.hidden && !window.frameElement?.hasAttribute('hidden')) void refreshQuote();
+    }, 30000);
     return () => clearInterval(t);
   }, [autoQuote]); // eslint-disable-line react-hooks/exhaustive-deps
 

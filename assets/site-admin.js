@@ -75,6 +75,14 @@
     $('confirm-dialog').showModal();
     return new Promise(resolve => $('confirm-dialog').addEventListener('close', () => resolve($('confirm-dialog').returnValue === 'confirm'), { once: true }));
   }
+  function refreshCategoryOptions() {
+    const names = new Set(config.items.map(item => item.category?.trim()).filter(Boolean));
+    $('category-options').replaceChildren(...Array.from(names, name => {
+      const option = document.createElement('option');
+      option.value = name;
+      return option;
+    }));
+  }
   function field(item, key, labelText, options = {}) {
     const wrap = document.createElement('div');
     const label = document.createElement('label');
@@ -95,7 +103,11 @@
       input.required = !!options.required;
       input.placeholder = options.placeholder || '';
     }
-    input.value = item[key];
+    input.value = item[key] ?? '';
+    if (key === 'category') {
+      input.setAttribute('list', 'category-options');
+      input.addEventListener('change', refreshCategoryOptions);
+    }
     input.addEventListener('input', () => {
       item[key] = input.value;
       if (key === 'name') $(`name-${item.id}`).textContent = input.value || '未命名入口';
@@ -262,7 +274,13 @@
       header.append(remove);
       const fields = document.createElement('div');
       fields.className = 'entry-fields';
-      fields.append(field(item, 'name', '入口名称', { required: true, max: 40 }), field(item, 'url', '访问地址', { required: true, placeholder: '/tools/example/ 或 https://example.com' }), field(item, 'description', '描述', { max: 200, multiline: true, placeholder: '用一句话介绍这个工具' }));
+      const identity = document.createElement('div');
+      identity.className = 'field-row';
+      identity.append(
+        field(item, 'name', '入口名称', { required: true, max: 40 }),
+        field(item, 'category', '入口分类', { max: 24, placeholder: '其他工具' })
+      );
+      fields.append(identity, field(item, 'url', '访问地址', { required: true, placeholder: '/tools/example/ 或 https://example.com' }), field(item, 'description', '描述', { max: 200, multiline: true, placeholder: '用一句话介绍这个工具' }));
       const upload = imageUpload(item);
       fields.append(upload);
       const options = document.createElement('div');
@@ -284,6 +302,7 @@
       article.append(header, fields);
       return article;
     }));
+    refreshCategoryOptions();
     sync();
   }
   async function enterEditor() {
@@ -309,7 +328,7 @@
   for (const [id, key] of [['site-title', 'title'], ['site-subtitle', 'subtitle']]) $(''+id).addEventListener('input', () => { config[key] = $(id).value; sync(); });
   $('add').addEventListener('click', () => {
     if (config.items.length >= 50) return;
-    const item = { id: `entry-${crypto.randomUUID()}`, name: '', description: '', url: '', icon: '新', image: '', color: 'blue', visible: true, newTab: false };
+    const item = { id: `entry-${crypto.randomUUID()}`, category: '', name: '', description: '', url: '', icon: '新', image: '', color: 'blue', visible: true, newTab: false };
     config.items.push(item);
     renderEntries();
     $(`${item.id}-name`).focus();

@@ -79,14 +79,32 @@ test('edits survive restarts: ordering, images, visibility, links, new windows, 
   const data = await site.read();
   assert.equal(data.items.length, defaults.items.length);
   data.items.reverse();
-  Object.assign(data.items[0], { name: ' 自定义名称 ', image: 'https://example.com/icon.png', visible: false, newTab: true, color: 'purple', url: '/new-tool/' });
+  Object.assign(data.items[0], { name: ' 自定义名称 ', category: ' 自选研究 ', image: 'https://example.com/icon.png', visible: false, newTab: true, color: 'purple', url: '/new-tool/' });
   data.items.push({ ...defaults.items[0], id: 'custom', name: '新增入口' });
   const saved = await site.save(session.token, session.csrf, data);
   assert.equal(saved.version, 1);
   assert.equal(saved.items[0].name, '自定义名称');
+  assert.equal(saved.items[0].category, '自选研究');
   assert.deepEqual(await makeSiteService(settings).read(), saved);
   saved.items = [];
   assert.deepEqual((await site.save(session.token, session.csrf, saved)).items, []);
+});
+
+test('existing configs infer built-in categories without a database rewrite', async () => {
+  const { site, store } = setup();
+  const { category, ...optical } = defaults.items.find(item => item.id === 'optical');
+  const items = [
+    { ...optical, id: 'entry-custom-id', url: '/tools/optical-decline-board/index.html' },
+    { ...optical, id: 'entry-legacy-alias', url: '/txdp' },
+    { ...optical, id: 'entry-elsewhere', url: 'https://example.com/txdp' },
+    { ...optical, id: 'entry-explicit-empty', category: '' },
+  ];
+  const saved = { ...defaults, items, version: 4, updatedAt: new Date().toISOString() };
+  await store.write(CONFIG_KEY, saved, null);
+  const data = await site.read();
+  assert.deepEqual(data.items.map(item => item.category), [category, category, '其他工具', '其他工具']);
+  assert.equal(data.version, saved.version);
+  assert.deepEqual(store.rows.get(CONFIG_KEY).value, saved);
 });
 
 test('authorization and concurrent edits prevent unauthorized writes or lost updates', async () => {
@@ -113,6 +131,8 @@ test('validation rejects script URLs, credentials, invalid images, duplicate IDs
     data => { data.items[1].id = data.items[0].id; },
     data => { data.items[0].id = 'a" onclick="evil'; },
     data => { data.items[0].name = ''; },
+    data => { data.items[0].category = 123; },
+    data => { data.items[0].category = '中'.repeat(25); },
     data => { data.items[0].description = '中'.repeat(201); },
     data => { data.items[0].visible = 'true'; },
     data => { data.items[0].color = 'red;evil'; },
@@ -123,7 +143,7 @@ test('validation rejects script URLs, credentials, invalid images, duplicate IDs
     const data = structuredClone(defaults); change(data);
     assert.throws(() => validateConfig(data), { status: 400 });
   }
-  const supported = { ...defaults, items: Array.from({ length: MAX_ITEMS }, (_, i) => ({ ...defaults.items[0], id: `entry-${i}`, name: '中'.repeat(40), description: '中'.repeat(200), url: '/'+ 'a'.repeat(2047), image: '/'+ 'b'.repeat(2047) })) };
+  const supported = { ...defaults, items: Array.from({ length: MAX_ITEMS }, (_, i) => ({ ...defaults.items[0], id: `entry-${i}`, category: '中'.repeat(24), name: '中'.repeat(40), description: '中'.repeat(200), url: '/'+ 'a'.repeat(2047), image: '/'+ 'b'.repeat(2047) })) };
   assert.equal(validateConfig(supported).items.length, MAX_ITEMS);
   const { jsonBody } = require('../lib/siteHttp');
   // The supported maximum fits the request bound, including UTF-8 text.
@@ -173,6 +193,14 @@ test('HTTP APIs enforce CSRF, origin, host, secure cookies, logout and hidden it
     assert.equal((await request(config, 'GET')).body.items.length, defaults.items.length - 1);
     assert.equal((await request(config, 'GET', null, headers, { admin: '1' })).body.items.length, defaults.items.length);
     assert.equal((await request(config, 'PUT', { ...data, version: 1 }, { ...headers, origin: 'https://b.688680.xyz' })).status, 403);
+    const oldEntries = [
+      { ...defaults.items[0], id: 'proofreader', url: '/tools/typo-proofreader/' },
+      { ...defaults.items[0], id: 'old-proofreader-alias', url: 'https://1.688680.xyz/cbz?legacy=1' },
+      { ...defaults.items[0], id: 'old-game-alias', url: '/shooter.html' },
+    ];
+    assert.equal((await request(config, 'PUT', { ...data, version: 1, items: [...data.items, ...oldEntries] }, headers)).status, 200);
+    assert.equal((await request(config, 'GET')).body.items.length, defaults.items.length - 1);
+    assert.equal((await request(config, 'GET', null, headers, { admin: '1' })).body.items.length, defaults.items.length + oldEntries.length);
     assert.equal((await request(config, 'PATCH')).status, 405);
     const logout = await request(auth, 'DELETE', null, headers);
     assert.equal(logout.status, 200);

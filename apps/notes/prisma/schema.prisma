@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Space {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  note      Note?
+  assets    Asset[]
+  auditLogs AuditLog[]
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String   @default("")
+  updatedAt DateTime @updatedAt
+
+  spaceId String @unique
+  space   Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  name      String
+  mimeType  String
+  size      Int
+  data      Bytes?
+  blobUrl   String?
+  storage   String   @default("db")
+  createdAt DateTime @default(now())
+
+  spaceId String
+  space   Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actor     String
+  ip        String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  spaceId String?
+  space   Space? @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([spaceId, createdAt])
+}
+
+model RateLimitBucket {
+  key       String   @id @db.VarChar(64)
+  count     Int
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+}

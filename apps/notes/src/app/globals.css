@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --bg-0: #f4efe7;
+  --bg-1: #fffaf4;
+  --ink-0: #2b241f;
+  --ink-1: #5a4f45;
+  --surface: #fffdf8;
+  --line: #dfd1c2;
+  --brand: #216869;
+  --brand-soft: #dbeceb;
+  --danger: #af2b1e;
+}
+
+@theme inline {
+  --color-background: var(--bg-0);
+  --color-foreground: var(--ink-0);
+  --font-sans: var(--font-noto-sans);
+  --font-mono: var(--font-source-code);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 10%, #ffffff, transparent 45%),
+    radial-gradient(circle at 80% 0%, #e4f3ee, transparent 40%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  color: var(--ink-0);
+  font-family: var(--font-noto-sans), sans-serif;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--surface), white 16%);
+  box-shadow: 0 12px 24px rgb(47 33 17 / 7%);
+}
+
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.92rem;
+  transition: all 150ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #f7fffe;
+}
+
+.btn-primary:hover {
+  filter: saturate(1.1);
+}
+
+.btn-ghost {
+  background: #fff;
+  color: var(--ink-1);
+}
+
+.btn-danger {
+  background: #fff;
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger), white 55%);
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-0);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.field:focus {
+  outline: none;
+  border-color: color-mix(in oklab, var(--brand), white 40%);
+  box-shadow: 0 0 0 3px rgb(33 104 105 / 18%);
+}

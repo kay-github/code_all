@@ -9,15 +9,38 @@
   <script src="/assets/site-cards.js" defer></script>
   <script src="/assets/site-home.js" defer></script>
 </head>
-<body>
-  <main class="page">
-    <header class="header">
-      <h1 class="title">大杂烩工具站</h1>
-      <p class="subtitle">轻量、直接、即开即用。</p>
-    </header>
+<body class="site-workspace">
+  <header class="workspace-bar">
+    <button id="menu-open" class="menu-button" type="button" aria-haspopup="dialog" aria-controls="tool-menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      工具
+    </button>
+    <span id="workspace-title" class="workspace-title" aria-live="polite">首页</span>
+    <a id="bar-home" class="home-link" href="/">首页</a>
+  </header>
 
-    <section id="tools" class="tool-grid" aria-label="工具宫格"></section>
-    <noscript>请开启 JavaScript 后查看工具入口。</noscript>
+  <main id="workspace-main" class="workspace-main">
+    <section id="home" class="page" aria-labelledby="site-title">
+      <header class="header">
+        <p class="eyebrow">工具工作台</p>
+        <h1 id="site-title" class="title">大杂烩工具站</h1>
+        <p class="subtitle">轻量、直接、即开即用。</p>
+      </header>
+      <section id="tools" class="tool-groups" aria-label="工具快捷入口"></section>
+      <noscript>请开启 JavaScript 后查看工具入口。</noscript>
+    </section>
+    <div id="tool-panels" class="tool-panels" hidden></div>
   </main>
+
+  <dialog id="tool-menu" class="tool-menu" aria-labelledby="menu-title">
+    <header class="menu-header">
+      <h2 id="menu-title">工具列表</h2>
+      <form method="dialog"><button class="menu-button menu-close" aria-label="关闭工具列表" autofocus>×</button></form>
+    </header>
+    <nav class="menu-nav" aria-label="切换工具">
+      <a class="menu-link" id="menu-home" href="/">首页</a>
+      <div id="menu-items" class="menu-items"></div>
+    </nav>
+  </dialog>
 </body>
 </html>

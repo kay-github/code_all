@@ -42,14 +42,37 @@
     link.append(top, content);
     return link;
   }
+  function group(items) {
+    const categories = new Map();
+    for (const item of items) {
+      if (!item.visible || !safeUrl(item.url)) continue;
+      const name = item.category?.trim() || '其他工具';
+      if (!categories.has(name)) categories.set(name, []);
+      categories.get(name).push(item);
+    }
+    return categories;
+  }
   function render(container, items, preview = false) {
-    container.replaceChildren(...items.filter(item => item.visible && safeUrl(item.url)).map(item => card(item, preview)));
-    if (!container.children.length) {
+    const sections = [];
+    for (const [name, entries] of group(items)) {
+      const section = document.createElement('section');
+      section.className = 'tool-group';
+      const heading = document.createElement(preview ? 'h3' : 'h2');
+      heading.className = 'tool-group-title';
+      heading.textContent = name;
+      const grid = document.createElement('div');
+      grid.className = 'tool-grid';
+      grid.append(...entries.map(item => card(item, preview)));
+      section.append(heading, grid);
+      sections.push(section);
+    }
+    if (!sections.length) {
       const empty = document.createElement('p');
       empty.className = 'empty-state';
       empty.textContent = '暂时没有可用的工具入口。';
-      container.append(empty);
+      sections.push(empty);
     }
+    container.replaceChildren(...sections);
   }
-  window.ToolSiteCards = { render };
+  window.ToolSiteCards = { group, render };
 })();

@@ -5,7 +5,7 @@
       "src": "^/(?:admin(?:/.*)?|index\\.html)?$",
       "has": [{ "type": "host", "value": "1.688680.xyz" }],
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
         "Referrer-Policy": "no-referrer",
@@ -49,11 +49,30 @@
       "dest": "/tools/work-portal/index.html"
     },
     {
-      "handle": "filesystem"
+      "src": "^/gjd(?:/index\\.html)?/?$",
+      "dest": "/tools/national-team-etf/index.html"
     },
     {
-      "src": "^/cbz/?$",
-      "dest": "/tools/typo-proofreader/index.html"
+      "src": "^(/notes(?:/.*)?)$",
+      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "dest": "https://myapp-note.vercel.app$1"
+    },
+    {
+      "src": "^/gjd/cycle(?:\\.html)?/?$",
+      "dest": "/tools/national-team-etf/cycle.html"
+    },
+    {
+      "src": "^/(?:tools/typo-proofreader(?:/.*)?|cbz/?|shooter(?:\\.html)?/?)$",
+      "status": 302,
+      "headers": { "Location": "/", "Cache-Control": "no-store" }
+    },
+    {
+      "src": "^/api/proofread(?:-monitor)?/?$",
+      "status": 410,
+      "headers": { "Cache-Control": "no-store" }
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "^/txdp/?$",
