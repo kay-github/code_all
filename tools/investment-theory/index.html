@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>333投资理论</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="mast">
+      <div>
+        <a class="eyebrow" href="/">‹ 工具首页</a>
+        <h1>333投资理论</h1>
+        <p>记录仓位，设定目标，持续跟踪投资方向。</p>
+      </div>
+      <button id="data-toggle" type="button" aria-expanded="false" aria-controls="data-panel">账本与备份</button>
+    </header>
+    <section id="data-panel" class="panel" hidden aria-label="账本与备份">
+      <h2 id="account-status">本机账本</h2>
+      <p class="muted">本机自动保存。登录网格交易账号后，可手动上传或恢复独立的 333 云备份。</p>
+      <form id="login-form" class="fields">
+        <label>账号<input name="username" autocomplete="username" required></label>
+        <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary">登录</button>
+        <a class="text-link" href="/?tool=grid" target="_top">注册或找回账号</a>
+      </form>
+      <div id="cloud-actions" class="actions" hidden>
+        <button id="cloud-save" type="button">上传云备份</button>
+        <button id="cloud-load" type="button">读取云备份</button>
+        <button id="logout" type="button">退出账号</button>
+      </div>
+      <div class="actions">
+        <button id="export" type="button">导出 JSON</button>
+        <button id="import" type="button">恢复 JSON</button>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+      </div>
+    </section>
+
+    <nav class="tabs" role="tablist" aria-label="投资管理">
+      <button id="tab-position" type="button" role="tab" aria-selected="true" aria-controls="position" data-tab="position">仓位</button>
+      <button id="tab-goal" type="button" role="tab" aria-selected="false" aria-controls="goal" data-tab="goal" tabindex="-1">目标</button>
+      <button id="tab-direction" type="button" role="tab" aria-selected="false" aria-controls="direction" data-tab="direction" tabindex="-1">方向</button>
+    </nav>
+    <p id="status" class="status" role="status" hidden></p>
+
+    <section id="position" role="tabpanel" aria-labelledby="tab-position">
+      <div class="section-head"><div><h2>仓位总览</h2><p id="quote-status" class="muted">录入持仓后可刷新行情。</p></div><button class="refresh-quotes" type="button">刷新行情</button></div>
+      <dl id="kpis" class="kpis"></dl>
+      <div id="allocations" class="allocations"></div>
+      <details class="panel">
+        <summary>设置三个仓位的目标比例</summary>
+        <p class="muted">仓位比例按个人投资净资产计算。未分配目标单列显示。</p>
+        <form id="allocation-form">
+          <div id="allocation-fields" class="fields"></div>
+          <button class="primary">保存仓位设置</button>
+        </form>
+      </details>
+      <details class="panel" id="trade-editor" open>
+        <summary>新增账本流水</summary>
+        <form id="trade-form">
+          <div class="fields">
+            <label>类型<select name="type" id="trade-type"></select></label>
+            <label>日期<input name="date" type="date" required></label>
+            <label data-trade-field="bucket">所属仓位<select name="bucket"></select></label>
+            <label data-trade-field="symbol">证券代码<input name="symbol" placeholder="300502.SZ" maxlength="12"></label>
+            <label data-trade-field="qty"><span id="qty-label">股数 / 份额</span><input name="qty" type="number" step="1"></label>
+            <label data-trade-field="price">价格 / 成本（元）<input name="price" type="number" step="0.001" min="0"></label>
+            <label data-trade-field="fee">费用（元）<input name="fee" type="number" step="0.01" min="0" placeholder="0"></label>
+            <label data-trade-field="amount">金额（元）<input name="amount" type="number" step="0.01" min="0"></label>
+            <label>备注<input name="note" maxlength="240"></label>
+          </div>
+          <p id="trade-hint" class="muted"></p>
+          <button class="primary">保存流水</button>
+        </form>
+      </details>
+      <details class="panel"><summary>查看账本流水 <span id="trade-count"></span></summary><div id="trades"></div></details>
+    </section>
+
+    <section id="goal" role="tabpanel" aria-labelledby="tab-goal" hidden>
+      <div class="section-head"><div><h2>投资目标</h2><p class="muted">远期、中期、短期各自记录，条件触发时保留当时的数值和行情时间。</p></div><button class="refresh-quotes" type="button">检查条件</button></div>
+      <div id="goals" class="goal-groups"></div>
+      <details class="panel" open>
+        <summary>新增投资目标</summary>
+        <form id="goal-form">
+          <div class="fields">
+            <label>期限<select name="horizon"><option>远期</option><option>中期</option><option>短期</option></select></label>
+            <label>目标名称<input name="title" maxlength="80" required></label>
+            <label>标的类型<select name="kind"><option value="security">股票 / ETF</option><option value="index">指数</option></select></label>
+            <label>标的代码（选填）<input name="symbol" maxlength="12" placeholder="例 300502.SZ"></label>
+            <label>指标<select name="metric"></select></label>
+            <label>条件<select name="operator"><option value=">=">大于或等于</option><option value="<=">小于或等于</option></select></label>
+            <label>阈值<input name="threshold" type="number" step="any"></label>
+          </div>
+          <label>投资逻辑<textarea name="note" maxlength="1000" rows="2"></textarea></label>
+          <p class="muted">有标的代码时填写阈值。指数用带交易所的代码，如 000001.SH。站内检查只使用近期有效行情。</p>
+          <button class="primary">保存目标</button>
+        </form>
+      </details>
+    </section>
+
+    <section id="direction" role="tabpanel" aria-labelledby="tab-direction" hidden>
+      <div class="section-head"><div><h2>投资方向</h2><p class="muted">分别记录已披露数据、机构预测、技术与资金观察。</p></div></div>
+      <section class="panel" aria-labelledby="sentiment-title">
+        <div class="section-head"><h3 id="sentiment-title">市场情绪与拥挤度</h3><button id="sentiment-refresh" type="button">刷新快照</button></div>
+        <div id="sentiment" class="sentiment" aria-live="polite"><p class="muted">打开方向标签页后加载快照。</p></div>
+      </section>
+      <div class="actions resources">
+        <a class="text-link" href="https://www.cninfo.com.cn/" target="_blank" rel="noopener">查阅公司公告 ↗</a>
+        <a class="text-link" href="/?tool=gjd" target="_top">国家队 ETF 追踪 ↗</a>
+      </div>
+      <div id="research"></div>
+      <details class="panel" open>
+        <summary>新增方向观察</summary>
+        <form id="research-form">
+          <div class="fields">
+            <label>类型<select name="kind"></select></label>
+            <label>日期<input name="date" type="date" required></label>
+            <label>标题<input name="title" maxlength="100" placeholder="标的 / 行业与观察要点" required></label>
+            <label>报告期<input name="period" maxlength="40" placeholder="例 2026 Q4"></label>
+            <label>发布机构<input name="institution" maxlength="80"></label>
+            <label>来源链接<input name="source" type="url" maxlength="500" placeholder="https://"></label>
+          </div>
+          <label>观察内容<textarea name="note" maxlength="2000" rows="3" placeholder="可记归母净利润、同比/环比、量能或 ETF 份额观察"></textarea></label>
+          <button class="primary">保存观察</button>
+        </form>
+      </details>
+    </section>
+  </main>
+</body>
+</html>

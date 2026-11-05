@@ -3,6 +3,7 @@
     title: '大杂烩工具站',
     subtitle: '轻量、直接、即开即用。',
     items: [
+      { id: 'investment', category: '投资交易', name: '333投资理论', description: '管理三类仓位，设定投资目标，跟踪基本面、技术与资金及市场情绪。', url: '/tools/investment-theory/', icon: '333', image: '', color: 'blue', visible: true, newTab: false },
       { id: 'notes', category: '效率工具', name: '临时笔记本', description: '免登录笔记空间，快速访问和复制内容。', url: '/notes/', icon: '记', image: '', color: 'orange', visible: true, newTab: false },
       { id: 'grid', category: '投资交易', name: '网格交易管理器', description: '记录网格参数和交易流水，支持云端同步。', url: '/tools/grid-trading-manager/', icon: '格', image: '', color: 'blue', visible: true, newTab: false },
       { id: 'stocks', category: '市场研究', name: '股票回撤研究室', description: '研究真实历史回撤，测算反弹、估值与持仓。', url: '/tools/stock-rebound-lab/', icon: '研', image: '', color: 'blue', visible: true, newTab: false },

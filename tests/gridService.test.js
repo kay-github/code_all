@@ -76,3 +76,19 @@ test('invalid sessions and large or malformed state are rejected', async () => {
   await assert.rejects(service.push(account.token, { baseRev: 0, data: { version: 1, varieties: [] } }), { code: 'revision' });
 });
 
+test('investment snapshots share login but remain separate from grid data and other users', async () => {
+  const store = memoryStore();
+  const { initialState, validateState } = await import('../tools/investment-theory/model.mjs');
+  const grid = makeGridService({ store, secret });
+  const investment = makeGridService({ store, secret, validateState, statePathFor: id => `investment/v1/states/${id}.json` });
+  const one = await grid.register({ username: 'one_user', password: 'a long password' });
+  const two = await grid.register({ username: 'two_user', password: 'a long password' });
+  await grid.push(one.token, { baseRev: null, data: { version: 1, varieties: [] } });
+  await investment.push(one.token, { baseRev: null, data: initialState() });
+  assert.deepEqual((await grid.pull(one.token)).data, { version: 1, varieties: [] });
+  assert.deepEqual((await investment.pull(one.token)).data, initialState());
+  assert.deepEqual(await investment.pull(two.token), { kind: 'empty' });
+  await assert.rejects(investment.push(one.token, { baseRev: null, data: initialState() }), { code: 'conflict' });
+  await assert.rejects(investment.push(one.token, { baseRev: 1, data: { version: 1, varieties: [] } }), { code: 'data' });
+});
+

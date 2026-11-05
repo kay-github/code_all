@@ -1,6 +1,7 @@
 (async function () {
   // Only embed reviewed tools. Admin-configured links to other pages keep their link behavior.
   const toolPaths = {
+    investment: '/tools/investment-theory/',
     notes: '/notes/',
     grid: '/tools/grid-trading-manager/',
     stocks: '/tools/stock-rebound-lab/',
@@ -51,10 +52,13 @@
       // Existing tool links back to the homepage should return to this workspace.
       frame.contentDocument?.addEventListener('click', event => {
         const link = event.target.closest('a[href]');
-        if (!link || !isPlainClick(event) || (link.target && link.target !== '_self')) return;
-        if (link.href === location.origin + '/' || link.href === location.origin + '/index.html') {
+        if (!link || !isPlainClick(event) || (link.target && !['_self', '_top'].includes(link.target))) return;
+        const target = new URL(link.href);
+        const id = target.searchParams.get('tool');
+        if (target.origin === location.origin && ['/', '/index.html'].includes(target.pathname) &&
+            ((!target.search && !target.hash) || (tools.has(id) && target.search === '?tool=' + id && !target.hash))) {
           event.preventDefault();
-          navigate(null);
+          navigate(id);
         }
       });
     });
