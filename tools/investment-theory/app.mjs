@@ -273,6 +273,8 @@ function renderLedger() {
   $('holder-add').disabled = state.holders.length >= 50;
   $('holder-edit').hidden = holderId === SELF;
   $('share-open').disabled = false;
+  $('trade-open').disabled = false;
+  $('trade-editor').hidden = false;
   $('trade-holder').textContent = holderName();
   renderAllocationEditor();
   render();

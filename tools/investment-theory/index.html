@@ -54,7 +54,7 @@
           <button id="holder-edit" type="button" hidden>改名</button>
           <button class="refresh-quotes" type="button">刷新行情</button>
           <button id="share-open" type="button" disabled>收益图</button>
-          <button id="trade-open" class="primary" type="button">记一笔</button>
+          <button id="trade-open" class="primary" type="button" disabled>记一笔</button>
         </div>
       </div>
       <p id="quote-status" class="muted quote-status">录入持仓后可刷新行情。</p>
@@ -76,7 +76,7 @@
           <button class="primary">保存仓位设置</button>
         </form>
       </details>
-      <details class="panel" id="trade-editor">
+      <details class="panel" id="trade-editor" hidden>
         <summary>新增账本流水</summary>
         <form id="trade-form">
           <p class="muted trade-holder">记入 <strong id="trade-holder"></strong> 的账本</p>
