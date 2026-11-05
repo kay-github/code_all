@@ -396,6 +396,7 @@ tabs.forEach((tab, index) => {
     selectTab(active);
     active.focus();
   });
+  tab.disabled = false;
 });
 $('data-toggle').addEventListener('click', () => {
   $('data-panel').hidden = !$('data-panel').hidden;
