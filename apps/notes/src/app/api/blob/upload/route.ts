@@ -9,6 +9,7 @@ import { canWriteSpace } from "@/lib/space-permission";
 import { getClientIp } from "@/lib/request";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { blobAssetId, parseTrustedBlobUrl } from "@/lib/blob-security";
+import { notesApi } from "@/lib/paths";
 
 const payloadSchema = z.object({
   slug: z.string().min(1),
@@ -25,6 +26,15 @@ const tokenPayloadSchema = payloadSchema.extend({
   spaceId: z.string().min(1),
   ip: z.string().min(1).max(255),
 });
+
+function uploadCallbackUrl(): string | undefined {
+  const host = process.env.VERCEL_ENV === "production"
+    ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+    : process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
+  const origin = process.env.VERCEL_BLOB_CALLBACK_URL || (host ? `https://${host}` : undefined);
+  // Next can strip the base path from request.url before handing it to the Blob SDK.
+  return origin ? new URL(notesApi("blob/upload"), origin).href : undefined;
+}
 
 export async function POST(request: Request): Promise<NextResponse> {
   const ip = await getClientIp();
@@ -62,6 +72,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         return {
           access: "private",
+          callbackUrl: uploadCallbackUrl(),
           addRandomSuffix: true,
           maximumSizeInBytes: MAX_FILE_SIZE,
           allowedContentTypes: [parsed.data.mimeType],
