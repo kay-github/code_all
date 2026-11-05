@@ -53,6 +53,12 @@
       "dest": "/tools/national-team-etf/index.html"
     },
     {
+      "src": "^/333/?$",
+      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "status": 302,
+      "headers": { "Location": "/?tool=investment" }
+    },
+    {
       "src": "^(/notes(?:/.*)?)$",
       "has": [{ "type": "host", "value": "1.688680.xyz" }],
       "dest": "https://myapp-note.vercel.app$1"
