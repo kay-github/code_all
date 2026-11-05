@@ -9,3 +9,5 @@ __pycache__
 .env.*
 apps/
 tests/
+api/proofread.js
+api/proofread-monitor.js
