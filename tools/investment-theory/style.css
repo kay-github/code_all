@@ -68,6 +68,12 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .resources a { padding: 5px 10px; border-radius: 6px; background: var(--accent-soft); }
 .entry { margin-top: 8px; display: grid; gap: 4px; }
 .entry header { display: flex; align-items: start; justify-content: space-between; gap: 8px; }
+.entry-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.goal-reminder {
+  display: inline-flex; align-items: center; gap: 5px; padding: 1px 7px; border-radius: 20px;
+  background: var(--group-bg); color: var(--group-text); font-size: 12px; font-weight: 650; white-space: nowrap;
+}
+.goal-reminder::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .entry strong, .entry p { overflow-wrap: anywhere; }
 .entry .body { white-space: pre-wrap; }
 .entry button { min-height: 30px; font-size: 12px; color: var(--muted); }

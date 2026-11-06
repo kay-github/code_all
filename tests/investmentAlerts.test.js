@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { runGoalAlerts, matchesImport } = require('../lib/investmentAlerts');
+const { runGoalAlerts, matchesImport, goalAlertsForAccount } = require('../lib/investmentAlerts');
 
 function memory() {
   let row;
@@ -23,6 +23,16 @@ const config = {
     { id: 'mid', title: '中期目标', symbol: '399006.SZ', index: true, horizon: '中期', metric: 'price', operator: '>=', threshold: 2866 },
   ],
 };
+
+test('badge rules disclose only the signed-in owner’s enabled conditions', () => {
+  const owned = { ...config, ownerId: 'owner' };
+  assert.deepEqual(goalAlertsForAccount(owned, 'another'), []);
+  assert.deepEqual(goalAlertsForAccount(owned), []);
+  assert.deepEqual(goalAlertsForAccount(config, 'owner'), []);
+  assert.deepEqual(goalAlertsForAccount(owned, 'owner'), [
+    { id: 'short', symbol: '300502.SZ', index: false, metric: 'marketCap', operator: '>=', threshold: 2700 },
+  ]);
+});
 
 test('reminders evaluate only subscribed rules and send a single concise HTML card', async () => {
   const store = memory();

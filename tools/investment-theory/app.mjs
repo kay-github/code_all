@@ -193,8 +193,11 @@ function account(nextUser) {
     } catch { notice('读取本机账本失败，可以从 JSON 或云备份恢复。', true); }
     renderLedger();
     if (!cloud) void refreshQuotes();
+  } else {
+    renderGoals();
   }
   const context = cloud;
+  if (!$('goal').hidden) void refreshGoalReminders();
   return syncCloud(context)?.then(() => { if (context === cloud) void refreshQuotes(); });
 }
 function accountAction(callback) {
@@ -227,10 +230,13 @@ function removeButton(label, collection, id) {
   });
   return button;
 }
-function rowCard(title, meta, body, collection, id) {
+function rowCard(title, meta, body, collection, id, badge) {
   const article = el('article', 'entry');
   const header = el('header');
-  header.append(el('strong', '', title), removeButton(title, collection, id));
+  const heading = el('div', 'entry-title');
+  heading.append(el('strong', '', title));
+  if (badge) heading.append(badge);
+  header.append(heading, removeButton(title, collection, id));
   article.append(header);
   if (meta) article.append(el('p', 'meta', meta));
   if (body) article.append(el('p', 'body', body));
@@ -354,6 +360,7 @@ function renderTrades() {
   }));
 }
 function renderGoals() {
+  $('goal-reminder-status').hidden = !cloud?.remindersUnavailable;
   $('goals').replaceChildren(...horizons.map(horizon => {
     const group = el('section', 'goal-group');
     const rows = state.goals.filter(row => row.horizon === horizon);
@@ -364,7 +371,11 @@ function renderGoals() {
     for (const row of rows) {
       const quote = row.symbol ? quotes[quoteKey(row.symbol, row.index)] : null;
       const condition = row.symbol ? `${row.symbol} · ${metrics[row.metric]} ${row.operator} ${row.threshold}` : '文字目标';
-      const card = rowCard(row.title, condition, row.note, 'goals', row.id);
+      const rule = cloud?.goalReminders?.get(row.id);
+      const enabled = rule && rule.symbol === row.symbol && rule.index === Boolean(row.index) &&
+        rule.metric === row.metric && rule.operator === row.operator && rule.threshold === row.threshold;
+      const badge = enabled ? el('span', 'goal-reminder', '微信推加已开启') : null;
+      const card = rowCard(row.title, condition, row.note, 'goals', row.id, badge);
       if (quote && Number.isFinite(quote[row.metric])) {
         card.append(el('p', 'meta', `最近读数 ${quote[row.metric]} · ${stamp(quote.time)}${quote.stale ? ' · 缓存' : ''}`));
       }
@@ -373,6 +384,23 @@ function renderGoals() {
     }
     return group;
   }));
+}
+async function refreshGoalReminders() {
+  const context = cloud;
+  if (!context || context.remindersLoading || Date.now() - (context.remindersCheckedAt ?? 0) < 30_000) return;
+  context.remindersLoading = true;
+  try {
+    const { rules } = await api(`${path}?view=reminders`, 'GET', undefined, { 'X-Investment-Account': context.id });
+    context.goalReminders = new Map(rules.map(rule => [rule.id, rule]));
+    context.remindersUnavailable = false;
+    context.remindersCheckedAt = Date.now();
+  } catch {
+    context.goalReminders = null;
+    context.remindersUnavailable = true;
+  } finally {
+    context.remindersLoading = false;
+    if (context === cloud) renderGoals();
+  }
 }
 function renderResearch() {
   $('research').replaceChildren(...[...state.research].reverse().sort((a, b) => b.date.localeCompare(a.date)).map(row => {
@@ -637,6 +665,7 @@ function selectTab(active) {
     tab.tabIndex = selected ? 0 : -1;
     $(tab.dataset.tab).hidden = !selected;
   }
+  if (active.dataset.tab === 'goal') void refreshGoalReminders();
   if (active.dataset.tab === 'direction') void refreshSnapshot();
 }
 async function importLinkedData() {
@@ -825,9 +854,11 @@ void importLinkedData();
 window.addEventListener('online', () => {
   if (sessionUnknown && !cloud && !accountBusy) void restoreAccount();
   else void syncCloud(cloud);
+  if (!$('goal').hidden) void refreshGoalReminders();
 });
 window.addEventListener('focus', () => {
   if (cloud && Date.now() - cloud.checkedAt > 10_000) void syncCloud(cloud);
+  if (!$('goal').hidden) void refreshGoalReminders();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && pending) void syncCloud(cloud);
