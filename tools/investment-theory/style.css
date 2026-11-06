@@ -124,19 +124,44 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .board-track, .board-fill { display: block; height: 5px; border-radius: 6px; }
 .board-track { background: var(--line); }
 .board-fill { background: var(--bar); }
-.crowding-compare { margin: 9px 0 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--inset); }
-.crowding-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 7px 0 3px; }
-.crowding-legend { display: flex; align-items: center; gap: 5px; }
-.crowding-legend::before { content: ""; width: 12px; border-top: 2px solid var(--series); }
-.crowding-legend.line-1::before { border-top-style: dashed; }
-.crowding-legend select { min-height: 33px; font-size: 13px; }
-.crowding-compare svg { display: block; width: 100%; max-height: 220px; }
-.crowding-chart-label { font-size: 12px; fill: var(--muted); }
+.crowding-trend { margin: 9px 0 16px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--inset); scroll-margin-top: 60px; }
+.crowding-trend-head, .crowding-controls, .crowding-picker, .crowding-readout { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.crowding-trend-head { justify-content: space-between; }
+.crowding-trend-head h4 { font-size: 16px; }
+.crowding-add { color: var(--accent); font-size: 13px; }
+.crowding-controls { margin-top: 10px; }
+.crowding-picker { color: var(--muted); font-size: 13px; font-weight: 650; }
+.crowding-picker select { width: auto; max-width: 100%; }
+#crowding-overlay-control { flex-basis: 100%; }
+.crowding-periods { display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+.crowding-periods button { min-height: 32px; padding: 4px 8px; border-color: transparent; font-size: 13px; color: var(--muted); }
+.crowding-periods button[aria-pressed="true"] { background: var(--group-bg); color: var(--group-text); font-weight: 700; }
+.crowding-readout { min-height: 32px; margin: 8px 0 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.crowding-readout time { color: var(--muted); }
+.crowding-series { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 5px; background: var(--surface); }
+.crowding-series::before { content: ""; width: 11px; border-top: 2px solid var(--series); }
+.crowding-series.line-1::before { border-top-style: dashed; }
+.crowding-plot { min-width: 0; }
+.crowding-plot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 5px; }
+.crowding-plot svg { display: block; width: 100%; cursor: crosshair; }
+.crowding-empty { padding: 22px 0; text-align: center; }
+.crowding-coverage { margin: 3px 0 0; }
+.crowding-chart-label { font-size: 11px; fill: var(--muted); }
 .crowding-gridline { stroke: var(--line); }
+.crowding-cursor { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
 .crowding-line { stroke: var(--series); stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
-.crowding-dot { fill: var(--series); }
-.crowding-compare .line-0 { --series: var(--accent); }
-.crowding-compare .line-1 { --series: var(--positive); stroke-dasharray: 4 3; }
+.crowding-dot { fill: var(--series); stroke: var(--surface); stroke-width: 1.2; }
+.crowding-trend .line-0 { --series: var(--accent); }
+.crowding-trend .line-1 { --series: var(--positive); }
+.crowding-line.line-1 { stroke-dasharray: 4 3; }
+.crowding-overview h4 { margin-bottom: 4px; }
+.crowding-sector-link { min-height: 30px; max-width: 100%; padding: 2px 6px; border-color: transparent; background: transparent; color: var(--accent); font-size: 13px; font-weight: 700; white-space: normal; text-align: left; }
+.crowding-sector-link[aria-current="true"] { background: var(--group-bg); color: var(--group-text); }
+@media (max-width: 600px) {
+  .crowding-periods button, .crowding-add, .crowding-sector-link { min-height: 44px; }
+  .crowding-periods button { padding-inline: 7px; }
+  .crowding-picker select { min-height: 44px; font-size: 16px; }
+}
 .crowding-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 .crowding-table th, .crowding-table td { padding: 6px; border-bottom: 1px solid var(--line); }
 .crowding-table thead th { color: var(--muted); font-size: 12px; }

@@ -606,67 +606,218 @@ async function refreshSnapshot(force = false) {
 }
 let crowdingSnapshot = null;
 let crowdingLoadedAt = 0;
-const crowdingCompare = ['bank', 'communication'];
-const crowdingPercent = value => Number.isFinite(value) ? fmt.format(value) + '%' : '—';
-function crowdingChart(history, labels) {
-  const figure = el('div', 'crowding-compare');
-  const chart = el('div');
-  const controls = el('div', 'crowding-controls');
-  const render = () => {
-    const points = history.flatMap(day => crowdingCompare.map(id => day.shares[id])).filter(Number.isFinite);
-    if (points.length < 2) {
-      chart.replaceChildren(el('p', 'meta', '暂无足够的成交额占比历史。'));
-      return;
-    }
-    const width = 520, height = 156, left = 42, right = 510, top = 12, bottom = 126;
-    const max = Math.max(1, Math.ceil(Math.max(...points)));
-    const x = index => left + (right - left) * index / Math.max(history.length - 1, 1);
-    const y = value => bottom - (bottom - top) * value / max;
-    const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img',
-      'aria-label': crowdingCompare.map(id => labels.get(id)).join('与') + '的成交额占比走势，纵轴为百分比' });
-    const label = (x, y, value, anchor) => {
-      const node = svgNode('text', { x, y, 'text-anchor': anchor, class: 'crowding-chart-label' });
-      node.textContent = value;
-      svg.append(node);
-    };
-    for (const value of [max, max / 2, 0]) {
-      svg.append(svgNode('line', { x1: left, x2: right, y1: y(value), y2: y(value), class: 'crowding-gridline' }));
-      label(left - 6, y(value) + 4, crowdingPercent(value), 'end');
-    }
-    label(left, height - 8, history[0].date.slice(5), 'start');
-    label(right, height - 8, history.at(-1).date.slice(5), 'end');
-    crowdingCompare.forEach((id, line) => {
-      let path = '', connected = false;
-      history.forEach((day, i) => {
-        const value = day.shares[id];
-        if (!Number.isFinite(value)) { connected = false; return; }
-        path += `${connected ? 'L' : 'M'} ${x(i)} ${y(value)} `;
-        connected = true;
-      });
-      svg.append(svgNode('path', { d: path, class: `crowding-line line-${line}` }));
-      const latest = history.at(-1).shares[id];
-      if (Number.isFinite(latest)) svg.append(svgNode('circle', {
-        cx: x(history.length - 1), cy: y(latest), r: 3, class: `crowding-dot line-${line}`,
-      }));
-    });
-    chart.replaceChildren(svg);
+const crowdingView = { sector: 'tmt', compare: '', comparing: false, months: 12 };
+const crowdingPeriods = [[1, '1 月'], [3, '3 月'], [6, '半年'], [12, '1 年'], [24, '2 年']];
+let crowdingChartObserver;
+
+function crowdingPeriod(history, months) {
+  const end = history.at(-1)?.date;
+  if (!end) return [];
+  const [year, month, day] = end.split('-').map(Number);
+  const lastDay = new Date(Date.UTC(year, month - months, 0)).getUTCDate();
+  const start = new Date(Date.UTC(year, month - months - 1, Math.min(day, lastDay))).toISOString().slice(0, 10);
+  return history.filter(row => row.date >= start);
+}
+
+function drawCrowdingPlot(plot, summary, days, series, preserveDate = false) {
+  const points = days.flatMap(day => series.map(({ id }) => day.shares[id])).filter(Number.isFinite);
+  plot.tabIndex = points.length ? 0 : -1;
+  plot.onkeydown = null;
+  if (!points.length) {
+    plot.replaceChildren(el('p', 'meta crowding-empty', '这个周期暂无成交占比数据。'));
+    summary.replaceChildren();
+    return;
+  }
+
+  const width = plot.clientWidth || 320;
+  const height = width < 480 ? 206 : 264;
+  const left = 47, right = width - 13, top = 13, bottom = height - 28;
+  const low = Math.min(...points), high = Math.max(...points);
+  const pad = Math.max((high - low) * 0.12, 0.05);
+  const lower = Math.max(0, low - pad);
+  const upper = high + pad;
+  const order = 10 ** Math.floor(Math.log10((upper - lower) / 3));
+  const step = [1, 2, 2.5, 5, 10].map(tick => tick * order).find(tick => tick >= (upper - lower) / 3);
+  const min = Math.floor(lower / step) * step;
+  const max = Math.ceil(upper / step) * step;
+  const x = index => left + (right - left) * index / Math.max(days.length - 1, 1);
+  const y = value => bottom - (bottom - top) * (value - min) / (max - min);
+  const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img',
+    'aria-label': series.map(row => row.name).join('与') + '的成交占比趋势，纵轴为百分比' });
+  const label = (x, y, value, anchor) => {
+    const node = svgNode('text', { x, y, 'text-anchor': anchor, class: 'crowding-chart-label' });
+    node.textContent = value;
+    svg.append(node);
   };
-  crowdingCompare.forEach((id, index) => {
-    const label = el('label', `crowding-legend line-${index}`);
-    const select = el('select');
-    select.setAttribute('aria-label', `对比方向 ${index + 1}`);
-    options(select, [...labels]);
-    select.value = id;
-    select.addEventListener('change', () => {
-      crowdingCompare[index] = select.value;
-      render();
+  for (let index = 0; index <= Math.round((max - min) / step); index++) {
+    const value = min + index * step;
+    svg.append(svgNode('line', { x1: left, x2: right, y1: y(value), y2: y(value), class: 'crowding-gridline' }));
+    label(left - 6, y(value) + 4, pct(value), 'end');
+  }
+  const tickCount = Math.min(days.length, width < 480 ? 3 : 5);
+  const datesCrossYears = days[0].date.slice(0, 4) !== days.at(-1).date.slice(0, 4);
+  for (let tick = 0; tick < tickCount; tick++) {
+    const index = Math.round(tick * (days.length - 1) / Math.max(tickCount - 1, 1));
+    const fullDate = days[index].date;
+    label(x(index), height - 8, datesCrossYears ? fullDate.slice(2) : fullDate.slice(5),
+      tick === 0 ? 'start' : tick === tickCount - 1 ? 'end' : 'middle');
+  }
+  const cursor = svgNode('line', { y1: top, y2: bottom, class: 'crowding-cursor' });
+  svg.append(cursor);
+  const dots = series.map(({ id }, line) => {
+    let path = '';
+    let connected = false;
+    const isolated = [];
+    days.forEach((day, i) => {
+      const value = day.shares[id];
+      if (!Number.isFinite(value)) { connected = false; return; }
+      if (!connected && !Number.isFinite(days[i + 1]?.shares[id])) isolated.push([x(i), y(value)]);
+      path += `${connected ? 'L' : 'M'} ${x(i)} ${y(value)} `;
+      connected = true;
     });
-    label.append(select);
-    controls.append(label);
+    svg.append(svgNode('path', { d: path, class: `crowding-line line-${line}` }));
+    isolated.forEach(([cx, cy]) => svg.append(svgNode('circle', { cx, cy, r: 2.5, class: `crowding-dot line-${line}` })));
+    return svgNode('circle', { r: 4, class: `crowding-dot line-${line}` });
   });
-  figure.append(el('h4', '', '近 20 个交易日对比'), controls, chart);
-  render();
-  return figure;
+  svg.append(...dots);
+
+  let current = -1;
+  function show(index) {
+    if (current === index) return;
+    current = index;
+    const day = days[index];
+    const px = x(index);
+    cursor.setAttribute('x1', px);
+    cursor.setAttribute('x2', px);
+    const values = series.map(({ id, name }, i) => {
+      const value = day.shares[id];
+      dots[i].style.display = Number.isFinite(value) ? '' : 'none';
+      if (Number.isFinite(value)) {
+        dots[i].setAttribute('cx', px);
+        dots[i].setAttribute('cy', y(value));
+      }
+      const chip = el('span', `crowding-series line-${i}`);
+      chip.append(name + ' ', el('strong', '', pct(value)));
+      return chip;
+    });
+    summary.replaceChildren(el('time', '', day.date), ...values);
+    summary.querySelector('time').dateTime = day.date;
+  }
+  function pointAt(event) {
+    summary.setAttribute('aria-live', 'off');
+    const box = svg.getBoundingClientRect();
+    const px = (event.clientX - box.left) / box.width * width;
+    const index = Math.round((px - left) / (right - left) * (days.length - 1));
+    show(Math.max(0, Math.min(days.length - 1, index)));
+  }
+  svg.addEventListener('pointermove', event => { if (event.pointerType !== 'touch') pointAt(event); });
+  svg.addEventListener('pointerdown', pointAt);
+  plot.onkeydown = event => {
+    const next = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: days.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    summary.setAttribute('aria-live', 'polite');
+    show(Math.max(0, Math.min(days.length - 1, next)));
+  };
+  plot.replaceChildren(svg);
+  const selectedDate = preserveDate ? summary.querySelector('time')?.dateTime : null;
+  const index = days.findIndex(day => day.date === selectedDate);
+  show(index >= 0 ? index : days.length - 1);
+}
+
+function crowdingChart(data, labels) {
+  const figure = el('section', 'crowding-trend');
+  figure.setAttribute('aria-labelledby', 'crowding-trend-title');
+  const title = el('h4');
+  title.id = 'crowding-trend-title';
+  const controls = el('div', 'crowding-controls');
+  const periods = el('div', 'crowding-periods');
+  periods.setAttribute('role', 'group');
+  periods.setAttribute('aria-label', '趋势周期');
+  const summary = el('output', 'crowding-readout');
+  summary.setAttribute('aria-live', 'off');
+  const plot = el('div', 'crowding-plot');
+  plot.setAttribute('role', 'group');
+  plot.setAttribute('aria-label', '成交占比曲线，左右方向键可查看相邻交易日');
+  const coverage = el('p', 'meta crowding-coverage');
+  const compareToggle = el('button', 'crowding-add');
+  compareToggle.type = 'button';
+  compareToggle.setAttribute('aria-controls', 'crowding-overlay-control');
+  const select = (text, id, allowEmpty) => {
+    const label = el('label', 'crowding-picker');
+    const input = el('select');
+    input.id = id;
+    if (allowEmpty) options(input, [['', '选择要叠加的板块']]);
+    for (const group of data.groups) {
+      const section = el('optgroup');
+      section.label = group.name;
+      options(section, group.directions.map(({ id, name }) => [id, name]));
+      input.append(section);
+    }
+    label.append(el('span', '', text), input);
+    return { label, input };
+  };
+  const main = select('查看板块', 'crowding-sector');
+  const compare = select('叠加板块', 'crowding-overlay', true);
+  compare.label.id = 'crowding-overlay-control';
+  const buttons = crowdingPeriods.map(([months, name]) => {
+    const button = el('button', '', name);
+    button.type = 'button';
+    button.addEventListener('click', () => { crowdingView.months = months; update(); });
+    periods.append(button);
+    return [button, months];
+  });
+  let days, series;
+  function update() {
+    const { sector, comparing, months } = crowdingView;
+    if (sector === crowdingView.compare) crowdingView.compare = '';
+    main.input.value = sector;
+    compare.input.value = crowdingView.compare;
+    for (const option of compare.input.options) option.disabled = option.value === sector;
+    compare.label.hidden = !comparing;
+    compareToggle.textContent = comparing ? '取消叠加' : '＋ 叠加对比';
+    compareToggle.setAttribute('aria-expanded', String(comparing));
+    for (const [button, period] of buttons) button.setAttribute('aria-pressed', String(period === months));
+    title.textContent = `${labels.get(sector)} · 成交占比趋势`;
+    days = crowdingPeriod(data.history, months);
+    const ids = [sector, crowdingView.compare].filter(Boolean);
+    series = ids.map(id => ({ id, name: labels.get(id) }));
+    const valid = days.filter(day => Number.isFinite(day.shares[sector]));
+    coverage.textContent = valid.length
+      ? `${valid[0].date} 至 ${valid.at(-1).date} · ${valid.length} 个交易日有数据`
+      : '';
+    for (const button of $('crowding').querySelectorAll('[data-crowding-sector]')) {
+      if (button.dataset.crowdingSector === sector) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    }
+    drawCrowdingPlot(plot, summary, days, series);
+  }
+  main.input.addEventListener('change', () => { crowdingView.sector = main.input.value; update(); });
+  compare.input.addEventListener('change', () => { crowdingView.compare = compare.input.value; update(); });
+  compareToggle.addEventListener('click', () => {
+    crowdingView.comparing = !crowdingView.comparing;
+    if (!crowdingView.comparing) crowdingView.compare = '';
+    update();
+    if (crowdingView.comparing) compare.input.focus();
+  });
+  const header = el('div', 'crowding-trend-head');
+  header.append(title, compareToggle);
+  controls.append(main.label, periods, compare.label);
+  figure.append(header, controls, summary, plot, coverage);
+  return {
+    figure,
+    mount() {
+      update();
+      crowdingChartObserver = new ResizeObserver(() => drawCrowdingPlot(plot, summary, days, series, true));
+      crowdingChartObserver.observe(plot);
+    },
+    selectSector(id) {
+      crowdingView.sector = id;
+      update();
+      main.input.focus({ preventScroll: true });
+      figure.scrollIntoView({ block: 'start' });
+    },
+  };
 }
 function renderCrowding(data) {
   const status = data.status === 'waiting' ? '尚无当日快照 · ' : '';
@@ -674,8 +825,10 @@ function renderCrowding(data) {
   $('crowding-status').textContent = data.date
     ? `${status}交易日 ${data.date} · 日终数据${incomplete}` : '日终数据暂不可用，可稍后刷新。';
   const root = $('crowding');
+  crowdingChartObserver?.disconnect();
   if (!data.date) { root.replaceChildren(); return; }
   const labels = new Map(data.groups.flatMap(group => group.directions.map(row => [row.id, row.name])));
+  const trend = crowdingChart(data, labels);
   const table = el('table', 'crowding-table');
   table.setAttribute('aria-label', '各方向成交额占比、近五日变化及历史分位');
   const heading = table.createTHead().insertRow();
@@ -695,10 +848,14 @@ function renderCrowding(data) {
       const tr = body.insertRow();
       const name = el('th');
       name.scope = 'row';
-      name.append(el('strong', '', row.name), el('span', 'meta', row.basis));
+      const link = el('button', 'crowding-sector-link', row.name);
+      link.type = 'button';
+      link.dataset.crowdingSector = row.id;
+      link.addEventListener('click', () => trend.selectSector(row.id));
+      name.append(link, el('span', 'meta', row.basis));
       const delta = change5 === null ? '—' : `${change5 > 0 ? '+' : ''}${fmt.format(change5)}`;
       const change = el('td', change5 > 0 ? 'positive' : change5 < 0 ? 'negative' : '', delta);
-      tr.append(name, el('td', '', crowdingPercent(share)), change, el('td', '', crowdingPercent(percentile)));
+      tr.append(name, el('td', '', pct(share)), change, el('td', '', pct(percentile)));
     }
   }
   const method = el('p', 'meta crowding-method',
@@ -708,14 +865,17 @@ function renderCrowding(data) {
   source.target = '_blank';
   source.rel = 'noopener';
   method.append(' ', source);
-  root.replaceChildren(crowdingChart(data.history, labels), table, method);
+  const list = el('section', 'crowding-overview');
+  list.append(el('h4', '', '板块一览'), table);
+  root.replaceChildren(trend.figure, list, method);
+  trend.mount();
 }
 async function refreshCrowding(force = false) {
   const button = $('refresh-crowding');
   if (button.disabled || (!force && Date.now() - crowdingLoadedAt < 300_000)) return;
   button.disabled = true;
   try {
-    crowdingSnapshot = await api('/api/investment-market?view=crowding');
+    crowdingSnapshot = await api('/api/investment-market?view=crowding&history=long');
     crowdingLoadedAt = Date.now();
     renderCrowding(crowdingSnapshot);
   } catch {

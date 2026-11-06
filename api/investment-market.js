@@ -139,7 +139,10 @@ module.exports = async function handler(req, res) {
         }
       }
       if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
-      return sendJson(res, 200, crowding.publicSnapshot((await store.read(crowding.PATH))?.value));
+      const saved = (await store.read(crowding.PATH))?.value;
+      const snapshot = crowding.publicSnapshot(saved);
+      if (req.query.history === 'long') snapshot.history = crowding.publicHistory(saved);
+      return sendJson(res, 200, snapshot);
     }
     if (req.query?.view === 'goal-alerts' && req.method === 'POST') {
       if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {

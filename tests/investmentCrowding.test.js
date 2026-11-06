@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseSeries, parseReference, publicSnapshot, refreshCrowding } = require('../lib/investmentCrowding');
+const { parseSeries, parseReference, publicSnapshot, publicHistory, refreshCrowding } = require('../lib/investmentCrowding');
 
 const now = Date.parse('2026-11-06T18:00:00+08:00');
 const dates = Array.from({ length: 122 }, (_, index) =>
@@ -39,7 +39,7 @@ test('uses the index turnover in yuan and validates the quote identity', () => {
 test('sums baskets on matching sessions and computes direction-specific metrics', async () => {
   const store = memoryStore();
   const result = await refreshCrowding({ store, load: history({ gap: '801770' }), loadReference, now });
-  assert.deepEqual(result, { status: 'published', date: '2026-11-06', sessions: 121 });
+  assert.deepEqual(result, { status: 'published', date: '2026-11-06', sessions: dates.length });
   const snapshot = publicSnapshot((await store.read()).value, now);
   assert.equal(snapshot.items.tmt.share, 8);
   assert.equal(snapshot.items.communication.share, 2);
@@ -72,4 +72,25 @@ test('a late supplemental index can fill the same day without delaying the offic
     loadReference: async () => new Map(dates.map(date => [date, 50])),
   });
   assert.deepEqual((await snapshot()).items.dividend, { share: 5, change5: 0, percentile: 50 });
+});
+
+test('backfills the long series while keeping the existing 120-session ranking and short response', async () => {
+  const store = memoryStore();
+  await refreshCrowding({ store, load: history(), loadReference, now });
+  const calendar = Array.from({ length: 520 }, (_, index) =>
+    new Date(now - (519 - index) * 86400_000).toISOString().slice(0, 10));
+  const load = async code => new Map(calendar.map((date, index) =>
+    [date, code === '801003' ? 1000 : code === '801780' ? index + 1 : 20]));
+  await refreshCrowding({ store, load, loadReference, now, force: true });
+  const { value } = await store.read();
+  const short = publicSnapshot(value, now);
+  const long = publicHistory(value);
+  assert.equal(short.history.length, 20);
+  assert.equal(short.items.bank.percentile, 100);
+  assert.equal(long.length, 500);
+  assert.equal(long[0].date, calendar[20]);
+  assert.equal(long.at(-1).date, short.date);
+  assert.equal(long.at(-1).shares.bank, 52);
+  assert.equal(long.at(-1).shares.dividend, null);
+  assert.deepEqual(Object.keys(long.at(-1)).sort(), ['date', 'shares']);
 });
