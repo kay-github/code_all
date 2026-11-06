@@ -313,10 +313,14 @@ function renderPositions() {
   const residual = 100 - allocation.reduce((sum, row) => sum + row.target, 0);
   $('allocation-foot').textContent = `未分配目标 ${pct(Math.max(0, residual))}${marked.some(row => row.bucket === legacyBucket) ? ' · 原基础仓持仓见下方明细' : ''}`;
   $('allocations').replaceChildren(...cards);
-  const closed = new Set([...$('holdings').querySelectorAll('details:not([open])')].map(group => group.dataset.bucket));
+  const holdings = $('holdings');
+  const focusedBucket = holdings.querySelector('summary:focus')?.parentElement.dataset.bucket;
+  const closed = new Set([...holdings.querySelectorAll('details:not([open])')].map(group => group.dataset.bucket));
   for (const group of groups) if (closed.has(group.dataset.bucket)) group.open = false;
-  $('holding-section').hidden = !groups.length;
-  $('holdings').replaceChildren(...groups);
+  $('holding-section').hidden = false;
+  $('holding-empty').hidden = groups.length > 0;
+  holdings.replaceChildren(...groups);
+  groups.find(group => group.dataset.bucket === focusedBucket)?.querySelector('summary').focus({ preventScroll: true });
 }
 function renderAllocationEditor() {
   const allocation = allocationForHolder();
@@ -671,10 +675,16 @@ async function importLinkedData() {
 tabs.forEach((tab, index) => {
   tab.addEventListener('click', () => selectTab(tab));
   tab.addEventListener('keydown', event => {
-    const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
-    if (!delta) return;
+    let target;
+    switch (event.key) {
+      case 'ArrowRight': target = (index + 1) % tabs.length; break;
+      case 'ArrowLeft': target = (index + tabs.length - 1) % tabs.length; break;
+      case 'Home': target = 0; break;
+      case 'End': target = tabs.length - 1; break;
+      default: return;
+    }
     event.preventDefault();
-    const active = tabs[(index + delta + tabs.length) % tabs.length];
+    const active = tabs[target];
     selectTab(active);
     active.focus();
   });
@@ -755,10 +765,12 @@ $('holder-form').addEventListener('submit', event => {
     else selectHolder(holder.id);
   } catch (error) { $('holder-error').textContent = error.message; }
 });
-$('trade-open').addEventListener('click', () => {
+function openTradeEditor() {
   $('trade-editor').open = true;
   $('trade-type').focus();
-});
+}
+$('trade-open').addEventListener('click', openTradeEditor);
+$('holding-add').addEventListener('click', openTradeEditor);
 function renderShare() {
   if (shareSnapshot) drawShare($('share-canvas'), shareSnapshot, $('share-details').checked);
 }
