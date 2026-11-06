@@ -3,6 +3,7 @@ const { sendJson } = require('../lib/gridHttp');
 const store = require('../lib/gridStore');
 const { CONFIG, matchesSecret, matchesImport, runGoalAlerts } = require('../lib/investmentAlerts');
 const { sendPushplus } = require('../lib/pushplus');
+const crowding = require('../lib/investmentCrowding');
 
 const FINANCE = 'https://finance.688680.xyz';
 const cache = new Map();
@@ -125,6 +126,21 @@ async function quotes(raw) {
 
 module.exports = async function handler(req, res) {
   try {
+    if (req.query?.view === 'crowding') {
+      if (req.method === 'POST') {
+        if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+          return sendJson(res, 401, { error: '未授权' });
+        }
+        try {
+          return sendJson(res, 200, await crowding.refreshCrowding({ store }));
+        } catch (error) {
+          console.error('Crowding refresh:', error.message, error.cause?.cause?.code ?? error.cause?.message ?? '');
+          return sendJson(res, 503, { error: '板块拥挤度更新暂不可用' });
+        }
+      }
+      if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
+      return sendJson(res, 200, crowding.publicSnapshot((await store.read(crowding.PATH))?.value));
+    }
     if (req.query?.view === 'goal-alerts' && req.method === 'POST') {
       if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
         return sendJson(res, 401, { error: '未授权' });

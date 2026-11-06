@@ -1,0 +1,29 @@
+name: Investment sector crowding
+
+on:
+  schedule:
+    # China Standard Time 16:17, 16:47, 17:17, 17:47, 18:17, 18:47 and 20:17.
+    - cron: '17,47 8-10 * * 1-5'
+    - cron: '17 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: investment-sector-crowding
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Publish the latest complete daily snapshot
+        env:
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+        run: |
+          test -n "$MONITOR_SECRET"
+          curl --silent --show-error --fail-with-body --max-time 50 -X POST \
+            --header "Authorization: Bearer $MONITOR_SECRET" \
+            'https://1.688680.xyz/api/investment-market?view=crowding'

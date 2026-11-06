@@ -124,6 +124,28 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .board-track, .board-fill { display: block; height: 5px; border-radius: 6px; }
 .board-track { background: var(--line); }
 .board-fill { background: var(--bar); }
+.crowding-compare { margin: 9px 0 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--inset); }
+.crowding-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 7px 0 3px; }
+.crowding-legend { display: flex; align-items: center; gap: 5px; }
+.crowding-legend::before { content: ""; width: 12px; border-top: 2px solid var(--series); }
+.crowding-legend.line-1::before { border-top-style: dashed; }
+.crowding-legend select { min-height: 33px; font-size: 13px; }
+.crowding-compare svg { display: block; width: 100%; max-height: 220px; }
+.crowding-chart-label { font-size: 12px; fill: var(--muted); }
+.crowding-gridline { stroke: var(--line); }
+.crowding-line { stroke: var(--series); stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
+.crowding-dot { fill: var(--series); }
+.crowding-compare .line-0 { --series: var(--accent); }
+.crowding-compare .line-1 { --series: var(--positive); stroke-dasharray: 4 3; }
+.crowding-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.crowding-table th, .crowding-table td { padding: 6px; border-bottom: 1px solid var(--line); }
+.crowding-table thead th { color: var(--muted); font-size: 12px; }
+.crowding-table th:first-child { text-align: left; }
+.crowding-table th:not(:first-child), .crowding-table td { text-align: right; }
+.crowding-table td { white-space: nowrap; }
+.crowding-table th .meta { display: block; margin-top: 2px; font-size: 11px; font-weight: 400; }
+.crowding-table .crowding-group { background: var(--group-bg); color: var(--group-text); }
+.crowding-method { margin-bottom: 0; }
 .position-header, .position-actions, .holder-picker { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .position-header { justify-content: space-between; }
 .position-overview { margin-top: 0; }

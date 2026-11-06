@@ -164,9 +164,14 @@
       </section>
       <section id="technical" role="tabpanel" aria-labelledby="tab-technical" tabindex="0" hidden>
         <section class="panel" aria-labelledby="crowding-title">
-          <div class="section-head"><h3 id="crowding-title">板块拥挤度</h3><button class="refresh-snapshot" type="button">刷新快照</button></div>
-          <div id="crowding" aria-live="polite"><p class="muted">正在加载快照…</p></div>
+          <div class="section-head"><h3 id="crowding-title">板块拥挤度</h3><button id="refresh-crowding" type="button">刷新快照</button></div>
+          <p class="meta" id="crowding-status" role="status">正在加载快照…</p>
+          <div id="crowding"></div>
         </section>
+        <details class="panel fold">
+          <summary>主题热度参考</summary>
+          <div id="theme-heat"><p class="muted">正在加载快照…</p></div>
+        </details>
         <section class="panel" aria-labelledby="technical-notes-title">
           <h3 id="technical-notes-title">技术与资金观察</h3>
           <p class="meta">记录量能、走势和资金变化。</p>
