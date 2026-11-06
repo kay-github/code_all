@@ -91,6 +91,13 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .goal-empty { margin: 0; padding: 10px 12px; }
 .status { padding: 8px 12px; margin: 0 0 12px; border-radius: 7px; background: var(--accent-soft); color: var(--accent); }
 .status.error { color: var(--positive); }
+.sync-status, #sync-conflict { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.sync-status { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+.sync-status[data-phase="synced"] { color: var(--accent); }
+.sync-status[data-phase="conflict"], .sync-status[data-phase="error"], .sync-status[data-phase="auth"] {
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
+}
+.sync-status button { min-height: 33px; }
 .sentiment { display: grid; gap: 16px; }
 .fear-gauges { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .fear-card { padding: 9px 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--inset); text-align: center; }

@@ -20,7 +20,7 @@
     </header>
     <section id="data-panel" class="panel" hidden aria-label="账本与备份">
       <h2 id="account-status">本机账本</h2>
-      <p class="muted">本机自动保存。登录网格交易账号后，可上传或恢复独立云备份。备份包含所有持有人，发给单个持有人请使用「收益图」。</p>
+      <p class="muted">登录网格交易账号后自动加载并同步云账本。访客账本独立保存在本机。JSON 备份包含所有持有人，单人分享请使用「收益图」。</p>
       <form id="login-form" class="fields">
         <label>账号<input name="username" autocomplete="username" required></label>
         <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
@@ -28,8 +28,6 @@
         <a class="text-link" href="/?tool=grid" target="_top">注册或找回账号</a>
       </form>
       <div id="cloud-actions" class="actions" hidden>
-        <button id="cloud-save" type="button">上传云备份</button>
-        <button id="cloud-load" type="button">读取云备份</button>
         <button id="logout" type="button">退出账号</button>
       </div>
       <div class="actions">
@@ -44,6 +42,15 @@
       <button id="tab-goal" type="button" role="tab" aria-selected="false" aria-controls="goal" data-tab="goal" tabindex="-1" disabled>目标</button>
       <button id="tab-direction" type="button" role="tab" aria-selected="false" aria-controls="direction" data-tab="direction" tabindex="-1" disabled>方向</button>
     </nav>
+    <div id="sync-status" class="sync-status" hidden>
+      <span id="sync-text" role="status"></span>
+      <button id="sync-retry" type="button" hidden>立即重试</button>
+      <button id="sync-login" type="button" hidden>重新登录</button>
+      <div id="sync-conflict" hidden>
+        <button id="sync-use-local" type="button">保留本机并上传</button>
+        <button id="sync-use-cloud" type="button">保留云端</button>
+      </div>
+    </div>
     <p id="status" class="status" role="status" hidden></p>
 
     <section id="position" role="tabpanel" aria-labelledby="tab-position">

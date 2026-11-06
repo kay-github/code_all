@@ -3,6 +3,7 @@ import {
   SELF, holderTrades, portfolio, replay, validateState, mergeImport, evaluateGoals, quoteKey,
 } from './model.mjs';
 import { drawShare } from './share.mjs';
+import { syncDecision } from './cloud-sync.mjs';
 
 const $ = id => document.getElementById(id);
 const field = (form, name) => form.elements.namedItem(name);
@@ -19,6 +20,8 @@ let storageKey = '';
 let savedLocal = null;
 let state = initialState();
 let remoteRev = null;
+let pending = false;
+let cloud = null;
 let quotes = {};
 let fetchingQuotes = false;
 let loadingSnapshot = false;
@@ -51,52 +54,148 @@ function options(select, entries) {
   select.replaceChildren(...entries.map(([value, label]) => new Option(label, value)));
   if (entries.some(([value]) => value === previous)) select.value = previous;
 }
-async function api(url, method = 'GET', data) {
+async function api(url, method = 'GET', data, headers = {}) {
   const response = await fetch(url, {
     method, cache: 'no-store', signal: AbortSignal.timeout(12_000),
-    ...(data === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }),
+    headers: data === undefined ? headers : { ...headers, 'Content-Type': 'application/json' },
+    ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw Object.assign(Error(body.error || '请求失败'), { status: response.status });
   return body;
 }
 
-function persist(next, revision = remoteRev) {
+function saveLocal(next, revision, unsynced) {
   if (!storageKey) throw Error('账本正在加载，请稍后再试。');
-  const clean = validateState(next);
   if (localStorage.getItem(storageKey) !== savedLocal) throw Error('此账本已在另一个页面更新，请刷新后重试。');
-  const serialized = JSON.stringify({ state: clean, remoteRev: revision });
+  const serialized = JSON.stringify({ state: next, remoteRev: revision, pending: unsynced });
   localStorage.setItem(storageKey, serialized);
   savedLocal = serialized;
-  state = clean;
+  state = next;
   remoteRev = revision;
+  pending = unsynced;
+}
+function persist(next) {
+  saveLocal(validateState(next), remoteRev, Boolean(cloud));
+  if (cloud?.phase === 'synced') syncStatus(cloud, 'pending', '已存本机，等待同步…');
+  scheduleSync(cloud);
+}
+function syncStatus(context, phase, message) {
+  context.phase = phase;
+  $('sync-status').dataset.phase = phase;
+  $('sync-text').textContent = message;
+  $('sync-retry').hidden = phase !== 'error';
+  $('sync-conflict').hidden = phase !== 'conflict';
+  $('sync-login').hidden = phase !== 'auth';
+  $('login-form').hidden = phase !== 'auth';
+}
+function scheduleSync(context, delay = 650) {
+  if (!context || context !== cloud || context.task || ['conflict', 'auth'].includes(context.phase)) return;
+  clearTimeout(context.timer);
+  context.timer = setTimeout(() => syncCloud(context), delay);
+}
+function syncCloud(context, choice) {
+  if (!context || context !== cloud || context.phase === 'auth') return;
+  if (context.task) return context.task;
+  if (context.phase === 'conflict' && !choice) return;
+  clearTimeout(context.timer);
+  context.task = runCloudSync(context, choice).finally(() => {
+    context.task = null;
+    context.checkedAt = Date.now();
+    if (context !== cloud) return;
+    if (context.retryDelay !== null) scheduleSync(context, context.retryDelay);
+    else if (context.phase === 'pending') scheduleSync(context);
+  });
+  return context.task;
+}
+async function runCloudSync(context, choice) {
+  const chosenState = state;
+  const headers = { 'X-Investment-Account': context.id };
+  context.retryDelay = null;
+  syncStatus(context, 'working', pending ? '正在同步云账本…' : '正在检查云账本…');
+  try {
+    const remote = await api(path, 'GET', undefined, headers);
+    if (context !== cloud) return;
+    if (remote.kind === 'ok' && Number.isSafeInteger(remote.rev) && remote.rev > 0) remote.data = validateState(remote.data);
+    else if (remote.kind !== 'empty') throw Error('云账本数据无法读取。');
+    const revision = remote.kind === 'ok' ? remote.rev : null;
+    const decision = choice
+      ? (revision === context.conflictRev && state === chosenState ? choice : 'conflict')
+      : syncDecision({ state, pending, remoteRev }, remote);
+    if (decision === 'conflict') {
+      context.conflictRev = revision;
+      syncStatus(context, 'conflict', '本机和云端的账本版本不同，请选择保留哪一份。');
+      return;
+    }
+    if (decision === 'download') {
+      saveLocal(remote.data ?? initialState(), revision, false);
+      if (holderId !== SELF && !activeHolder()) {
+        holderId = SELF;
+        resetTradeForm();
+        closeHolderDialogs();
+      }
+      renderLedger();
+      void refreshQuotes();
+    } else if (decision === 'upload') {
+      const uploaded = state;
+      const result = await api(path, 'PUT', { baseRev: revision, data: uploaded }, headers);
+      if (context !== cloud) return;
+      if (!Number.isSafeInteger(result.rev) || result.rev < 1) throw Error('云账本版本无法确认。');
+      saveLocal(state, result.rev, state !== uploaded);
+    } else if (pending || remoteRev !== revision) {
+      saveLocal(state, revision, false);
+    }
+    syncStatus(context, pending ? 'pending' : 'synced', pending ? '已存本机，等待同步…' : '云账本已同步');
+  } catch (error) {
+    if (context !== cloud) return;
+    if (error.status === 401) {
+      syncStatus(context, 'auth', '登录已失效，重新登录后继续同步。');
+    } else if (error.status === 409) {
+      context.retryDelay = 0;
+      syncStatus(context, 'pending', '云端版本已变化，正在重新检查…');
+    } else {
+      if (error instanceof TypeError || ['TimeoutError', 'AbortError'].includes(error.name) || error.status === 429 || error.status >= 500) {
+        context.retryDelay = 10_000;
+      }
+      const reason = context.retryDelay === null ? error.message : '连接云账本失败，稍后自动重试。';
+      syncStatus(context, 'error', pending ? `改动已保存在本机。${reason}` : reason);
+    }
+  }
 }
 function account(nextUser) {
   const key = 'investment-theory:v1:' + (nextUser?.id ?? 'guest');
+  if (cloud) clearTimeout(cloud.timer);
+  cloud = nextUser ? { id: nextUser.id, task: null, timer: null, retryDelay: null } : null;
   user = nextUser;
   $('account-status').textContent = user ? `当前账号 · ${user.username}` : '本机账本';
   $('login-form').hidden = Boolean(user);
   $('cloud-actions').hidden = !user;
-  if (storageKey === key) return;
-  storageKey = key;
-  quotes = {};
-  state = initialState();
-  holderId = SELF;
-  drafts.clear();
-  resetTradeForm();
-  closeHolderDialogs();
-  remoteRev = null;
-  savedLocal = null;
-  try {
-    savedLocal = localStorage.getItem(key);
-    const saved = JSON.parse(savedLocal || 'null');
-    if (saved) {
-      state = validateState(saved.state);
-      remoteRev = Number.isSafeInteger(saved.remoteRev) && saved.remoteRev > 0 ? saved.remoteRev : null;
-    }
-  } catch { notice('读取本机账本失败，可以从 JSON 或云备份恢复。', true); }
-  renderLedger();
-  void refreshQuotes();
+  $('sync-status').hidden = !user;
+  if (storageKey !== key) {
+    storageKey = key;
+    quotes = {};
+    state = initialState();
+    holderId = SELF;
+    drafts.clear();
+    resetTradeForm();
+    closeHolderDialogs();
+    remoteRev = null;
+    savedLocal = null;
+    pending = false;
+    try {
+      savedLocal = localStorage.getItem(key);
+      const saved = JSON.parse(savedLocal || 'null');
+      if (saved) {
+        state = validateState(saved.state);
+        remoteRev = Number.isSafeInteger(saved.remoteRev) && saved.remoteRev > 0 ? saved.remoteRev : null;
+        pending = saved.pending ?? (remoteRev !== null || JSON.stringify(state) !== JSON.stringify(initialState()));
+      }
+    } catch { notice('读取本机账本失败，可以从 JSON 或云备份恢复。', true); }
+    renderLedger();
+    if (!cloud) void refreshQuotes();
+  }
+  const context = cloud;
+  return syncCloud(context)?.then(() => { if (context === cloud) void refreshQuotes(); });
 }
 function accountAction(callback) {
   return async event => {
@@ -325,8 +424,8 @@ function closeHolderDialogs() {
   $('share-dialog').close();
   shareSnapshot = null;
 }
-function replaceLedger(data, revision) {
-  persist(data, revision);
+function replaceLedger(data) {
+  persist(data);
   if (holderId !== SELF && !activeHolder()) holderId = SELF;
   drafts.clear();
   resetTradeForm();
@@ -521,7 +620,7 @@ for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goa
     for (const date of form.querySelectorAll('input[type=date]')) date.value = chinaDay();
     tradeFields();
     goalFields();
-    notice('已保存到本机账本。');
+    notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
     if (collection !== 'research') void refreshQuotes();
   });
 }
@@ -542,7 +641,11 @@ async function importLinkedData() {
   const [, kind, token] = match;
   const isLedger = kind === 'ledger';
   const keyAtStart = storageKey;
+  const context = cloud;
   try {
+    if (context?.task) await context.task;
+    if (context !== cloud || location.hash !== match[0]) return;
+    if (context && !['synced', 'pending'].includes(context.phase)) throw Error('请先完成云账本同步，再打开导入链接。');
     const response = await fetch(`/api/investment-market?view=${isLedger ? 'ledger-import' : 'goal-template'}`, {
       headers: { Authorization: 'Bearer ' + token }, cache: 'no-store', signal: AbortSignal.timeout(12_000),
     });
@@ -577,37 +680,34 @@ tabs.forEach((tab, index) => {
   });
   tab.disabled = false;
 });
-$('data-toggle').addEventListener('click', () => {
-  $('data-panel').hidden = !$('data-panel').hidden;
-  $('data-toggle').setAttribute('aria-expanded', String(!$('data-panel').hidden));
-});
+function showDataPanel(open) {
+  $('data-panel').hidden = !open;
+  $('data-toggle').setAttribute('aria-expanded', String(open));
+}
+$('data-toggle').addEventListener('click', () => showDataPanel($('data-panel').hidden));
 $('login-form').addEventListener('submit', accountAction(async event => {
   const form = event.currentTarget;
   const data = await api('/api/grid/auth', 'POST', { action: 'login', ...readForm(form) });
   form.reset();
-  account(data.user);
-  notice('已打开此账号的本机账本。');
+  notice('');
+  await account(data.user);
 }));
 $('logout').addEventListener('click', accountAction(async () => {
   await api('/api/grid/auth', 'POST', { action: 'logout' });
   account(null);
   notice('已切回未登录的本机账本。');
 }));
-$('cloud-save').addEventListener('click', accountAction(async () => {
-  const remote = await api(path);
-  const currentRev = remote.kind === 'ok' ? remote.rev : null;
-  if (currentRev !== remoteRev) throw Error('云端版本有变化。请先导出本机账本，再读取云备份核对。');
-  const saved = await api(path, 'PUT', { baseRev: currentRev, data: state });
-  persist(state, saved.rev);
-  notice('云备份已保存。');
-}));
-$('cloud-load').addEventListener('click', accountAction(async () => {
-  const saved = await api(path);
-  if (saved.kind === 'empty') return notice('当前账号还没有云备份。');
-  if (!confirm('用云备份替换当前本机账本？可以先导出本机账本。')) return;
-  replaceLedger(saved.data, saved.rev);
-  notice('云备份已恢复。');
-}));
+$('sync-retry').addEventListener('click', () => syncCloud(cloud));
+$('sync-login').addEventListener('click', () => {
+  showDataPanel(true);
+  field($('login-form'), 'username').focus();
+});
+$('sync-use-local').addEventListener('click', () => {
+  if (confirm('用此浏览器的账本替换当前云端版本？')) void syncCloud(cloud, 'upload');
+});
+$('sync-use-cloud').addEventListener('click', () => {
+  if (confirm('用云端版本替换此浏览器的账本？可先导出本机 JSON。')) void syncCloud(cloud, 'download');
+});
 $('export').addEventListener('click', () => {
   const link = el('a');
   link.download = `333投资理论-${chinaDay()}.json`;
@@ -624,7 +724,7 @@ $('import-file').addEventListener('change', async event => {
   try {
     if (file.size > 4 * 1024 * 1024) throw Error('备份文件超过 4 MB。');
     const imported = validateState(JSON.parse(await file.text()));
-    if (key !== storageKey || !confirm('用此文件替换当前本机账本？')) return;
+    if (key !== storageKey || !confirm(cloud ? '恢复此文件并同步到当前账号的云账本？' : '用此文件替换当前本机账本？')) return;
     replaceLedger(imported);
     notice('JSON 备份已恢复。');
   } catch (error) { notice(error.message, true); }
@@ -695,8 +795,29 @@ document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventLi
 $('sentiment-refresh').addEventListener('click', () => refreshSnapshot(true));
 tradeFields();
 goalFields();
-account(await api('/api/grid/auth').then(result => result.user).catch(() => null));
+let sessionUnknown = false;
+async function restoreAccount() {
+  try {
+    const result = await api('/api/grid/auth');
+    sessionUnknown = false;
+    if (!accountBusy) await account(result.user);
+  } catch (error) {
+    sessionUnknown = error.status !== 401;
+    if (!storageKey) account(null);
+  }
+}
+await restoreAccount();
 if (new URLSearchParams(location.search).get('tab') === 'goal') selectTab($('tab-goal'));
 window.addEventListener('hashchange', () => { void importLinkedData(); });
 void importLinkedData();
+window.addEventListener('online', () => {
+  if (sessionUnknown && !cloud && !accountBusy) void restoreAccount();
+  else void syncCloud(cloud);
+});
+window.addEventListener('focus', () => {
+  if (cloud && Date.now() - cloud.checkedAt > 10_000) void syncCloud(cloud);
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && pending) void syncCloud(cloud);
+});
 setInterval(() => { if (visible() && tradingWindow()) void refreshQuotes(); }, 60_000);

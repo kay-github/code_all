@@ -1,9 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SELF, initialState, instrument, validateState, mergeImport, replay, evaluateGoals, portfolio } from '../tools/investment-theory/model.mjs';
+import { syncDecision } from '../tools/investment-theory/cloud-sync.mjs';
 
 const symbol = '300502.SZ';
 const row = (id, type, extras) => ({ id, type, date: '2026-11-05', bucket: 'core', symbol, ...extras });
+
+test('cloud sync compares revisions before uploading and recognizes a write whose response was lost', () => {
+  const state = initialState();
+  const edited = { ...state, trades: [row('cash', 'deposit', { amount: 50 })] };
+  const saved = { kind: 'ok', rev: 2, data: edited };
+  assert.equal(syncDecision({ state, pending: false, remoteRev: null }, saved), 'download');
+  assert.equal(syncDecision({ state, pending: false, remoteRev: 1 }, saved), 'download');
+  assert.equal(syncDecision({ state, pending: true, remoteRev: 1 }, saved), 'conflict');
+  assert.equal(syncDecision({ state, pending: true, remoteRev: 2 }, saved), 'upload');
+  assert.equal(syncDecision({ state: edited, pending: true, remoteRev: 1 }, saved), 'current');
+  assert.equal(syncDecision({ state: edited, pending: true, remoteRev: null }, { kind: 'empty' }), 'upload');
+  assert.equal(syncDecision({ state: edited, pending: false, remoteRev: 1 }, { kind: 'empty' }), 'conflict');
+});
 
 test('investment ledger replays opening cost, weighted sales, cash, split and dividends', () => {
   const trades = [
