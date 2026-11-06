@@ -180,10 +180,14 @@
     </form>
   </dialog>
   <dialog id="share-dialog" class="ledger-dialog share-dialog" aria-labelledby="share-title">
-    <h2 id="share-title">持仓收益图</h2>
-    <p class="muted">图片只包含当前持有人的数据。发送前可预览。</p>
+    <header class="share-heading">
+      <h2 id="share-title">持仓收益图</h2>
+      <p class="muted">预览并下载当前持有人的收益快照。</p>
+    </header>
     <label class="share-choice"><input id="share-details" type="checkbox">附持仓明细（最多 10 个标的）</label>
-    <canvas id="share-canvas" aria-label="收益图预览"></canvas>
+    <div class="share-preview" tabindex="0" role="region" aria-label="收益图预览">
+      <canvas id="share-canvas" role="img" aria-label="持仓收益图"></canvas>
+    </div>
     <div class="actions">
       <form method="dialog"><button>关闭</button></form>
       <button id="share-save" class="primary" type="button">下载 PNG</button>

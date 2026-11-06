@@ -165,10 +165,19 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .ledger-dialog { width: min(460px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
 .ledger-dialog::backdrop { background: rgb(13 21 31 / 62%); }
 .ledger-dialog form > label { margin-top: 12px; }
-.share-dialog { width: min(560px, calc(100% - 24px)); }
-.share-choice { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; font-size: 13px; }
-.share-choice input { width: 16px; height: 16px; min-height: 0; margin: 0; }
-#share-canvas { display: block; width: 100%; height: auto; border-radius: 8px; }
+.share-dialog { width: min(640px, calc(100% - 24px)); padding: 0; }
+.share-heading { padding: 16px 16px 0; }
+.share-heading p { margin: 5px 0 10px; }
+.share-choice {
+  display: flex; align-items: center; gap: 8px; width: fit-content; min-height: 39px;
+  margin: 0 16px 10px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--inset); font-size: 13px; cursor: pointer;
+}
+.share-choice input { width: 16px; height: 16px; min-height: 0; margin: 0; accent-color: var(--primary); }
+.share-preview { max-height: min(55dvh, 530px); margin: 0 16px; overflow: auto; border-radius: 10px; background: #112030; }
+.share-preview:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#share-canvas { display: block; width: 100%; height: auto; }
+.share-dialog .actions { position: sticky; bottom: 0; justify-content: end; margin: 0; padding: 12px 16px; background: var(--surface); }
 @media (max-width: 760px) {
   .board-panels, .goal-groups { grid-template-columns: 1fr; }
   .position-row { grid-template-columns: minmax(0, 1fr); gap: 7px; }
@@ -192,5 +201,5 @@ textarea { resize: vertical; margin-bottom: 8px; }
 @media (pointer: coarse) {
   :root { scroll-padding-top: 72px; }
   button, select, textarea, input:not([type="checkbox"]) { min-height: 44px; }
-  .entry button, .sync-status button { min-height: 44px; }
+  .entry button, .sync-status button, .share-choice { min-height: 44px; }
 }
