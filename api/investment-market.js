@@ -132,7 +132,7 @@ module.exports = async function handler(req, res) {
           return sendJson(res, 401, { error: '未授权' });
         }
         try {
-          return sendJson(res, 200, await crowding.refreshCrowding({ store }));
+          return sendJson(res, 200, await crowding.refreshCrowding({ store, force: req.query.force === '1' }));
         } catch (error) {
           console.error('Crowding refresh:', error.message, error.cause?.cause?.code ?? error.cause?.message ?? '');
           return sendJson(res, 503, { error: '板块拥挤度更新暂不可用' });
