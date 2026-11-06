@@ -6,7 +6,12 @@ export const defaults = [
 ];
 export const horizons = ['远期', '中期', '短期'];
 export const metrics = { price: '价格 / 点位', marketCap: '总市值（亿元）', peTTM: 'PE TTM', changePct: '日涨跌幅（%）' };
-export const directions = ['已披露基本面', '机构预测', '技术与资金', '情绪观察'];
+export const directionGroups = {
+  fundamentals: ['已披露基本面', '机构预测'],
+  technical: ['技术与资金'],
+  emotion: ['情绪观察'],
+};
+export const directions = Object.values(directionGroups).flat();
 export const tradeTypes = {
   opening: '期初持仓', buy: '买入', sell: '卖出', deposit: '入金',
   withdrawal: '出金', dividend: '现金分红', adjustment: '送转 / 股数调整',

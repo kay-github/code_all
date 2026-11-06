@@ -1,5 +1,5 @@
 import {
-  buckets, legacyBucket, horizons, directions, metrics, tradeTypes, initialState, chinaDay,
+  buckets, legacyBucket, horizons, directionGroups, metrics, tradeTypes, initialState, chinaDay,
   SELF, holderTrades, portfolio, replay, validateState, mergeImport, evaluateGoals, quoteKey,
 } from './model.mjs';
 import { drawShare } from './share.mjs';
@@ -14,6 +14,8 @@ const pct = value => Number.isFinite(value) ? `${fmt.format(value)}%` : '—';
 const stamp = value => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 const difference = value => value > 0 ? 'positive' : value < 0 ? 'negative' : '';
 const uuid = () => crypto.randomUUID();
+const researchLists = [...document.querySelectorAll('[data-research-kind]')];
+const snapshotButtons = [...document.querySelectorAll('.refresh-snapshot')];
 
 let user = null;
 let storageKey = '';
@@ -403,17 +405,21 @@ async function refreshGoalReminders() {
   }
 }
 function renderResearch() {
-  $('research').replaceChildren(...[...state.research].reverse().sort((a, b) => b.date.localeCompare(a.date)).map(row => {
-    const card = rowCard(row.title, [row.kind, row.date, row.period, row.institution].filter(Boolean).join(' · '), row.note, 'research', row.id);
-    if (row.source) {
-      const source = el('a', 'text-link', '查看来源 ↗');
-      source.href = row.source;
-      source.target = '_blank';
-      source.rel = 'noopener noreferrer';
-      card.append(source);
-    }
-    return card;
-  }));
+  const rows = [...state.research].reverse().sort((a, b) => b.date.localeCompare(a.date));
+  for (const list of researchLists) {
+    const cards = rows.filter(row => row.kind === list.dataset.researchKind).map(row => {
+      const card = rowCard(row.title, [row.date, row.period, row.institution].filter(Boolean).join(' · '), row.note, 'research', row.id);
+      if (row.source) {
+        const source = el('a', 'text-link', '查看来源 ↗');
+        source.href = row.source;
+        source.target = '_blank';
+        source.rel = 'noopener noreferrer';
+        card.append(source);
+      }
+      return card;
+    });
+    list.replaceChildren(...(cards.length ? cards : [el('p', 'muted research-empty', '暂无记录，可在下方新增观察。')]));
+  }
 }
 function render() { renderPositions(); renderTrades(); renderGoals(); renderResearch(); }
 
@@ -548,17 +554,16 @@ function fearGauge(item) {
   return card;
 }
 function fearPanel(data) {
-  const panel = el('div', 'fear-panel');
-  panel.append(el('h3', '', '核心指数恐贪仪表盘'));
+  if (!data?.items?.length) return el('p', 'muted', '恐贪快照暂不可用。');
+  const panel = el('div');
   const gauges = el('div', 'fear-gauges');
-  gauges.append(...(data?.items ?? []).map(fearGauge));
+  gauges.append(...data.items.map(fearGauge));
   panel.append(gauges, el('p', 'meta', ['金融工作台', data?.model, '0 偏恐慌 · 100 偏贪婪'].filter(Boolean).join(' · ')));
   return panel;
 }
-function boardPanel(title, data, subtitle) {
-  const card = el('section');
-  card.append(el('h3', '', title));
-  if (!data?.items?.length) { card.append(el('p', 'muted', '快照暂不可用')); return card; }
+function boardPanel(data, subtitle) {
+  const card = el('div', 'board-content');
+  if (!data?.items?.length) { card.append(el('p', 'muted', '快照暂不可用。')); return card; }
   card.append(el('p', 'meta', subtitle));
   const list = el('ul', 'board-scores');
   for (const item of data.items) {
@@ -580,17 +585,24 @@ function boardPanel(title, data, subtitle) {
 async function refreshSnapshot(force = false) {
   if (loadingSnapshot || (snapshot && !force)) return;
   loadingSnapshot = true;
-  $('sentiment-refresh').disabled = true;
+  snapshotButtons.forEach(button => { button.disabled = true; });
   try {
     snapshot = await api('/api/investment-market?view=sentiment');
-    const boards = el('div', 'board-panels');
-    boards.append(
-      boardPanel('一级行业情绪', snapshot.industry, 'TMT（电子、通信、计算机、传媒）及其他大行业 · 恐贪分'),
-      boardPanel('大主题拥挤度', snapshot.crowding, '精选主题 · 金融工作台拥挤度快照'),
-    );
-    $('sentiment').replaceChildren(fearPanel(snapshot.fear), boards);
-  } catch { $('sentiment').replaceChildren(el('p', 'muted', '快照暂不可用，可稍后刷新。')); }
-  finally { loadingSnapshot = false; $('sentiment-refresh').disabled = false; }
+    $('fear-index').replaceChildren(fearPanel(snapshot.fear));
+    $('industry-fear').replaceChildren(boardPanel(snapshot.industry, 'TMT（电子、通信、计算机、传媒）及其他大行业 · 恐贪分'));
+    $('crowding').replaceChildren(boardPanel(snapshot.crowding, '精选主题 · 金融工作台拥挤度快照'));
+  } catch {
+    for (const id of ['fear-index', 'industry-fear', 'crowding']) {
+      const warning = el('p', 'muted snapshot-error', snapshot ? '刷新失败，当前显示上次快照。' : '快照暂不可用，可稍后刷新。');
+      const panel = $(id);
+      panel.querySelector('.snapshot-error')?.remove();
+      if (snapshot) panel.prepend(warning);
+      else panel.replaceChildren(warning);
+    }
+  } finally {
+    loadingSnapshot = false;
+    snapshotButtons.forEach(button => { button.disabled = false; });
+  }
 }
 
 function tradeFields() {
@@ -625,14 +637,14 @@ function goalFields() {
   field(form, 'threshold').required = Boolean(symbol.value.trim());
   options(field(form, 'metric'), Object.entries(metrics).filter(([key]) => !index || key === 'price' || key === 'changePct'));
 }
-function bindForm(id, submit) {
-  $(id).addEventListener('submit', event => {
+function bindForm(form, submit) {
+  form.addEventListener('submit', event => {
     event.preventDefault();
     try { submit(event.currentTarget); }
     catch (error) { notice(error.message, true); }
   });
 }
-bindForm('allocation-form', form => {
+bindForm($('allocation-form'), form => {
   const input = readForm(form);
   const allocation = buckets.map((_, index) => ({ name: input[`name-${index}`], target: input[`target-${index}`] }));
   persist(holderId === SELF ? { ...state, allocation } : {
@@ -642,8 +654,8 @@ bindForm('allocation-form', form => {
   render();
   notice('仓位设置已保存。');
 });
-for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goals'], ['research-form', 'research']]) {
-  bindForm(formId, form => {
+for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goals']]) {
+  bindForm($(formId), form => {
     const input = readForm(form);
     const row = { ...input, id: uuid(), index: input.kind === 'index', holderId };
     persist({ ...state, [collection]: [...state[collection], row] });
@@ -653,21 +665,63 @@ for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goa
     tradeFields();
     goalFields();
     notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
-    if (collection !== 'research') void refreshQuotes();
+    void refreshQuotes();
   });
 }
-
-const tabs = [...document.querySelectorAll('[data-tab]')];
-function selectTab(active) {
-  for (const tab of tabs) {
-    const selected = active === tab;
-    tab.setAttribute('aria-selected', String(selected));
-    tab.tabIndex = selected ? 0 : -1;
-    $(tab.dataset.tab).hidden = !selected;
-  }
-  if (active.dataset.tab === 'goal') void refreshGoalReminders();
-  if (active.dataset.tab === 'direction') void refreshSnapshot();
+for (const [panelId, kinds] of Object.entries(directionGroups)) {
+  const editor = $('research-editor').content.cloneNode(true);
+  const form = editor.querySelector('form');
+  const tab = $(`tab-${panelId}`).textContent;
+  editor.querySelector('summary').textContent = `新增${tab}观察`;
+  options(field(form, 'kind'), kinds.map(kind => [kind, kind]));
+  bindForm(form, () => {
+    persist({ ...state, research: [...state.research, { ...readForm(form), id: uuid() }] });
+    renderResearch();
+    form.reset();
+    field(form, 'date').value = chinaDay();
+    notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
+  });
+  $(panelId).append(editor);
 }
+
+function bindTabs(list, onSelect) {
+  const tabs = [...list.children];
+  const select = active => {
+    for (const tab of tabs) {
+      const selected = active === tab;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      $(tab.getAttribute('aria-controls')).hidden = !selected;
+    }
+    onSelect(active.getAttribute('aria-controls'));
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', event => {
+      let target;
+      switch (event.key) {
+        case 'ArrowRight': target = (index + 1) % tabs.length; break;
+        case 'ArrowLeft': target = (index + tabs.length - 1) % tabs.length; break;
+        case 'Home': target = 0; break;
+        case 'End': target = tabs.length - 1; break;
+        default: return;
+      }
+      event.preventDefault();
+      const active = tabs[target];
+      select(active);
+      active.focus();
+    });
+    tab.disabled = false;
+  });
+  return select;
+}
+bindTabs($('direction-tabs'), panel => {
+  if (panel !== 'fundamentals') void refreshSnapshot();
+});
+const selectTab = bindTabs($('main-tabs'), panel => {
+  if (panel === 'goal') void refreshGoalReminders();
+  if (panel === 'direction' && $('fundamentals').hidden) void refreshSnapshot();
+});
 async function importLinkedData() {
   const match = location.hash.match(/^#add-(goals|ledger)=([a-f0-9]{48})$/);
   if (!match || !storageKey) return;
@@ -701,24 +755,6 @@ async function importLinkedData() {
       (addedGoals ? `已添加 ${addedGoals} 个投资目标。` : '这些目标已存在。'));
   } catch (error) { notice(error.message, true); }
 }
-tabs.forEach((tab, index) => {
-  tab.addEventListener('click', () => selectTab(tab));
-  tab.addEventListener('keydown', event => {
-    let target;
-    switch (event.key) {
-      case 'ArrowRight': target = (index + 1) % tabs.length; break;
-      case 'ArrowLeft': target = (index + tabs.length - 1) % tabs.length; break;
-      case 'Home': target = 0; break;
-      case 'End': target = tabs.length - 1; break;
-      default: return;
-    }
-    event.preventDefault();
-    const active = tabs[target];
-    selectTab(active);
-    active.focus();
-  });
-  tab.disabled = false;
-});
 function showDataPanel(open) {
   $('data-panel').hidden = !open;
   $('data-toggle').setAttribute('aria-expanded', String(open));
@@ -827,13 +863,12 @@ $('share-save').addEventListener('click', () => {
 });
 
 options($('trade-type'), Object.entries(tradeTypes));
-options(field($('research-form'), 'kind'), directions.map(name => [name, name]));
 document.querySelectorAll('input[type=date]').forEach(input => { input.value = chinaDay(); });
 $('trade-type').addEventListener('change', tradeFields);
 field($('goal-form'), 'kind').addEventListener('change', goalFields);
 field($('goal-form'), 'symbol').addEventListener('input', goalFields);
 document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventListener('click', () => refreshQuotes(true)));
-$('sentiment-refresh').addEventListener('click', () => refreshSnapshot(true));
+snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
 tradeFields();
 goalFields();
 let sessionUnknown = false;
