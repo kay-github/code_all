@@ -300,7 +300,8 @@ function renderPositions() {
       identity.append(el('strong', '', row.quote?.name || row.symbol));
       if (row.quote?.name) identity.append(el('span', 'meta symbol', row.symbol));
       const metrics = el('dl', 'position-metrics');
-      const quoteStatus = row.quote?.stale ? ' · 缓存' : row.quote?.suspended ? ' · 停牌' : '';
+      const quoteStatus = row.quote?.stale ? ' · 缓存' : row.quote?.suspended ? ' · 停牌'
+        : row.quote?.source === '东方财富' ? ' · 备用源' : '';
       const values = [
         ['股数 / 份额', fmt.format(row.qty)],
         ['每股成本', `¥${(row.cost / row.qty / 100).toFixed(3)}`],
@@ -505,16 +506,20 @@ async function refreshQuotes(showStatus = false) {
     }
     if (key !== storageKey || holder !== holderId) return;
     for (const symbol of keys) {
-      if (received[symbol]) quotes[symbol] = received[symbol];
-      else if (quotes[symbol]) quotes[symbol] = { ...quotes[symbol], stale: true };
+      const quote = received[symbol];
+      const confirmedPrice = quote && !quote.stale && quote.price === quotes[symbol]?.price;
+      if (quote && (Date.parse(quote.time) >= (Date.parse(quotes[symbol]?.time) || 0) || confirmedPrice)) {
+        quotes[symbol] = quote;
+      } else if (quotes[symbol]) quotes[symbol] = { ...quotes[symbol], stale: true };
     }
     const goals = evaluateGoals(state.goals, quotes);
     const hits = goals.filter((row, index) => row.hit && row.hit !== state.goals[index].hit);
     if (JSON.stringify(goals) !== JSON.stringify(state.goals)) persist({ ...state, goals });
-    const valid = Object.values(received).filter(quote => !quote.stale);
+    const valid = keys.map(symbol => quotes[symbol]).filter(quote => quote && !quote.stale);
+    const sources = [...new Set(valid.map(quote => quote.source === '东方财富' ? '东方财富（备用）' : '腾讯财经'))];
     const newest = valid.map(quote => Date.parse(quote.time)).reduce((max, time) => Math.max(max, time), 0);
     $('quote-status').textContent = newest
-      ? `腾讯财经 · ${valid.length}/${keys.length} 个标的 · 最新 ${stamp(newest)} · 延迟行情`
+      ? `${sources.join(' / ')} · ${valid.length}/${keys.length} 个标的 · 最新 ${stamp(newest)} · 延迟行情`
       : '行情暂不可用。已加载报价显示为缓存。';
     renderPositions();
     renderGoals();

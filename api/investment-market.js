@@ -4,6 +4,8 @@ const store = require('../lib/gridStore');
 const { CONFIG, matchesSecret, matchesImport, runGoalAlerts } = require('../lib/investmentAlerts');
 const { sendPushplus } = require('../lib/pushplus');
 const crowding = require('../lib/investmentCrowding');
+const { createInvestmentQuotes, TENCENT_HOST } = require('../lib/investmentQuotes');
+const quotes = createInvestmentQuotes();
 
 const FINANCE = 'https://finance.688680.xyz';
 const cache = new Map();
@@ -80,52 +82,21 @@ async function sentiment() {
   };
 }
 
-function parseQuote(fields) {
-  const stamp = fields[30];
-  const price = numeric(fields[3]);
-  if (!(price > 0) || !/^\d{14}$/.test(stamp)) return null;
-  return {
-    name: fields[1], price, changePct: numeric(fields[32]), peTTM: numeric(fields[39]),
-    marketCap: numeric(fields[45]), suspended: fields[0] === 'S' || numeric(fields[5]) === 0,
-    time: `${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}T${stamp.slice(8, 10)}:${stamp.slice(10, 12)}:${stamp.slice(12)}+08:00`,
-  };
-}
-
-async function quotes(raw) {
-  const { instrument, quoteKey } = await import('../tools/investment-theory/model.mjs');
-  const symbols = [...new Set(String(raw || '').split(','))];
-  if (!raw || symbols.length > 24) throw Object.assign(Error('每次可查询 1 至 24 个标的'), { status: 400 });
-  let entries;
-  try {
-    entries = symbols.map(value => {
-      const index = value.startsWith('index:');
-      const symbol = instrument(index ? value.slice(6) : value, index);
-      const [code, exchange] = symbol.split('.');
-      return { id: quoteKey(symbol, index), provider: exchange.toLowerCase() + code, index };
-    });
-  } catch (error) { throw Object.assign(error, { status: 400 }); }
-  const keys = [...new Set(entries.map(row => row.provider))].sort();
-  const response = await cached(keys.join(','), 25_000, async () => {
-    const res = await fetch('https://qt.gtimg.cn/q=' + keys.join(','), {
-      headers: { Referer: 'https://gu.qq.com/', 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(7000),
-    });
-    if (!res.ok) throw Error('行情暂不可用');
-    const body = new TextDecoder('gb18030').decode(await res.arrayBuffer());
-    const rows = Object.fromEntries([...body.matchAll(/v_((?:sh|sz|bj)\d{6})="([^"]*)"/g)]
-      .map(match => [match[1], parseQuote(match[2].split('~'))]));
-    if (!Object.values(rows).some(Boolean)) throw Error('行情暂不可用');
-    return { rows };
-  });
-  return { quotes: Object.fromEntries(entries.flatMap(row => {
-    const quote = response.rows[row.provider];
-    if (!quote) return [];
-    const isStock = !row.index && !/^(?:sh5|sz159)/.test(row.provider);
-    return [[row.id, { ...quote, ...(isStock ? {} : { marketCap: null, peTTM: null }), stale: response.stale === true }]];
-  })), source: '腾讯财经' };
-}
-
 module.exports = async function handler(req, res) {
   try {
+    if (req.query?.view === 'quote-health' && req.method === 'POST') {
+      if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+        return sendJson(res, 401, { error: '未授权' });
+      }
+      // Exercise the production resolver and backup without touching its shared cache.
+      const check = createInvestmentQuotes({ fetcher(url, options) {
+        if (req.query.mode === 'fallback' && url.hostname === TENCENT_HOST) {
+          return Promise.resolve(new Response(null, { status: 503 }));
+        }
+        return fetch(url, options);
+      } });
+      return sendJson(res, 200, await check(req.query.symbols));
+    }
     if (req.query?.view === 'crowding') {
       if (req.method === 'POST') {
         if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
