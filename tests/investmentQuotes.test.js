@@ -41,6 +41,20 @@ test('keeps fresh Tencent prices and only sends missing or lagged symbols to the
   assert.equal(result.quotes['index:399006.SZ'].peTTM, null);
 });
 
+test('uses a complete backup quote when Tencent has a current price but omits the market cap', async () => {
+  const quotes = createInvestmentQuotes({ clock: () => now, fetcher: async url => {
+    if (url.hostname === TENCENT_HOST) {
+      const incomplete = tencent('sz300502', 172).replace('~2400~', '~~');
+      return new Response(incomplete);
+    }
+    assert.equal(url.searchParams.get('secids'), '0.300502');
+    return response(eastmoney('0.300502', 172));
+  } });
+  const { quotes: rows } = await quotes('300502.SZ');
+  assert.equal(rows['300502.SZ'].source, '东方财富');
+  assert.equal(rows['300502.SZ'].marketCap, 2400.342852);
+});
+
 test('batch backup covers stocks, Beijing, ETFs and same-code Shanghai index after a timeout', async () => {
   let primaryRequests = 0;
   let at = now;

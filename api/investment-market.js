@@ -17,6 +17,16 @@ const indices = [
 const industryNames = ['电子', '通信', '计算机', '传媒', '电力设备', '汽车', '国防军工'];
 const themeIds = ['tonghuashun:concept:885756', 'tonghuashun:concept:886069'];
 
+function diagnosticQuotes(mode) {
+  // Exercise the production resolver without touching its shared cache.
+  return createInvestmentQuotes({ fetcher(url, options) {
+    if (mode === 'fallback' && url.hostname === TENCENT_HOST) {
+      return Promise.resolve(new Response(null, { status: 503 }));
+    }
+    return fetch(url, options);
+  } });
+}
+
 async function cached(key, ttl, load) {
   const old = cache.get(key);
   if (old && Date.now() - old.at < ttl) return old.value;
@@ -88,13 +98,7 @@ module.exports = async function handler(req, res) {
       if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
         return sendJson(res, 401, { error: '未授权' });
       }
-      // Exercise the production resolver and backup without touching its shared cache.
-      const check = createInvestmentQuotes({ fetcher(url, options) {
-        if (req.query.mode === 'fallback' && url.hostname === TENCENT_HOST) {
-          return Promise.resolve(new Response(null, { status: 503 }));
-        }
-        return fetch(url, options);
-      } });
+      const check = diagnosticQuotes(req.query.mode);
       return sendJson(res, 200, await check(req.query.symbols));
     }
     if (req.query?.view === 'crowding') {
@@ -122,9 +126,12 @@ module.exports = async function handler(req, res) {
       const config = (await store.read(CONFIG))?.value;
       if (!config?.alertIds?.length) return sendJson(res, 503, { error: '目标提醒尚未配置' });
       if (!process.env.PUSHPLUS_TOKEN) return sendJson(res, 503, { error: '推加尚未配置' });
-      return sendJson(res, 200, await runGoalAlerts({
-        store, config, quotes, send: sendPushplus, dryRun: req.query.dryRun === '1',
-      }));
+      const dryRun = req.query.dryRun === '1';
+      const stats = await runGoalAlerts({
+        store, config, quotes: dryRun && req.query.mode === 'fallback' ? diagnosticQuotes('fallback') : quotes,
+        send: sendPushplus, dryRun,
+      });
+      return sendJson(res, !dryRun && stats.unchecked ? 503 : 200, stats);
     }
     if (['goal-template', 'ledger-import'].includes(req.query?.view) && req.method === 'GET') {
       const isLedger = req.query.view === 'ledger-import';

@@ -2,11 +2,12 @@ name: Investment goal reminders
 
 on:
   schedule:
-    # Trading sessions and a short window after the close, China Standard Time.
-    - cron: '30,45 1 * * 1-5'
-    - cron: '0,15,30,45 2,5,6 * * 1-5'
-    - cron: '0,15,30 3 * * 1-5'
-    - cron: '0,15 7 * * 1-5'
+    # Trading sessions and closing checks in China Standard Time, offset from the hour.
+    - cron: '32,47 1 * * 1-5'
+    - cron: '2,17,32,47 2,5,6 * * 1-5'
+    - cron: '2,17,32 3 * * 1-5'
+    - cron: '2,17 7 * * 1-5'
+    - cron: '37 8 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -29,5 +30,6 @@ jobs:
           test -n "$MONITOR_SECRET"
           endpoint='https://1.688680.xyz/api/investment-market?view=goal-alerts'
           if [ "$EVENT_NAME" = workflow_dispatch ]; then endpoint="${endpoint}&dryRun=1"; fi
-          curl --silent --show-error --fail --max-time 45 -X POST \
+          curl --silent --show-error --fail-with-body --max-time 45 \
+            --retry 2 --retry-delay 30 --retry-max-time 115 -X POST \
             --header "Authorization: Bearer $MONITOR_SECRET" "$endpoint"

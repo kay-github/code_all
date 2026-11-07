@@ -13,6 +13,7 @@ const money = value => Number.isFinite(value) ? `¥${fmt.format(value / 100)}` :
 const pct = value => Number.isFinite(value) ? `${fmt.format(value)}%` : '—';
 const stamp = value => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 const difference = value => value > 0 ? 'positive' : value < 0 ? 'negative' : '';
+const quoteProvider = quote => quote.source === '东方财富' ? '东方财富（备用）' : quote.source;
 const uuid = () => crypto.randomUUID();
 const researchLists = [...document.querySelectorAll('[data-research-kind]')];
 const snapshotButtons = [...document.querySelectorAll('.refresh-snapshot')];
@@ -380,7 +381,10 @@ function renderGoals() {
       const badge = enabled ? el('span', 'goal-reminder', '微信推加已开启') : null;
       const card = rowCard(row.title, condition, row.note, 'goals', row.id, badge);
       if (quote && Number.isFinite(quote[row.metric])) {
-        card.append(el('p', 'meta', `最近读数 ${quote[row.metric]} · ${stamp(quote.time)}${quote.stale ? ' · 缓存' : ''}`));
+        const details = [quoteProvider(quote), quote.stale ? '缓存' : null, quote.suspended ? '停牌' : null].filter(Boolean);
+        card.append(el('p', 'meta', [`最近读数 ${quote[row.metric]}`, stamp(quote.time), ...details].join(' · ')));
+      } else if (row.symbol) {
+        card.append(el('p', 'meta', '暂无可用行情读数'));
       }
       if (row.hit) card.append(el('p', 'positive', `最近触发 ${row.hit.value} · ${stamp(row.hit.time)}`));
       group.append(card);
@@ -516,7 +520,7 @@ async function refreshQuotes(showStatus = false) {
     const hits = goals.filter((row, index) => row.hit && row.hit !== state.goals[index].hit);
     if (JSON.stringify(goals) !== JSON.stringify(state.goals)) persist({ ...state, goals });
     const valid = keys.map(symbol => quotes[symbol]).filter(quote => quote && !quote.stale);
-    const sources = [...new Set(valid.map(quote => quote.source === '东方财富' ? '东方财富（备用）' : '腾讯财经'))];
+    const sources = [...new Set(valid.map(quote => quoteProvider(quote) ?? '腾讯财经'))];
     const newest = valid.map(quote => Date.parse(quote.time)).reduce((max, time) => Math.max(max, time), 0);
     $('quote-status').textContent = newest
       ? `${sources.join(' / ')} · ${valid.length}/${keys.length} 个标的 · 最新 ${stamp(newest)} · 延迟行情`
