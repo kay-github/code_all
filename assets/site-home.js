@@ -8,8 +8,9 @@
     volume: '/tools/volume-lab/',
     optical: '/tools/optical-decline-board/',
     gjd: '/tools/national-team-etf/',
+    fundRecovery: '/tools/fund-dragon-recovery/',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);
@@ -29,6 +30,14 @@
   byId('theme-toggle').addEventListener('click', () => window.ToolSiteTheme.toggle());
   document.addEventListener('sitethemechange', updateThemeButton);
   updateThemeButton();
+
+  // 后台配置会覆盖 defaults；pinned 工具强制保留入口，避免新功能页从首页消失。
+  function withPinned(config) {
+    const pinned = (window.ToolSiteDefaults?.items || []).filter(item => item.pinned);
+    const urls = new Set((config.items || []).map(item => item.url));
+    const extra = pinned.filter(item => !urls.has(item.url));
+    return extra.length ? { ...config, items: [...(config.items || []), ...extra] } : config;
+  }
 
   function toolId(url) {
     const link = new URL(url, location.origin);
@@ -169,9 +178,9 @@
     if (menu.open) menu.close();
     showRoute();
   });
-  render(window.ToolSiteDefaults);
+  render(withPinned(window.ToolSiteDefaults));
   try {
     const response = await fetch('/api/site/config', { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(10000) });
-    if (response.ok) render(await response.json());
+    if (response.ok) render(withPinned(await response.json()));
   } catch { /* Keep the built-in entries available if the network is unavailable. */ }
 })();

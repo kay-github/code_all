@@ -9,6 +9,7 @@
       { id: 'stocks', category: '市场研究', name: '股票回撤研究室', description: '研究真实历史回撤，测算反弹、估值与持仓。', url: '/tools/stock-rebound-lab/', icon: '研', image: '', color: 'blue', visible: true, newTab: false },
       { id: 'volume', category: '市场研究', name: '量能观察台', description: 'ETF与个股盘中量能、历史均量及双图联动对比。', url: '/tools/volume-lab/', icon: '量', image: '', color: 'green', visible: true, newTab: false },
       { id: 'optical', category: '市场研究', name: '光通信跌幅榜', description: 'A股光通信产业链跌幅榜单，盘中实时刷新，收盘自动更新。', url: '/tools/optical-decline-board/', icon: '光', image: '', color: 'purple', visible: true, newTab: false },
+      { id: 'fundRecovery', category: '市场研究', name: '光模块双龙仓位回补', description: '跟踪重仓新易盛/中际旭创的基金是否已把双龙仓位买回，每交易日自动更新。', url: '/tools/fund-dragon-recovery/', icon: '仓', image: '', color: 'purple', visible: true, newTab: false, pinned: true },
       { id: 'gjd', category: '市场研究', name: '国家队ETF追踪', description: '国家队ETF托底买入与本轮资金流向，附924以来完整建仓到派发周期复盘。', url: '/tools/national-team-etf/', icon: '国', image: '', color: 'orange', visible: true, newTab: false },
     ],
   };

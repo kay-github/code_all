@@ -83,6 +83,10 @@
     {
       "src": "^/txdp/?$",
       "dest": "/tools/optical-decline-board/index.html"
+    },
+    {
+      "src": "^/(?:jjhc|fund-dragon-recovery)/?$",
+      "dest": "/tools/fund-dragon-recovery/index.html"
     }
   ]
 }
