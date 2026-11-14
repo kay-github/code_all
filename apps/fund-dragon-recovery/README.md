@@ -17,9 +17,12 @@ python -X utf8 update.py --analyze-only --review  # 同时补抓优先候选的�
 python -X utf8 update.py --validate-only    # 重新验收已有构建
 python -X utf8 publish.py                  # 准备已验收发布文件，运行站点测试
 python -X utf8 publish.py --deploy         # 白名单提交推送，等待并核对线上
+python -X utf8 verify_online.py            # 单独复核已推送版本，不重复提交
 ```
 
 也可一步 `python -X utf8 update.py --deploy`。**发布只接受当前代码、配置、原始批次和验收相互匹配的结果。** 最近已完成交易日由两只宽基指数的同源日线共同确认；15:15 前不采纳当天盘中日线。收盘后净值未齐时保留缺失状态；覆盖不足会阻止发布，稍后手动重跑。
+
+推送后的校验超时，不代表部署失败。先查远端提交及生产状态，再单独运行 `verify_online.py`；它逐项报告公开路径、数据与源码核对结果，通过后写入本地 `online_verification.json`。不因等待而盲目重复提交或覆盖数据。Git使用本次会话的HTTPS代理，可通过 `FUND_TRACK_GIT_PROXY` 指定，不改全局Git设置。
 
 研究历史数据可用 `--end YYYY-MM-DD`；不要将历史研究构建发布为当前数据。历史模型使用当前回溯数据和当前观察池，不冒充当时可知的实时样本外结果。新季度报告未公布或接口不可用时，采集失败会显式停止，保留已有线上页面；修复来源或等待披露后重新运行，不自动沿用旧数据装作刷新成功。
 
