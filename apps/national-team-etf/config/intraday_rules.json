@@ -1,0 +1,58 @@
+{
+  "version": "2.2-intraday-1",
+  "status": "研究阈值，与日频规则独立，未经实名交易样本校准",
+  "timezone": "Asia/Shanghai",
+  "schedule": {
+    "core_interval_seconds": 60,
+    "idle_interval_seconds": 300,
+    "extended_interval_seconds": 300,
+    "candidate_interval_seconds": 600,
+    "collect_hours": [["09:30", "11:30"], ["13:00", "15:00"]],
+    "auction_hours": [["09:15", "09:25"], ["14:57", "15:00"]],
+    "stale_seconds": 180,
+    "holidays": [],
+    "holiday_note": "仅按周末与此处显式配置的休市日判断；未接入交易所交易日历，不保证完整"
+  },
+  "windows_minutes": [5, 15, 30],
+  "baseline": {
+    "min_days": 5,
+    "max_days": 20,
+    "source": "本地逐日分钟画像归档（qt 快照区间成交额）；外部分时接口仅作可选补充，实测不稳定",
+    "cold_start_label": "冷启动：历史同一时段基线不足，仅输出线索，不升级",
+    "note": "按分钟时段分位构建；可用交易日不足 min_days 时明确标记，不伪造历史、不联网补造"
+  },
+  "thresholds": {
+    "activity_ratio_L1": 1.8,
+    "activity_ratio_L2": 2.5,
+    "relative_excess_pct_L1": 0.15,
+    "relative_excess_pct_L2": 0.35,
+    "premium_abs_pct": 0.25,
+    "premium_delta_pct_15m": 0.18,
+    "sync_breadth_L1": 0.55,
+    "sync_breadth_L2": 0.75,
+    "sync_min_families": 3,
+    "escalate_concurrency": 2,
+    "strong_concurrency": 3,
+    "persist_minutes": 15,
+    "strong_persist_minutes": 30
+  },
+  "alerts": {
+    "emit_on": ["new", "escalate", "reverse", "fault", "recover"],
+    "silent_when_unchanged": true,
+    "dedupe_key": ["business_date", "family"],
+    "dedupe_note": "方向与等级是事件可变属性，不进去重键；否则升级会被误判成新事件、反转检测不到",
+    "require_fields": ["time", "etf_or_family", "direction", "evidence", "duration", "counter_evidence", "data_freshness", "identity_status", "pending_verification"],
+    "channel": "WorkBuddy 定时任务输出（见 docs/持续追踪实施说明.md）",
+    "channel_limit": "本机无事件驱动推送 API；提醒延迟取决于定时任务周期，不保证秒级或即时送达"
+  },
+  "discipline": {
+    "never": [
+      "不把核心ETF角色、放量、大单、折溢价、同步交易当作国家队身份证明",
+      "不输出未经校准的国家队概率或盘中买入金额",
+      "不把过期行情、日期错位、缺失解释为没有托底",
+      "不把补采历史伪装成正在发生的新事件",
+      "不操作证券账户"
+    ],
+    "note": "二级市场买卖可能不改变总份额；盘后没有净申购不能单独判定盘中承接信号错误"
+  }
+}

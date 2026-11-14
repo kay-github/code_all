@@ -9,6 +9,14 @@ from v2_common import *
 from v2_sources import rows_of
 from v2_engine import normalize, metrics, window, family_metrics, risk_step, identity, behavior_clues
 
+# 随发布同步的研究/调度模块。改任何一个都要重新构建并验收，
+# 否则仓库快照里的代码与构建记录的 code_hash 会不一致。
+TRACKING_MODULES=['intraday.py','postclose.py','morning_review.py','weekly_report.py','scheduler.py']
+
+def code_files():
+    return list(ROOT.glob('v2_*.py'))+[ROOT/x for x in
+        ['pipeline.py','collect_data.py','cfg.py']+TRACKING_MODULES]
+
 def load_snapshot(manifest_path=None):
     if manifest_path is None:
         pointer=read_json(DATA/'raw_latest.json')
@@ -221,7 +229,7 @@ def build(manifest_path=None):
     exchange=summarize_exchange(raw['exchange'],series,calendar,end,actions,instrument,raw['exchange_history'])
     from v2_tracking import attach as attach_official_tracking
     attach_official_tracking(exchange,series,calendar,actions,rules)
-    code_hash=digest({p.name:__import__('hashlib').sha256(p.read_bytes()).hexdigest() for p in list(ROOT.glob('v2_*.py'))+[ROOT/'pipeline.py',ROOT/'collect_data.py',ROOT/'cfg.py']})
+    code_hash=digest({p.name:__import__('hashlib').sha256(p.read_bytes()).hexdigest() for p in code_files()})
     build_id=now().replace(':','').replace('-','').replace('+','_')+'_'+digest([manifest,config_hash,code_hash])[:10]
     folder=DATA/'builds'/build_id
     folder.mkdir(parents=True,exist_ok=False)

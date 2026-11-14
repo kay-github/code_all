@@ -16,8 +16,10 @@ DEST=REPO/'tools/national-team-etf'
 SOURCE=REPO/'apps/national-team-etf'
 MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py','v2_tracking.py',
     'v2_release.py','v2_report.py','collect_data.py','pipeline.py','validate_v2.py','publish.py',
-    'update.py','serve_preview.py','compat_v2.py','monitor.py']
-DOCUMENTS=['国家队ETF数据研究方法_口径与坑.md','国家队追踪_经验库.md','国家队追踪_v2_改版与验证.md']
+    'update.py','serve_preview.py','compat_v2.py','monitor.py','intraday.py',
+    'postclose.py','morning_review.py','weekly_report.py','scheduler.py']
+DOCUMENTS=['国家队ETF数据研究方法_口径与坑.md','国家队追踪_经验库.md','国家队追踪_v2_改版与验证.md',
+    '持续追踪实施说明.md']
 
 
 def content_hash(path):
@@ -43,7 +45,7 @@ def stage():
     manifest,_=pipeline.load_snapshot(a['raw_manifest'])
     bm=read_json(path/'manifest.json')
     if digest(manifest)!=bm['raw_manifest_hash']:raise RuntimeError('原始输入批次与构建不符')
-    current_hash=digest({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in list(ROOT.glob('v2_*.py'))+[ROOT/'pipeline.py',ROOT/'collect_data.py',ROOT/'cfg.py']})
+    current_hash=digest({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in pipeline.code_files()})
     if current_hash!=bm['code_hash']:raise RuntimeError('计算或页面代码已修改，请重新构建并验收')
     files=[]
     for src,dst in [('report.html','index.html'),('cycle.html','cycle.html')]:
@@ -57,6 +59,26 @@ def stage():
         valuation=a['exchange']['valuation'],identity='当日买卖主体未确认',
         source_urls={c:x['url'] for c,x in a['exchange']['instruments'].items()})
     write_json(DEST/'data/latest.json',public);files.append('tools/national-team-etf/data/latest.json')
+    # 盘中采集器快照：低频随正式发布同步。实时行情由页面 JSONP 直连供应商，
+    # 不产生每分钟 Git 提交或完整部署；此处只提供规则结论与事件摘要。
+    live=read_json(DATA.parent/'intraday'/'latest.json') or dict(
+        status='unavailable',level='L0',event_summary=dict(active=0,total=0),
+        identity='I0 当日买卖主体未确认',
+        note='盘中采集器尚未产出快照；不代表没有托底，也不代表行情正常')
+    write_json(DEST/'data/intraday/latest.json',live)
+    files.append('tools/national-team-etf/data/intraday/latest.json')
+    # 盘后初值摘要：只同步结论字段，不公开逐只原始响应与本地路径。
+    # 低频随正式发布；当日 16:30/19:00/21:30 的本地初值仍须等次晨复核，绝不覆盖生产页。
+    pcf = read_json(DATA.parent/'intraday'/'postclose.json') or {}
+    pc = {k: pcf.get(k) for k in ('generated_at','business_date','disclosure_stage',
+                                 'pending_review','coverage','expected','complete',
+                                 'complete_total_policy','note','next_step','retries_exhausted')}
+    if not pc.get('business_date'):
+        pc = dict(business_date=None, disclosure_stage='尚无盘后初值',
+                  pending_review=True, coverage=0, expected=15, complete=False,
+                  note='尚无已同步的盘后初值；不代表没有数据更新，也不代表数据已齐全')
+    write_json(DEST/'data/intraday/postclose.json', pc)
+    files.append('tools/national-team-etf/data/intraday/postclose.json')
     for name in MODULES+['README.md','README_v2.md','卖出侧观测手册.md']:
         files.append(copy(ROOT/name,SOURCE/name))
     for sub in ['config','tests']:

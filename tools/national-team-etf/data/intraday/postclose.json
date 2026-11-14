@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-11-14T13:32:08+08:00",
+  "business_date": "2026-11-13",
+  "disclosure_stage": "收盘初值 / 待次晨复核",
+  "pending_review": true,
+  "coverage": 15,
+  "expected": 15,
+  "complete": true,
+  "complete_total_policy": "覆盖不足时不展示核心15只完整合计，缺口不补0",
+  "note": "深交所T日晚间初值仅供参考，以T+1早间更新为准；本文件不覆盖生产页、不作为正式发布依据",
+  "next_step": "次晨10:00运行 python update.py --phase final --deploy 完成复核与发布",
+  "retries_exhausted": null
+}
