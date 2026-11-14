@@ -26,7 +26,10 @@ def verify(attempts=30,delay=10):
         try:
             live=json.loads(fetch('/tools/fund-dragon-recovery/data/latest.json')['body'])
             print('公开构建',live.get('build_id'),flush=True)
-            if state and state.get('readyState')=='READY' and live.get('build_id')==a['build_id']:break
+            remote_receipt=json.loads(fetch('/tools/fund-dragon-recovery/data/release.json')['body'])
+            # Documentation/verifier-only revisions can keep the data build ID.
+            # Do not mistake the preceding READY deployment for the new release.
+            if state and state.get('readyState')=='READY' and live.get('build_id')==a['build_id'] and remote_receipt==receipt:break
         except Exception as exc:print('公开构建待复核',type(exc).__name__,str(exc)[:160],flush=True)
         if i==0 or i%6==0:print('等待生产部署',a['build_id'],'当前',state.get('readyState') if state else '未知',flush=True)
         if i==attempts-1:raise RuntimeError('生产构建或数据尚未核对成功；未记录上线通过')
