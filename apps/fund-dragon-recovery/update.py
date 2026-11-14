@@ -34,12 +34,11 @@ def main():
         analysis,path=build(read(DATA/'raw_latest.json')['manifest'])
     validate(path)
     if args.publish or args.deploy:
-        from publish import stage,deploy
+        from publish import stage,deploy,run_verification
         _,files=stage()
         if args.deploy:
             deploy(files)
-            from verify_online import verify
-            verify()
+            run_verification()
     print('完成',analysis['build_id'],'STOP_SIGNAL=False；持续跟踪，不创建定时任务。',flush=True)
 
 

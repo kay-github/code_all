@@ -87,10 +87,16 @@ def deploy(files):
     print('已推送',git('rev-parse','HEAD'),'；需继续核验生产 Ready 和公开数据。',flush=True)
 
 
+def run_verification():
+    # Fresh verifier processes succeeded where verification after a long update
+    # waited indefinitely on this Windows host. Keep the handoff bounded and
+    # leave an explicit standalone recovery command if networking stalls.
+    subprocess.run([sys.executable,'-X','utf8',str(ROOT/'verify_online.py')],cwd=ROOT,check=True,timeout=240)
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--deploy',action='store_true');args=p.parse_args()
     _,files=stage()
     if args.deploy:
         deploy(files)
-        from verify_online import verify
-        verify()
+        run_verification()
