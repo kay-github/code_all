@@ -1,0 +1,45 @@
+{
+  "build_id": "20261114T213447_0800_0af02a6701",
+  "passed": true,
+  "checks": 3621,
+  "verified_at": "2026-11-14T21:35:39+08:00",
+  "summary": {
+    "groups": 3086,
+    "share_entries": 3132,
+    "latest_nav_count": 3070,
+    "categories": {
+      "active_domestic": 2777,
+      "enhanced_index": 309
+    },
+    "latest_nav_coverage": 0.9948152948801037,
+    "states": {
+      "初步升温线索": 5,
+      "初步升温，个基资料不足": 28,
+      "点估计升温，证据不足": 348,
+      "升温未获个基对照支持": 28,
+      "负向关联缓和，不足以指向回补": 390,
+      "模型分歧，保留线索": 109,
+      "暂无清晰升温证据": 1003,
+      "保持正向收益关联": 108,
+      "收益关联走弱": 707,
+      "指数增强，仅作披露与收益观察": 309,
+      "数据不足": 35,
+      "数据或口径不足": 16
+    },
+    "verified_portfolios": 1,
+    "confirmed_current_positions": 0,
+    "fund_review_states": {
+      "passed": 9,
+      "insufficient": 48,
+      "not_supported": 47,
+      "not_reviewed": 2982
+    },
+    "model_usable": 3037,
+    "identifiable": 3035
+  },
+  "limitations": [
+    "无真实实时持仓真值，不证明市场仓位识别准确率",
+    "仅脚本/DOM交互校验；未进行真实浏览器视觉验收",
+    "定报原文仅一个样本核验，其余为第三方汇总"
+  ]
+}

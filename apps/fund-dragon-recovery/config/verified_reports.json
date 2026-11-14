@@ -1,0 +1,48 @@
+{
+  "version": "3.0",
+  "items": [
+    {
+      "fund_id": "001170",
+      "share_codes": [
+        "001170",
+        "017612"
+      ],
+      "period": "2026-09-30",
+      "published_at": "2026-10-27",
+      "status": "verified_pdf",
+      "source": "https://static.howbuy.com/gkxx/ggfile/2026/2026-10/2026-10-27/5618512.pdf",
+      "author": "宏利基金管理有限公司",
+      "portfolio_net_assets": 6808550281.07,
+      "share_classes": {
+        "001170": {
+          "nav_assets": 2927006189.9,
+          "units": 685971815.34,
+          "nav": 4.267
+        },
+        "017612": {
+          "nav_assets": 3881544091.17,
+          "units": 919734115.18,
+          "nav": 4.22
+        }
+      },
+      "holdings": {
+        "300502": {
+          "shares": 1746575,
+          "market_value": 679417675,
+          "weight_pct": 9.98
+        },
+        "300308": {
+          "shares": 815496,
+          "market_value": 659279586.24,
+          "weight_pct": 9.68
+        }
+      },
+      "visual_pages": [
+        2,
+        3,
+        8
+      ],
+      "note": "管理人原始报告，经页面图像复核；镜像托管网址不改变报告作者。"
+    }
+  ]
+}
