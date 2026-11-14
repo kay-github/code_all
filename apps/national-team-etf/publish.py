@@ -61,7 +61,7 @@ def stage():
         files.append(copy(ROOT/name,SOURCE/name))
     for sub in ['config','tests']:
         for file in (ROOT/sub).rglob('*'):
-            if file.is_file() and '__pycache__' not in file.parts and file.suffix in {'.py','.json','.gz'}:
+            if file.is_file() and '__pycache__' not in file.parts and file.suffix in {'.py','.json','.gz','.cjs'}:
                 files.append(copy(file,SOURCE/file.relative_to(ROOT)))
     for name in DOCUMENTS:
         original=ROOT/'docs'/name if (ROOT/'docs'/name).exists() else ROOT.parent/name

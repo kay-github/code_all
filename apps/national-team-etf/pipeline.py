@@ -110,6 +110,8 @@ def build(manifest_path=None):
     manifest_path=Path(manifest_path).resolve()
     manifest,raw=load_snapshot(manifest_path)
     registry=read_json(CONFIG/'registry.json');rules=read_json(CONFIG/'rules.json')
+    if digest(registry)!=manifest['registry_hash']:
+        raise RuntimeError('观察池配置与采集批次不一致，请按新注册表完整重新采集')
     actions=read_json(CONFIG/'actions.json');evidence=read_json(CONFIG/'evidence.json')
     official=read_json(CONFIG/'official_shares.json')['items']
     instrument={x['code']:dict(x,pool='fixed_watch') for x in registry['items'] if x['watch']}
