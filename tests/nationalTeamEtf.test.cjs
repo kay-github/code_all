@@ -3,12 +3,22 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
+const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'../tools/national-team-etf');
 const page=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const cycle=fs.readFileSync(path.join(root,'cycle.html'),'utf8');
 const publicData=JSON.parse(fs.readFileSync(path.join(root,'data/latest.json'),'utf8'));
 const data=JSON.parse(page.match(/<script type="application\/json" id="dataset">([\s\S]*?)<\/script>/)[1]);
 const script=[...page.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('src=')&&!m[1].includes('application/json')).map(m=>m[2]).join('\n');
+
+test('release file checksums survive Git newline normalization',()=>{
+ const receipt=JSON.parse(fs.readFileSync(path.join(root,'data/release.json'),'utf8'));
+ for(const [file,expected] of Object.entries(receipt.files)){
+  let bytes=fs.readFileSync(path.resolve(root,'../..',file));
+  if(!file.endsWith('.gz'))bytes=Buffer.from(bytes.toString('utf8').replace(/\r\n/g,'\n'),'utf8');
+  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),expected,file);
+ }
+});
 
 test('pages, public snapshot, and release receipt share one build and business date',()=>{
  const receipt=JSON.parse(fs.readFileSync(path.join(root,'data/release.json'),'utf8'));

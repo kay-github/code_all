@@ -20,6 +20,12 @@ MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py'
 DOCUMENTS=['国家队ETF数据研究方法_口径与坑.md','国家队追踪_经验库.md','国家队追踪_v2_改版与验证.md']
 
 
+def content_hash(path):
+    data=path.read_bytes()
+    if path.suffix!='.gz':data=data.replace(b'\r\n',b'\n')
+    return hashlib.sha256(data).hexdigest()
+
+
 def copy(source,target):
     target.parent.mkdir(parents=True,exist_ok=True)
     if source.resolve()!=target.resolve():shutil.copyfile(source,target)
@@ -77,7 +83,8 @@ def stage():
     files.append(copy(ROOT/'tests/site_release.test.cjs',REPO/'tests/nationalTeamEtf.test.cjs'))
     receipt=dict(build_id=a['build_id'],business_date=a['end'],version=a['version'],checked_at=now(),
         official_net_yi=a['exchange']['latest']['net_estimate'],official_net5_yi=a['exchange']['w5']['net_estimate'],
-        checks=len(acceptance['checks']),files={f:hashlib.sha256((REPO/f).read_bytes()).hexdigest() for f in sorted(set(files))})
+        checks=len(acceptance['checks']),hash_format='sha256; UTF-8 text CRLF normalized to LF; gzip raw bytes',
+        files={f:content_hash(REPO/f) for f in sorted(set(files))})
     write_json(DEST/'data/release.json',receipt);files.append('tools/national-team-etf/data/release.json')
     print('已准备本地发布文件',a['build_id'],'白名单',len(files),'个文件',flush=True)
     return a,sorted(set(files))
