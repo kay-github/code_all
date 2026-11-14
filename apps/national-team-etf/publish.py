@@ -114,7 +114,13 @@ def stage():
 
 def deploy(files):
     def git(*args):
-        cmd=['git','-c','http.proxy=','-c','https.proxy=',*args]
+        # 全局 git 配置的 7897 已失效；本机会话的 HTTPS_PROXY 是 7890。
+        # 优先使用显式 GJD_GIT_PROXY，其次会话代理；都没有才退回直连。
+        proxy=(os.environ.get('GJD_GIT_PROXY') or os.environ.get('HTTPS_PROXY')
+               or os.environ.get('https_proxy') or os.environ.get('HTTP_PROXY') or '')
+        cfg=(['-c','http.proxy='+proxy,'-c','https.proxy='+proxy] if proxy
+             else ['-c','http.proxy=','-c','https.proxy='])
+        cmd=['git',*cfg,*args]
         r=subprocess.run(cmd,cwd=REPO,text=True,encoding='utf8',capture_output=True)
         if r.returncode:raise RuntimeError(r.stderr or r.stdout)
         return r.stdout.strip()
