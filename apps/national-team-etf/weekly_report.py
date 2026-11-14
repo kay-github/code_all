@@ -55,6 +55,17 @@ def collect(days):
     return dates, snaps, events, notes
 
 
+def log_counts(dates):
+    """运行日志与归档事件分开统计：历史遗留状态机可能只写了日志没写事件。"""
+    p = IDIR / 'run.log'
+    if not p.exists():
+        return dict(fault=0, recover=0, lines=0)
+    keep = [line for line in p.read_text(encoding='utf-8', errors='replace').splitlines()
+            if line[:10] in dates]
+    return dict(fault=sum('采集故障' in x for x in keep),
+                recover=sum('采集恢复' in x for x in keep), lines=len(keep))
+
+
 def summarize(dates, snaps, events, notes):
     metas = [x.get('meta', {}) for x in snaps]
     lags = [m['lag_seconds'] for m in metas
@@ -91,7 +102,9 @@ def summarize(dates, snaps, events, notes):
                                          p95=quantile(lags, .95) if lags else None,
                                          maximum=max(lags) if lags else None)),
         events=dict(total=len(events), by_kind=dict(kinds),
-                    faults=kinds.get('fault', 0), recoveries=kinds.get('recover', 0)),
+                    faults=kinds.get('fault', 0), recoveries=kinds.get('recover', 0),
+                    run_log=log_counts(dates),
+                    log_vs_archive_note='归档事件与运行日志分开统计；旧版状态机可能只写日志未落事件，差异保留不回填'),
         notifications=dict(total=len(notes), by_kind=dict(note_kinds),
                            duplicate_ids=duplicates, duplicate_count=len(duplicates),
                            pending_backlog=len(jlines(IDIR / 'notify_pending.jsonl'))),
@@ -120,7 +133,8 @@ def render(s):
         '## 事件与提醒',
         '',
         '- 事件 %d 条：%s' % (e['total'], json.dumps(e['by_kind'], ensure_ascii=False)),
-        '- 采集故障 %d 次，恢复 %d 次。' % (e['faults'], e['recoveries']),
+        '- 采集故障 %d 次，恢复 %d 次（归档事件）；运行日志另记录故障 %d 次、恢复 %d 次，两者差异保留不回填。'
+        % (e['faults'], e['recoveries'], e['run_log']['fault'], e['run_log']['recover']),
         '- 提醒 %d 条：%s' % (n['total'], json.dumps(n['by_kind'], ensure_ascii=False)),
         '- 重复提醒 id：%d 个；通知队列积压：%d 条。' % (n['duplicate_count'], n['pending_backlog']),
         '',

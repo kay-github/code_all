@@ -1,8 +1,8 @@
 {
-  "build_id": "20261114T141041_0800_d053bcd92b",
+  "build_id": "20261114T141919_0800_25fe4c9dd0",
   "business_date": "2026-11-13",
   "version": "2.1.0",
-  "checked_at": "2026-11-14T14:16:42+08:00",
+  "checked_at": "2026-11-14T14:19:47+08:00",
   "official_net_yi": -103.42118228160028,
   "official_net5_yi": -320.1246527712001,
   "checks": 17,
@@ -32,7 +32,7 @@
     "apps/national-team-etf/pipeline.py": "4b6660aeea1de66afa322b02eda630d545cbea1218011ac9803cc8cfa548c62d",
     "apps/national-team-etf/postclose.py": "ececa3219e57b48852ca6b613c9d45424a3a53395125a36afa69b3b5945b8d76",
     "apps/national-team-etf/publish.py": "4e9e8be0f6ccbbc25800e1c0eccdf80b415dc6f54c0da82d3ab8d07843beacb0",
-    "apps/national-team-etf/release.json": "ac7374061286969c32ebb997dff74c1a49d63314cddf9f766f984c0e83b12c3e",
+    "apps/national-team-etf/release.json": "c1e1938e856d3465e1d5220da96396fb9fa95a0e5f0bc70cc254ec99437f27a5",
     "apps/national-team-etf/scheduler.py": "219f4282d1e2f7ed25aaba2288b0212e21ff6b6dbfeae8c36f46e33c7dbb0a2d",
     "apps/national-team-etf/serve_preview.py": "06a50be1542b915012eba59d3737d9f5cbb75ad0f715c930e15849434f653ac5",
     "apps/national-team-etf/tests/fixtures/regression_20261113.json.gz": "172020e1091efafccc7ea54079767f8fbca662903e14605b45a8818746030bc4",
@@ -51,14 +51,14 @@
     "apps/national-team-etf/v2_sources.py": "7bfc0c35597e448a4f636d39f9ccf0c537d7953e1fe0b65a56331411dbcba833",
     "apps/national-team-etf/v2_tracking.py": "fdc8f21e22f693d8d28d0c11aa5ce8b7f3f43a7abe76db1de6a7559a32084228",
     "apps/national-team-etf/validate_v2.py": "06c37f64b6e38449f533d1dd446ae166cc95b7994214b1a92ec9c74abd8a5b7c",
-    "apps/national-team-etf/weekly_report.py": "922dc63431f10a27409f5f233dbfbef121736e8feac444927b0d3d8fe01314ed",
+    "apps/national-team-etf/weekly_report.py": "62d49707fd2c67546ca13d2ae12b621fce862317d0554a1d09996803a3b93e6b",
     "apps/national-team-etf/卖出侧观测手册.md": "e66df1a74d7a360614b65ca8d215aa54678531b86f77775f5b2d4dbff97ff2ec",
     "tests/nationalTeamEtf.test.cjs": "d5bc804d780cdf738b8f5568e2cedc89f7968450d3f36a5c28277cc8c3449563",
-    "tools/national-team-etf/cycle.html": "f2a6413a856d862097d748db56f57c6bcc70111045653e638dd248a3463c1921",
-    "tools/national-team-etf/data/intraday/latest.json": "c31c4832774e788d5a29542dbb4e5f4b3d59bb89a10701d2ab119181183080be",
+    "tools/national-team-etf/cycle.html": "fcc8993a3794bcbaa17a0a4a37a1a61a312f1f73b2ace3ad8071afcffed85387",
+    "tools/national-team-etf/data/intraday/latest.json": "d1907ae261cf424c444a21a5e5dc1d5de1e6cd4dc4e7a9ed3e7ea9d35d4b307a",
     "tools/national-team-etf/data/intraday/postclose.json": "385977b448169574bad76aaa38cbb622f293f7786f06ccacb3dbe436e603bb9b",
-    "tools/national-team-etf/data/latest.json": "7c2c48f05bb1b178696e9159e6e6cf242e69c3c0e386dd1e23101afe5a175d08",
-    "tools/national-team-etf/data/official_flow.csv": "aa6918aa01d04a853fd3a2086e7965c299abda97a6acda13f3f35752725d15cd",
-    "tools/national-team-etf/index.html": "e213f89190a7c944c4d264e1f49c86343da6ad799fbc9b5552404dfdd2ce7338"
+    "tools/national-team-etf/data/latest.json": "dd1699f251574e9a4eed2230d822cedb1fdf795d96af8f6f4a7df00372519aec",
+    "tools/national-team-etf/data/official_flow.csv": "8f4c1cb342cead4c1fb9022b058947311dd2d1223919a2e39d5a10ba9afb15c2",
+    "tools/national-team-etf/index.html": "b757c7a0d5951f08956e6b752e4987adfbca0b946c5b6ca5ac8603e11ec17bf5"
   }
 }
