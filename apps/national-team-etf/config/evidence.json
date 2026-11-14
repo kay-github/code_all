@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "items": [
+    {
+      "kind": "fund_report",
+      "scope": "fund",
+      "codes": [
+        "510300"
+      ],
+      "event_date": "2026-06-30",
+      "published_at": "2026-08-29",
+      "status": "verified",
+      "source": "https://static.howbuy.com/gkxx/ggfile/2026/2026-8/2026-08-29/5497945.pdf",
+      "document_sha256": "6ac4fd80a05e3545f63ba5b5bc337d466f46b4528bb723e826807dd12e113dc4",
+      "note": "报告只披露机构/个人/联接持有结构，未披露汇金姓名；不能升级为实名持有人证据"
+    }
+  ],
+  "pending": [
+    {
+      "kind": "announcement",
+      "event_date": "2026-10-23",
+      "claim": "旧版所称汇金扩大ETF增持范围",
+      "status": "unverified",
+      "reason": "缺官方原文，禁止进入身份评分"
+    },
+    {
+      "kind": "holdings",
+      "claim": "旧版所引2025年年末各ETF汇金持有份额",
+      "status": "unverified",
+      "reason": "需带报告期、公布日、原始报告及实体名称，禁止从样本角色推定身份"
+    }
+  ]
+}

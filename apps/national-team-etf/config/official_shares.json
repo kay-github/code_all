@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "code": "510300",
+      "date": "2025-12-31",
+      "shares": 88829587690,
+      "scope": "total",
+      "unit_basis": "native",
+      "source": "https://static.howbuy.com/gkxx/ggfile/2026/2026-8/2026-08-29/5497945.pdf",
+      "published_at": "2026-08-29",
+      "document_sha256": "6ac4fd80a05e3545f63ba5b5bc337d466f46b4528bb723e826807dd12e113dc4",
+      "document_path": "D:\\work_code2\\gjd_research\\data\\v2\\evidence\\510300_2026_interim.pdf",
+      "page": 60,
+      "note": "基金管理人中期报告；总份额历史锚点，不混入场内份额覆盖值"
+    },
+    {
+      "code": "510300",
+      "date": "2026-06-30",
+      "shares": 18914887690,
+      "scope": "total",
+      "unit_basis": "native",
+      "source": "https://static.howbuy.com/gkxx/ggfile/2026/2026-8/2026-08-29/5497945.pdf",
+      "published_at": "2026-08-29",
+      "document_sha256": "6ac4fd80a05e3545f63ba5b5bc337d466f46b4528bb723e826807dd12e113dc4",
+      "document_path": "D:\\work_code2\\gjd_research\\data\\v2\\evidence\\510300_2026_interim.pdf",
+      "page": 60,
+      "note": "基金管理人中期报告；总份额历史锚点，不混入场内份额覆盖值"
+    }
+  ],
+  "required_fields": [
+    "code",
+    "date",
+    "shares",
+    "scope",
+    "source",
+    "published_at",
+    "unit_basis"
+  ],
+  "note": "仅exchange_traded、与当日交易单位一致、来源可追溯的数据可覆盖反推份额；其他字段只作核对。"
+}

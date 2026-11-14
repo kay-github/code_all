@@ -1,0 +1,59 @@
+{
+  "version": "2.1.0",
+  "build_id": "20261114T121000_0800_ee316e7dbf",
+  "business_date": "2026-11-13",
+  "built_at": "2026-11-14T12:10:00+08:00",
+  "data_stage": "次晨复核",
+  "core_members": [
+    "159338",
+    "159845",
+    "159915",
+    "159919",
+    "159949",
+    "510050",
+    "510300",
+    "510310",
+    "510330",
+    "510500",
+    "512050",
+    "512100",
+    "563360",
+    "588000",
+    "588080"
+  ],
+  "latest": {
+    "date": "2026-11-13",
+    "valid_members": 15,
+    "expected_members": 15,
+    "complete": true,
+    "net_estimate": -103.42118228160028,
+    "partial_net_estimate": -103.42118228160028,
+    "share_change_members": 15,
+    "outflow_count": 12,
+    "inflow_count": 3
+  },
+  "w5": {
+    "complete": true,
+    "net_estimate": -320.1246527712001
+  },
+  "unit": "亿元；份额为原生份额",
+  "valuation": "份额变化×当日成交均价，仅表示证券敞口变化估算，不是实际现金流",
+  "identity": "当日买卖主体未确认",
+  "source_urls": {
+    "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-10-26&txtEnd=2026-11-13",
+    "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-10-26&txtEnd=2026-11-13",
+    "159915": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-10-26&txtEnd=2026-11-13",
+    "159919": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-10-26&txtEnd=2026-11-13",
+    "159949": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-10-26&txtEnd=2026-11-13",
+    "510050": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "510300": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "510310": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "510330": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "510500": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "512050": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "512100": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "563360": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "588000": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
+    "588080": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
+  }
+}

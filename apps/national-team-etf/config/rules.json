@@ -1,0 +1,15 @@
+{
+  "version": "2.1",
+  "status": "研究阈值，尚未通过实名交易样本校准",
+  "rolling_history": 120,
+  "min_history": 30,
+  "peak_sessions": 63,
+  "watch_flow5_ratio": 0.005,
+  "persistent_share_dd": 0.01,
+  "accelerated_flow5_ratio": 0.02,
+  "accelerated_flow1_ratio": 0.01,
+  "persistent_negative_days": 3,
+  "release_positive_days": 5,
+  "source_share_tolerance": 0.005,
+  "primary_scope": "core15"
+}

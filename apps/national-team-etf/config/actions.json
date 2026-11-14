@@ -1,0 +1,13 @@
+[
+  {
+    "code": "510310",
+    "effective_date": "2024-09-23",
+    "record_date": "2024-09-20",
+    "share_ratio": 0.49977589,
+    "type": "share_consolidation",
+    "status": "verified",
+    "source": "https://www.sse.com.cn/disclosure/fund/announcement/c/new/2024-09-23/510310_20240923_G18B.pdf",
+    "known_at": "2024-09-23",
+    "note": "相邻交易日份额换至当日单位；历史成交金额和未复权价格不做单边缩放。登记份额仍需独立对账。"
+  }
+]
