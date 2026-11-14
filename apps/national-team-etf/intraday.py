@@ -702,6 +702,8 @@ def main():
     p.add_argument('--force-lock', action='store_true', help='确认旧进程已退出后强制清锁')
     p.add_argument('--watchdog', action='store_true',
                    help='看门狗：仅当 last_tick 超时且无有效锁时补跑一轮，供计划任务做断线恢复')
+    p.add_argument('--scheduled', action='store_true',
+                   help='计划任务模式：由系统每分钟唤醒，脚本按交易时段自行节流后单轮采集')
     a = p.parse_args()
 
     IDIR.mkdir(parents=True, exist_ok=True)
@@ -768,6 +770,20 @@ def main():
             release_lock()
         log('看门狗：last_tick 超时，已补跑一轮（留档不冒充新事件）', 'WARN')
         return
+
+    if a.scheduled and not a.watchdog:
+        # 系统每分钟唤醒一次；非交易时段按 idle_interval 自行降频，避免空转。
+        sess_now = session_state()
+        interval = (SCHED.get('core_interval_seconds', 60) if sess_now == 'open'
+                    else SCHED.get('idle_interval_seconds', 300))
+        s = read_json(STATE_FILE) or {}
+        if s.get('last_tick'):
+            try:
+                age = (tz_now() - datetime.fromisoformat(s['last_tick'])).total_seconds()
+                if age < interval * 0.8:
+                    return
+            except ValueError:
+                pass
 
     state = load_state()
     baseline = read_json(BASELINE_FILE)

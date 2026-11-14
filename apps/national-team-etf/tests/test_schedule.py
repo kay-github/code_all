@@ -22,8 +22,12 @@ class SchedulerTest(unittest.TestCase):
         morning = next(t for t in S.TASKS if t['name'] == 'GJD_Morning_1000')
         self.assertIn('DAILY', morning['sc'])
         self.assertNotIn('BYDAY', ' '.join(morning['sc']))
-        # 盘中常驻与看门狗都要在
-        self.assertIn('GJD_Intraday_Loop', names)
+        # 盘中采集改为系统每分钟唤醒 + 脚本内节流，不再依赖 ONLOGON（本机实测拒绝访问）
+        self.assertIn('GJD_Intraday_Tick', names)
+        tick = next(t for t in S.TASKS if t['name'] == 'GJD_Intraday_Tick')
+        self.assertIn('MINUTE', tick['sc'])
+        self.assertNotIn('ONLOGON', ' '.join(' '.join(t['sc']) for t in S.TASKS),
+                         'ONLOGON 在本机需要更高权限，已被诊断排除')
         self.assertIn('GJD_Intraday_Watchdog', names)
 
     def test_no_hardcoded_business_date_in_scheduling_code(self):

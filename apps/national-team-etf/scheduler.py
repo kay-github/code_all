@@ -6,7 +6,9 @@
 设计约束：
   - 任务名、cmd 内容一律 ASCII，避开 PowerShell 5.1 / ANSI(936) 中文脚本编码坑。
   - 安装前强制核对本机为 UTC+08:00 且未启用夏令时，否则拒绝安装。
-  - 盘中 60 秒粒度靠常驻 --loop；每 10 分钟看门狗负责断线/崩溃恢复。
+  - 盘中 60 秒粒度靠系统每分钟唤醒 `--scheduled`，由脚本按交易时段自行节流；
+    不依赖常驻进程（本机实测 `/SC ONLOGON` 返回「拒绝访问」）。
+  - 每 10 分钟看门狗负责断线/崩溃恢复。
   - 16:30 / 19:00 / 21:30 / 次日 10:00 都是 DAILY，不按周一至周五过滤（含周六）。
 """
 from __future__ import annotations
@@ -31,9 +33,9 @@ INSTALL_RECORD = IDIR / 'scheduler_install.json'
 
 # (任务名, 运行模式, schtasks 调度参数, 说明)
 TASKS = [
-    dict(name='GJD_Intraday_Loop', mode='intraday',
-         sc=['/SC', 'ONLOGON'],
-         desc='登录时启动盘中轻量采集常驻进程：连续竞价 60 秒，其余时段 300 秒'),
+    dict(name='GJD_Intraday_Tick', mode='tick',
+         sc=['/SC', 'MINUTE', '/MO', '1'],
+         desc='每分钟唤醒一次，脚本按交易时段自行节流：连续竞价 60 秒，其余 300 秒；不依赖常驻进程'),
     dict(name='GJD_Intraday_Watchdog', mode='watchdog',
          sc=['/SC', 'MINUTE', '/MO', '10'],
          desc='每 10 分钟看门狗：last_tick 超时且无有效锁时清锁并补跑一轮'),
@@ -56,6 +58,7 @@ TASKS = [
 
 MODES = {
     'intraday': 'intraday.py --loop',
+    'tick': 'intraday.py --scheduled',
     'watchdog': 'intraday.py --watchdog',
     'postclose': 'postclose.py --retries 3 --wait 20',
     'morning': 'morning_review.py',
@@ -103,7 +106,7 @@ def build_runner():
         'set "PY=%s"' % py,
         'set "TASKLOG=%s"' % (IDIR / 'windows_task.log'),
         'if not exist "%s" mkdir "%s"' % (IDIR, IDIR),
-        'echo [%DATE% %TIME%] start mode=%1 >> "%TASKLOG%"',
+        'echo [%DATE:~0,10% %TIME%] start mode=%1 >> "%TASKLOG%"',
     ]
     jumps = []
     for mode, cmd in MODES.items():
