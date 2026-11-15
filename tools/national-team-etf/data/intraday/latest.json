@@ -1,12 +1,12 @@
 {
   "version": "2.2-intraday-1",
-  "generated_at": "2026-11-15T09:42:09+08:00",
+  "generated_at": "2026-11-15T10:02:02+08:00",
   "session": "holiday",
   "out_of_session": true,
   "session_note": "非交易时段：行情不更新属正常，不解释为没有托底",
   "business_date": "2026-11-13",
   "quote_time": "2026-11-13T16:14:59+08:00",
-  "lag_seconds": 149230.472695,
+  "lag_seconds": 150423.879075,
   "freshness": "out_of_session",
   "coverage": {
     "core_expected": 15,

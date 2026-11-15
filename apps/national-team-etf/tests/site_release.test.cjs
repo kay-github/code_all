@@ -98,3 +98,48 @@ test('empty discovery and incomplete official data show gaps without zero totals
  assert.ok(nodes.discoveryRows.innerHTML.includes('尚无有效扫描数据'));
  assert.ok(nodes.kpis.innerHTML.includes('—'));
 });
+
+test('inline favicon prevents the root /favicon.ico 404',()=>{
+ assert.match(page,/<link rel="icon" href="data:/);
+ assert.match(cycle,/<link rel="icon" href="data:/);
+});
+
+// 精简 DOM 走到「实时通道未启用」静态降级就 return，测不到盘中 render()。
+// pill 曾只在真实浏览器路径被调用，因未定义而每轮抛 ReferenceError，DOM 测试却全绿。
+// 这里补齐浏览器能力强制执行实时分支，把这类错误变成可观测的 DOM 缺口。
+function renderLive(dataset=data){
+ const ids=[...page.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+ const nodes=Object.fromEntries(ids.map(id=>[id,{innerHTML:'',textContent:'',value:'',checked:false,clientWidth:1440,
+  handlers:{},addEventListener(k,f){this.handlers[k]=f;}}]));
+ nodes.dataset.textContent=JSON.stringify(dataset);nodes.pool.value='core';nodes.direction.value='out';
+ const jsonp=[],intervals=[],rejections=[];let timerId=0;
+ const head={appendChild(s){jsonp.push(s);}};
+ const document={getElementById:id=>nodes[id],documentElement:{dataset:{}},head,
+  createElement:()=>({charset:'',src:'',onload:null,onerror:null,remove(){}})};
+ // 9 秒兜底与下载用的长定时器不真正注册，避免测试进程被挂住。
+ const fakeSetTimeout=(fn,ms)=>ms>=1000?++timerId:setTimeout(fn,ms);
+ const context={document,window:{addEventListener(){}},setTimeout:fakeSetTimeout,
+  fetch:()=>Promise.resolve({ok:false,json:()=>Promise.resolve(null)}),
+  setInterval:(fn,ms)=>{intervals.push({fn,ms});return intervals.length;},clearInterval:()=>{}};
+ const onReject=e=>rejections.push(e);
+ process.on('unhandledRejection',onReject);
+ try{vm.runInNewContext(script,context);}
+ catch(e){process.removeListener('unhandledRejection',onReject);throw e;}
+ return {nodes,context,jsonp,intervals,rejections,off:()=>process.removeListener('unhandledRejection',onReject)};
+}
+
+test('browser-capable intraday render has no uncaught ReferenceError (pill stays global)',async()=>{
+ const e=renderLive();
+ try{
+  assert.equal(e.jsonp.length,1,'浏览器环境应发起一次 JSONP 行情请求');
+  e.jsonp[0].onload();
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  assert.deepEqual(e.rejections,[],'实时 render() 抛出了未捕获异常；常见原因是 pill 未定义为全局');
+  assert.notEqual(e.nodes.intradayStage.textContent,'实时通道未启用','必须走实时分支，不能是静态降级');
+  assert.match(e.nodes.intradayStage.textContent,/盘中实时|行情过期/);
+  assert.match(e.nodes.intradayStatus.innerHTML,/<span class="pill/,'render() 应生成完整状态标签');
+  assert.ok(e.nodes.intradayStatus.innerHTML.includes('身份：I0'));
+  assert.ok(e.nodes.intradayStatus.innerHTML.includes('采集器快照：未发布'));
+  assert.ok(e.intervals.some(x=>x.ms===60000),'应注册 60 秒轮询');
+ }finally{e.off();}
+});

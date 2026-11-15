@@ -53,6 +53,7 @@ INVENTORY_BLOCK=r'''<section id="inventory" aria-labelledby="inventoryTitle">
 TEMPLATE=r'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="gjd-build-id" content="__BUILD__"><title>国家队观察 · ETF通道追踪 __END__</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e639c'/%3E%3Cpath d='M6 23l6-7 4 4 9-11' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
 <script src="/assets/site-theme.js"></script><link rel="stylesheet" href="/assets/workspace-theme.css">
 <style>
 :root{--bg:#f1f5f9;--surface:#fff;--inset:#edf2f7;--line:#dce4ed;--text:#172536;--muted:#64748b;--accent:#2563eb;--group-bg:#e6edf5;--group-text:#334155;--red:#d8404d;--green:#16845d;--amber:#996308}
@@ -99,6 +100,9 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const num=(x,d=1)=>x===null||x===undefined?'—':(x>0?'+':'')+x.toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
 const val=x=>`<span class="mono ${x>0?'up':x<0?'dn':''}">${num(x)}</span>`;
 const range=w=>w&&w.low!==null?`${num(w.low)} 至 ${num(w.high)} 亿`:'数据不足';
+// 盘中实时区 render() 会调用 pill；精简 DOM 的验收环境走静态降级分支，测不到这里，
+// 曾导致真实浏览器每轮抛 ReferenceError。保持全局定义，勿移进 IIFE。
+const pill=(text,warn=false)=>`<span class="pill${warn?' risk':''}">${esc(text)}</span>`;
 const I=D.inventory,ip=x=>x===null||x===undefined?'—':x.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
