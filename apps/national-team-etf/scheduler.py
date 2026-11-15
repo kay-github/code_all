@@ -1,15 +1,16 @@
-"""国家队ETF持续追踪 · 本机计划任务（时区 Asia/Shanghai）。
+"""国家队ETF持续追踪 · 调度说明（时区 Asia/Shanghai）。
 
-只负责 Windows 计划任务的安装 / 卸载 / 查询 / 清单打印，不改数据链、不发布、
-不发送通知。任务只调用 `_scheduled_run.cmd`，业务纪律仍由各脚本自己保证。
+本机 Windows 计划任务已于 2026-11-15 全部卸载：每分钟拉起 `_scheduled_run.cmd`
+会弹出控制台窗口抢焦点，持续打断用户。调度改由 WorkBuddy 平台定时任务承担
+（低频、无本机常驻进程、无 cmd 窗口）；盘中 60 秒实时观察由页面浏览器端 JSONP
+提供，用户打开页面才运行，不依赖本机进程。
 
-设计约束：
-  - 任务名、cmd 内容一律 ASCII，避开 PowerShell 5.1 / ANSI(936) 中文脚本编码坑。
-  - 安装前强制核对本机为 UTC+08:00 且未启用夏令时，否则拒绝安装。
-  - 盘中 60 秒粒度靠系统每分钟唤醒 `--scheduled`，由脚本按交易时段自行节流；
-    不依赖常驻进程（本机实测 `/SC ONLOGON` 返回「拒绝访问」）。
-  - 每 10 分钟看门狗负责断线/崩溃恢复。
-  - 16:30 / 19:00 / 21:30 / 次日 10:00 都是 DAILY，不按周一至周五过滤（含周六）。
+本文件保留 TASKS / MODES / build_runner 只供卸载、查询与历史回放排查；
+--install 已禁用，避免误装把 cmd 调度带回来。业务纪律仍由各脚本自己保证。
+
+平台侧能力降级（必须如实说明）：本地采集降为交易时段每日 1 次留档，
+没有连续分钟样本，5/15/30 分钟窗口与实时行情以页面浏览器端为准，
+本地事件等级上限 L1，不升级 L2/L3；提醒延迟为任务周期级，不保证秒级或即时。
 """
 from __future__ import annotations
 import argparse
@@ -54,6 +55,24 @@ TASKS = [
     dict(name='GJD_Weekly_Report', mode='weekly',
          sc=['/SC', 'WEEKLY', '/D', 'MON', '/ST', '09:00'],
          desc='每周一整理延迟、重复提醒、故障和未解释事件；只出研究建议，不改阈值'),
+]
+
+# WorkBuddy 平台定时任务：唯一现行调度来源（由 automation_update 配置，本文件不创建）。
+# 改这里必须同步改 automation 配置与 docs/持续追踪实施说明.md。
+# RRULE 约束：BYDAY 允许多值，BYHOUR 只能是单个整数（实测多值被拒，见经验库 E21）。
+PLATFORM_TASKS = [
+    dict(name='国家队ETF盘中留档与提醒（14:30）',
+         rrule='FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=14;BYMINUTE=30',
+         entry='python -X utf8 intraday.py --platform-tick',
+         desc='交易时段单轮低频留档 + 通知队列消费；等级上限 L1；休市跳过'),
+    dict(name='国家队ETF盘后初值核对（19:30）',
+         rrule='FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=19;BYMINUTE=30',
+         entry='python -X utf8 postclose.py --retries 3 --wait 20',
+         desc='只刷交易所正式份额，不跑全量历史，不发布、不覆盖生产页'),
+    dict(name='国家队ETF次晨复核与发布（10:00，含周六）',
+         rrule='FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA;BYHOUR=10;BYMINUTE=0',
+         entry='python -X utf8 morning_review.py',
+         desc='含周六；无待复核静默跳过，有修订才发布并核对线上四项；周一顺带跑周报'),
 ]
 
 MODES = {
@@ -139,6 +158,11 @@ def task_command(t, dry=False):
 
 
 def install(dry=False):
+    raise SystemExit(
+        '本机计划任务已停用（2026-11-15）：schtasks 每分钟拉起 cmd 窗口会持续打断用户。\n'
+        '请使用 WorkBuddy 平台定时任务；清单见 `python scheduler.py --platform-plan`，'
+        '配置说明见 docs/持续追踪实施说明.md。')
+    # 以下仅为历史卸载/回放保留，永远不会执行。
     problems, tz = prerequisites()
     if problems:
         raise SystemExit('前置检查失败：' + '; '.join(problems))
@@ -201,8 +225,17 @@ def main():
     g.add_argument('--status', action='store_true', help='查询已安装任务与安装记录')
     g.add_argument('--list', action='store_true', help='只打印任务清单，不操作本机')
     g.add_argument('--check', action='store_true', help='只做前置检查，不安装')
+    g.add_argument('--platform-plan', action='store_true', help='打印现行 WorkBuddy 平台定时任务清单')
     p.add_argument('--dry-run', action='store_true', help='只打印将执行的 schtasks 命令')
     a = p.parse_args()
+
+    if a.platform_plan:
+        print('现行调度：WorkBuddy 平台定时任务（本机 schtasks 已于 2026-11-15 全部卸载）')
+        for t in PLATFORM_TASKS:
+            print('%s\n  RRULE %s\n  入口 %s\n  职责 %s' %
+                  (t['name'], t['rrule'], t['entry'], t['desc']))
+        print('盘中 60 秒实时观察由页面浏览器端 JSONP 提供；本地为低频留档，等级上限 L1。')
+        return
 
     if a.list:
         ok, tz = tz_check()

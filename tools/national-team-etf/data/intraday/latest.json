@@ -1,357 +1,60 @@
 {
   "version": "2.2-intraday-1",
-  "generated_at": "2026-11-15T10:02:02+08:00",
-  "session": "holiday",
-  "out_of_session": true,
-  "session_note": "非交易时段：行情不更新属正常，不解释为没有托底",
+  "generated_at": "2026-11-13T10:31:00+08:00",
+  "session": "open",
+  "out_of_session": false,
+  "session_note": "连续竞价时段",
   "business_date": "2026-11-13",
-  "quote_time": "2026-11-13T16:14:59+08:00",
-  "lag_seconds": 150423.879075,
-  "freshness": "out_of_session",
+  "quote_time": "2026-11-13T10:31:00+08:00",
+  "lag_seconds": 30,
+  "freshness": "fresh",
   "coverage": {
     "core_expected": 15,
-    "core_received": 15,
+    "core_received": 5,
     "extended_received": 0,
-    "total_received": 28,
+    "total_received": 10,
     "catalogue_note": "供应商目录不等于交易所全市场覆盖"
   },
   "identity": "I0 当日买卖主体未确认",
+  "cadence": "hourly",
+  "windows_reliable": false,
+  "cadence_note": "平台级低频留档：本地只做单帧线索与归档，等级上限 L1；5/15/30 分钟窗口与实时行情以页面浏览器端为准",
   "data_stage": "盘中观察（非正式份额）",
   "official_note": "正式份额区保留最后一版已核验结果；本区不改动",
   "cold_start": true,
   "baseline_days": 0,
   "baseline_min_days": 5,
-  "signals_realtime": false,
-  "signals_note": "非交易时段：以下逐只明细为上一交易日残留快照，不参与当日判断",
-  "level": "L0",
-  "leadership": "retreat_clue",
+  "signals_realtime": true,
+  "signals_note": "连续竞价时段实时快照",
+  "level": "L1",
+  "leadership": "support_clue",
   "sync": {
-    "breadth": 0.3333333333333333,
+    "breadth": 1.0,
     "active_count": 5,
-    "total": 15,
+    "total": 5,
     "families": [
+      "上证50",
       "中证1000",
-      "中证A500",
+      "中证500",
       "沪深300",
       "科创50"
     ],
-    "family_count": 4,
+    "family_count": 5,
     "management_note": "管理人归属未逐只核验，不作身份判断"
   },
   "direction_data": "qt快照含买卖五档；无可靠逐笔/主动成交方向，方向待确认",
   "rows": [
     {
-      "code": "159338",
-      "name": "中证A500ETF国泰",
-      "family": "中证A500",
-      "price": 1.037,
-      "pct": -1.33,
-      "index_pct": -1.17,
-      "relative": -0.16000000000000014,
-      "relative_peer": -0.07000000000000006,
-      "premium": -0.11,
-      "iopv": 1.0381,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [
-        "相对指数走弱"
-      ],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161451",
-      "data_status": "ok"
-    },
-    {
-      "code": "159845",
-      "name": "中证1000ETF华夏",
-      "family": "中证1000",
-      "price": 2.647,
-      "pct": -3.0,
-      "index_pct": -2.76,
-      "relative": -0.2400000000000002,
-      "relative_peer": -0.08999999999999986,
-      "premium": -0.25,
-      "iopv": 2.6537,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [
-        "相对指数走弱",
-        "折溢价偏离"
-      ],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161430",
-      "data_status": "ok"
-    },
-    {
-      "code": "159915",
-      "name": "创业板ETF易方达",
-      "family": "创业板",
-      "price": 2.442,
-      "pct": -3.25,
-      "index_pct": -3.32,
-      "relative": 0.06999999999999984,
-      "relative_peer": 0.0,
-      "premium": 0.01,
-      "iopv": 2.4417,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "support_clue",
-      "quote_time": "20261113161445",
-      "data_status": "ok"
-    },
-    {
-      "code": "159919",
-      "name": "沪深300ETF嘉实",
-      "family": "沪深300",
-      "price": 4.266,
-      "pct": -0.72,
-      "index_pct": -0.68,
-      "relative": -0.039999999999999925,
-      "relative_peer": 0.020000000000000018,
-      "premium": -0.11,
-      "iopv": 4.2705,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [
-        "相对指数与相对同类ETF方向不一致"
-      ],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161430",
-      "data_status": "ok"
-    },
-    {
-      "code": "159949",
-      "name": "创业板50ETF华安",
-      "family": "创业板50",
-      "price": 1.09,
-      "pct": -3.8,
-      "index_pct": -3.67,
-      "relative": -0.1299999999999999,
-      "relative_peer": 0.0,
-      "premium": -0.06,
-      "iopv": 1.0906,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161448",
-      "data_status": "ok"
-    },
-    {
       "code": "510050",
-      "name": "上证50ETF华夏",
+      "name": "合成-510050",
       "family": "上证50",
-      "price": 2.889,
-      "pct": 0.17,
-      "index_pct": 0.11,
-      "relative": 0.06000000000000001,
+      "price": 4.0,
+      "pct": 0.5,
+      "index_pct": 0.0,
+      "relative": 0.5,
       "relative_peer": 0.0,
-      "premium": -0.21,
-      "iopv": 2.8952,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "support_clue",
-      "quote_time": "20261113161455",
-      "data_status": "ok"
-    },
-    {
-      "code": "510300",
-      "name": "沪深300ETF华泰柏瑞",
-      "family": "沪深300",
-      "price": 4.083,
-      "pct": -0.75,
-      "index_pct": -0.68,
-      "relative": -0.06999999999999995,
-      "relative_peer": -0.010000000000000009,
-      "premium": -0.24,
-      "iopv": 4.0927,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161447",
-      "data_status": "ok"
-    },
-    {
-      "code": "510310",
-      "name": "沪深300ETF易方达",
-      "family": "沪深300",
-      "price": 3.969,
-      "pct": -0.73,
-      "index_pct": -0.68,
-      "relative": -0.04999999999999993,
-      "relative_peer": 0.010000000000000009,
-      "premium": -0.2,
-      "iopv": 3.9771,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [
-        "相对指数与相对同类ETF方向不一致"
-      ],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161449",
-      "data_status": "ok"
-    },
-    {
-      "code": "510330",
-      "name": "沪深300ETF华夏",
-      "family": "沪深300",
-      "price": 4.258,
-      "pct": -0.79,
-      "index_pct": -0.68,
-      "relative": -0.10999999999999999,
-      "relative_peer": -0.050000000000000044,
-      "premium": -0.3,
-      "iopv": 4.271,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [
-        "折溢价偏离"
-      ],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161458",
-      "data_status": "ok"
-    },
-    {
-      "code": "510500",
-      "name": "中证500ETF南方",
-      "family": "中证500",
-      "price": 6.495,
-      "pct": -2.01,
-      "index_pct": -2.1,
-      "relative": 0.0900000000000003,
-      "relative_peer": 0.0,
-      "premium": -0.18,
-      "iopv": 6.507,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "support_clue",
-      "quote_time": "20261113161444",
-      "data_status": "ok"
-    },
-    {
-      "code": "512050",
-      "name": "A500ETF华夏",
-      "family": "中证A500",
-      "price": 1.036,
-      "pct": -1.15,
-      "index_pct": -1.17,
-      "relative": 0.020000000000000018,
-      "relative_peer": 0.1100000000000001,
-      "premium": -0.02,
-      "iopv": 1.0362,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [],
-      "direction": "support_clue",
-      "quote_time": "20261113161439",
-      "data_status": "ok"
-    },
-    {
-      "code": "512100",
-      "name": "中证1000ETF南方",
-      "family": "中证1000",
-      "price": 2.582,
-      "pct": -2.82,
-      "index_pct": -2.76,
-      "relative": -0.06000000000000005,
-      "relative_peer": 0.0900000000000003,
-      "premium": -0.22,
-      "iopv": 2.5877,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [
-        "相对指数与相对同类ETF方向不一致"
-      ],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161459",
-      "data_status": "ok"
-    },
-    {
-      "code": "563360",
-      "name": "A500ETF华泰柏瑞",
-      "family": "中证A500",
-      "price": 1.096,
-      "pct": -1.26,
-      "index_pct": -1.17,
-      "relative": -0.09000000000000008,
-      "relative_peer": 0.0,
-      "premium": -0.29,
-      "iopv": 1.0992,
-      "premium_delta_5m": null,
-      "premium_delta_15m": null,
-      "pct_delta_15m": null,
-      "amount_delta_wan": null,
-      "activity_ratio": null,
-      "channels": [
-        "折溢价偏离"
-      ],
-      "counter_evidence": [],
-      "direction": "retreat_clue",
-      "quote_time": "20261113161442",
-      "data_status": "ok"
-    },
-    {
-      "code": "588000",
-      "name": "科创50ETF华夏",
-      "family": "科创50",
-      "price": 1.354,
-      "pct": -1.96,
-      "index_pct": -2.3,
-      "relative": 0.33999999999999986,
-      "relative_peer": 0.14000000000000012,
-      "premium": -0.1,
-      "iopv": 1.3554,
+      "premium": 0.0,
+      "iopv": 4.0,
       "premium_delta_5m": null,
       "premium_delta_15m": null,
       "pct_delta_15m": null,
@@ -362,38 +65,381 @@
       ],
       "counter_evidence": [],
       "direction": "support_clue",
-      "quote_time": "20261113161447",
+      "quote_time": "20261114103000",
       "data_status": "ok"
     },
     {
-      "code": "588080",
-      "name": "科创50ETF易方达",
-      "family": "科创50",
-      "price": 1.312,
-      "pct": -2.24,
-      "index_pct": -2.3,
-      "relative": 0.05999999999999961,
-      "relative_peer": -0.14000000000000012,
-      "premium": 0.09,
-      "iopv": 1.3108,
+      "code": "510300",
+      "name": "合成-510300",
+      "family": "沪深300",
+      "price": 4.0,
+      "pct": 0.5,
+      "index_pct": 0.0,
+      "relative": 0.5,
+      "relative_peer": 0.0,
+      "premium": 0.0,
+      "iopv": 4.0,
       "premium_delta_5m": null,
       "premium_delta_15m": null,
       "pct_delta_15m": null,
       "amount_delta_wan": null,
       "activity_ratio": null,
-      "channels": [],
-      "counter_evidence": [
-        "相对指数与相对同类ETF方向不一致"
+      "channels": [
+        "相对指数超额"
       ],
+      "counter_evidence": [],
       "direction": "support_clue",
-      "quote_time": "20261113161459",
+      "quote_time": "20261114103000",
+      "data_status": "ok"
+    },
+    {
+      "code": "510500",
+      "name": "合成-510500",
+      "family": "中证500",
+      "price": 4.0,
+      "pct": 0.5,
+      "index_pct": 0.0,
+      "relative": 0.5,
+      "relative_peer": 0.0,
+      "premium": 0.0,
+      "iopv": 4.0,
+      "premium_delta_5m": null,
+      "premium_delta_15m": null,
+      "pct_delta_15m": null,
+      "amount_delta_wan": null,
+      "activity_ratio": null,
+      "channels": [
+        "相对指数超额"
+      ],
+      "counter_evidence": [],
+      "direction": "support_clue",
+      "quote_time": "20261114103000",
+      "data_status": "ok"
+    },
+    {
+      "code": "512100",
+      "name": "合成-512100",
+      "family": "中证1000",
+      "price": 4.0,
+      "pct": 0.5,
+      "index_pct": 0.0,
+      "relative": 0.5,
+      "relative_peer": 0.0,
+      "premium": 0.0,
+      "iopv": 4.0,
+      "premium_delta_5m": null,
+      "premium_delta_15m": null,
+      "pct_delta_15m": null,
+      "amount_delta_wan": null,
+      "activity_ratio": null,
+      "channels": [
+        "相对指数超额"
+      ],
+      "counter_evidence": [],
+      "direction": "support_clue",
+      "quote_time": "20261114103000",
+      "data_status": "ok"
+    },
+    {
+      "code": "588000",
+      "name": "合成-588000",
+      "family": "科创50",
+      "price": 4.0,
+      "pct": 0.5,
+      "index_pct": 0.0,
+      "relative": 0.5,
+      "relative_peer": 0.0,
+      "premium": 0.0,
+      "iopv": 4.0,
+      "premium_delta_5m": null,
+      "premium_delta_15m": null,
+      "pct_delta_15m": null,
+      "amount_delta_wan": null,
+      "activity_ratio": null,
+      "channels": [
+        "相对指数超额"
+      ],
+      "counter_evidence": [],
+      "direction": "support_clue",
+      "quote_time": "20261114103000",
       "data_status": "ok"
     }
   ],
-  "alerts": [],
+  "alerts": [
+    {
+      "id": "2026-11-13|上证50-20261113T103100+0800",
+      "kind": "new",
+      "created_at": "2026-11-13T10:31:00+08:00",
+      "replayed": false,
+      "time": "2026-11-13T10:31:00+08:00",
+      "etf_or_family": "上证50",
+      "codes": [
+        "510050"
+      ],
+      "direction": "support_clue",
+      "level": "L1",
+      "evidence": {
+        "breadth": 1.0,
+        "breadth_note": "5/5 只出现至少一条通道线索",
+        "families": [
+          "上证50",
+          "中证1000",
+          "中证500",
+          "沪深300",
+          "科创50"
+        ],
+        "channels": [
+          "相对指数超额"
+        ],
+        "premium": [
+          0.0
+        ],
+        "activity": [],
+        "relative": [
+          0.5
+        ],
+        "cold_start": true
+      },
+      "duration_minutes": 0,
+      "duration": 0,
+      "counter_evidence": [],
+      "data_freshness": {
+        "status": "fresh",
+        "lag_seconds": 30,
+        "quote_time": "2026-11-13T10:31:00+08:00"
+      },
+      "identity_status": "I0 当日买卖主体未确认",
+      "pending_verification": [
+        "当日实名买卖主体未提供",
+        "盘后正式份额与盘中线索需分别核对",
+        "二级市场买卖可能不改变总份额",
+        "折溢价字段未经交易所独立核验"
+      ],
+      "caveats": [
+        "这不是国家队买卖确认",
+        "不提供盘中买入金额或概率"
+      ]
+    },
+    {
+      "id": "2026-11-13|中证1000-20261113T103100+0800",
+      "kind": "new",
+      "created_at": "2026-11-13T10:31:00+08:00",
+      "replayed": false,
+      "time": "2026-11-13T10:31:00+08:00",
+      "etf_or_family": "中证1000",
+      "codes": [
+        "512100"
+      ],
+      "direction": "support_clue",
+      "level": "L1",
+      "evidence": {
+        "breadth": 1.0,
+        "breadth_note": "5/5 只出现至少一条通道线索",
+        "families": [
+          "上证50",
+          "中证1000",
+          "中证500",
+          "沪深300",
+          "科创50"
+        ],
+        "channels": [
+          "相对指数超额"
+        ],
+        "premium": [
+          0.0
+        ],
+        "activity": [],
+        "relative": [
+          0.5
+        ],
+        "cold_start": true
+      },
+      "duration_minutes": 0,
+      "duration": 0,
+      "counter_evidence": [],
+      "data_freshness": {
+        "status": "fresh",
+        "lag_seconds": 30,
+        "quote_time": "2026-11-13T10:31:00+08:00"
+      },
+      "identity_status": "I0 当日买卖主体未确认",
+      "pending_verification": [
+        "当日实名买卖主体未提供",
+        "盘后正式份额与盘中线索需分别核对",
+        "二级市场买卖可能不改变总份额",
+        "折溢价字段未经交易所独立核验"
+      ],
+      "caveats": [
+        "这不是国家队买卖确认",
+        "不提供盘中买入金额或概率"
+      ]
+    },
+    {
+      "id": "2026-11-13|中证500-20261113T103100+0800",
+      "kind": "new",
+      "created_at": "2026-11-13T10:31:00+08:00",
+      "replayed": false,
+      "time": "2026-11-13T10:31:00+08:00",
+      "etf_or_family": "中证500",
+      "codes": [
+        "510500"
+      ],
+      "direction": "support_clue",
+      "level": "L1",
+      "evidence": {
+        "breadth": 1.0,
+        "breadth_note": "5/5 只出现至少一条通道线索",
+        "families": [
+          "上证50",
+          "中证1000",
+          "中证500",
+          "沪深300",
+          "科创50"
+        ],
+        "channels": [
+          "相对指数超额"
+        ],
+        "premium": [
+          0.0
+        ],
+        "activity": [],
+        "relative": [
+          0.5
+        ],
+        "cold_start": true
+      },
+      "duration_minutes": 0,
+      "duration": 0,
+      "counter_evidence": [],
+      "data_freshness": {
+        "status": "fresh",
+        "lag_seconds": 30,
+        "quote_time": "2026-11-13T10:31:00+08:00"
+      },
+      "identity_status": "I0 当日买卖主体未确认",
+      "pending_verification": [
+        "当日实名买卖主体未提供",
+        "盘后正式份额与盘中线索需分别核对",
+        "二级市场买卖可能不改变总份额",
+        "折溢价字段未经交易所独立核验"
+      ],
+      "caveats": [
+        "这不是国家队买卖确认",
+        "不提供盘中买入金额或概率"
+      ]
+    },
+    {
+      "id": "2026-11-13|沪深300-20261113T103100+0800",
+      "kind": "new",
+      "created_at": "2026-11-13T10:31:00+08:00",
+      "replayed": false,
+      "time": "2026-11-13T10:31:00+08:00",
+      "etf_or_family": "沪深300",
+      "codes": [
+        "510300"
+      ],
+      "direction": "support_clue",
+      "level": "L1",
+      "evidence": {
+        "breadth": 1.0,
+        "breadth_note": "5/5 只出现至少一条通道线索",
+        "families": [
+          "上证50",
+          "中证1000",
+          "中证500",
+          "沪深300",
+          "科创50"
+        ],
+        "channels": [
+          "相对指数超额"
+        ],
+        "premium": [
+          0.0
+        ],
+        "activity": [],
+        "relative": [
+          0.5
+        ],
+        "cold_start": true
+      },
+      "duration_minutes": 0,
+      "duration": 0,
+      "counter_evidence": [],
+      "data_freshness": {
+        "status": "fresh",
+        "lag_seconds": 30,
+        "quote_time": "2026-11-13T10:31:00+08:00"
+      },
+      "identity_status": "I0 当日买卖主体未确认",
+      "pending_verification": [
+        "当日实名买卖主体未提供",
+        "盘后正式份额与盘中线索需分别核对",
+        "二级市场买卖可能不改变总份额",
+        "折溢价字段未经交易所独立核验"
+      ],
+      "caveats": [
+        "这不是国家队买卖确认",
+        "不提供盘中买入金额或概率"
+      ]
+    },
+    {
+      "id": "2026-11-13|科创50-20261113T103100+0800",
+      "kind": "new",
+      "created_at": "2026-11-13T10:31:00+08:00",
+      "replayed": false,
+      "time": "2026-11-13T10:31:00+08:00",
+      "etf_or_family": "科创50",
+      "codes": [
+        "588000"
+      ],
+      "direction": "support_clue",
+      "level": "L1",
+      "evidence": {
+        "breadth": 1.0,
+        "breadth_note": "5/5 只出现至少一条通道线索",
+        "families": [
+          "上证50",
+          "中证1000",
+          "中证500",
+          "沪深300",
+          "科创50"
+        ],
+        "channels": [
+          "相对指数超额"
+        ],
+        "premium": [
+          0.0
+        ],
+        "activity": [],
+        "relative": [
+          0.5
+        ],
+        "cold_start": true
+      },
+      "duration_minutes": 0,
+      "duration": 0,
+      "counter_evidence": [],
+      "data_freshness": {
+        "status": "fresh",
+        "lag_seconds": 30,
+        "quote_time": "2026-11-13T10:31:00+08:00"
+      },
+      "identity_status": "I0 当日买卖主体未确认",
+      "pending_verification": [
+        "当日实名买卖主体未提供",
+        "盘后正式份额与盘中线索需分别核对",
+        "二级市场买卖可能不改变总份额",
+        "折溢价字段未经交易所独立核验"
+      ],
+      "caveats": [
+        "这不是国家队买卖确认",
+        "不提供盘中买入金额或概率"
+      ]
+    }
+  ],
   "event_summary": {
-    "active": 0,
-    "total": 1
+    "active": 5,
+    "total": 5
   },
   "discipline": {
     "never": [

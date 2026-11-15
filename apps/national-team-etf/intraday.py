@@ -526,7 +526,11 @@ def extended_codes():
     return sorted(out)
 
 
-def tick(state, baseline, replay_records=None, replay_meta=None, at=None):
+def tick(state, baseline, replay_records=None, replay_meta=None, at=None, cadence='realtime'):
+    """单轮采集。cadence='hourly' 表示 WorkBuddy 平台级低频调度：
+    本地没有 5/15/30 分钟连续采样，禁止升级到 L2/L3，分钟窗口以页面浏览器端为准。
+    """
+    low_cadence = cadence != 'realtime'
     at = at or now()
     t = tz_now()
     sess = session_state(t)
@@ -567,7 +571,8 @@ def tick(state, baseline, replay_records=None, replay_meta=None, at=None):
                      quote_time=qtime.isoformat() if qtime else None,
                      lag_seconds=lag, freshness=fresh,
                      core_count=len(CORE), extended_included=include_ext,
-                     requested=len(codes) + len(idx), received=len(records)))
+                     requested=len(codes) + len(idx), received=len(records),
+                     cadence=cadence, windows_reliable=not low_cadence))
     ddir = date_dirs(business_date)
     append_jsonl(ddir / 'snapshots.jsonl',
                  dict(meta=meta, records={c: {k: v for k, v in r.items() if k != 'raw'}
@@ -579,6 +584,11 @@ def tick(state, baseline, replay_records=None, replay_meta=None, at=None):
     sig = compute_signals(records, state, baseline)
     sig['quote_time'] = meta.get('quote_time')
     level = 'L0' if out_of_session else decide_level(sig, state, fresh)
+    if low_cadence and level in ('L2', 'L3'):
+        # 小时级快照之间没有连续分钟样本，无法证明「持续承接/多通道共振」。
+        # 宁可只留线索，也不能用单帧快照冒充 5/15/30 分钟窗口结论。
+        log('平台级低频调度：本地无连续分钟采样，等级由 %s 限制为 L1' % level)
+        level = 'L1'
 
     emitted = []
     # 采集故障与恢复（含行情过期、日期错位、缺失）
@@ -644,6 +654,9 @@ def tick(state, baseline, replay_records=None, replay_meta=None, at=None):
                       total_received=len(records),
                       catalogue_note='供应商目录不等于交易所全市场覆盖'),
         identity=IDENTITY_NOTE,
+        cadence=cadence, windows_reliable=not low_cadence,
+        cadence_note=('平台级低频留档：本地只做单帧线索与归档，等级上限 L1；5/15/30 分钟窗口与实时行情以页面浏览器端为准'
+                      if low_cadence else '连续竞价实时采集，分钟窗口可用'),
         data_stage='盘中观察（非正式份额）',
         official_note='正式份额区保留最后一版已核验结果；本区不改动',
         cold_start=sig['cold_start'], baseline_days=sig['baseline_days'],
@@ -703,7 +716,9 @@ def main():
     p.add_argument('--watchdog', action='store_true',
                    help='看门狗：仅当 last_tick 超时且无有效锁时补跑一轮，供计划任务做断线恢复')
     p.add_argument('--scheduled', action='store_true',
-                   help='计划任务模式：由系统每分钟唤醒，脚本按交易时段自行节流后单轮采集')
+                   help='[已停用] 旧的本机每分钟计划任务模式；本机 schtasks 已卸载，保留仅供回放排查'),
+    p.add_argument('--platform-tick', action='store_true',
+                   help='WorkBuddy 平台定时任务入口：交易时段做一轮低频留档，休市跳过；等级上限 L1')
     a = p.parse_args()
 
     IDIR.mkdir(parents=True, exist_ok=True)
@@ -785,6 +800,14 @@ def main():
             except ValueError:
                 pass
 
+    if a.platform_tick and session_state() != 'open':
+        # 平台任务到点不该在非交易时段制造残留快照，也不该被读成「没有托底」。
+        print(json.dumps(dict(skipped=True, reason='out_of_session',
+                              note='非交易时段不采集；这不解释为没有国家队买入，也不产生当日线索'),
+                         ensure_ascii=False))
+        log('平台级调度：非交易时段跳过，不采集不留档')
+        return
+
     state = load_state()
     baseline = read_json(BASELINE_FILE)
     if a.replay:
@@ -803,10 +826,11 @@ def main():
 
     acquire_lock(a.force_lock)
     try:
-        if a.once or not a.loop:
-            out = tick(state, baseline)
-            log('单轮完成 session=%s fresh=%s level=%s alerts=%d'
-                % (out['session'], out['freshness'], out['level'], len(out['alerts'])))
+        if a.once or a.platform_tick or not a.loop:
+            out = tick(state, baseline, cadence='hourly' if a.platform_tick else 'realtime')
+            log('单轮完成 cadence=%s session=%s fresh=%s level=%s alerts=%d'
+                % (out.get('cadence', 'realtime'), out['session'], out['freshness'],
+                   out['level'], len(out['alerts'])))
             return
         deadline = time.monotonic() + a.duration if a.duration else None
         log('进入常驻采集，间隔 %s 秒' % SCHED.get('core_interval_seconds', 60))

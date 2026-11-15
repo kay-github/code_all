@@ -76,7 +76,7 @@ __INVENTORY_BLOCK__
 <div class="kpis" id="intradayKpis"></div>
 <div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>现价</th><th>涨跌%</th><th>相对指数</th><th>折溢价%</th><th>放量倍数</th><th>通道线索</th><th>反向证据</th></tr></thead><tbody id="intradayRows"></tbody></table></div>
 <p class="note" id="intradayEvents"></p>
-<p class="note">实时行情由浏览器直接读取供应商快照（JSONP），不产生每分钟 Git 提交或完整部署；本地采集器的规则与事件摘要为最近一次发布快照，非实时。缺可靠逐笔/主动成交方向时标注「方向待确认」。核心ETF角色、放量、折溢价、同步交易都不能证明国家队身份；不输出国家队概率或盘中买入金额。</p></section>
+<p class="note">实时行情由浏览器直接读取供应商快照（JSONP，约60秒刷新），不产生 Git 提交或完整部署。本机每分钟 cmd 计划任务已于 2026-11-15 全部卸载，改由 WorkBuddy 平台定时任务做低频留档：本地事件等级上限 L1，5/15/30 分钟窗口以本表浏览器端为准，采集器摘要非实时，提醒延迟为任务周期级。缺可靠逐笔/主动成交方向时标注「方向待确认」。核心ETF角色、放量、折溢价、同步交易都不能证明国家队身份；不输出国家队概率或盘中买入金额。</p></section>
 <section id="postclose"><h2>盘后初值 · 独立观察区</h2>
 <p class="note" id="postcloseScope"></p>
 <div id="postcloseBody"></div>

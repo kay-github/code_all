@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """调度层验收：时间口径、命令清单、次晨判断、周报纪律。合成数据明确标注。"""
 import json
+import re
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -22,7 +23,8 @@ class SchedulerTest(unittest.TestCase):
         morning = next(t for t in S.TASKS if t['name'] == 'GJD_Morning_1000')
         self.assertIn('DAILY', morning['sc'])
         self.assertNotIn('BYDAY', ' '.join(morning['sc']))
-        # 盘中采集改为系统每分钟唤醒 + 脚本内节流，不再依赖 ONLOGON（本机实测拒绝访问）
+        # 以下 TASKS 是 2026-11-15 已卸载的本机任务清单，只保留供卸载/回放排查；
+        # 现行调度见 PLATFORM_TASKS（WorkBuddy 平台定时任务）。
         self.assertIn('GJD_Intraday_Tick', names)
         tick = next(t for t in S.TASKS if t['name'] == 'GJD_Intraday_Tick')
         self.assertIn('MINUTE', tick['sc'])
@@ -36,6 +38,24 @@ class SchedulerTest(unittest.TestCase):
             self.assertNotIn('2026-11-13', src, '%s 不得硬编码业务日' % name)
         self.assertIn('Asia/Shanghai', (ROOT / 'config/intraday_rules.json').read_text(encoding='utf-8')
                       or 'Asia/Shanghai')
+
+    def test_platform_plan_is_the_only_active_scheduler(self):
+        self.assertEqual(len(S.PLATFORM_TASKS), 3)
+        joined = ' '.join(t['rrule'] for t in S.PLATFORM_TASKS)
+        # 次晨复核必须含周六；RRULE 的 BYHOUR 只能是单值（多值实测被拒，经验库 E21）
+        self.assertIn('BYDAY=MO,TU,WE,TH,FR,SA', joined)
+        for t in S.PLATFORM_TASKS:
+            m = re.search(r'BYHOUR=(\d+)', t['rrule'])
+            self.assertIsNotNone(m, t['name'])
+            self.assertNotIn(',', t['rrule'].split('BYHOUR=')[1].split(';')[0])
+            self.assertTrue(t['entry'].startswith('python -X utf8 '))
+        # 本机安装入口必须被封死，防止 cmd 调度被误装回来
+        with self.assertRaises(SystemExit) as cm:
+            S.install()
+        self.assertIn('已停用', str(cm.exception))
+        # 不得回到每分钟/每小时唤醒本机或平台；BYMINUTE 是分钟数，不是频率。
+        self.assertNotIn('FREQ=HOURLY', joined)
+        self.assertNotIn('FREQ=MINUTELY', joined)
 
     def test_timezone_check_reports_required_fields(self):
         ok, tz = S.tz_check()

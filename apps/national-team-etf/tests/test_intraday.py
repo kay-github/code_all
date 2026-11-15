@@ -241,6 +241,46 @@ class IntradayTest(unittest.TestCase):
         self.assertEqual(meta['received'], 1)
 
 
+    # ---- 平台级低频调度（本机 schtasks 已卸载）----
+    def test_platform_low_cadence_caps_level_and_flags_windows(self):
+        codes = ['510300', '510050', '510500', '512100', '588000']
+        records = {c: rec(c, pct=.5) for c in codes}
+        for fam in ('沪深300', '上证50', '中证500', '中证1000', '科创50'):
+            sym = INDEX[fam]
+            records[sym[2:]] = rec(sym[2:], pct=0.0)
+        t = datetime(2026, 11, 13, 10, 31, tzinfo=I.TZ)
+        baseline = dict(complete=False, per_code={})
+        at = '2026-11-13T10:31:00+08:00'
+        # 强制 decide_level 给 L3：低频模式必须挡住，不能拿单帧快照冒充多分钟共振。
+        with mock.patch.object(I, 'session_state', return_value='open'), \
+             mock.patch.object(I, 'tz_now', return_value=t), \
+             mock.patch.object(I, 'fetch_snapshot', return_value=(records, {})), \
+             mock.patch.object(I, 'freshness', return_value=('2026-11-13', t, 30, 'fresh')), \
+             mock.patch.object(I, 'decide_level', return_value='L3'):
+            realtime = I.tick(I.init_state(), baseline, at=at)
+            hourly = I.tick(I.init_state(), baseline, at=at, cadence='hourly')
+        self.assertEqual(realtime['level'], 'L3')
+        self.assertEqual(hourly['level'], 'L1')
+        self.assertEqual(hourly['cadence'], 'hourly')
+        self.assertFalse(hourly['windows_reliable'])
+        self.assertIn('等级上限 L1', hourly['cadence_note'])
+        self.assertTrue(realtime['windows_reliable'])
+
+    def test_platform_tick_skips_out_of_session_without_collecting(self):
+        import contextlib, io
+        buf = io.StringIO()
+        with mock.patch.object(I, 'session_state', return_value='holiday'), \
+             mock.patch.object(I, 'fetch_snapshot', side_effect=AssertionError('休市不得采集')), \
+             mock.patch('sys.argv', ['intraday.py', '--platform-tick']), \
+             contextlib.redirect_stdout(buf):
+            I.main()
+        # log() 也会 print 到 stdout，只取 JSON 那一行。
+        out = json.loads(next(x for x in buf.getvalue().splitlines() if x.startswith('{')))
+        self.assertTrue(out['skipped'])
+        self.assertEqual(out['reason'], 'out_of_session')
+        self.assertIn('不解释为没有国家队买入', out['note'])
+
+
 class OfficialGateTest(unittest.TestCase):
     def test_missing_official_share_blocks_release(self):
         from v2_release import assess
