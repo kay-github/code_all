@@ -25,7 +25,22 @@ test('pages, public snapshot, and release receipt share one build and business d
  assert.equal(data.build_id,publicData.build_id);assert.equal(data.build_id,receipt.build_id);
  assert.equal(data.end,publicData.business_date);assert.ok(cycle.includes(`content="${data.build_id}"`));
  assert.equal(data.exchange.latest.net_estimate,publicData.latest.net_estimate);
+ assert.deepEqual(data.inventory.latest,publicData.inventory.latest);
+ assert.equal(data.inventory.reference_date,publicData.inventory.reference_date);
  assert.equal(Object.keys(data.exchange.instruments).length,15);assert.equal(data.exchange.stage,'次晨复核');
+});
+
+test('inventory has a fixed denominator, separate total and net increase, and explicit estimate labels',()=>{
+ const i=data.inventory,r=i.latest;
+ assert.equal(i.reference_date,'2025-12-31');assert.equal(i.price_date,'2026-11-13');assert.equal(i.baseline_units,10);
+ assert.ok(Math.abs(r.total_units-i.cycle_start_units-r.net_added_units)<1e-9);
+ assert.ok(Math.abs(r.total_units-r.current_yi/i.reference_yi*10)<1e-9);
+ assert.ok(Math.abs(r.net_added_units-(r.current_yi-i.cycle_start_yi)/i.reference_yi*10)<1e-9);
+ assert.ok(page.indexOf('id="inventory"')<page.indexOf('id="intraday"'));
+ assert.ok(page.includes('ETF通道估算 · 非国家队实名仓位'));
+ const csv=fs.readFileSync(path.join(root,'data/inventory.csv'),'utf8').trim().split(/\r?\n/);
+ const fields=csv.at(-1).split(',');assert.equal(fields[0],data.end);assert.equal(fields.at(-1),data.build_id);
+ assert.ok(Math.abs(Number(fields[5])-r.total_units)<1e-9);assert.ok(Math.abs(Number(fields[7])-r.net_added_units)<1e-9);
 });
 
 test('official total and five-day amount reconcile; unsupported windows stay incomplete',()=>{
@@ -57,9 +72,22 @@ for(const width of [320,390,1440])test(`view calculations at ${width}px: data, s
  assert.equal((nodes.officialRows.innerHTML.match(/<tr>/g)||[]).length,15);
  assert.equal((nodes.officialMobile.innerHTML.match(/class="cardrow"/g)||[]).length,15);
  assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,15);
+ assert.ok(nodes.inventoryTitle.textContent.includes(data.inventory.latest.total_units.toFixed(1)));
+ assert.ok(nodes.inventoryKpis.innerHTML.includes('当前总存量'));
+ assert.ok(nodes.inventoryKpis.innerHTML.includes('本轮净新增'));
+ assert.equal(context.window.GJD.inventoryUnits,data.inventory.latest.total_units);
  nodes.search.value='510330';nodes.search.handlers.input();assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,1);
  nodes.themeToggle.onclick();assert.equal(document.documentElement.dataset.siteTheme,'dark');
  nodes.themeToggle.onclick();assert.equal(document.documentElement.dataset.siteTheme,'light');
+});
+
+test('missing inventory suppresses the current ratio and negative net increase remains negative',()=>{
+ const missing=structuredClone(data);missing.inventory.complete=false;missing.inventory.latest.complete=false;
+ missing.inventory.latest.total_units=null;missing.inventory.latest.net_added_units=null;
+ const a=render(390,missing);assert.ok(a.nodes.inventoryTitle.textContent.includes('数据不足'));
+ assert.ok(a.nodes.inventoryKpis.innerHTML.includes('—'));assert.equal(a.context.window.GJD.inventoryUnits,null);
+ const d=structuredClone(data);d.inventory.latest.net_added_units=-.25;
+ const b=render(390,d);assert.ok(b.nodes.inventoryKpis.innerHTML.includes('-0.25'));
 });
 
 test('empty discovery and incomplete official data show gaps without zero totals',()=>{

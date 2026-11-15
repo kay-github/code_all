@@ -20,7 +20,7 @@ def render(a,folder):
     data['exchange'].get('tracking',{}).pop('series',None)
     data['exchange']['series']=data['exchange']['series'][-100:]
     payload=json.dumps(data,ensure_ascii=False,allow_nan=False).replace('</','<\\/')
-    page=(TEMPLATE.replace('__DATA__',payload).replace('__END__',html.escape(a['end']))
+    page=(TEMPLATE.replace('__DATA__',payload).replace('__INVENTORY_BLOCK__',INVENTORY_BLOCK).replace('__END__',html.escape(a['end']))
           .replace('__BUILD__',html.escape(a['build_id']))
           .replace('__INDEX__',_json.dumps(_INDEX,ensure_ascii=False).replace('</','<\\/')))
     (folder/'report.html').write_text(page,encoding='utf-8')
@@ -39,6 +39,17 @@ def render(a,folder):
     <a href="/gjd/">返回当日追踪</a></main></body></html>'''
     (folder/'cycle.html').write_text(cycle.replace('href="#','href="/gjd/#').replace('<title>国家队观察 · ETF通道追踪 ','<title>ETF通道历史复盘 ').replace('<button id="themeToggle" aria-label="切换深浅色">深浅色</button>','<button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button>'),encoding='utf-8')
 
+INVENTORY_BLOCK=r'''<section id="inventory" aria-labelledby="inventoryTitle">
+<div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span><span class="note" id="inventoryDate"></span></div>
+<h2 id="inventoryTitle">上一轮10份，现在几份？</h2><p id="inventorySummary" class="lead"></p>
+<div class="inventory-kpis" id="inventoryKpis"></div>
+<p class="note" id="inventoryBasis"></p>
+<details><summary>基准、估算边界与上一轮峰值对照</summary><div id="inventoryMethod"></div>
+<p class="note">“份”是归一化对照刻度，不是实际ETF份数。ETF通道含国家队及其他持有人；二级市场换手可能不改变总份额。本轮净新增是起点至今的存量差，已计入其后净减少，不能叫国家队毛买入额或实际现金流。历史反推与近期正式份额保持独立，不混接。</p></details>
+<details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>当前总存量 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
+<p class="note">固定权重的回溯研究值，不冒充历史当天已发布的实时结果。<a href="/tools/national-team-etf/data/inventory.csv" download>下载同版存量对照CSV</a></p></details>
+</section>'''
+
 TEMPLATE=r'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="gjd-build-id" content="__BUILD__"><title>国家队观察 · ETF通道追踪 __END__</title>
@@ -50,10 +61,12 @@ TEMPLATE=r'''<!doctype html>
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.65 system-ui,"Microsoft YaHei",sans-serif}main,header{max-width:1260px;margin:auto;padding:22px 24px}header{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line)}nav{display:flex;flex-wrap:wrap;gap:14px}a{color:var(--accent)}h1{font-size:clamp(25px,4vw,36px);line-height:1.3;margin:8px 0 12px;letter-spacing:-.7px}h2{font-size:20px;margin:0 0 10px}h3{font-size:16px;margin:16px 0 8px}.eyebrow{font-size:12px;letter-spacing:1px;color:var(--muted)}.lead{color:var(--muted);max-width:880px}.notice{padding:14px 16px;border-left:3px solid var(--amber);background:var(--surface);border-radius:8px;color:var(--amber);margin:18px 0}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.kpi,section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}.kpi .value{font:700 clamp(23px,3vw,30px)/1.4 ui-monospace,monospace;font-variant-numeric:tabular-nums}.kpi .label,.note{color:var(--muted);font-size:12px}.note{margin-top:10px;overflow-wrap:anywhere}section{margin:16px 0}.up{color:var(--red)}.dn{color:var(--green)}.risk{color:var(--amber)}.mono{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums}.pill{display:inline-block;background:var(--inset);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:12px;white-space:normal}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}input,select,button{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:7px;min-height:44px;padding:8px 12px}input{min-width:0;flex:1}button{cursor:pointer}button:hover{border-color:var(--accent)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.scroll{overflow:auto;max-width:100%}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th{font-size:12px;color:var(--muted);background:var(--inset);white-space:nowrap}td:first-child,th:first-child{text-align:left}td{white-space:nowrap}td.name{max-width:220px;white-space:normal;min-width:130px}small{display:block;color:var(--muted);font-size:11px;white-space:normal}details{border-top:1px solid var(--line);margin:10px 0;padding-top:10px}summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:600}svg{width:100%;height:200px;display:block}.legend{display:flex;gap:15px;color:var(--muted);font-size:12px}.statusline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}.empty{padding:20px;color:var(--muted)}footer{font-size:12px;color:var(--muted);padding:20px 0 60px;overflow-wrap:anywhere}.mobile-cards{display:none}.cardrow{padding:12px 0;border-bottom:1px solid var(--line)}.cardmetrics{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;margin-top:8px}.cardmetrics span{font-size:13px}.cardmetrics small{font-size:11px}
 @media(max-width:760px){header,main{padding:16px}header{align-items:flex-start;flex-direction:column}.kpis{grid-template-columns:1fr 1fr}.twocol{grid-template-columns:1fr}.desktop-core{display:none}.mobile-cards{display:block}input,select{font-size:16px}section{padding:14px}h2{font-size:19px}.tools>*{max-width:100%}.tools input{flex-basis:100%}.name{max-width:140px}nav a{min-height:36px}}
 .statusline{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}#intradayRows th:first-child,#intradayRows td:first-child,#postcloseBody th:first-child{text-align:left}.intraday-bad{color:var(--amber)}.intraday-ok{color:var(--muted)}
+#inventory{border-top:3px solid var(--accent)}#inventoryTitle{font-size:clamp(25px,4vw,36px);line-height:1.35;margin:12px 0} .inventory-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.inventory-kpis .kpi{min-width:0;background:var(--inset)}.inventory-kpis .value{overflow-wrap:anywhere}@media(max-width:760px){.inventory-kpis{grid-template-columns:1fr}.inventory-kpis .kpi{padding:14px}}
 </style></head><body>
-<header><strong>国家队观察 <span class="pill">v2.1</span></strong><nav><a href="#intraday">盘中观察</a><a href="#postclose">盘后初值</a><a href="#official">正式份额与预警</a><a href="#channels">历史反推</a><a href="#discover">异常线索</a><a href="#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="#inventory">10份存量对照</a><a href="#intraday">盘中观察</a><a href="#postclose">盘后初值</a><a href="#official">正式份额与预警</a><a href="#channels">历史反推</a><a href="#discover">异常线索</a><a href="#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
 <main><div class="eyebrow">公开数据观察 · __END__ 收盘</div>
 <h1>先看资金变化，再核验是谁</h1><p class="lead">核心15只优先核对交易所正式份额；历史反推和新发现线索继续保留。份额减少可以确认，国家队身份需要独立证据。</p>
+__INVENTORY_BLOCK__
 <div class="statusline"><span class="pill" id="coreState"></span><span class="pill">当日买卖主体未确认</span><span class="pill" id="coverage"></span></div>
 <div class="kpis" id="kpis"></div><div class="notice" id="interpretation"></div>
 <section id="intraday"><h2>当日盘中观察区 <span class="pill" id="intradayStage">加载中</span></h2>
@@ -86,6 +99,18 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const num=(x,d=1)=>x===null||x===undefined?'—':(x>0?'+':'')+x.toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
 const val=x=>`<span class="mono ${x>0?'up':x<0?'dn':''}">${num(x)}</span>`;
 const range=w=>w&&w.low!==null?`${num(w.low)} 至 ${num(w.high)} 亿`:'数据不足';
+const I=D.inventory,ip=x=>x===null||x===undefined?'—':x.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+function renderInventory(){
+ const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
+ $('inventoryDate').textContent=`业务日 ${D.end}`;
+ $('inventoryTitle').textContent=ok?`上一轮10份，现在约${r.total_units.toFixed(1)}份`:'上一轮10份：当前存量数据不足';
+ $('inventorySummary').textContent=ok?`当前总存量约为上一轮参照的 ${(r.current_ratio*100).toFixed(1)}%。这是固定核心15只ETF的通道水位，不能据此确认国家队实际持仓或买卖。`:'缺口不补0，也不把过期值当作当前值；等待完整数据后再展示比例。';
+ $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null,'含本轮起点已存在的通道存量'],['本轮净新增',ok?r.net_added_units:null,'起点至今净变化，已包含净减少'],['本轮起点已有',I?.cycle_start_units??null,`锚点 ${I?.cycle_anchor_date??'待核对'}；不是国家队旧底仓确认`]].map(([label,v,note],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}<small>份 · 对照刻度</small></div><div class="label">${esc(note)}</div></div>`).join('');
+ $('inventoryBasis').textContent=I?`主基准：${I.reference_label}，${I.reference_date} = ${I.baseline_units}份；不是2024年9月24日当天。本轮从 ${I.cycle_start} 起算。价格权重固定在 ${I.price_date}，价格单独涨跌不会改变份数；基准版本 ${I.version}。`:'基准配置待核对。';
+ $('inventoryMethod').innerHTML=I?`<p>主基准恒价规模 ${ip(I.reference_yi)} 亿元；本轮起点 ${ip(I.cycle_start_yi)} 亿元。${ok?`当前恒价规模 ${ip(r.current_yi)} 亿元，本轮净新增 ${num(r.net_added_yi,1)} 亿元。`:''}这些都是固定价格折算值，不是当时实际市值或账户成交金额。</p><p>辅助参照：${I.alternative_reference_date} 的上一轮恒价存量峰值若定为10份，当前为 ${ok?ip(r.alternative_units):'—'} 份。主指标始终使用固定年末基准，不每天挑换峰值。</p><p class="note">同源换手率反推份额，存在分母定义、舍入及历史修订风险；与交易所近期正式份额分开展示。调整基准、价格、样本或本轮起点须升基准版本，不能静默改分母。</p>`:'<p>暂无可用基准。</p>';
+ $('inventoryDays').innerHTML=(I?.series??[]).slice(-10).reverse().map(x=>`<tr><td>${esc(x.date)}</td><td>${ip(x.total_units)}</td><td>${num(x.net_added_units,2)}</td><td>${x.current_ratio===null?'—':(x.current_ratio*100).toFixed(1)+'%'}</td></tr>`).join('')||'<tr><td colspan="4">尚无完整观察记录</td></tr>';
+}
+renderInventory();
 const core=D.pools.core15.latest,ev=D.pools.core15.evaluation;
 const O=D.exchange,of=O.latest;
 $('coreState').textContent=of.complete?'正式份额：'+(O.tracking?.latest?.risk.state??'待积累')+' · '+O.stage:'正式份额尚未齐全';$('coverage').textContent='正式份额及估值覆盖 '+of.valid_members+'/'+of.expected_members;
@@ -115,7 +140,7 @@ $('qualitySummary').innerHTML=`<p>核心15只正式份额估值覆盖 <b>${of.va
 $('qualityDetails').innerHTML=`<p>指数当日缺口：${esc(D.quality.missing_indices.join('、')||'无')}；不使用另一指数替代。隔离/异常记录 ${D.quality.issues.length} 条。</p><p>核心池5日舍入边界：${range(core.w5)}。边界只反映换手率舍入，不涵盖所有数据风险。</p><ul>${D.quality.crosscheck.map(x=>`<li>${x.code}：${esc(x.status)}${x.error?'（本次接口未取得可核验结果）':''}</li>`).join('')}</ul><p>历史披露锚点：</p><ul>${D.quality.official_share_checks.map(x=>`<li>${x.code} ${x.date}：${x.deviation_pct===null?'无同日记录':'反推份额偏差 '+x.deviation_pct.toFixed(4)+'%'}，<a href="${esc(x.source)}">原始报告</a></li>`).join('')}</ul><p>当日独立对账没有通过的标的不会显示“已核验准确”。</p>`;
 $('evaluation').textContent=`当前修订数据回放中，核心池有 ${ev.n} 个可观察后续10日的持续流出事件，后续资金持续性代理命中 ${ev.proxy_hits} 次。身份准确率、召回率尚无真实交易标签，未给出数值。`;
 $('download').onclick=()=>{const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),url=URL.createObjectURL(b),link=document.createElement('a');link.href=url;link.download='国家队观察_'+D.end+'_'+D.version+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-window.GJD={buildId:D.build_id,end:D.end,coreNet:core.net,officialNet:of.net_estimate,coreCount:D.pools.core15.members.length};
+window.GJD={buildId:D.build_id,end:D.end,coreNet:core.net,officialNet:of.net_estimate,coreCount:D.pools.core15.members.length,inventoryUnits:I?.complete?I.latest.total_units:null,inventoryNetUnits:I?.complete?I.latest.net_added_units:null};
 /* 盘后初值独立观察区：数据不齐不包装成核心15只完整合计 */
 (function(){
   const stage=String(O.stage||'未提供'),complete=!!of.complete,n=of.valid_members||0,exp=of.expected_members||15;

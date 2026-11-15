@@ -1,0 +1,188 @@
+{
+  "version": "1.0",
+  "baseline_units": 10,
+  "reference_date": "2025-12-31",
+  "reference_label": "924轮高仓位参照（2025年末）",
+  "cycle_start": "2026-07-16",
+  "cycle_anchor_date": "2026-07-15",
+  "price_date": "2026-11-13",
+  "alternative_reference_date": "2025-04-22",
+  "alternative_label": "上一轮恒价存量峰值参照",
+  "published_from": "2026-11-15",
+  "source_kind": "vendor_turnover_estimate",
+  "identity": "ETF通道估算；非国家队实名账户仓位",
+  "note": "参考份额、起点份额和价格权重冻结；基准修订须升版本。份数为归一化刻度，不是实际ETF基金份额。",
+  "provenance": {
+    "build_id": "20261114T141919_0800_25fe4c9dd0",
+    "ledger_hash": "16fb3bd6552dd0da7ebabbc723d5de006fedbde9f52f702f3c925aea36846e04",
+    "raw_manifest_hash": "2ebf2f942fa5c8803dac421537daef0bc79b3e928d7a240c000a1758370ef8cc",
+    "source": "tencent_newfqkline_bfq"
+  },
+  "items": {
+    "159338": {
+      "name": "中证A500ETF国泰",
+      "fixed_price": 1.037,
+      "reference_shares": 31353186117.136658,
+      "cycle_start_shares": 19624559148.264984,
+      "alternative_shares": 23854575586.854458,
+      "reference_low": 31346386467.143787,
+      "reference_high": 31359988717.726185,
+      "cycle_start_low": 19616823807.646828,
+      "cycle_start_high": 19632300591.715977
+    },
+    "159845": {
+      "name": "中证1000ETF华夏",
+      "fixed_price": 2.647,
+      "reference_shares": 16079844696.969696,
+      "cycle_start_shares": 3612540836.0128617,
+      "alternative_shares": 14944089743.589743,
+      "reference_low": 16049448015.122873,
+      "reference_high": 16110356736.242884,
+      "cycle_start_low": 3611960135.026523,
+      "cycle_start_high": 3613121723.749799
+    },
+    "159915": {
+      "name": "创业板ETF易方达",
+      "fixed_price": 2.442,
+      "reference_shares": 31486390350.877197,
+      "cycle_start_shares": 12468244740.532959,
+      "alternative_shares": 43888015151.51515,
+      "reference_low": 31417492341.356678,
+      "reference_high": 31555591208.79121,
+      "cycle_start_low": 12463874518.051174,
+      "cycle_start_high": 12472618028.761839
+    },
+    "159919": {
+      "name": "沪深300ETF嘉实",
+      "fixed_price": 4.266,
+      "reference_shares": 40548676923.07692,
+      "cycle_start_shares": 5617291390.728477,
+      "alternative_shares": 43618000000.0,
+      "reference_low": 40239145038.16794,
+      "reference_high": 40863007751.93798,
+      "cycle_start_low": 5608006611.570248,
+      "cycle_start_high": 5626606965.1741295
+    },
+    "159949": {
+      "name": "创业板50ETF华安",
+      "fixed_price": 1.09,
+      "reference_shares": 19469396825.396828,
+      "cycle_start_shares": 11480480897.009968,
+      "alternative_shares": 29081259911.89427,
+      "reference_low": 19453957176.843777,
+      "reference_high": 19484861000.79428,
+      "cycle_start_low": 11475715234.537153,
+      "cycle_start_high": 11485250519.318655
+    },
+    "510050": {
+      "name": "上证50ETF华夏",
+      "fixed_price": 2.889,
+      "reference_shares": 56613335403.72671,
+      "cycle_start_shares": 7261572435.395458,
+      "alternative_shares": 61066620000.0,
+      "reference_low": 56438061919.50465,
+      "reference_high": 56789700934.57943,
+      "cycle_start_low": 7258730332.681018,
+      "cycle_start_high": 7264416764.590678
+    },
+    "510300": {
+      "name": "沪深300ETF华泰柏瑞",
+      "fixed_price": 4.083,
+      "reference_shares": 88910560000.0,
+      "cycle_start_shares": 18372333333.333332,
+      "alternative_shares": 97668000000.0,
+      "reference_low": 88321748344.37086,
+      "reference_high": 89507275167.78523,
+      "cycle_start_low": 18348988564.167725,
+      "cycle_start_high": 18395737579.617832
+    },
+    "510310": {
+      "name": "沪深300ETF易方达",
+      "fixed_price": 3.969,
+      "reference_shares": 66201461538.46153,
+      "cycle_start_shares": 9769942857.142857,
+      "alternative_shares": 70188444444.44444,
+      "reference_low": 65363468354.430374,
+      "reference_high": 67061220779.22078,
+      "cycle_start_low": 9742108262.108263,
+      "cycle_start_high": 9797936962.750715
+    },
+    "510330": {
+      "name": "沪深300ETF华夏",
+      "fixed_price": 4.258,
+      "reference_shares": 48678764705.88235,
+      "cycle_start_shares": 7783358620.689655,
+      "alternative_shares": 48724541666.66667,
+      "reference_low": 47287942857.14285,
+      "reference_high": 50153878787.878784,
+      "cycle_start_low": 7756611683.848798,
+      "cycle_start_high": 7810290657.439446
+    },
+    "510500": {
+      "name": "中证500ETF南方",
+      "fixed_price": 6.495,
+      "reference_shares": 19074931623.931625,
+      "cycle_start_shares": 5435159055.118111,
+      "alternative_shares": 19379378378.37838,
+      "reference_low": 19034260127.93177,
+      "reference_high": 19115777301.927197,
+      "cycle_start_low": 5430882769.4728565,
+      "cycle_start_high": 5439442080.378251
+    },
+    "512050": {
+      "name": "A500ETF华夏",
+      "fixed_price": 1.036,
+      "reference_shares": 35419576923.07693,
+      "cycle_start_shares": 14387828793.77432,
+      "alternative_shares": 17762043265.875786,
+      "reference_low": 35414746761.21642,
+      "reference_high": 35424408402.673584,
+      "cycle_start_low": 14380834224.59893,
+      "cycle_start_high": 14394830170.316303
+    },
+    "512100": {
+      "name": "中证1000ETF南方",
+      "fixed_price": 2.582,
+      "reference_shares": 25699289308.176098,
+      "cycle_start_shares": 7545235409.836065,
+      "alternative_shares": 26335000000.0,
+      "reference_low": 25618727272.727272,
+      "reference_high": 25780359621.4511,
+      "cycle_start_low": 7542762372.992461,
+      "cycle_start_high": 7547710068.875041
+    },
+    "563360": {
+      "name": "A500ETF华泰柏瑞",
+      "fixed_price": 1.096,
+      "reference_shares": 39232822009.569374,
+      "cycle_start_shares": 23918682194.616978,
+      "alternative_shares": 12236087628.86598,
+      "reference_low": 39226565778.98262,
+      "reference_high": 39239080236.082306,
+      "cycle_start_low": 23906308329.022243,
+      "cycle_start_high": 23931068876.229935
+    },
+    "588000": {
+      "name": "科创50ETF华夏",
+      "fixed_price": 1.354,
+      "reference_shares": 53723973105.134476,
+      "cycle_start_shares": 33845569230.76923,
+      "alternative_shares": 73148246913.58025,
+      "reference_low": 53658376068.37607,
+      "reference_high": 53789730722.15422,
+      "cycle_start_low": 33832556708.95809,
+      "cycle_start_high": 33858591766.063873
+    },
+    "588080": {
+      "name": "科创50ETF易方达",
+      "fixed_price": 1.312,
+      "reference_shares": 51656387096.77419,
+      "cycle_start_shares": 21084864048.338367,
+      "alternative_shares": 58285870967.741936,
+      "reference_low": 51448931726.90764,
+      "reference_high": 51865522267.206474,
+      "cycle_start_low": 21068950943.396225,
+      "cycle_start_high": 21100801209.37264
+    }
+  }
+}

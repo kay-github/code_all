@@ -11,6 +11,7 @@ def assess(a,at=None):
     if not a.get('discovery',{}).get('catalogue_complete'):problems.append('目录分页未完整采集')
     if not a.get('discovery',{}).get('scanned'):problems.append('扩展发现扫描未执行')
     if o.get('issues'):problems.append('正式份额有未解决异常')
+    if 'inventory' in a and not a['inventory'].get('complete'):problems.append('核心存量对照数据不完整')
     current=datetime.fromisoformat(at or now())
     for code,x in o.get('instruments',{}).items():
         if x.get('error'):problems.append(code+'本次正式份额采集失败')

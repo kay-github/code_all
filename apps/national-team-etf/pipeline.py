@@ -90,6 +90,13 @@ def verify_build(folder, expected_build_id=None):
     latest_rows=[next((x for x in l['series'][c] if x['date']==a['end']),{}) for c in CORE]
     if any(x.get('net') is None for x in latest_rows):problems.append('missing core flow')
     if r['net'] is not None and abs(sum(x['net'] for x in latest_rows)-r['net'])>1e-7:problems.append('core totals do not reconcile')
+    inventory=a.get('inventory')
+    if inventory:
+        if inventory!=l.get('inventory'):problems.append('inventory ledger/analysis mismatch')
+        ir=inventory['latest']
+        if ir['date']!=a['end']:problems.append('inventory business date mismatch')
+        if ir['complete'] and abs(ir['total_units']-inventory['cycle_start_units']-ir['net_added_units'])>1e-9:
+            problems.append('inventory total/start/increment mismatch')
     exchange=a.get('exchange',{})
     er=exchange.get('latest',{})
     if er.get('complete'):
@@ -122,6 +129,13 @@ def build(manifest_path=None):
         raise RuntimeError('观察池配置与采集批次不一致，请按新注册表完整重新采集')
     actions=read_json(CONFIG/'actions.json');evidence=read_json(CONFIG/'evidence.json')
     official=read_json(CONFIG/'official_shares.json')['items']
+    inventory_config=read_json(CONFIG/'inventory.json')
+    if not inventory_config:raise RuntimeError('缺少固定存量对照基准配置')
+    previous=read_json(DATA/'latest.json')
+    if previous:
+        previous_config=read_json(Path(previous['path'])/'configuration.json',{}).get('inventory')
+        if previous_config and digest(previous_config)!=digest(inventory_config) and previous_config['version']==inventory_config['version']:
+            raise RuntimeError('存量基准发生变更，必须明确提升基准版本，禁止静默改分母')
     instrument={x['code']:dict(x,pool='fixed_watch') for x in registry['items'] if x['watch']}
     for x in manifest['candidates']:
         updated={**x,**classify(x['code'],x['name'])}
@@ -224,7 +238,9 @@ def build(manifest_path=None):
             registered_shares=item['shares'],estimated_shares=row['shares'] if row else None,
             deviation_pct=(row['shares']/item['shares']-1)*100 if row else None,
             note='历史披露锚点，不代表当日全样本登记份额对账'))
-    config_hash=digest([registry,rules,actions,evidence,official])
+    from v2_inventory import summarize as summarize_inventory
+    inventory=summarize_inventory(series,calendar,end,actions,inventory_config,CORE)
+    config_hash=digest([registry,rules,actions,evidence,official,inventory_config])
     from v2_exchange import summarize as summarize_exchange
     exchange=summarize_exchange(raw['exchange'],series,calendar,end,actions,instrument,raw['exchange_history'])
     from v2_tracking import attach as attach_official_tracking
@@ -234,12 +250,12 @@ def build(manifest_path=None):
     folder=DATA/'builds'/build_id
     folder.mkdir(parents=True,exist_ok=False)
     ledger=dict(version=VERSION,build_id=build_id,end=end,raw_run=manifest['run_id'],calendar=calendar,
-                series=series,index=index_series,actions=actions,issues=issues,exchange=exchange,
+                series=series,index=index_series,actions=actions,issues=issues,exchange=exchange,inventory=inventory,
                 method='原生份额/不复权成交均价；合并仅转换相邻日比较单位；估算非实际账户现金流')
     analysis=dict(version=VERSION,rule_version=rules['version'],build_id=build_id,end=end,requested_end=manifest['end'],
         built_at=now(),raw_run=manifest['run_id'],method=ledger['method'],rules=rules,
         raw_manifest=str(manifest_path),
-        calendar=calendar,pools=pools,families=families,instruments=instruments,exchange=exchange,
+        calendar=calendar,pools=pools,families=families,instruments=instruments,exchange=exchange,inventory=inventory,
         discovery=dict(catalogue_complete=manifest['catalogue_complete'],catalogue_count=manifest['catalogue_count'],
             scanned=len(discovery_queue),requested=len(raw['discovery']),valid_current=sum(r['current'] for r in discovery_queue),
             queue=discovery_queue,scope='境内股票ETF候选，按当前目录识别；非历史时点全市场',
@@ -254,7 +270,7 @@ def build(manifest_path=None):
             '份额变化不能识别全部二级市场交易；身份未知不意味着没有行动',
             '净申赎金额为证券敞口估算；不输出国家队实际成本或已实现收益'])
     write_json(folder/'ledger.json.gz',ledger);write_json(folder/'analysis.json.gz',analysis)
-    configuration=dict(registry=registry,rules=rules,actions=actions,evidence=evidence,official_shares=dict(items=official))
+    configuration=dict(registry=registry,rules=rules,actions=actions,evidence=evidence,official_shares=dict(items=official),inventory=inventory_config)
     write_json(folder/'configuration.json',configuration)
     write_json(folder/'raw_manifest.json',manifest)
     write_json(folder/'manifest.json',dict(version=VERSION,build_id=build_id,raw_run=manifest['run_id'],
@@ -284,6 +300,12 @@ def build(manifest_path=None):
             for r in item['series']:
                 w.writerow([c,r['date'],r['previous_date'],r['shares'],r['previous_shares'],
                     r['share_change'],r['vwap'],r['net_estimate'],r['source_url'],r['fetched_at'],build_id])
+    with (folder/'inventory.csv').open('w',newline='',encoding='utf-8-sig') as f:
+        w=csv.writer(f);w.writerow(['date','reference_date','price_date','cycle_anchor_date','baseline_units','current_total_units',
+            'cycle_start_units','cycle_net_added_units','current_constant_price_yi','cycle_net_added_constant_price_yi','complete','build_id'])
+        for r in inventory['series']:
+            w.writerow([r['date'],inventory['reference_date'],inventory['price_date'],inventory['cycle_anchor_date'],inventory['baseline_units'],
+                r['total_units'],inventory['cycle_start_units'],r['net_added_units'],r['current_yi'],r['net_added_yi'],r['complete'],build_id])
     logs=[dict(date=end,channel=c,build_id=build_id,rule_version=rules['version'],
                raw_run=manifest['run_id'],risk=v['latest']['risk'] if v['latest'] else None,
                official_share_observation=exchange['instruments'].get(c,{}).get('latest'),

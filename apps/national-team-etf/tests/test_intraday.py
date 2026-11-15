@@ -70,8 +70,12 @@ class IntradayTest(unittest.TestCase):
 
     # ---- 规则 ----
     def test_cold_start_never_escalates(self):
-        records = {c: rec(c, pct=.5) for c in list(CORE)[:5]}
-        for fam, sym in list(INDEX.items())[:3]:
+        # CORE 是 set，list(CORE)[:5] 依赖进程 hash 顺序；取不到有对应指数的标的时
+        # active_count 会变 0、decide_level 直接返回 L0，用例会间歇失败。固定 5 只并配齐指数。
+        codes = ['510300', '510050', '510500', '512100', '588000']
+        records = {c: rec(c, pct=.5) for c in codes}
+        for fam in ('沪深300', '上证50', '中证500', '中证1000', '科创50'):
+            sym = INDEX[fam]
             records[sym[2:]] = rec(sym[2:], pct=0.0)
         state = I.init_state()
         sig = I.compute_signals(records, state, dict(complete=False, per_code={}))
@@ -212,7 +216,8 @@ class IntradayTest(unittest.TestCase):
     def test_baseline_needs_min_trading_days(self):
         for i in range(3):
             day = '2026-11-%02d' % (10 + i)
-            prof = {c: {'10:%02d' % m: 1000.0 + m for m in range(60)} for c in list(CORE)[:5]}
+            prof = {c: {'10:%02d' % m: 1000.0 + m for m in range(60)} for c in
+                    ['510300', '510050', '510500', '512100', '588000']}
             I.write_json(I.PROFILE_DIR / (day + '.json'), prof)
         b = I.build_baseline()
         self.assertEqual(b['observed_days'], 3)

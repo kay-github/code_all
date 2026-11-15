@@ -14,12 +14,12 @@ from v2_release import assess
 REPO=Path(os.environ.get('GJD_SITE_REPO',ROOT.parents[1] if (ROOT.parents[1]/'.git').exists() else 'D:/code_all'))
 DEST=REPO/'tools/national-team-etf'
 SOURCE=REPO/'apps/national-team-etf'
-MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py','v2_tracking.py',
+MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py','v2_tracking.py','v2_inventory.py',
     'v2_release.py','v2_report.py','collect_data.py','pipeline.py','validate_v2.py','publish.py',
     'update.py','serve_preview.py','compat_v2.py','monitor.py','intraday.py',
     'postclose.py','morning_review.py','weekly_report.py','scheduler.py']
 DOCUMENTS=['国家队ETF数据研究方法_口径与坑.md','国家队追踪_经验库.md','国家队追踪_v2_改版与验证.md',
-    '持续追踪实施说明.md']
+    '持续追踪实施说明.md','存量刻度说明.md']
 
 
 def content_hash(path):
@@ -47,16 +47,20 @@ def stage():
     if digest(manifest)!=bm['raw_manifest_hash']:raise RuntimeError('原始输入批次与构建不符')
     current_hash=digest({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in pipeline.code_files()})
     if current_hash!=bm['code_hash']:raise RuntimeError('计算或页面代码已修改，请重新构建并验收')
+    if digest(read_json(ROOT/'config/inventory.json'))!=digest(read_json(path/'configuration.json').get('inventory')):
+        raise RuntimeError('存量基准已修改，请重新构建并验收')
     files=[]
     for src,dst in [('report.html','index.html'),('cycle.html','cycle.html')]:
         page=(path/src).read_text(encoding='utf8')
         if f'content="{a["build_id"]}"' not in page:raise RuntimeError('页面构建号不同')
         files.append(copy(path/src,DEST/dst))
     files.append(copy(path/'official_flow.csv',DEST/'data/official_flow.csv'))
+    files.append(copy(path/'inventory.csv',DEST/'data/inventory.csv'))
+    inventory={k:v for k,v in a['inventory'].items() if k not in {'series','components','provenance'}}
     public=dict(version=a['version'],build_id=a['build_id'],business_date=a['end'],built_at=a['built_at'],
         data_stage=a['exchange']['stage'],core_members=a['pools']['core15']['members'],
         latest=a['exchange']['latest'],w5=a['exchange']['w5'],unit='亿元；份额为原生份额',
-        valuation=a['exchange']['valuation'],identity='当日买卖主体未确认',
+        valuation=a['exchange']['valuation'],identity='当日买卖主体未确认',inventory=inventory,
         source_urls={c:x['url'] for c,x in a['exchange']['instruments'].items()})
     write_json(DEST/'data/latest.json',public);files.append('tools/national-team-etf/data/latest.json')
     # 盘中采集器快照：低频随正式发布同步。实时行情由页面 JSONP 直连供应商，
@@ -120,7 +124,7 @@ def deploy(files):
                or os.environ.get('https_proxy') or os.environ.get('HTTP_PROXY') or '')
         cfg=(['-c','http.proxy='+proxy,'-c','https.proxy='+proxy] if proxy
              else ['-c','http.proxy=','-c','https.proxy='])
-        cmd=['git',*cfg,*args]
+        cmd=['git',*cfg,'-c','core.quotepath=false',*args]
         r=subprocess.run(cmd,cwd=REPO,text=True,encoding='utf8',capture_output=True)
         if r.returncode:raise RuntimeError(r.stderr or r.stdout)
         return r.stdout.strip()

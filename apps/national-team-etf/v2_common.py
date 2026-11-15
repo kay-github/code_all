@@ -7,7 +7,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-VERSION = '2.1.0'
+VERSION = '2.2.0'
 ROOT = Path(__file__).resolve().parent
 DATA = Path(os.environ.get('GJD_DATA_DIR',ROOT/'data'/'v2')).resolve()
 REPORTS = Path(os.environ.get('GJD_REPORT_DIR',ROOT.parent if (ROOT.parent/'gjd_research').is_dir() else ROOT/'output')).resolve()

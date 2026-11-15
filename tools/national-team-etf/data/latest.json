@@ -1,8 +1,8 @@
 {
-  "version": "2.1.0",
-  "build_id": "20261114T141919_0800_25fe4c9dd0",
+  "version": "2.2.0",
+  "build_id": "20261115T092154_0800_b3ee74cc68",
   "business_date": "2026-11-13",
-  "built_at": "2026-11-14T14:19:19+08:00",
+  "built_at": "2026-11-15T09:21:54+08:00",
   "data_stage": "次晨复核",
   "core_members": [
     "159338",
@@ -39,6 +39,124 @@
   "unit": "亿元；份额为原生份额",
   "valuation": "份额变化×当日成交均价，仅表示证券敞口变化估算，不是实际现金流",
   "identity": "当日买卖主体未确认",
+  "inventory": {
+    "version": "1.0",
+    "date": "2026-11-13",
+    "complete": true,
+    "latest": {
+      "date": "2026-11-13",
+      "complete": true,
+      "valid_members": 15,
+      "expected_members": 15,
+      "missing": [],
+      "current_yi": 9858.56472019357,
+      "net_added_yi": 5517.134371332354,
+      "total_units": 5.62308460172369,
+      "net_added_units": 3.146838734601353,
+      "current_ratio": 0.562308460172369,
+      "alternative_units": 5.324117046655078,
+      "components": [
+        {
+          "code": "159338",
+          "current_yi": 314.60538087201127
+        },
+        {
+          "code": "159845",
+          "current_yi": 97.54159957378107
+        },
+        {
+          "code": "159915",
+          "current_yi": 1093.6581999059267
+        },
+        {
+          "code": "159919",
+          "current_yi": 584.5144126153846
+        },
+        {
+          "code": "159949",
+          "current_yi": 260.44622786026207
+        },
+        {
+          "code": "510050",
+          "current_yi": 468.0407286255924
+        },
+        {
+          "code": "510300",
+          "current_yi": 1858.2021211764704
+        },
+        {
+          "code": "510310",
+          "current_yi": 1023.2420099999998
+        },
+        {
+          "code": "510330",
+          "current_yi": 653.6701453846154
+        },
+        {
+          "code": "510500",
+          "current_yi": 580.8943482954545
+        },
+        {
+          "code": "512050",
+          "current_yi": 188.9909762222222
+        },
+        {
+          "code": "512100",
+          "current_yi": 442.47717025566106
+        },
+        {
+          "code": "563360",
+          "current_yi": 444.0073521126761
+        },
+        {
+          "code": "588000",
+          "current_yi": 1400.489945425
+        },
+        {
+          "code": "588080",
+          "current_yi": 447.7841018685121
+        }
+      ]
+    },
+    "baseline_units": 10.0,
+    "reference_date": "2025-12-31",
+    "reference_label": "924轮高仓位参照（2025年末）",
+    "cycle_start": "2026-07-16",
+    "cycle_anchor_date": "2026-07-15",
+    "price_date": "2026-11-13",
+    "alternative_reference_date": "2025-04-22",
+    "alternative_label": "上一轮恒价存量峰值参照",
+    "reference_yi": 17532.307298331496,
+    "cycle_start_yi": 4341.430348861216,
+    "cycle_start_units": 2.476245867122337,
+    "alternative_reference_yi": 18516.806887983985,
+    "members": [
+      "159338",
+      "159845",
+      "159915",
+      "159919",
+      "159949",
+      "510050",
+      "510300",
+      "510310",
+      "510330",
+      "510500",
+      "512050",
+      "512100",
+      "563360",
+      "588000",
+      "588080"
+    ],
+    "source_kind": "vendor_turnover_estimate",
+    "identity": "ETF通道估算；非国家队实名账户仓位",
+    "method": "固定参考份额、固定价格权重；当日同源反推份额归一为上一轮10份",
+    "limitations": [
+      "ETF全部持有人通道存量，不能归属于国家队实名账户",
+      "本轮净新增为起点至今的恒价存量差，已含净减少；非毛买入金额或实际现金流",
+      "历史反推份额存在分母、舍入及修订风险；当前正式份额另列，不混接口径",
+      "固定2026-11-13价格权重，价格单独变化不会使指标跳动；锚点修订须升版本"
+    ]
+  },
   "source_urls": {
     "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-10-26&txtEnd=2026-11-13",
     "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-10-26&txtEnd=2026-11-13",

@@ -2,6 +2,7 @@
 from __future__ import annotations
 from collections import Counter
 import json
+import csv,math
 from pathlib import Path
 import subprocess
 import sys
@@ -105,6 +106,36 @@ def validate():
     check('当日身份结论符合独立证据约束',all(x['identity_evidence']==identity(c,a['end'],configuration['evidence']['items'],c in CORE) for c,x in a['instruments'].items()),
         dict(identities=dict(Counter(x['identity_evidence']['level'] for x in a['instruments'].values())),
         behavior_candidates=sum(x['behavior_clues']['label']=='优先核查的资金行为候选' for x in a['instruments'].values())))
+    inv=a['inventory'];ic=configuration['inventory'];ir=inv['latest']
+    def fixed_value(code,shares,day):
+        lo,hi=sorted([day,ic['price_date']])
+        f=math.prod(float(x['share_ratio']) for x in l['actions'] if x['code']==code and x['status']=='verified' and lo<x['effective_date']<=hi)
+        return shares*(f if day<=ic['price_date'] else 1/f)*ic['items'][code]['fixed_price']/1e8
+    reference=sum(fixed_value(c,v['reference_shares'],ic['reference_date']) for c,v in ic['items'].items())
+    start_value=sum(fixed_value(c,v['cycle_start_shares'],ic['cycle_anchor_date']) for c,v in ic['items'].items())
+    current_value=sum(fixed_value(c,by[c][a['end']]['shares'],a['end']) for c in CORE)
+    check('10份刻度固定基准与存量新增独立勾稽',inv['complete'] and set(inv['members'])==CORE and
+        abs(ir['total_units']-current_value/reference*ic['baseline_units'])<1e-9 and
+        abs(ir['net_added_units']-(current_value-start_value)/reference*ic['baseline_units'])<1e-9 and
+        abs(ir['total_units']-inv['cycle_start_units']-ir['net_added_units'])<1e-9,
+        dict(reference_date=ic['reference_date'],price_date=ic['price_date'],cycle_anchor_date=ic['cycle_anchor_date'],
+             total_units=ir['total_units'],net_added_units=ir['net_added_units'],cycle_start_units=inv['cycle_start_units']))
+    anchor_checks=[]
+    for c,v in ic['items'].items():
+        for key,day in [('reference_shares',ic['reference_date']),('cycle_start_shares',ic['cycle_anchor_date']),('alternative_shares',ic['alternative_reference_date'])]:
+            row=by[c].get(day)
+            if row:anchor_checks.append(dict(code=c,date=day,relative_difference=abs(row['shares']/v[key]-1)))
+    check('冻结基准与可用归档日期交叉核对',all(x['relative_difference']<1e-9 for x in anchor_checks),
+        dict(observations=len(anchor_checks),max_relative_difference=max((x['relative_difference'] for x in anchor_checks),default=None),
+             note='冻结值不悄然跟随供应商历史修订；变更需核验后升基准版本'))
+    inventory_rows=list(csv.DictReader((path/'inventory.csv').open(encoding='utf-8-sig')))
+    expected_rows=inv['series']
+    check('存量CSV与同版完整序列一致',len(inventory_rows)==len(expected_rows) and all(
+        row['build_id']==a['build_id'] and row['date']==point['date'] and row['reference_date']==ic['reference_date'] and
+        row['price_date']==ic['price_date'] and
+        (abs(float(row['current_total_units'])-point['total_units'])<1e-9 if point['complete'] else row['current_total_units']=='') and
+        (abs(float(row['cycle_net_added_units'])-point['net_added_units'])<1e-9 if point['complete'] else row['cycle_net_added_units']=='')
+        for row,point in zip(inventory_rows,expected_rows)),len(inventory_rows))
     # The generated JavaScript must parse before browser testing.
     from html.parser import HTMLParser
     class Scripts(HTMLParser):
@@ -120,7 +151,7 @@ def validate():
             if self.active:self.parts.append(s)
             if self.dataset:self.data.append(s)
     parser=Scripts();parser.feed((path/'report.html').read_text(encoding='utf8'))
-    data=json.loads(''.join(parser.data));check('页面与计算同版本同数字',data['build_id']==a['build_id'] and data['pools']['core15']['latest']['net']==core['latest']['net'],a['build_id'])
+    data=json.loads(''.join(parser.data));check('页面与计算同版本同数字',data['build_id']==a['build_id'] and data['pools']['core15']['latest']['net']==core['latest']['net'] and data['inventory']==inv,a['build_id'])
     with tempfile.TemporaryDirectory() as tmp:
         p=Path(tmp)/'report.js';p.write_text('\n'.join(parser.parts),encoding='utf8')
         result=subprocess.run(['node','--check',str(p)],capture_output=True,text=True)
