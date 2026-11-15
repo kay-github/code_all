@@ -13,6 +13,7 @@ TAGMAP = {"光模块": "光模块整机", "光模块/器件": "光模块整机",
           "光器件": "光器件/封装", "光器件/封装": "光器件/封装", "光器件/连接": "光器件/封装",
           "光器件/调制器": "光器件/封装", "光通信器件": "光器件/封装", "陶瓷封装": "光器件/封装",
           "光芯片": "光芯片/激光器", "光芯片/PLC": "光芯片/激光器", "激光芯片": "光芯片/激光器",
+          "光芯片/收发电芯片": "光芯片/激光器", "特种光纤": "光纤光缆",
           "光器件/光学元件": "光学元件", "光学元件/硅光配套": "光学元件",
           "光纤光缆": "光纤光缆", "光纤光缆/海缆": "光纤光缆", "特种光缆": "光纤光缆",
           "光缆/设备": "光纤光缆", "保偏光纤": "光纤光缆",
@@ -52,12 +53,16 @@ def main():
             seq[r["code"]] = [r["cs"], r.get("ls") or r["cs"], r.get("hs") or r["cs"]]
 
     def mk(r, tagcol, group, ext):
-        return {"c": r["code"], "n": r["name"], "t": tagcol, "g": group,
-                "p": num(r.get("last")),
-                "d1": num(r.get("d1")), "d5": num(r.get("d5")), "d20": num(r.get("d20")),
-                "d60": num(r.get("d60")), "ytd": num(r.get("ytd")), "dd": num(r.get("dd250")),
-                "to": num(r.get("turnover")), "mcap": num(r.get("mcap")),
-                "nl": 1 if r.get("newlow60") else 0, "x": 1 if ext else 0}
+        o = {"c": r["code"], "n": r["name"], "t": tagcol, "g": group,
+             "p": num(r.get("last")),
+             "d1": num(r.get("d1")), "d5": num(r.get("d5")), "d20": num(r.get("d20")),
+             "d60": num(r.get("d60")), "ytd": num(r.get("ytd")), "dd": num(r.get("dd250")),
+             "to": num(r.get("turnover")), "mcap": num(r.get("mcap")),
+             "nl": 1 if r.get("newlow60") else 0, "x": 1 if ext else 0}
+        if r.get("grade"):
+            o["gr"] = r["grade"]
+            o["sc"] = num(r.get("score"))
+        return o
 
     opt_core, opt_ext = [], []
     for r in rows:
@@ -94,24 +99,34 @@ def main():
                  "光纤激光器": "光学光电子", "屏蔽/散热件": "元件/连接器",
                  "精密制造/铜缆": "元件/连接器", "电力电缆": "元件/连接器",
                  "电子材料": "电子材料", "移动信息服务": "软件/IT",
+                 "光通信测试": "通信/计算机", "光纤级石英": "电子材料",
+                 "光通信光纤器件": "元件/连接器",
                  "应急通信(参股长飞)": "通信/计算机", "化纤(参股索尔思)": "其他"}
     tech_all = tech_rows + [dict(x, t="光通信", g="光通信", o=1) for x in opt_core if x["c"] not in have] \
                           + [dict(x, t=OPTAG2IND.get(x["t"], "其他"), g=OPTAG2IND.get(x["t"], "其他"), o=1)
                              for x in opt_ext if x["c"] not in have]
 
+    # 光模块评级：光通信核心池，按综合分降序
+    rating_rows = [dict(x, g=x["gr"]) for x in opt_core if x.get("gr")]
+    rating_rows.sort(key=lambda x: -(x.get("sc") or 0))
+
     payload = {
         "meta": {"data_date": meta["data_date"], "snapshot": meta["snapshot"],
                  "intraday": bool(meta.get("intraday")), "cal_last": meta.get("cal_last"),
                  "pool_version": meta.get("pool_version"),
-                 "n_opt": len(opt_core) + len(opt_ext), "n_tech": len(tech_all)},
+                 "n_opt": len(opt_core) + len(opt_ext), "n_tech": len(tech_all),
+                 "n_rating": len(rating_rows)},
         "cal": cal,
         "seq": seq,
         "boards": {
+            "tech": {"rows": tech_all, "gorder": TGORDER,
+                     "label": "所有科技股跌幅榜", "ncore": len(tech_all), "next": 0},
             "optical": {"rows": opt_core + opt_ext, "gorder": GORDER,
                         "label": "光通信跌幅榜",
                         "ncore": len(opt_core), "next": len(opt_ext)},
-            "tech": {"rows": tech_all, "gorder": TGORDER,
-                     "label": "所有科技股跌幅榜", "ncore": len(tech_all), "next": 0},
+            "rating": {"rows": rating_rows, "gorder": ["A", "B", "C", "D", "E"],
+                       "label": "光模块评级", "kind": "rating",
+                       "ncore": len(rating_rows), "next": 0},
         },
     }
 

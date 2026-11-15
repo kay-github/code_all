@@ -167,6 +167,44 @@ def pct(a, b):
     return (a / b - 1.0) * 100.0
 
 
+def add_rating(rows):
+    """光通信核心池技术面评级（0-100 → A/B/C/D/E）
+    四个分量，权重固定、口径公开，可随数据日复算：
+      抗跌 rank 35%：近20日跌幅在核心池内的分位（跌得少 = 高分位）
+      回撤 rank 25%：距250日高点回撤在核心池内的分位（撤得少 = 高分位）
+      相对强度 20%：近20日相对「科技股整体中位」的超额，0.5 + 超额/20，截断到 [0,1]
+      趋势位置 20%：YTD>0 记 0.4；未创60日新低记 0.3；近5日>0 记 0.3
+    """
+    import bisect
+    core = [r for r in rows
+            if r["board"] == "optical" and r["tier"] == "core"
+            and r.get("d20") is not None and r.get("dd250") is not None]
+    if not core:
+        return
+    d20s = sorted(r["d20"] for r in core)
+    dds = sorted(r["dd250"] for r in core)
+    tech = [r["d20"] for r in rows if r["board"] == "tech" and r.get("d20") is not None]
+    tmed = None
+    if tech:
+        tech.sort()
+        n = len(tech)
+        tmed = tech[n // 2] if n % 2 else (tech[n // 2 - 1] + tech[n // 2]) / 2
+
+    def rank(arr, v):
+        return bisect.bisect_right(arr, v) / len(arr)
+
+    for r in core:
+        a = rank(d20s, r["d20"])
+        b = rank(dds, r["dd250"])
+        c = 0.5 if tmed is None else max(0.0, min(1.0, 0.5 + (r["d20"] - tmed) / 20.0))
+        t = (0.4 if (r.get("ytd") or 0) > 0 else 0.0) + (0.0 if r.get("newlow60") else 0.3) \
+            + (0.3 if (r.get("d5") or 0) > 0 else 0.0)
+        sc = 100 * (0.35 * a + 0.25 * b + 0.20 * c + 0.20 * t)
+        r["score"] = round(sc, 1)
+        r["grade"] = "A" if sc >= 75 else "B" if sc >= 60 else "C" if sc >= 45 else "D" if sc >= 30 else "E"
+        r["comp"] = {"d20": round(a, 2), "dd": round(b, 2), "rel": round(c, 2), "trend": round(t, 2)}
+
+
 def main():
     core, ext, tech = load_pool()
     optical = [(c, n, t, "core") for c, n, t in core] + [(c, n, t, "ext") for c, n, t in ext]
@@ -392,6 +430,8 @@ def main():
         r["ls"] = ls
     meta["cal"] = cal
     meta["cal_last"] = cal[-1] if cal else None
+
+    add_rating(rows)
 
     with io.open(os.path.join(BASE, "光通信跌幅榜_数据.json"), "w", encoding="utf-8") as f:
         json.dump({"meta": meta, "rows": rows}, f, ensure_ascii=False, separators=(",", ":"))

@@ -150,6 +150,19 @@
   }
   .empty{padding:40px;text-align:center;color:var(--faint)}
 
+  /* 评级徽章：颜色仅表示评级高低，与红涨绿跌约定无关 */
+  .gr{
+    display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:21px;
+    padding:0 8px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:700;
+    border:1px solid transparent;letter-spacing:.4px;
+  }
+  .gr.gA{color:#06231F;background:var(--teal);border-color:rgba(45,212,191,.6)}
+  .gr.gB{color:#071322;background:var(--blue);border-color:rgba(91,156,246,.55)}
+  .gr.gC{color:var(--dim);background:rgba(148,163,184,.14);border-color:rgba(148,163,184,.22)}
+  .gr.gD{color:#1D1305;background:var(--amber);border-color:rgba(245,185,66,.6)}
+  .gr.gE{color:#210A0C;background:var(--up);border-color:rgba(242,85,90,.6)}
+  .sco{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+
   .sec{margin-top:30px}
   .sec h2{font-size:15px;font-weight:650;margin-bottom:4px;display:flex;align-items:center;gap:9px}
   .sec h2::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--teal)}
@@ -258,6 +271,9 @@
     「年初至今」基准为上一年最后一个交易日收盘；「距250日高点」以近 250 个交易日<b>盘中最高价</b>为基准（前复权，与东财/工作台软件口径一致）。<br>
     <b>两个 Table</b>：「光通信跌幅榜」为自建产业链池（核心 __NOPT__ 只 + 关联延伸 __NX__ 只，后者压暗显示且不计入板块中位数）；
     「所有科技股跌幅榜」为按行业口径构建的科技股池（同花顺电子／通信／计算机十个二级行业 + 新浪电子器件／电子信息，市值 30 亿以上，剔除 ST、退市与光伏锂电），共 __N__ 只，其中带紫色「光」标记者为光通信池成员。<br>
+    <b>光模块评级</b>：对光通信核心池按 <b>抗跌分位 35% + 250日回撤分位 25% + 相对科技股中位强度 20% + 趋势位置 20%</b> 合成 0–100 分，
+    A≥75 / B≥60 / C≥45 / D≥30 / E&lt;30。它衡量的是<b>本轮下跌中的相对强弱</b>（A＝抗跌、E＝跌幅与回撤居尾部），
+    不是买卖评级、不代表未来收益；评级徽章的红绿配色仅表示档位，与下方「红涨绿跌」的行情配色无关。<br>
     <b>实时机制</b>：本页面内嵌近 300 个交易日收盘/最低/最高价序列，打开及每 30 秒自动直连行情源刷新现价并重算全部指标；
     历史序列由每日 15:01 自动任务滚动更新；若本页数据日已落后多个交易日，请以最新生成的文件为准。<br>
     <b>颜色约定</b>：按 A 股惯例，<span style="color:var(--up)">红=上涨</span>、<span style="color:var(--down)">绿=下跌</span>，与欧美市场相反。<br>
@@ -290,7 +306,25 @@ const COLS = [
   {k:"to", t:"换手",    w:70,  type:"num"},
   {k:"mcap",t:"市值(亿)",w:88, type:"num"},
 ];
-let sortKey = "d1", sortAsc = true, group = "全部", q = "";
+let sortKey = BOARD === "rating" ? "sc" : "d1";
+let sortAsc = BOARD !== "rating";
+let group = "全部", q = "";
+
+/* 评级榜列集 */
+const COLS_R = [
+  {k:"c",  t:"代码",    cls:"l", w:74,  type:"code"},
+  {k:"n",  t:"名称",    cls:"l", w:104, type:"name"},
+  {k:"t",  t:"环节",    cls:"l", w:106, type:"tag"},
+  {k:"p",  t:"现价",    w:80,  type:"px"},
+  {k:"gr", t:"评级",    w:66,  type:"grade"},
+  {k:"sc", t:"综合分",  w:80,  type:"score"},
+  {k:"d20",t:"近20日",  w:92,  type:"pct", hot:true},
+  {k:"dd", t:"距高点",  w:92,  type:"pct", hot:true},
+  {k:"ytd",t:"年初至今",w:96,  type:"pct", hot:true},
+  {k:"d5", t:"近5日",   w:86,  type:"pct", hot:true},
+  {k:"mcap",t:"市值(亿)",w:88, type:"num"},
+];
+const cols = () => (BOARD === "rating" ? COLS_R : COLS);
 
 /* ---------------- 工具 ---------------- */
 const fmt = v => (v === null || v === undefined || !isFinite(v)) ? "—" : (v > 0 ? "+" : "") + v.toFixed(2) + "%";
@@ -410,6 +444,35 @@ function recalcAll(){
   const byCode = new Map(all.map(r => [r.c, r]));
   all.forEach(r => { const src = byCode.get(r.c); if (src && src !== r){ r.p = src.p; r.d1 = src.d1; r.d5 = src.d5;
     r.d20 = src.d20; r.d60 = src.d60; r.ytd = src.ytd; r.dd = src.dd; r.to = src.to; r.mcap = src.mcap; r.nl = src.nl; } });
+  computeRating();
+}
+
+/* ---------------- 光模块评级：抗跌35% + 回撤25% + 相对强度20% + 趋势20% ---------------- */
+function computeRating(){
+  if (!BOARDS.rating) return;
+  const core = BOARDS.optical.rows.filter(r => !r.x && SEQ[r.c] && r.d20 != null && r.dd != null);
+  if (!core.length) return;
+  const d20s = core.map(r => r.d20).sort((a, b) => a - b);
+  const dds = core.map(r => r.dd).sort((a, b) => a - b);
+  // 基准必须与「抓数」端一致：科技股整体 = 科技股池内非光通信成员，避免被光通信自身拉低中位
+  const tmed = med(BOARDS.tech.rows.filter(r => !r.o).map(r => r.d20).filter(isFinite));
+  const rank = (arr, v) => { let k = 0; for (const x of arr) if (x <= v) k++; return k / arr.length; };
+  core.forEach(r => {
+    const a = rank(d20s, r.d20), b = rank(dds, r.dd);
+    const c = (tmed == null) ? 0.5 : Math.max(0, Math.min(1, 0.5 + (r.d20 - tmed) / 20));
+    const t = ((r.ytd || 0) > 0 ? 0.4 : 0) + (r.nl ? 0 : 0.3) + ((r.d5 || 0) > 0 ? 0.3 : 0);
+    const sc = 100 * (0.35 * a + 0.25 * b + 0.20 * c + 0.20 * t);
+    r.sc = Math.round(sc * 10) / 10;
+    r.gr = sc >= 75 ? "A" : sc >= 60 ? "B" : sc >= 45 ? "C" : sc >= 30 ? "D" : "E";
+  });
+  const map = new Map(core.map(r => [r.c, r]));
+  BOARDS.rating.rows.forEach(r => {
+    const s = map.get(r.c);
+    if (!s) return;
+    r.sc = s.sc; r.gr = s.gr; r.g = s.gr;
+    r.p = s.p; r.d1 = s.d1; r.d5 = s.d5; r.d20 = s.d20; r.d60 = s.d60;
+    r.ytd = s.ytd; r.dd = s.dd; r.mcap = s.mcap; r.nl = s.nl;
+  });
 }
 
 /* ---------------- 派生统计 ---------------- */
@@ -442,12 +505,13 @@ function computeGs(bk){
 
 /* ---------------- Table 切换 ---------------- */
 function renderTabs(){
-  document.getElementById("tabs").innerHTML = ["tech","optical"].map(k => {
+  document.getElementById("tabs").innerHTML = ["tech","optical","rating"].map(k => {
     const b = BOARDS[k];
     return `<div class="tab${k===BOARD?" on":""}" data-b="${k}">${b.label}<span class="k">${b.rows.length}</span></div>`;
   }).join("");
-  document.getElementById("scopeTxt").textContent = BOARD === "optical"
-    ? "光模块 · 光器件 · 光芯片 · 光纤光缆 · 连接器线缆 · 设备接入"
+  document.getElementById("scopeTxt").textContent =
+    BOARD === "optical" ? "光模块 · 光器件 · 光芯片 · 光纤光缆 · 连接器线缆 · 设备接入"
+    : BOARD === "rating" ? "技术面强弱评级：抗跌 35% · 回撤 25% · 相对强度 20% · 趋势 20%"
     : "半导体 · 元件连接器 · 光学光电子 · 消费电子 · 通信/计算机 · 软件IT";
 }
 document.getElementById("tabs").addEventListener("click", e => {
@@ -455,13 +519,15 @@ document.getElementById("tabs").addEventListener("click", e => {
   BOARD = t.dataset.b;
   try { localStorage.setItem("txdp_board", BOARD); } catch(e2){}
   group = "全部"; q = ""; document.getElementById("q").value = "";
-  sortKey = "d1"; sortAsc = true;
+  sortKey = BOARD === "rating" ? "sc" : "d1";
+  sortAsc = BOARD !== "rating";
   recalcAll(); renderAll();
   if (!livePaused && !META.freeze) loadLive();
 });
 
 /* ---------------- KPI ---------------- */
 function renderKpi(){
+  if (BOARD === "rating") return renderKpiR();
   const K = computeKpi(BOARD);
   const isOpt = BOARD === "optical";
   document.getElementById("kpis").innerHTML = [
@@ -476,11 +542,30 @@ function renderKpi(){
     <div class="v ${o.c}">${o.v}</div><div class="s">${o.s}</div></div>`).join("");
 }
 
+/* ---------------- 评级 KPI ---------------- */
+function renderKpiR(){
+  const rs = BOARDS.rating.rows;
+  const n = g => rs.filter(r => r.gr === g).length;
+  const scs = rs.map(r => r.sc).filter(isFinite);
+  const d20m = med(rs.map(r => r.d20).filter(isFinite));
+  const techM = med(BOARDS.tech.rows.map(r => r.d20).filter(isFinite));
+  const rel = (d20m != null && techM != null) ? d20m - techM : null;
+  document.getElementById("kpis").innerHTML = [
+    {k:"覆盖标的", v:rs.length + " 只", s:"光通信核心池 · 技术面评分", c:"nu"},
+    {k:"抗跌档 A + B", v:(n("A") + n("B")) + " 只", s:`A ${n("A")} · B ${n("B")} · 占比 ${Math.round((n("A")+n("B"))/Math.max(rs.length,1)*100)}%`, c:"nu"},
+    {k:"中位综合分", v:(med(scs) == null ? "—" : med(scs).toFixed(1)), s:"满分 100 · A≥75 / E<30", c:"nu"},
+    {k:"弱势档 D + E", v:(n("D") + n("E")) + " 只", s:`D ${n("D")} · E ${n("E")}`, c:(n("D")+n("E")) > rs.length * 0.5 ? "dn" : "nu"},
+    {k:"近20日中位", v:fmt(d20m), s: rel == null ? "—" : `相对科技股整体 ${rel > 0 ? "+" : ""}${rel.toFixed(1)}pp`, c:cls(d20m)},
+    {k:"创60日新低", v:rs.filter(r => r.nl).length + " 只", s:"仍在下行通道的标的", c:"nu"},
+  ].map(o => `<div class="kpi"><div class="k">${o.k}</div>
+    <div class="v ${o.c}">${o.v}</div><div class="s">${o.s}</div></div>`).join("");
+}
+
 /* ---------------- 表格 ---------------- */
 const thr = document.getElementById("thr");
 function headLabel(k){ return (k === "t" && BOARD === "tech") ? "行业" : null; }
 function renderHead(){
-  thr.innerHTML = COLS.map(c => `<th class="${c.cls||""}${c.k===sortKey?" on":""}" data-k="${c.k}"
+  thr.innerHTML = cols().map(c => `<th class="${c.cls||""}${c.k===sortKey?" on":""}" data-k="${c.k}"
     style="min-width:${c.w}px">${headLabel(c.k) || c.t}<span class="ar">${c.k===sortKey?(sortAsc?"▲":"▼"):""}</span></th>`).join("");
 }
 thr.addEventListener("click", e => {
@@ -499,6 +584,8 @@ function cell(r, c, mx) {
   if (c.type === "code") return `<td class="l"><span class="code">${v}</span></td>`;
   if (c.type === "name") return `<td class="l"><span class="nm">${v}</span>${r.o?'<span class="otag">光</span>':''}${r.nl?'<span class="nl">新低</span>':''}</td>`;
   if (c.type === "tag") return `<td class="l"><span class="tag">${v}</span></td>`;
+  if (c.type === "grade") return `<td><span class="gr g${v||"C"}">${v||"—"}</span></td>`;
+  if (c.type === "score") return `<td><span class="sco">${v == null ? "—" : v.toFixed(1)}</span></td>`;
   if (c.type === "px")  return `<td><span class="px">${v == null ? "—" : v.toFixed(2)}</span></td>`;
   if (c.type === "pct") {
     if (v == null || !isFinite(v)) return `<td><span class="muted">—</span></td>`;
@@ -511,8 +598,8 @@ function cell(r, c, mx) {
 }
 
 function render(){
-  const all = B().rows;
-  const mx = {}; COLS.filter(c => c.hot).forEach(c => mx[c.k] = maxAbsOf(all, c.k));
+  const all = B().rows, C = cols();
+  const mx = {}; C.filter(c => c.hot).forEach(c => mx[c.k] = maxAbsOf(all, c.k));
   let rs = all.filter(r => (group === "全部" || r.g === group) &&
     (!q || r.n.toLowerCase().includes(q) || r.c.includes(q) || r.t.includes(q)));
   rs = rs.slice().sort((a, b) => {
@@ -526,8 +613,8 @@ function render(){
   });
   const tb = document.getElementById("tb");
   tb.innerHTML = rs.length ? rs.map(r =>
-      `<tr class="${r.x ? "ext" : ""}">` + COLS.map(c => cell(r, c, mx)).join("") + "</tr>").join("")
-    : `<tr><td colspan="${COLS.length}" class="empty">无匹配标的</td></tr>`;
+      `<tr class="${r.x ? "ext" : ""}">` + C.map(c => cell(r, c, mx)).join("") + "</tr>").join("")
+    : `<tr><td colspan="${C.length}" class="empty">无匹配标的</td></tr>`;
   document.getElementById("cnt").textContent =
     `显示 ${rs.length} / ${all.length} 只 · 点击表头可切换排序` + (LIVE ? ` · 实时价 ${LIVE_TS}` : "");
 }
@@ -536,16 +623,18 @@ function render(){
 function renderGs(){
   const GS = computeGs(BOARD);
   const gmax = Math.max(...GS.map(g => Math.abs(g.d20 || 0)), 1);
-  const isOpt = BOARD === "optical";
-  document.getElementById("gTitle").textContent = isOpt ? "细分环节汇总" : "行业汇总";
-  document.getElementById("gHint").textContent = isOpt
-    ? "等权口径，各环节成分股中位数；条形长度按近 20 日跌幅归一"
-    : "等权口径，各行业成分股中位数；条形长度按近 20 日跌幅归一";
-  document.getElementById("gHead").textContent = isOpt ? "环节" : "行业";
+  const isOpt = BOARD === "optical", isR = BOARD === "rating";
+  document.getElementById("gTitle").textContent = isR ? "评级分布" : isOpt ? "细分环节汇总" : "行业汇总";
+  document.getElementById("gHint").textContent = isR
+    ? "各评级组的跌幅与回撤中位数；条形长度按近 20 日跌幅归一"
+    : (isOpt ? "等权口径，各环节成分股中位数；条形长度按近 20 日跌幅归一"
+             : "等权口径，各行业成分股中位数；条形长度按近 20 日跌幅归一");
+  document.getElementById("gHead").textContent = isR ? "评级" : isOpt ? "环节" : "行业";
   document.getElementById("gtb").innerHTML = GS.map(g => {
     const w = Math.abs(g.d20 || 0) / gmax * 84;
+    const label = isR ? `<span class="gr g${g.g}">${g.g}</span>` : g.g;
     return `<tr>
-      <td>${g.g}</td>
+      <td>${label}</td>
       <td style="color:var(--faint)">${g.n}</td>
       <td class="${cls(g.d1)}">${fmt(g.d1)}</td>
       <td><span class="mini"><i style="width:${w}%;background:${(g.d20||0)<0?'var(--down)':'var(--up)'};opacity:.65"></i></span><span class="${cls(g.d20)}">${fmt(g.d20)}</span></td>
@@ -558,6 +647,7 @@ function renderGs(){
 
 /* ---------------- 洞察 ---------------- */
 function renderIns(){
+  if (BOARD === "rating") return renderInsR();
   const K = computeKpi(BOARD);
   const core = baseRows(BOARD).filter(r => SEQ[r.c]);
   const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
@@ -595,6 +685,29 @@ function renderIns(){
      p:`${K.dd_50} 只距 250 日高点回撤超 50%，中位回撤 <span class="hl">${fmt(K.dd_med)}</span>；${K.nl} 只创 60 日新低。
         ${relTxt}`},
   ].map((o, i) => `<div class="box"><h3><span class="idx">${i+1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");
+}
+
+/* ---------------- 评级洞察 ---------------- */
+function renderInsR(){
+  const rs = BOARDS.rating.rows.slice().sort((a, b) => (b.sc || 0) - (a.sc || 0));
+  const n = g => rs.filter(r => r.gr === g).length;
+  const top = rs.slice(0, 3), bot = rs.slice(-3).reverse();
+  const techM = med(BOARDS.tech.rows.map(r => r.d20).filter(isFinite));
+  const optM = med(rs.map(r => r.d20).filter(isFinite));
+  const rel = (optM != null && techM != null) ? optM - techM : null;
+  document.getElementById("ins").innerHTML = [
+    {h:"A 档不是「好公司」，是「这轮没怎么跌」",
+     p:`A 档 ${n("A")} 只、B 档 ${n("B")} 只，合计占 ${Math.round((n("A")+n("B"))/Math.max(rs.length,1)*100)}%。
+        前三：${top.map(x => `<b>${x.n}</b> ${x.sc ? x.sc.toFixed(1) : ""}`).join("、")}。
+        它们多数是光通信收入占比低、或本轮被资金当作「补涨/低估值」的标的，抗跌不等于基本面更强。`},
+    {h:"E 档集中在本轮杀跌最狠的位置",
+     p:`E 档 ${n("E")} 只、D 档 ${n("D")} 只：${bot.map(x => `<b>${x.n}</b> ${fmt(x.d20)}`).join("、")}。
+        这些标的近 20 日跌幅与 250 日回撤同时居尾部，是抱团瓦解的主要承接方。
+        注意：<b>评级低 ≠ 该回避</b>，只说明它们在这轮下跌里跌得最多、技术面最破。`},
+    {h:"评级口径与用法",
+     p:`综合分 = 抗跌分位 35% + 回撤分位 25% + 相对科技股中位强度 20% + 趋势位置 20%（YTD 为正、未创新低、近 5 日翻红各占一部分）。
+        它衡量的是<b>相对强弱</b>，随每日行情重算；不构成投资建议，也不预示后续收益。若要做「跌深反弹」筛选，应反向看 E 档并叠加基本面条件。`},
+  ].map((o, i) => `<div class="box"><h3><span class="idx">${i + 1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");
 }
 
 /* ---------------- 筛选 ---------------- */
