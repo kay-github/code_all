@@ -443,7 +443,7 @@ window.StageCards=(function(){
       ['供应商反推净申赎',(v.net_yi===null||v.net_yi===undefined)?'数据不足':num(v.net_yi)+' 亿元（不可作定稿）'],
       ['份额比值中位',(fl.ratio_median===null||fl.ratio_median===undefined)?'—':fl.ratio_median.toFixed(6)+'（1.000000 附近说明分母未换）'],
       ['严格判定抹平',(fl.count||0)+' 只；宽口径接近不动 '+(fl.near_count||0)+' 只'],
-      ['核心15成交额',(v.amount_yi===null||v.amount_yi===undefined)?'—':num(v.amount_yi,1)+' 亿元'],
+      ['核心15成交额',(v.amount_yi===null||v.amount_yi===undefined)?'—':Number(v.amount_yi).toLocaleString('zh-CN',{minimumFractionDigits:1,maximumFractionDigits:1})+' 亿元'],
       ['10份刻度（初值）',(iv.total_units===null||iv.total_units===undefined)?'数据不足':ip(iv.total_units)+' 份'],
       ['本轮净新增（初值）',(iv.net_added_units===null||iv.net_added_units===undefined)?'数据不足':num(iv.net_added_units,2)+' 份'],
       ['买卖身份',x.identity||'I0 当日买卖主体未确认'],
