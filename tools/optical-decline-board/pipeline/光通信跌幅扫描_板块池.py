@@ -11,6 +11,13 @@ BASE = os.environ.get("OPTICAL_BASE") or "D:/work_code2/"
 MIN_MCAP = 30.0    # 科技股池市值门槛（亿元）
 MAX_TECH = 260     # 科技股池上限（按市值降序，控制抓数耗时与页面体积）
 
+# 消费池（申万一级口径）：必需+可选消费 8 个为「核心」，汽车/医药生物为「关联延伸」
+CONS_CORE_L1 = ["食品饮料", "家用电器", "纺织服饰", "轻工制造",
+                "商贸零售", "社会服务", "美容护理", "农林牧渔"]
+CONS_EXT_L1 = ["汽车", "医药生物"]
+CONS_MIN_MCAP = 50.0   # 消费核心市值门槛（消费小票多，50 亿以下对跌幅看板意义有限）
+CONS_EXT_MAX = {"汽车": 80, "医药生物": 100}   # 压暗层按市值截断，控制页面体积
+
 # ---------------------------------------------------------------- 光通信（人工核定）
 # 核定依据：雪球 F10「主营业务 / 主要产品」（2026-11-13 抓取），见 光通信跌幅榜_成分核查.md
 CORE = [
@@ -145,8 +152,38 @@ def fetch_mcap(codes):
     return out
 
 
+def build_cons(mcap):
+    """消费池：同花顺二级行业 ∪ 新浪行业（_cons_raw.json），剔除 ST/退市、市值门槛后分层
+    核心 = 8 个必需/可选消费一级行业；关联延伸（压暗）= 汽车、医药生物，按市值截前 CONS_EXT_MAX
+    """
+    p = os.path.join(BASE, "_cons_raw.json")
+    try:
+        d = load_json(p)
+        by_l1 = d["by_l1"]
+    except Exception as e:
+        print("cons raw skip:", e)
+        return [], []
+    core, ext = [], []
+    for l1 in CONS_CORE_L1 + CONS_EXT_L1:
+        lst = []
+        for x in by_l1.get(l1, []):
+            name = (x.get("name") or "").strip()
+            if not name or BAD_NAME.search(name):
+                continue
+            m = mcap.get(x["code"], 0)
+            if m < CONS_MIN_MCAP:
+                continue
+            lst.append((x["code"], name, l1, x.get("ind2") or l1, m))
+        lst.sort(key=lambda z: -z[4])
+        if l1 in CONS_EXT_L1:
+            lst = lst[:CONS_EXT_MAX.get(l1, 100)]
+            ext.extend({"code": c, "name": n, "l1": l1, "ind2": i} for c, n, l1_, i, m in lst)
+        else:
+            core.extend({"code": c, "name": n, "l1": l1, "ind2": i} for c, n, l1_, i, m in lst)
+    return core, ext
+
+
 def build_tech():
-    """科技股池：同花顺行业 ∪ 新浪电子两大节点，剔除 ST/退市，按市值截取"""
     codes = {}   # code -> {name, ind}
     try:
         ths = load_json(os.path.join(BASE, "_ths_blocks.json"))
@@ -181,8 +218,17 @@ def main():
     for c, n, t in CORE + EXT:
         tech.setdefault(c, {"name": n, "ind": "其他"})
 
-    mcap = fetch_mcap(list(tech.keys()))
-    print("快照覆盖", len(mcap), "/", len(tech))
+    # 消费池候选（尚未筛市值）
+    cons_all = []
+    try:
+        _d = load_json(os.path.join(BASE, "_cons_raw.json"))
+        for _l1, _lst in _d["by_l1"].items():
+            cons_all += [x["code"] for x in _lst]
+    except Exception as e:
+        print("cons raw skip:", e)
+
+    mcap = fetch_mcap(list(tech.keys()) + cons_all)
+    print("快照覆盖", len(mcap), "/", len(tech) + len(cons_all))
 
     # 市值门槛 + 截断（光通信成员不参与截断）
     opt_set = set(opt_codes)
@@ -194,6 +240,8 @@ def main():
     keep.sort(key=lambda x: -x[3])
     tech_list = [{"code": c, "name": n, "ind": i} for c, n, i, m in keep[:MAX_TECH]]
 
+    cons_core, cons_ext = build_cons(mcap)
+
     pool = {
         "version": "2026-11-13",
         "optical": {
@@ -201,11 +249,16 @@ def main():
             "ext": [{"code": c, "name": n, "tag": t} for c, n, t in EXT],
         },
         "tech": tech_list,
+        "cons": {"core": cons_core, "ext": cons_ext},
     }
     with io.open(os.path.join(BASE, "板块池.json"), "w", encoding="utf-8") as f:
         json.dump(pool, f, ensure_ascii=False, indent=1)
+    from collections import Counter
+    cdist = Counter(x["l1"] for x in cons_core)
+    edist = Counter(x["l1"] for x in cons_ext)
     print("光通信核心", len(CORE), "关联延伸", len(EXT), "| 科技股池", len(tech_list),
           "（候选", len(keep), "，门槛", MIN_MCAP, "亿）")
+    print("消费核心", len(cons_core), dict(cdist), "| 关联延伸", len(cons_ext), dict(edist))
     sys.stdout.flush()
     os._exit(0)
 

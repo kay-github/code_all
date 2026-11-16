@@ -209,7 +209,7 @@
 
   <header>
     <div class="hgroup">
-      <h1>A股 <span class="accent">科技股 · 光通信</span> 跌幅榜单</h1>
+      <h1>A股 <span class="accent">科技 · 光通信 · 消费</span> 跌幅榜单</h1>
       <div class="sub">
         <span class="stamp"><span class="dot"></span>__STAMP__</span>
         <span class="livebadge off" id="liveBadge"><span class="ld"></span><span id="liveTxt">连接行情源…</span>
@@ -269,15 +269,20 @@
   <footer>
     <b>口径说明</b>：__CALIBER__；「近20日／近60日」为对应交易日数前的收盘对比；
     「年初至今」基准为上一年最后一个交易日收盘；「距250日高点」以近 250 个交易日<b>盘中最高价</b>为基准（前复权，与东财/工作台软件口径一致）。<br>
-    <b>两个 Table</b>：「光通信跌幅榜」为自建产业链池（核心 __NOPT__ 只 + 关联延伸 __NX__ 只，后者压暗显示且不计入板块中位数）；
+    <b>四个榜单</b>：「光通信跌幅榜」为自建产业链池（核心 __NOPT__ 只 + 关联延伸 __NX__ 只，后者压暗显示且不计入板块中位数）；
     「所有科技股跌幅榜」为按行业口径构建的科技股池（同花顺电子／通信／计算机十个二级行业 + 新浪电子器件／电子信息，市值 30 亿以上，剔除 ST、退市与光伏锂电），共 __N__ 只，其中带紫色「光」标记者为光通信池成员。<br>
+    <b>消费跌幅榜</b>：申万一级口径，核心 __NCONSC__ 只（食品饮料／家用电器／纺织服饰／轻工制造／商贸零售／社会服务／美容护理／农林牧渔 八个必需＋可选消费行业，市值 50 亿以上，剔除 ST 与退市），
+    另含关联延伸 __NCONSX__ 只（汽车、医药生物，按市值截取前 80／100，压暗显示且不计入消费中位数），合计 __NCONS__ 只。
+    成分来自同花顺二级行业 ∪ 新浪行业成分合并去重，不含消费电子（归科技股 Tab）。<br>
     <b>光模块评级</b>：对光通信核心池按 <b>抗跌分位 35% + 250日回撤分位 25% + 相对科技股中位强度 20% + 趋势位置 20%</b> 合成 0–100 分，
     A≥75 / B≥60 / C≥45 / D≥30 / E&lt;30。它衡量的是<b>本轮下跌中的相对强弱</b>（A＝抗跌、E＝跌幅与回撤居尾部），
     不是买卖评级、不代表未来收益；评级徽章的红绿配色仅表示档位，与下方「红涨绿跌」的行情配色无关。<br>
-    <b>实时机制</b>：本页面内嵌近 300 个交易日收盘/最低/最高价序列，打开及每 30 秒自动直连行情源刷新现价并重算全部指标；
+    <b>实时机制</b>：本页面内嵌近 300 个交易日价格序列（光通信／科技股含收盘＋最低＋最高，消费榜为控制体积只内嵌收盘，最高／最低用标量），
+    打开及每 30 秒自动直连行情源刷新现价并重算全部指标；
     历史序列由每日 15:01 自动任务滚动更新；若本页数据日已落后多个交易日，请以最新生成的文件为准。<br>
     <b>颜色约定</b>：按 A 股惯例，<span style="color:var(--up)">红=上涨</span>、<span style="color:var(--down)">绿=下跌</span>，与欧美市场相反。<br>
     <b>校验</b>：__XCHECK__<br>
+    <b>复权口径</b>：__QFQNOTE__<br>
     <span style="opacity:.8">本页仅为公开行情数据的技术性统计，不构成任何投资建议。</span>
   </footer>
 </div>
@@ -350,24 +355,34 @@ function setBadge(state, txt){
   t.textContent = txt;
 }
 
-/* JSONP：qt.gtimg.cn 返回 v_XXXXXX="..." 赋值语句，script 标签执行后读全局变量，绕过 CORS */
+/* JSONP：qt.gtimg.cn 返回 v_XXXXXX="..." 赋值语句，script 标签执行后读全局变量，绕过 CORS
+   消费榜标的较多，单次 URL 过长会被拒 → 按 180 只分批串行拉取，全部完成后统一刷新 */
+const LIVE_CHUNK = 180;
 function loadLive(){
   if (livePaused || META.freeze) return;
-  const codes = B().rows.map(r => sym(r.c)).join(",");
-  const s = document.createElement("script");
-  s.charset = "gbk";
-  s.src = "https://qt.gtimg.cn/q=" + codes + "&r=" + Date.now();
-  const to = setTimeout(() => { liveFailN++; afterLive(false); s.remove(); }, 9000);
-  s.onload  = () => { clearTimeout(to); s.remove(); afterLive(true); };
-  s.onerror = () => { clearTimeout(to); s.remove(); liveFailN++; afterLive(false); };
-  document.head.appendChild(s);
+  const codes = B().rows.map(r => sym(r.c));
+  const chunks = [];
+  for (let i = 0; i < codes.length; i += LIVE_CHUNK) chunks.push(codes.slice(i, i + LIVE_CHUNK));
+  let i = 0, okAll = true;
+  const step = () => {
+    if (i >= chunks.length){ afterLive(okAll); return; }
+    const s = document.createElement("script");
+    s.charset = "gbk";
+    s.src = "https://qt.gtimg.cn/q=" + chunks[i].join(",") + "&r=" + Date.now();
+    i++;
+    const to = setTimeout(() => { s.remove(); okAll = false; step(); }, 9000);
+    s.onload  = () => { clearTimeout(to); s.remove(); step(); };
+    s.onerror = () => { clearTimeout(to); s.remove(); okAll = false; step(); };
+    document.head.appendChild(s);
+  };
+  step();
 }
 
 function afterLive(ok){
   if (ok){
     const votes = {};
     let got = 0;
-    const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows];
+    const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
     all.forEach(r => {
       const v = window["v_" + sym(r.c)];
       if (!v) return;
@@ -413,20 +428,21 @@ function recalcAll(){
   let jy = -1;
   for (let i = 0; i < CAL.length; i++) if (CAL[i] < yrCut) jy = i;
 
-  const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows];
+  const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
   const seen = new Set();
   all.forEach(r => {
-    if (seen.has(r.c)) return;      // 同一只票两个 Table 各算一次即可（序列共享）
+    if (seen.has(r.c)) return;      // 同一只票多个 Table 各算一次即可（序列共享）
     seen.add(r.c);
     const s = SEQ[r.c];
-    if (!s) return;
-    const cs = s[0], ls = s[1], hs = s[2] || s[0], n = cs.length;
     const L = r._live;
     if (L){
       if (L.p > 0) r.p = L.p;
       if (L.to != null && isFinite(L.to)) r.to = L.to;
       if (L.mcap != null && isFinite(L.mcap)) r.mcap = L.mcap;
+      if (L.chg != null && isFinite(L.chg)) r.d1 = L.chg;
     }
+    if (!s) return;                 // 无内嵌序列 → 只刷新现价/当日涨跌，区间指标用快照值
+    const cs = s[0], ls = s[1], hs = s[2], n = cs.length;
     const b = k => { const i = n - (k + 1 - off); return (i >= 0 && cs[i] != null) ? cs[i] : null; };
     const pctB = k => { const v = b(k); return (v && r.p) ? (r.p / v - 1) * 100 : null; };
 
@@ -434,11 +450,15 @@ function recalcAll(){
     r.d5 = pctB(5); r.d20 = pctB(20); r.d60 = pctB(60);
 
     if (jy >= 0 && cs[jy] != null && r.p) r.ytd = (r.p / cs[jy] - 1) * 100;
-    const hw = hs.slice(Math.max(0, n - 250)).filter(v => v != null);
-    if (hw.length && r.p) r.dd = (r.p / Math.max(...hw) - 1) * 100;
-    const lwEnd = off ? n : n - 1;                       // 排除当日 bar 再取前 59 日最低
-    const lw = ls.slice(Math.max(0, lwEnd - 59), lwEnd).filter(v => v != null);
-    r.nl = (lw.length && r.p && r.p < Math.min(...lw)) ? 1 : 0;
+    if (hs){                        // 有最高价序列 → 用序列算 250 日盘中高点回撤
+      const hw = hs.slice(Math.max(0, n - 250)).filter(v => v != null);
+      if (hw.length && r.p) r.dd = (r.p / Math.max(...hw) - 1) * 100;
+    } else if (r.hi && r.p) r.dd = (r.p / r.hi - 1) * 100;   // 消费池：用内嵌标量
+    if (ls){
+      const lwEnd = off ? n : n - 1;                     // 排除当日 bar 再取前 59 日最低
+      const lw = ls.slice(Math.max(0, lwEnd - 59), lwEnd).filter(v => v != null);
+      r.nl = (lw.length && r.p && r.p < Math.min(...lw)) ? 1 : 0;
+    } else r.nl = (r.lo && r.p && r.p < r.lo) ? 1 : 0;
   });
   // 同步同代码行（两个 Table 共享行情）
   const byCode = new Map(all.map(r => [r.c, r]));
@@ -478,7 +498,8 @@ function computeRating(){
 /* ---------------- 派生统计 ---------------- */
 function baseRows(bk){
   const rows = BOARDS[bk].rows;
-  return bk === "optical" ? rows.filter(r => !r.x) : rows;   // 光通信口径剔除关联延伸（压暗行）
+  // 光通信/消费口径剔除关联延伸（压暗行），只对核心成员做中位数与分布统计
+  return (bk === "optical" || bk === "cons") ? rows.filter(r => !r.x) : rows;
 }
 function computeKpi(bk){
   const core = baseRows(bk).filter(r => SEQ[r.c]);
@@ -505,12 +526,13 @@ function computeGs(bk){
 
 /* ---------------- Table 切换 ---------------- */
 function renderTabs(){
-  document.getElementById("tabs").innerHTML = ["tech","optical","rating"].map(k => {
+  document.getElementById("tabs").innerHTML = ["tech","optical","cons","rating"].map(k => {
     const b = BOARDS[k];
     return `<div class="tab${k===BOARD?" on":""}" data-b="${k}">${b.label}<span class="k">${b.rows.length}</span></div>`;
   }).join("");
   document.getElementById("scopeTxt").textContent =
     BOARD === "optical" ? "光模块 · 光器件 · 光芯片 · 光纤光缆 · 连接器线缆 · 设备接入"
+    : BOARD === "cons" ? "食品饮料 · 家电 · 纺服 · 轻工 · 商贸零售 · 社服 · 美护 · 农业（+汽车/医药延伸）"
     : BOARD === "rating" ? "技术面强弱评级：抗跌 35% · 回撤 25% · 相对强度 20% · 趋势 20%"
     : "半导体 · 元件连接器 · 光学光电子 · 消费电子 · 通信/计算机 · 软件IT";
 }
@@ -529,10 +551,12 @@ document.getElementById("tabs").addEventListener("click", e => {
 function renderKpi(){
   if (BOARD === "rating") return renderKpiR();
   const K = computeKpi(BOARD);
-  const isOpt = BOARD === "optical";
+  const isOpt = BOARD === "optical", isCons = BOARD === "cons";
+  const sub = isOpt ? `核心光通信 ${K.ncore} 只 · 延伸 ${K.n - K.ncore} 只`
+            : isCons ? `消费核心 ${K.ncore} 只 · 延伸（汽车/医药）${K.n - K.ncore} 只`
+            : `科技股池 ${K.n} 只（含光通信）`;
   document.getElementById("kpis").innerHTML = [
-    {k:"样本标的", v:K.n + " 只", s: isOpt ? `核心光通信 ${K.ncore} 只 · 延伸 ${K.n - K.ncore} 只`
-                                          : `科技股池 ${K.n} 只（含光通信）`, c:"nu"},
+    {k:"样本标的", v:K.n + " 只", s: sub, c:"nu"},
     {k:(LIVE?"当前":"当日") + "中位涨跌", v:fmt(K.d1_med), s:`${K.d1_down}/${K.ncore} 下跌 · ${K.d1_5} 只跌超5%`, c:cls(K.d1_med)},
     {k:"近20日中位", v:fmt(K.d20_med), s:`${K.d20_30} 只跌超30%`, c:cls(K.d20_med)},
     {k:"距250日高点", v:fmt(K.dd_med), s:`${K.dd_50} 只回撤超50%`, c:cls(K.dd_med)},
@@ -563,7 +587,10 @@ function renderKpiR(){
 
 /* ---------------- 表格 ---------------- */
 const thr = document.getElementById("thr");
-function headLabel(k){ return (k === "t" && BOARD === "tech") ? "行业" : null; }
+function headLabel(k){
+  if (k !== "t") return null;
+  return (BOARD === "tech" || BOARD === "cons") ? "行业" : null;
+}
 function renderHead(){
   thr.innerHTML = cols().map(c => `<th class="${c.cls||""}${c.k===sortKey?" on":""}" data-k="${c.k}"
     style="min-width:${c.w}px">${headLabel(c.k) || c.t}<span class="ar">${c.k===sortKey?(sortAsc?"▲":"▼"):""}</span></th>`).join("");
@@ -648,6 +675,7 @@ function renderGs(){
 /* ---------------- 洞察 ---------------- */
 function renderIns(){
   if (BOARD === "rating") return renderInsR();
+  if (BOARD === "cons") return renderInsC();
   const K = computeKpi(BOARD);
   const core = baseRows(BOARD).filter(r => SEQ[r.c]);
   const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
@@ -682,6 +710,46 @@ function renderIns(){
         首尾相差约 <b>${w20&&b20?Math.abs(b20.d20-w20.d20).toFixed(0):"—"} 个百分点</b>。
         年初至今中位 ${fmt(K.ytd_med)}，仍有 <b>${K.ytd_up}</b> 只维持正收益（${topYtd.map(x=>x.n+" "+fmt(x.ytd)).join("、")}）。`},
     {h:"技术面与相对强弱",
+     p:`${K.dd_50} 只距 250 日高点回撤超 50%，中位回撤 <span class="hl">${fmt(K.dd_med)}</span>；${K.nl} 只创 60 日新低。
+        ${relTxt}`},
+  ].map((o, i) => `<div class="box"><h3><span class="idx">${i+1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");
+}
+
+/* ---------------- 消费洞察 ---------------- */
+function renderInsC(){
+  const K = computeKpi("cons");
+  const core = baseRows("cons").filter(r => SEQ[r.c]);
+  const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
+  const b20 = core.filter(r => r.d20 != null).sort((a,b)=>b.d20-a.d20)[0];
+  const topYtd = core.filter(r => r.ytd != null).sort((a,b)=>b.ytd-a.ytd).slice(0,3);
+  const breadth = K.d1_down >= K.ncore * 0.75
+    ? "属普遍性下跌，未见明显防御性资金"
+    : (K.d1_down <= K.ncore * 0.35 ? "多数标的翻红，消费有防御属性回归的迹象，但持续性待观察"
+        : "涨跌分化，资金在高低估值品种之间切换");
+  const gs = computeGs("cons").filter(g => g.d20 != null);
+  const worstG = gs.slice().sort((a,b)=>a.d20-b.d20)[0];
+  const bestG = gs.slice().sort((a,b)=>b.d20-a.d20)[0];
+  const kTech = computeKpi("tech");
+  const rel = (K.d20_med != null && kTech.d20_med != null) ? (K.d20_med - kTech.d20_med) : null;
+  const relTxt = rel == null ? "" :
+    (rel < -2 ? `近20日消费核心中位 <b>${fmt(K.d20_med)}</b>，落后科技股整体 <b>${rel.toFixed(1)}pp</b>，本轮资金更偏向科技一侧。`
+              : rel > 2 ? `近20日消费核心中位 <b>${fmt(K.d20_med)}</b>，跑赢科技股整体 <b>+${rel.toFixed(1)}pp</b>，防御属性阶段性占优。`
+              : `近20日消费核心中位 <b>${fmt(K.d20_med)}</b>，与科技股整体基本同步（差 ${rel.toFixed(1)}pp）。`);
+  const ytdMed = K.ytd_med;
+
+  document.getElementById("ins").innerHTML = [
+    {h:"跌幅结构：日跌 ≠ 趋势",
+     p:`${D1_LABEL}中位 <span class="hl">${fmt(K.d1_med)}</span>，${K.d1_down}/${K.ncore} 下跌、${K.d1_5} 只跌超 5%；
+        近20日中位 <span class="hl">${fmt(K.d20_med)}</span>（${K.d20_30} 只跌超 30%），${breadth}。`},
+    {h:"行业分化",
+     p:`近20日最弱行业为 <b>${worstG?worstG.g:"—"}</b> ${worstG?fmt(worstG.d20):""}，最强为 <b>${bestG?bestG.g:"—"}</b> ${bestG?fmt(bestG.d20):""}，
+        两端相差约 <b>${worstG&&bestG?Math.abs(bestG.d20-worstG.d20).toFixed(0):"—"} 个百分点</b>。
+        消费内部分化主要来自<b>需求弹性</b>：可选消费（白酒/家电/家居）对地产与收入预期更敏感，必需消费（食品/农业）相对抗跌。`},
+    {h:"个股分化与盈利兑现",
+     p:`近20日最惨 <b>${w20?w20.n:"—"}</b> ${w20?fmt(w20.d20):""}，最抗跌 <b>${b20?b20.n:"—"}</b> 仅 ${b20?fmt(b20.d20):""}，
+        首尾相差约 <b>${w20&&b20?Math.abs(b20.d20-w20.d20).toFixed(0):"—"} 个百分点</b>。
+        年初至今中位 ${fmt(ytdMed)}，仍有 <b>${K.ytd_up}</b> 只维持正收益（${topYtd.map(x=>x.n+" "+fmt(x.ytd)).join("、")}）。`},
+    {h:"回撤与技术面",
      p:`${K.dd_50} 只距 250 日高点回撤超 50%，中位回撤 <span class="hl">${fmt(K.dd_med)}</span>；${K.nl} 只创 60 日新低。
         ${relTxt}`},
   ].map((o, i) => `<div class="box"><h3><span class="idx">${i+1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");

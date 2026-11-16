@@ -16,6 +16,7 @@ HHMM = meta["snapshot"][11:16]
 
 CSV_PATH = os.path.join(BASE, f"光通信板块跌幅榜_{STAMP}.csv")
 TECH_CSV = os.path.join(BASE, f"科技股跌幅榜_{STAMP}.csv")
+CONS_CSV = os.path.join(BASE, f"消费股跌幅榜_{STAMP}.csv")
 MD_PATH = os.path.join(BASE, f"光通信板块跌幅榜_{STAMP}.md")
 
 TAGMAP = {"光模块": "光模块整机", "光模块/器件": "光模块整机", "光模块/子系统": "光模块整机",
@@ -41,6 +42,11 @@ opt = [r for r in rows if r["board"] == "optical"]
 tech = [r for r in rows if r["board"] == "tech"]
 core = [r for r in opt if r["tier"] == "core"]
 ext = [r for r in opt if r["tier"] != "core"]
+cons = [r for r in rows if r["board"] == "cons"]
+cons_core = [r for r in cons if r["tier"] == "core"]
+cons_ext = [r for r in cons if r["tier"] != "core"]
+CONS_GORDER = ["食品饮料", "家用电器", "纺织服饰", "轻工制造", "商贸零售",
+               "社会服务", "美容护理", "农林牧渔", "汽车", "医药生物"]
 
 COL = {"d1": "当日", "d5": "近5日", "d20": "近20日", "d60": "近60日", "ytd": "YTD", "dd250": "距高点"}
 PRICE_HDR = "现价" if meta["intraday"] else "收盘"
@@ -50,9 +56,9 @@ def f(v, d=2):
     return "—" if v is None else f"{v:+.{d}f}%"
 
 
-def table(rs, cols, title, top=None):
+def table(rs, cols, title, top=None, colname="环节"):
     lines = [f"\n### {title}\n"]
-    head = f"| 代码 | 名称 | 环节 | {PRICE_HDR} | " + " | ".join(COL[c] for c in cols) + " | 总市值(亿) |"
+    head = f"| 代码 | 名称 | {colname} | {PRICE_HDR} | " + " | ".join(COL[c] for c in cols) + " | 总市值(亿) |"
     sep = "|:--|:--|:--|--:|" + "--:|" * len(cols) + "--:|"
     lines += [head, sep]
     src = rs if top is None else rs[:top]
@@ -66,7 +72,7 @@ def table(rs, cols, title, top=None):
 
 out = []
 out.append(f"数据日：**{DATA_DATE}**（{MODE} {HHMM}）｜光通信核心 **{len(core)}** 只 + 关联延伸 {len(ext)} 只"
-           f"｜科技股口径 **{len(tech) + len(opt)}** 只")
+           f"｜科技股口径 **{len(tech) + len(opt)}** 只｜消费核心 **{len(cons_core)}** 只 + 关联延伸 {len(cons_ext)} 只")
 
 s1 = sorted([r for r in core if r.get("d1") is not None], key=lambda x: x["d1"])
 out.append(table(s1, ["d1", "d5", "d20", "ytd"], "一、当日跌幅榜 TOP15", 15))
@@ -148,6 +154,33 @@ out.append(f"\n> 时点：{meta['snapshot']}　口径：腾讯前复权日线 + 
            f"新浪交叉验证 {len(meta.get('crosscheck') or [])} 只，最大偏差 "
            f"{max([abs(x['diff_pct']) for x in (meta.get('crosscheck') or [{'diff_pct':0}])]):.3f}%")
 
+# ---------------- 消费 ----------------
+if cons:
+    out.append(f"\n### 十、消费行业（核心 {len(cons_core)} 只 + 关联延伸 {len(cons_ext)} 只）\n")
+    cg = {}
+    for r in cons:
+        cg.setdefault(r.get("grp") or "其他", []).append(r)
+    out.append("| 行业（申万一级） | 只数 | 当日 | 近20日 | 近60日 | YTD | 平均回撤 |")
+    out.append("|:--|--:|--:|--:|--:|--:|--:|")
+    for g in CONS_GORDER:
+        rs = cg.get(g, [])
+        if not rs:
+            continue
+
+        def cmed(k, rs=rs):
+            v = [x[k] for x in rs if x.get(k) is not None]
+            return f"{st.median(v):+.2f}%" if v else "—"
+        cdd = [x["dd250"] for x in rs if x.get("dd250") is not None]
+        out.append(f"| {g} | {len(rs)} | {cmed('d1')} | {cmed('d20')} | {cmed('d60')} | "
+                   f"{cmed('ytd')} | {(st.mean(cdd) if cdd else 0):+.2f}% |")
+    cc20 = [r for r in cons_core if r.get("d20") is not None]
+    out.append(f"\n- 核心当日中位 {st.median([r['d1'] for r in cons_core if r.get('d1') is not None]):+.2f}%"
+               f"，下跌 {sum(1 for r in cons_core if (r.get('d1') or 0) < 0)}/{len(cons_core)}")
+    out.append(f"- 核心近20日中位 {st.median([r['d20'] for r in cc20]):+.2f}%，跌幅前 10：" +
+               "、".join(f'{r["name"]} {r["d20"]:+.1f}%' for r in sorted(cc20, key=lambda x: x["d20"])[:10]))
+    out.append(table(sorted([r for r in cons_core if r.get("d20") is not None], key=lambda x: x["d20"]),
+                     ["d20", "d60", "ytd", "dd250"], "消费核心 · 近20日跌幅 TOP15", 15, colname="行业"))
+
 io.open(MD_PATH, "w", encoding="utf-8").write("\n".join(out))
 
 HDRS = ["数据日期", "数据时点", "状态", "代码", "名称", "细分环节", "现价/收盘", "当日%",
@@ -177,6 +210,9 @@ def dump_csv(path, rs, with_tier=False):
 
 dump_csv(CSV_PATH, opt, with_tier=True)
 dump_csv(TECH_CSV, tech + opt)
+if cons:
+    dump_csv(CONS_CSV, cons, with_tier=True)
 
-print("csv ->", os.path.basename(CSV_PATH), len(opt), "|", os.path.basename(TECH_CSV), len(tech + opt))
+print("csv ->", os.path.basename(CSV_PATH), len(opt), "|", os.path.basename(TECH_CSV), len(tech + opt),
+      "|", os.path.basename(CONS_CSV), len(cons))
 print("md  ->", os.path.basename(MD_PATH))

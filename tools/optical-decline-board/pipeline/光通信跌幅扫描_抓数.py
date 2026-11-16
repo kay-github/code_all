@@ -51,18 +51,23 @@ def sym(code: str) -> str:
 
 
 def load_pool():
-    """返回 (光学核心, 光学延伸, 科技股全部)"""
+    """返回 (光学核心, 光学延伸, 科技股全部, 消费核心, 消费延伸)
+    消费元素为 (code, name, 二级行业, 一级行业)
+    """
     p = os.path.join(BASE, "板块池.json")
     try:
         d = json.load(io.open(p, encoding="utf-8"))
         core = [(x["code"], x["name"], x["tag"]) for x in d["optical"]["core"]]
         ext = [(x["code"], x["name"], x["tag"]) for x in d["optical"]["ext"]]
         tech = [(x["code"], x["name"], x["ind"]) for x in d["tech"]]
+        cons = d.get("cons") or {}
+        cc = [(x["code"], x["name"], x.get("ind2") or x["l1"], x["l1"]) for x in cons.get("core", [])]
+        ce = [(x["code"], x["name"], x.get("ind2") or x["l1"], x["l1"]) for x in cons.get("ext", [])]
         if core and len(tech) > len(core):
-            return core, ext, tech
+            return core, ext, tech, cc, ce
     except Exception as e:
         print("pool fallback:", e)
-    return POOL, [], []
+    return POOL, [], [], [], []
 
 
 TM_BLOCKED = {"v": False}  # 腾讯 K线整体被风控（501 挑战页）后不再逐只重试
@@ -206,7 +211,7 @@ def add_rating(rows):
 
 
 def main():
-    core, ext, tech = load_pool()
+    core, ext, tech, cons_core, cons_ext = load_pool()
     optical = [(c, n, t, "core") for c, n, t in core] + [(c, n, t, "ext") for c, n, t in ext]
     opt_codes = [x[0] for x in optical]
     tech_map = {c: (n, i) for c, n, i in tech}
@@ -215,7 +220,20 @@ def main():
         extra = []
     else:
         extra = [(c, n, i) for c, n, i in tech if c not in set(opt_codes)]
-    all_codes = opt_codes + [x[0] for x in extra]
+
+    CONS = os.environ.get("OPTICAL_CONS", "1") != "0"
+    cons = []
+    if CONS:
+        cons = [(c, n, t, "core", l1) for c, n, t, l1 in cons_core] + \
+               [(c, n, t, "ext", l1) for c, n, t, l1 in cons_ext]
+    cons_codes = [x[0] for x in cons]
+
+    seen = set()
+    all_codes = []
+    for c in opt_codes + [x[0] for x in extra] + cons_codes:
+        if c not in seen:
+            seen.add(c)
+            all_codes.append(c)
 
     quotes = fetch_quote(all_codes)
     print("quotes", len(quotes), "/", len(all_codes))
@@ -241,30 +259,44 @@ def main():
     for code, k in first:
         is_qfq = bool(k)
         if not k:
-            # akshare 前复权是串行通道，耗时不可控；超过 5 分钟预算后改用新浪（不复权）保时
+            # akshare 前复权是串行通道（py_mini_racer 非线程安全），耗时不可控；
+            # 超过预算后不再调用，统一交给新浪并行回退
             if time.time() - t_fb < 300:
                 _, k2 = fetch_kline_ak(code)
                 if k2:
                     k, is_qfq = k2, True
                     n_ak += 1
-        if not k:
-            _, k3 = fetch_kline_sina(code)
-            if k3:
-                k, is_qfq = k3, False
         results.append((code, k, is_qfq))
+
+    # 新浪（不复权）回退：纯 requests，可并行；池子扩大后必须并行，否则云端会超时
+    miss = [c for c, k, _ in results if not k]
+    n_sina = 0
+    if miss:
+        t_s = time.time()
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            fb = dict(ex.map(lambda c: fetch_kline_sina(c), miss))
+        results = [(c, k if k else fb.get(c), f if k else False) for c, k, f in results]
+        n_sina = sum(1 for c in miss if fb.get(c))
+        print("sina 回退 缺%d 补回%d %.0fs" % (len(miss), n_sina, time.time() - t_s))
 
     kmap = {c: (k, f) for c, k, f in results}
     ok_opt = sum(1 for c in opt_codes if kmap.get(c, (None, 0))[0])
+    ok_cons = sum(1 for c in cons_codes if kmap.get(c, (None, 0))[0])
     print("kline ok", sum(1 for _, k, _ in results if k), "/", len(all_codes),
-          "| 光通信", ok_opt, "/", len(opt_codes), "| akshare", n_ak)
+          "| 光通信", ok_opt, "/", len(opt_codes), "| 消费", ok_cons, "/", len(cons_codes),
+          "| akshare", n_ak)
     if ok_opt < len(opt_codes) * 0.9:
         raise SystemExit(f"光通信K线成功率过低({ok_opt}/{len(opt_codes)})，保留原有数据不覆盖，请稍后重试")
+    if cons_codes and ok_cons < len(cons_codes) * 0.7:
+        print(f"WARN 消费K线成功率偏低({ok_cons}/{len(cons_codes)})，榜单将出现缺项")
 
     rows = []
 
-    def build(code, name, tag, board, tier):
+    def build(code, name, tag, board, tier, grp=None):
         k, is_qfq = kmap.get(code, (None, True))
         rec = {"code": code, "name": name, "tag": tag, "board": board, "tier": tier}
+        if grp:
+            rec["grp"] = grp
         if not k:
             rec["err"] = "no_kline"
             rows.append(rec)
@@ -327,7 +359,7 @@ def main():
             "d1": live_chg if live_chg is not None else (pct(last, close[-2]) if len(close) >= 2 else None),
             "d5": pct(last, back(5)), "d20": pct(last, back(20)), "d60": pct(last, back(60)),
             "ytd": pct(last, base_ytd) if base_ytd else None,
-            "dd250": dd, "hi250": hi250, "newlow60": newlow,
+            "dd250": dd, "hi250": hi250, "newlow60": newlow, "lo60": base_low,
             "mcap": mcap, "turnover": turnover,
         })
         rows.append(rec)
@@ -336,6 +368,8 @@ def main():
         build(code, name, tag, "optical", tier)
     for code, name, ind in extra:
         build(code, name, ind, "tech", "tech")
+    for code, name, ind2, tier, l1 in cons:
+        build(code, name, ind2, "cons", tier, grp=l1)
 
     # ---------- 数据日期与盘中判定 ----------
     now = datetime.datetime.now()
@@ -343,7 +377,9 @@ def main():
     dates_seen = sorted({r["last_date"] for r in rows if r.get("last_date")})
     kline_date = dates_seen[-1] if dates_seen else today
     hhmm = now.hour * 100 + now.minute
-    in_session = (now.weekday() < 5) and ((930 <= hhmm <= 1130) or (1300 <= hhmm <= 1500))
+    # 09:30–15:00 之间（含 11:30–13:00 午间休市）当日行情都未定稿，不能算「收盘」；
+    # 只有 15:00 之后数据才是当日收盘终值
+    in_session = (now.weekday() < 5) and (930 <= hhmm < 1500)
     live_ratio = sum(1 for r in rows if r.get("diverged")) / max(len(rows), 1)
     day_votes = {}
     for qf in quotes.values():
@@ -362,6 +398,8 @@ def main():
         "n": len(rows),
         "n_optical": sum(1 for r in rows if r["board"] == "optical"),
         "n_tech": sum(1 for r in rows if r["board"] == "tech"),
+        "n_cons": sum(1 for r in rows if r["board"] == "cons"),
+        "n_cons_core": sum(1 for r in rows if r["board"] == "cons" and r["tier"] == "core"),
         "n_diverged": sum(1 for r in rows if r.get("diverged")),
         "n_qfq": sum(1 for r in rows if r.get("qfq")),
         "n_sina_fallback": sum(1 for r in rows if r.get("qfq") is False),
@@ -426,8 +464,11 @@ def main():
             hs[i] = lh
             ls[i] = ll
         r["cs"] = cs
-        r["hs"] = hs
-        r["ls"] = ls
+        # 消费池只保留收盘序列（页面用 hi250 / lo60 标量替代最高/最低序列），
+        # 单只从约 5.4KB 降到 1.8KB，594 只可省约 2MB
+        if r["board"] != "cons":
+            r["hs"] = hs
+            r["ls"] = ls
     meta["cal"] = cal
     meta["cal_last"] = cal[-1] if cal else None
 
@@ -437,6 +478,7 @@ def main():
         json.dump({"meta": meta, "rows": rows}, f, ensure_ascii=False, separators=(",", ":"))
 
     print("rows", len(rows), "| 光通信", meta["n_optical"], "科技股", meta["n_tech"],
+          "消费", meta["n_cons"], "(核心", meta["n_cons_core"], ")",
           "| data_date", data_date, "| intraday", intraday,
           "| diverged", meta["n_diverged"], "| qfq", meta["n_qfq"], "| sina_fb", meta["n_sina_fallback"])
     print("crosscheck", [(x["code"], x["diff_pct"]) for x in xc])
