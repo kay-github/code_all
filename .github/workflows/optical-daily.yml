@@ -1,9 +1,12 @@
 name: optical-daily-update
 
-# 北京时间周一至周五 15:01（UTC 07:01）；GitHub cron 可能有几分钟延迟
+# 北京时间周一至周五 15:01（UTC 07:01）；GitHub cron 可能有几分钟延迟，
+# 也出现过整天不触发的情况 → 16:05（UTC 08:05）再跑一次兜底；
+# 第二次结果若与第一次一致，git diff 为空会自然跳过提交。
 on:
   schedule:
     - cron: '1 7 * * 1-5'
+    - cron: '5 8 * * 1-5'
   workflow_dispatch:
 
 permissions:

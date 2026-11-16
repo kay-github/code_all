@@ -211,7 +211,7 @@
     <div class="hgroup">
       <h1>A股 <span class="accent">科技 · 光通信 · 消费</span> 跌幅榜单</h1>
       <div class="sub">
-        <span class="stamp"><span class="dot"></span>__STAMP__</span>
+        <span class="stamp"><span class="dot"></span><span id="stampTxt">__STAMP__</span></span>
         <span class="livebadge off" id="liveBadge"><span class="ld"></span><span id="liveTxt">连接行情源…</span>
           <button class="btn" id="liveToggle">暂停</button></span>
         <span id="scopeTxt"></span>
@@ -278,8 +278,9 @@
     A≥75 / B≥60 / C≥45 / D≥30 / E&lt;30。它衡量的是<b>本轮下跌中的相对强弱</b>（A＝抗跌、E＝跌幅与回撤居尾部），
     不是买卖评级、不代表未来收益；评级徽章的红绿配色仅表示档位，与下方「红涨绿跌」的行情配色无关。<br>
     <b>实时机制</b>：本页面内嵌近 300 个交易日价格序列（光通信／科技股含收盘＋最低＋最高，消费榜为控制体积只内嵌收盘，最高／最低用标量），
-    打开及每 30 秒自动直连行情源刷新现价并重算全部指标；
-    历史序列由每日 15:01 自动任务滚动更新；若本页数据日已落后多个交易日，请以最新生成的文件为准。<br>
+    打开即直连行情源刷新现价并重算全部指标（交易时段 30 秒、收盘后 5 分钟）；
+    历史序列由每日 15:01 自动任务滚动更新，若该任务失败，页面仍会用实时价重算区间涨跌幅与回撤；
+    若本页数据日已落后多个交易日且实时行情不可用，请以最新生成的文件为准。<br>
     <b>颜色约定</b>：按 A 股惯例，<span style="color:var(--up)">红=上涨</span>、<span style="color:var(--down)">绿=下跌</span>，与欧美市场相反。<br>
     <b>校验</b>：__XCHECK__<br>
     <b>复权口径</b>：__QFQNOTE__<br>
@@ -295,14 +296,14 @@ let BOARD = (function(){
   try { const b = localStorage.getItem("txdp_board"); if (b && BOARDS[b]) return b; } catch(e){}
   return "optical";
 })();
-const D1_LABEL = META.intraday ? "当前" : "当日";
+let D1_LABEL = META.intraday ? "当前" : "当日";
 
 const COLS = [
   {k:"c",  t:"代码",    cls:"l", w:74,  type:"code"},
   {k:"n",  t:"名称",    cls:"l", w:96,  type:"name"},
   {k:"t",  t:"环节",    cls:"l", w:104, type:"tag"},
   {k:"p",  t:"现价",    w:80,  type:"px"},
-  {k:"d1", t:D1_LABEL,  w:88,  type:"pct", hot:true},
+  {k:"d1", t:"当日",    w:88,  type:"pct", hot:true},
   {k:"d5", t:"近5日",   w:86,  type:"pct", hot:true},
   {k:"d20",t:"近20日",  w:92,  type:"pct", hot:true},
   {k:"d60",t:"近60日",  w:92,  type:"pct", hot:true},
@@ -337,17 +338,61 @@ const cls = v => (v === null || v === undefined || !isFinite(v)) ? "muted" : (v 
 function med(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1;
   return s.length%2 ? s[m] : (s[m-1]+s[m])/2; }
 function mean(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; }
-function todayStr(){ const d=new Date();
+function todayStr(){ const d = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function bjClock(){ const d = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+  return [d.getHours(), d.getMinutes(), d.getSeconds()].map(v => String(v).padStart(2,"0")).join(":"); }
 const B = () => BOARDS[BOARD];
+
+/* ---------------- 交易时段判定（强制北京时间，与访问者系统时区无关） ---------------- */
+function bjNow(){
+  const t = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+  return { wd: t.getDay(), hm: t.getHours() * 100 + t.getMinutes() };
+}
+/* 09:30–15:00（含午休）都算「当日未定稿」；15:00 之后行情已是当日收盘终值 */
+function inTradingWindow(){ const { wd, hm } = bjNow(); return wd >= 1 && wd <= 5 && hm >= 930 && hm < 1500; }
 
 /* ---------------- 实时状态 ---------------- */
 let LIVE = false, DATA_DAY = META.data_date || todayStr(), LIVE_TS = "";
+let LIVE_OFF = 1;         // 内嵌日历落后行情日的交易日数（1=今天尚未入内嵌序列）
 let liveTimer = null, livePaused = false, liveFailN = 0;
-const REFRESH_SEC = 30;
+const REFRESH_OPEN = 30, REFRESH_CLOSED = 300;
+const refreshSec = () => inTradingWindow() ? REFRESH_OPEN : REFRESH_CLOSED;
 
 function sym(code){ return code.startsWith("60")||code.startsWith("68")||code.startsWith("90")
   ? "sh"+code : (code.startsWith("4")||code.startsWith("8")||code.startsWith("92")) ? "bj"+code : "sz"+code; }
+
+/* 内嵌序列末尾日期 → 行情日的「缺失交易日数」off。
+   off=0 表示内嵌已含行情日（序列最后一条就是今天），off=1 表示只缺今天。
+   页面可能因云端任务失败而落后多日，用节假日常规算法不可靠，改用「行情昨收」
+   在内嵌收盘序列尾部定位：昨收落在倒数第 (k+1) 条 → off = k+1。 */
+function inferOff(){
+  const lastCal = CAL[CAL.length - 1] || "";
+  if (lastCal && DATA_DAY && DATA_DAY <= lastCal) return 0;   // 内嵌已含行情日
+  const votes = {};
+  for (const c of Object.keys(SEQ).slice(0, 300)){
+    const s = SEQ[c]; if (!s) continue;
+    const cs = s[0], n = cs.length; if (n < 8) continue;
+    const lv = window["v_" + sym(c)]; if (!lv) continue;
+    const f = lv.split("~"); if (f.length < 35) continue;
+    const prev = parseFloat(f[4]); if (!(prev > 0)) continue;
+    for (let k = 0; k <= 5; k++){
+      const v = cs[n - 1 - k];
+      if (v && Math.abs(v / prev - 1) < 0.0025){ votes[k + 1] = (votes[k + 1] || 0) + 1; break; }
+    }
+  }
+  let best = 0, bn = 0;
+  for (const k in votes) if (votes[k] > bn){ bn = votes[k]; best = +k; }
+  if (bn >= 3) return best;
+  // 匹配不上（缺 2 日以上时昨收已不在内嵌序列里，或大面积除权）→ 退化为工作日计数
+  const d0 = new Date(lastCal + "T00:00:00"), d1 = new Date(DATA_DAY + "T00:00:00");
+  let cnt = 0;
+  for (let d = new Date(d0); d < d1; d.setDate(d.getDate() + 1)){
+    const wd = d.getDay(); if (wd !== 0 && wd !== 6) cnt++;
+  }
+  return Math.max(1, Math.min(cnt || 1, 8));
+}
+
 
 function setBadge(state, txt){
   const b = document.getElementById("liveBadge"), t = document.getElementById("liveTxt");
@@ -392,7 +437,8 @@ function afterLive(ok){
       const ts = f[30] || "";
       const day = ts.length >= 8 ? ts.slice(0,4)+"-"+ts.slice(4,6)+"-"+ts.slice(6,8) : null;
       if (day) votes[day] = (votes[day]||0)+1;
-      r._live = { p, chg: parseFloat(f[32]), to: parseFloat(f[38]), mcap: parseFloat(f[45]) };
+      r._live = { p, chg: parseFloat(f[32]), to: parseFloat(f[38]), mcap: parseFloat(f[45]),
+                  hi: parseFloat(f[33]), lo: parseFloat(f[34]) };
       got++;
     });
     let best = null, bn = 0;
@@ -400,15 +446,35 @@ function afterLive(ok){
     if (best) DATA_DAY = best;
     if (got > B().rows.length * 0.5){
       LIVE = true; liveFailN = 0;
-      LIVE_TS = new Date().toTimeString().slice(0,8);
-      setBadge("on", "实时 " + LIVE_TS + " · " + DATA_DAY);
+      LIVE_TS = bjClock();
+      LIVE_OFF = inferOff();
+      // 收盘后行情已是当日终值 → 列名从「当前」改回「当日」，避免拿收盘价冒充盘中
+      D1_LABEL = inTradingWindow() ? "当前" : "当日";
+      setBadge("on", (inTradingWindow() ? "实时 " : "收盘价 ") + LIVE_TS + " · " + DATA_DAY);
     } else { liveFailN++; afterLiveFail(); }
   } else { afterLiveFail(); }
+  updateStamp();
   recalcAll(); renderAll();
   if (!livePaused && liveFailN < 3){
     clearTimeout(liveTimer);
-    liveTimer = setTimeout(loadLive, REFRESH_SEC * 1000);
+    liveTimer = setTimeout(loadLive, refreshSec() * 1000);
   }
+}
+/* 顶部数据日标注跟随实时状态：快照时刻 / 实时收盘时刻分开写清 */
+function updateStamp(){
+  const el = document.getElementById("stampTxt");
+  if (!el) return;
+  const snapDate = META.data_date || "";
+  const snapHM = (META.snapshot || "").slice(11, 16);
+  if (!LIVE){
+    const lag = (snapDate && snapDate < todayStr()) ? " · ⚠ 快照已滞后，实时行情未连通" : "";
+    el.textContent = `数据日 ${snapDate}` + (META.intraday ? ` 盘中 ${snapHM}（快照）` : " 收盘（快照）") + lag;
+    return;
+  }
+  const closed = !inTradingWindow();
+  el.textContent = `数据日 ${DATA_DAY} ` + (closed ? "收盘" : "盘中实时")
+                 + ` · 价格 ${LIVE_TS} 直连行情源`
+                 + (DATA_DAY !== snapDate ? ` · 内嵌历史止于 ${CAL[CAL.length - 1]}` : "");
 }
 function afterLiveFail(){
   if (liveFailN >= 3) setBadge("off", "实时刷新失败 · 显示快照");
@@ -423,47 +489,55 @@ document.getElementById("liveToggle").addEventListener("click", function(){
 
 /* ---------------- 核心：内嵌序列 + 实时价重算全部指标 ---------------- */
 function recalcAll(){
-  const off = (DATA_DAY > (CAL[CAL.length-1] || "")) ? 1 : 0;   // 行情日超出内嵌日历 → 今日为新交易日
-  const yrCut = (new Date().getFullYear() - 1) + "-12-31";
+  const off = LIVE_OFF;      // 内嵌日历相对行情日缺几个交易日（实时成功后按昨收匹配推断）
+  // 年初基准 = 上一年最后一个交易日收盘。条件须用「今年 01-01」，写成「去年 12-31」
+  // 会把 12-31 当天本身排除掉，基准整体前移一个交易日（曾致 ytd 偏差 1~5pp）
+  const yrCut = new Date().getFullYear() + "-01-01";
   let jy = -1;
   for (let i = 0; i < CAL.length; i++) if (CAL[i] < yrCut) jy = i;
 
   const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
-  const seen = new Set();
+  // 同一代码会同时出现在多个 Table。旧实现用「代码→最后一行」当权威源同步，
+  // 而重算只对首次出现的行执行 → 未重算的重复行（保留快照价）反而覆盖了已算好的行，
+  // 导致实时价拿到了却显示不出来（光通信池全部命中，股价停在盘中快照）。
+  // 现在：每个代码只算一次并缓存结果，再把结果写到该代码的每一行。
+  const calc = new Map();
   all.forEach(r => {
-    if (seen.has(r.c)) return;      // 同一只票多个 Table 各算一次即可（序列共享）
-    seen.add(r.c);
-    const s = SEQ[r.c];
-    const L = r._live;
-    if (L){
-      if (L.p > 0) r.p = L.p;
-      if (L.to != null && isFinite(L.to)) r.to = L.to;
-      if (L.mcap != null && isFinite(L.mcap)) r.mcap = L.mcap;
-      if (L.chg != null && isFinite(L.chg)) r.d1 = L.chg;
+    let v = calc.get(r.c);
+    if (!v){
+      const s = SEQ[r.c], L = r._live;
+      v = {};
+      if (L){
+        if (L.p > 0) v.p = L.p;
+        if (L.to != null && isFinite(L.to)) v.to = L.to;
+        if (L.mcap != null && isFinite(L.mcap)) v.mcap = L.mcap;
+        if (L.chg != null && isFinite(L.chg)) v.d1 = L.chg;
+      }
+      if (v.p == null) v.p = r.p;
+      if (s){                       // 无内嵌序列 → 只刷新现价/当日涨跌，区间指标沿用快照值
+        const cs = s[0], ls = s[1], hs = s[2], n = cs.length;
+        const b = k => { const i = n - (k + 1 - off); return (i >= 0 && cs[i] != null) ? cs[i] : null; };
+        const pctB = k => { const pv = b(k); return (pv && v.p) ? (v.p / pv - 1) * 100 : null; };
+        if (v.d1 == null) v.d1 = pctB(1);
+        v.d5 = pctB(5); v.d20 = pctB(20); v.d60 = pctB(60);
+        if (jy >= 0 && cs[jy] != null && v.p) v.ytd = (v.p / cs[jy] - 1) * 100;
+        if (hs){                    // 有最高价序列 → 用序列算 250 日盘中高点回撤
+          const hw = hs.slice(Math.max(0, n - 250)).filter(x => x != null);
+          // 内嵌日历未含今日时，把今日盘中最高并入窗口，避免今天创新高却算不到
+          if (L && L.hi > 0 && off > 0) hw.push(L.hi);
+          if (hw.length && v.p) v.dd = (v.p / Math.max(...hw) - 1) * 100;
+        } else if (r.hi && v.p) v.dd = (v.p / Math.max(r.hi, (L && L.hi > 0 && off > 0) ? L.hi : 0) - 1) * 100;
+        if (ls){
+          const lwEnd = off ? n : n - 1;                   // 排除当日 bar 再取前 59 日最低
+          const lw = ls.slice(Math.max(0, lwEnd - 59), lwEnd).filter(x => x != null);
+          v.nl = (lw.length && v.p && v.p < Math.min(...lw)) ? 1 : 0;
+        } else v.nl = (r.lo && v.p && v.p < r.lo) ? 1 : 0;
+      }
+      calc.set(r.c, v);
     }
-    if (!s) return;                 // 无内嵌序列 → 只刷新现价/当日涨跌，区间指标用快照值
-    const cs = s[0], ls = s[1], hs = s[2], n = cs.length;
-    const b = k => { const i = n - (k + 1 - off); return (i >= 0 && cs[i] != null) ? cs[i] : null; };
-    const pctB = k => { const v = b(k); return (v && r.p) ? (r.p / v - 1) * 100 : null; };
-
-    r.d1 = (L && L.chg != null && isFinite(L.chg)) ? L.chg : pctB(1);
-    r.d5 = pctB(5); r.d20 = pctB(20); r.d60 = pctB(60);
-
-    if (jy >= 0 && cs[jy] != null && r.p) r.ytd = (r.p / cs[jy] - 1) * 100;
-    if (hs){                        // 有最高价序列 → 用序列算 250 日盘中高点回撤
-      const hw = hs.slice(Math.max(0, n - 250)).filter(v => v != null);
-      if (hw.length && r.p) r.dd = (r.p / Math.max(...hw) - 1) * 100;
-    } else if (r.hi && r.p) r.dd = (r.p / r.hi - 1) * 100;   // 消费池：用内嵌标量
-    if (ls){
-      const lwEnd = off ? n : n - 1;                     // 排除当日 bar 再取前 59 日最低
-      const lw = ls.slice(Math.max(0, lwEnd - 59), lwEnd).filter(v => v != null);
-      r.nl = (lw.length && r.p && r.p < Math.min(...lw)) ? 1 : 0;
-    } else r.nl = (r.lo && r.p && r.p < r.lo) ? 1 : 0;
+    if (v.p != null) r.p = v.p;
+    ["d1","d5","d20","d60","ytd","dd","nl","to","mcap"].forEach(k => { if (v[k] !== undefined) r[k] = v[k]; });
   });
-  // 同步同代码行（两个 Table 共享行情）
-  const byCode = new Map(all.map(r => [r.c, r]));
-  all.forEach(r => { const src = byCode.get(r.c); if (src && src !== r){ r.p = src.p; r.d1 = src.d1; r.d5 = src.d5;
-    r.d20 = src.d20; r.d60 = src.d60; r.ytd = src.ytd; r.dd = src.dd; r.to = src.to; r.mcap = src.mcap; r.nl = src.nl; } });
   computeRating();
 }
 
@@ -557,7 +631,7 @@ function renderKpi(){
             : `科技股池 ${K.n} 只（含光通信）`;
   document.getElementById("kpis").innerHTML = [
     {k:"样本标的", v:K.n + " 只", s: sub, c:"nu"},
-    {k:(LIVE?"当前":"当日") + "中位涨跌", v:fmt(K.d1_med), s:`${K.d1_down}/${K.ncore} 下跌 · ${K.d1_5} 只跌超5%`, c:cls(K.d1_med)},
+    {k:D1_LABEL + "中位涨跌", v:fmt(K.d1_med), s:`${K.d1_down}/${K.ncore} 下跌 · ${K.d1_5} 只跌超5%`, c:cls(K.d1_med)},
     {k:"近20日中位", v:fmt(K.d20_med), s:`${K.d20_30} 只跌超30%`, c:cls(K.d20_med)},
     {k:"距250日高点", v:fmt(K.dd_med), s:`${K.dd_50} 只回撤超50%`, c:cls(K.dd_med)},
     {k:"年初至今中位", v:fmt(K.ytd_med), s:`${K.ytd_up}/${K.ncore} 仍为正收益`, c:cls(K.ytd_med)},
@@ -588,6 +662,7 @@ function renderKpiR(){
 /* ---------------- 表格 ---------------- */
 const thr = document.getElementById("thr");
 function headLabel(k){
+  if (k === "d1") return D1_LABEL;
   if (k !== "t") return null;
   return (BOARD === "tech" || BOARD === "cons") ? "行业" : null;
 }
@@ -800,7 +875,7 @@ document.getElementById("q").addEventListener("input", e => { q = e.target.value
 /* ---------------- 汇总表头随盘中切换 ---------------- */
 function fixGsHead(){
   document.querySelectorAll(".gt thead th").forEach(th => {
-    if (th.classList.contains("d1h")) th.textContent = LIVE ? "当前" : D1_LABEL;
+    if (th.classList.contains("d1h")) th.textContent = D1_LABEL;
   });
 }
 
@@ -812,7 +887,7 @@ renderAll();
 if (META.freeze){
   setBadge("off", "定格快照 · " + META.data_date);
 } else {
-  loadLive();         // 拉实时价，之后每 30 秒自动刷新
+  loadLive();         // 拉实时价，之后交易时段 30 秒、收盘后 5 分钟自动刷新
 }
 </script>
 </body>
