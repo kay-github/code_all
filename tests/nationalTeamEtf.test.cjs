@@ -104,6 +104,16 @@ test('inline favicon prevents the root /favicon.ico 404',()=>{
  assert.match(cycle,/<link rel="icon" href="data:/);
 });
 
+// 三阶段：盘中线索 / 盘后初值 / 次日定稿必须在页面上分开，且盘后初值走独立数据文件，
+// 不能悄悄混进正式区。这里锁住契约，防止后续重构把两个口径合并。
+test('page keeps the three-stage contract and reads the provisional snapshot separately',()=>{
+ assert.match(page,/id="stages"/);
+ assert.match(page,/id="stageCards"/);
+ assert.match(page,/三个版本，三种可信度/);
+ assert.match(page,/data\/postclose\/latest\.json/,'盘后初值必须读独立文件，不能复用正式快照');
+ assert.match(page,/不可作定稿|份额收盘后可能被修订/,'初值必须显式标注不可定稿');
+});
+
 // 精简 DOM 走到「实时通道未启用」静态降级就 return，测不到盘中 render()。
 // pill 曾只在真实浏览器路径被调用，因未定义而每轮抛 ReferenceError，DOM 测试却全绿。
 // 这里补齐浏览器能力强制执行实时分支，把这类错误变成可观测的 DOM 缺口。
@@ -141,5 +151,19 @@ test('browser-capable intraday render has no uncaught ReferenceError (pill stays
   assert.ok(e.nodes.intradayStatus.innerHTML.includes('身份：I0'));
   assert.ok(e.nodes.intradayStatus.innerHTML.includes('采集器快照：未发布'));
   assert.ok(e.intervals.some(x=>x.ms===60000),'应注册 60 秒轮询');
+ }finally{e.off();}
+});
+
+test('three-stage strip renders all three versions with distinct confidence labels',async()=>{
+ const e=renderLive();
+ try{
+  const html=e.nodes.stageCards.innerHTML;
+  assert.match(html,/盘中/);
+  assert.match(html,/盘后/);
+  assert.match(html,/次日/);
+  assert.match(html,/线索级/,'盘中只能标线索级');
+  assert.match(html,/初值级|待生成/,'盘后是初值级或待生成，不能标定稿');
+  assert.match(html,/定稿级/,'次日才是定稿级');
+  assert.ok(!/日期/.test(html),'日期缺失时应显示待更新而不是占位词');
  }finally{e.off();}
 });

@@ -272,11 +272,36 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   html{scroll-behavior:auto}
   *,*::before,*::after{transition:none!important;animation:none!important}
 }
+/* ==== 三阶段版本条：盘中 / 盘后 / 次日 ==== */
+#stages{margin:var(--s5) 0 0;background:transparent;border:0;box-shadow:none;padding:0}
+#stages>h2{margin-bottom:var(--s2)}
+.stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3);margin-top:var(--s3)}
+.stage-card{display:flex;flex-direction:column;gap:6px;min-width:0;padding:var(--s4);
+  background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line-strong);
+  border-radius:var(--r-card);box-shadow:var(--shadow-sm);text-decoration:none;color:inherit;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.stage-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-strong)}
+.stage-card.is-active{border-left-color:var(--accent);background:var(--accent-soft);box-shadow:var(--shadow)}
+.stage-head{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.stage-name{font-size:14px;font-weight:750;letter-spacing:-.2px}
+.stage-badge{font-size:10.5px;font-weight:650;letter-spacing:.2px;padding:2px 7px;border-radius:var(--r-pill);
+  border:1px solid var(--line-strong);color:var(--muted);background:var(--surface-2);white-space:nowrap}
+.stage-badge.tone-live{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-line)}
+.stage-badge.tone-provisional{color:var(--amber);background:var(--amber-soft);border-color:var(--amber-line)}
+.stage-badge.tone-verified{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
+.stage-date{font:700 19px/1.3 ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.stage-desc{font-size:12px;color:var(--text);line-height:1.5}
+.stage-meta{font-size:11px;color:var(--faint);line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:760px){.stage-grid{grid-template-columns:1fr;gap:var(--s2)}
+  .stage-card{padding:var(--s3)}}
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
 <header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="#inventory">10份存量对照</a><a href="#intraday">盘中观察</a><a href="#postclose">盘后初值</a><a href="#official">正式份额与预警</a><a href="#channels">历史反推</a><a href="#discover">异常线索</a><a href="#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
 <main><div class="eyebrow">公开数据观察 · __END__ 收盘</div>
 <h1>先看资金变化，再核验是谁</h1><p class="lead">核心15只优先核对交易所正式份额；历史反推和新发现线索继续保留。份额减少可以确认，国家队身份需要独立证据。</p>
+<section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">三个版本，三种可信度</h2>
+<p class="note">同一天的数据会经历三次成型：盘中只有线索，盘后是收盘初值（份额可能被事后修订），次日复核交易所正式份额后才是定稿。后一版替代前一版，不互相顶替；引用时请认准版本。</p>
+<div class="stage-grid" id="stageCards"></div></section>
 __INVENTORY_BLOCK__
 <div class="statusline"><span class="pill" id="coreState"></span><span class="pill">当日买卖主体未确认</span><span class="pill" id="coverage"></span></div>
 <div class="kpis" id="kpis"></div><div class="notice" id="interpretation"></div>
@@ -355,32 +380,93 @@ $('qualityDetails').innerHTML=`<p>指数当日缺口：${esc(D.quality.missing_i
 $('evaluation').textContent=`当前修订数据回放中，核心池有 ${ev.n} 个可观察后续10日的持续流出事件，后续资金持续性代理命中 ${ev.proxy_hits} 次。身份准确率、召回率尚无真实交易标签，未给出数值。`;
 $('download').onclick=()=>{const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),url=URL.createObjectURL(b),link=document.createElement('a');link.href=url;link.download='国家队观察_'+D.end+'_'+D.version+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 window.GJD={buildId:D.build_id,end:D.end,coreNet:core.net,officialNet:of.net_estimate,coreCount:D.pools.core15.members.length,inventoryUnits:I?.complete?I.latest.total_units:null,inventoryNetUnits:I?.complete?I.latest.net_added_units:null};
-/* 盘后初值独立观察区：数据不齐不包装成核心15只完整合计 */
+/* 三阶段版本条：盘中 / 盘后 / 次日。三者各自成版，后一版替代前一版。 */
+window.StageCards=(function(){
+  const st={intraday:null,postclose:null,verified:D.end};
+  const $=id=>document.getElementById(id);
+  const fmt=v=>v===null||v===undefined?'—':(v>0?'+':'')+Number(v).toFixed(1);
+  function card(o){return `<a class="stage-card${o.active?' is-active':''}" href="${o.href}">`+
+    `<div class="stage-head"><span class="stage-name">${esc(o.name)}</span><span class="stage-badge ${o.tone}">${esc(o.badge)}</span></div>`+
+    `<div class="stage-date">${esc(o.date||'待更新')}</div>`+
+    `<div class="stage-desc">${esc(o.desc)}</div>`+
+    `<div class="stage-meta">${esc(o.meta||'')}</div></a>`;}
+  function draw(){
+    const el=$('stageCards');if(!el)return;
+    const d=new Date(),mins=d.getHours()*60+d.getMinutes(),wd=d.getDay();
+    const inSession=wd>=1&&wd<=5&&mins>=570&&mins<900;
+    const pc=st.postclose,pdate=pc&&pc.business_date;
+    const ahead=pdate&&st.verified&&pdate>st.verified;
+    let active='verified';
+    if(ahead)active=inSession?'intraday':'postclose';
+    el.innerHTML=[
+      card({name:'盘中',href:'#intraday',badge:'线索级',tone:'tone-live',
+        date:st.intraday||(ahead?pdate:st.verified),
+        desc:'实时快照，无可靠逐笔方向，不给份额',
+        meta:ahead?(inSession?'每 60 秒刷新，尚未收盘':'今日已收盘，等盘后初值'):'今日已定稿，见次日版本',
+        active:active==='intraday'}),
+      card({name:'盘后',href:'#postclose',badge:pc?(pc.pending_review?'初值级':'已被替代'):'待生成',tone:'tone-provisional',
+        date:pdate||'—',
+        desc:pc?('反推净申赎 '+fmt(pc.vendor&&pc.vendor.net_yi)+' 亿；份额收盘后可能被修订'):'收盘后生成当日初值，份额不是交易所披露值',
+        meta:pc?('官方披露 '+(pc.official?pc.official.coverage:0)+'/'+(pc.official?pc.official.expected:15)+' · 比值中位 '+((pc.flattened&&pc.flattened.ratio_median!==null&&pc.flattened.ratio_median!==undefined)?pc.flattened.ratio_median.toFixed(4):'—')+' · 抹平 '+(pc.flattened?pc.flattened.count:0)+' 只'):'',
+        active:active==='postclose'}),
+      card({name:'次日',href:'#official',badge:'定稿级',tone:'tone-verified',
+        date:st.verified,
+        desc:'交易所正式份额，经次日早间复核',
+        meta:'可引用；与上方两版独立口径，不混接',
+        active:active==='verified'}),
+    ].join('');
+  }
+  draw();
+  return {set(k,v){if(st[k]===v)return;st[k]=v;draw()},draw};
+})();
+/* 盘后初值：三阶段里的第二版。份额由供应商换手率反推，收盘后可能被修订。 */
 (function(){
   const stage=String(O.stage||'未提供'),complete=!!of.complete,n=of.valid_members||0,exp=of.expected_members||15;
-  $('postcloseScope').textContent=`业务日 ${D.end}；披露阶段：${stage}；正式份额与估值配对覆盖 ${n}/${exp}。本区不改动上方最后一版已核验结果。`;
-  const pending=stage.indexOf('次晨')<0;
-  const rows=[['阶段',pending?'初值 / 待次晨复核':'已复核'],['业务日',D.end],['覆盖数',n+'/'+exp],
-    ['待复核状态',pending?'是：不得覆盖生产页':'否'],['完整合计',(complete&&n===exp)?'可展示':'不展示：覆盖不足，缺口不补0']];
-  $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
-    rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')+'</tbody></table></div>'+
-    `<p class="note">该业务日正式份额敞口估算 ${(complete&&n===exp)?num(of.net_estimate)+' 亿元':'（覆盖不足，不展示合计）'}。此为估算敞口变化，不是实际现金流，也不能识别赎回账户。</p>`;
-  // 低频同步的采集器初值摘要；不可达时保留上方静态结果，绝不把缺失解释成「数据没更新」。
-  if(typeof fetch==='function'){
-    fetch('/tools/national-team-etf/data/intraday/postclose.json',{cache:'no-store'})
-      .then(r=>r.ok?r.json():null).catch(()=>null).then(x=>{
-        if(!x||!x.business_date)return;
-        const cn=x.coverage??0,ce=x.expected??exp,cst=String(x.disclosure_stage||'收盘初值 / 待次晨复核');
-        $('postcloseScope').textContent=`业务日 ${x.business_date}；披露阶段：${cst}；覆盖 ${cn}/${ce}。本区不改动上方最后一版已核验结果（正式份额业务日 ${D.end}）；初值摘要随正式发布低频同步，不是实时推送。`;
-        const crs=[['阶段',x.pending_review?'初值 / 待次晨复核':'已复核'],['业务日',x.business_date],
-          ['覆盖数',cn+'/'+ce],['待复核状态',x.pending_review?'是：不得覆盖生产页':'否'],
-          ['完整合计',(x.complete&&cn===ce)?'可展示':'不展示：覆盖不足，缺口不补0'],
-          ['采集时间',x.generated_at||'—']];
-        $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
-          crs.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')+'</tbody></table></div>'+
-          `<p class="note">${esc(x.note||'')} 该区不含完整合计；缺口不补0，初值不得当作正式发布依据。</p>`;
-      });
+  const f=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  function legacy(){
+    $('postcloseScope').textContent=`当前构建业务日 ${D.end}；披露阶段：${stage}；正式份额与估值配对覆盖 ${n}/${exp}。本区不改动上方最后一版已核验结果。`;
+    const rows=[['版本','次日定稿（正式区）'],['业务日',D.end],['覆盖数',n+'/'+exp],
+      ['完整合计',(complete&&n===exp)?'可展示':'不展示：覆盖不足，缺口不补0']];
+    $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
+      rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')+'</tbody></table></div>'+
+      '<p class="note">尚未取到当日盘后初值；此处显示已核验的次日结果。缺口不补 0，也不把缺失解释成「没有买入」。</p>';
   }
+  function render(x){
+    const o=x.official||{},v=x.vendor||{},iv=x.inventory||{},fl=x.flattened||{};
+    const sup=x.superseded_by;
+    $('postcloseScope').textContent=`业务日 ${x.business_date}；版本：盘后初值（${x.pending_review?'待次日复核':'已被 '+(sup||'权威版本')+' 替代'}）；官方份额披露 ${o.coverage||0}/${o.expected||15}。本区不改动上方已核验的次日结果（业务日 ${D.end}）。`;
+    const rows=[
+      ['版本','盘后初值 · 初值级，不是交易所披露份额'],
+      ['业务日',x.business_date],
+      ['生成时间',x.generated_at||'—'],
+      ['官方份额覆盖',(o.coverage||0)+'/'+(o.expected||15)+(o.complete?'（齐全）':'（未齐全，不展示合计）')],
+      ['供应商反推净申赎',(v.net_yi===null||v.net_yi===undefined)?'数据不足':num(v.net_yi)+' 亿元（不可作定稿）'],
+      ['份额比值中位',(fl.ratio_median===null||fl.ratio_median===undefined)?'—':fl.ratio_median.toFixed(6)+'（1.000000 附近说明分母未换）'],
+      ['严格判定抹平',(fl.count||0)+' 只；宽口径接近不动 '+(fl.near_count||0)+' 只'],
+      ['核心15成交额',(v.amount_yi===null||v.amount_yi===undefined)?'—':num(v.amount_yi,1)+' 亿元'],
+      ['10份刻度（初值）',(iv.total_units===null||iv.total_units===undefined)?'数据不足':ip(iv.total_units)+' 份'],
+      ['本轮净新增（初值）',(iv.net_added_units===null||iv.net_added_units===undefined)?'数据不足':num(iv.net_added_units,2)+' 份'],
+      ['买卖身份',x.identity||'I0 当日买卖主体未确认'],
+      ['下一步',x.next_step||''],
+    ];
+    $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
+      rows.map(([k,t])=>`<tr><td>${esc(k)}</td><td>${esc(t)}</td></tr>`).join('')+'</tbody></table></div>'+
+      `<p class="note">${esc(x.revision_risk||'')}</p>`;
+    if(window.StageCards)window.StageCards.set('postclose',x);
+  }
+  if(typeof fetch!=='function'){legacy();return;}
+  f('/tools/national-team-etf/data/postclose/latest.json').then(x=>{
+    if(x&&x.business_date){render(x);return;}
+    f('/tools/national-team-etf/data/intraday/postclose.json').then(y=>{
+      if(y&&y.business_date){
+        render({business_date:y.business_date,generated_at:y.generated_at,generated_at_note:'legacy',
+          pending_review:y.pending_review,official:{coverage:y.coverage,expected:y.expected,complete:y.complete},
+          vendor:{net_yi:null,amount_yi:null,expected_members:y.expected,reliable:false},
+          inventory:{},flattened:{count:0},revision_risk:y.note||'',
+          identity:'I0 当日买卖主体未确认',next_step:y.next_step||''});
+      }else legacy();
+    });
+  });
 })();
 /* 当日盘中观察区：浏览器 JSONP 实时行情 + 低频采集器快照 */
 (function(){
@@ -443,6 +529,7 @@ window.GJD={buildId:D.build_id,end:D.end,coreNet:core.net,officialNet:of.net_est
     const breadth=rows.length?Math.max(support,retreat)/rows.length:0;
     const leader=support>retreat*2?'承接线索':retreat>support*2?'撤退线索':'方向待确认';
     $('intradayStage').textContent=stale?'行情过期 / 非交易时段':'盘中实时';
+    if(window.StageCards&&keyTime.length>=8)window.StageCards.set('intraday',`${keyTime.slice(0,4)}-${keyTime.slice(4,6)}-${keyTime.slice(6,8)}`);
     $('intradayStatus').innerHTML=
       pill('业务日 '+(keyTime.length>=8?`${keyTime.slice(0,4)}-${keyTime.slice(4,6)}-${keyTime.slice(6,8)}`:'—'))+
       pill('行情时间 '+qtDate(keyTime))+

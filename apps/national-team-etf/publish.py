@@ -15,7 +15,7 @@ REPO=Path(os.environ.get('GJD_SITE_REPO',ROOT.parents[1] if (ROOT.parents[1]/'.g
 DEST=REPO/'tools/national-team-etf'
 SOURCE=REPO/'apps/national-team-etf'
 MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py','v2_tracking.py','v2_inventory.py',
-    'v2_release.py','v2_report.py','collect_data.py','pipeline.py','validate_v2.py','publish.py',
+    'v2_stages.py','v2_release.py','v2_report.py','collect_data.py','pipeline.py','validate_v2.py','publish.py',
     'update.py','serve_preview.py','compat_v2.py','monitor.py','intraday.py',
     'postclose.py','morning_review.py','weekly_report.py','scheduler.py']
 DOCUMENTS=['国家队ETF数据研究方法_口径与坑.md','国家队追踪_经验库.md','国家队追踪_v2_改版与验证.md',
@@ -116,7 +116,7 @@ def stage():
     return a,sorted(set(files))
 
 
-def deploy(files):
+def deploy(files,message=None):
     def git(*args):
         # 全局 git 配置的 7897 已失效；本机会话的 HTTPS_PROXY 是 7890。
         # 优先使用显式 GJD_GIT_PROXY，其次会话代理；都没有才退回直连。
@@ -136,9 +136,26 @@ def deploy(files):
         git('merge','--ff-only','origin/main')
     git('add','--',*files)
     if git('diff','--cached','--name-only'):
-        git('commit','-m','Improve ETF tracking with official share history and verified releases')
+        git('commit','-m',message or 'Improve ETF tracking with official share history and verified releases')
         git('push','origin','main')
-    print('已推送项目白名单；继续核对Vercel Ready及线上构建号',git('rev-parse','HEAD'),flush=True)
+        print('已推送项目白名单；继续核对Vercel Ready及线上构建号',git('rev-parse','HEAD'),flush=True)
+
+
+def deploy_postclose(summary):
+    """独立发布盘后初值：只推一个 JSON，不进入正式区、不改 release 回执。
+
+    盘后初值与次日权威份额是两种口径；这里刻意不让它走 stage()，
+    避免把未复核的份额混进正式发布链路。
+    """
+    if not summary or not summary.get('business_date'):
+        raise RuntimeError('盘后初值缺少业务日，拒绝发布')
+    if summary.get('stage')!='postclose_provisional':
+        raise RuntimeError('盘后初值阶段标识不正确，拒绝发布')
+    target=DEST/'data/postclose'/'latest.json'
+    write_json(target,summary)
+    rel=str(target.relative_to(REPO)).replace('\\','/')
+    deploy([rel],message='Publish provisional post-close snapshot for %s (not authoritative)'%summary['business_date'])
+    return rel
 
 
 def main():
