@@ -1,0 +1,59 @@
+{
+  "stage": "postclose_provisional",
+  "stage_label": "盘后初值",
+  "confidence": "provisional",
+  "confidence_note": "初值级：T 日反推份额，可能被事后修订，不可作定稿",
+  "business_date": "2026-11-16",
+  "generated_at": "2026-11-16T17:24:54+08:00",
+  "build_id": "20261116T172328_0800_58b08a6697",
+  "built_at": "2026-11-16T17:23:28+08:00",
+  "pending_review": true,
+  "superseded_by": null,
+  "official": {
+    "disclosure_stage": "初值或不完整",
+    "coverage": 0,
+    "expected": 15,
+    "complete": false,
+    "net_yi": null,
+    "valid_members": 0
+  },
+  "vendor": {
+    "net_yi": 1.322979439648563,
+    "net_low_yi": -30.671343500561044,
+    "net_high_yi": 33.27813763483027,
+    "valid_members": 15,
+    "expected_members": 15,
+    "complete": false,
+    "amount_yi": 692.28,
+    "reliable": false,
+    "reasons": [
+      "供应商换手率反推，分母口径未经验证",
+      "1/15 只的份额比值落在 1.0000±1e-05，当日净申赎疑似被抹平",
+      "交易所正式份额当日仅披露 0/15 只"
+    ]
+  },
+  "inventory": {
+    "total_units": 5.623934182388751,
+    "net_added_units": 3.1476883152664135,
+    "current_ratio": 0.5623934182388751,
+    "complete": true,
+    "provisional": true
+  },
+  "flattened": {
+    "count": 1,
+    "members": [
+      {
+        "code": "510500",
+        "date": "2026-11-16",
+        "ratio": 0.999996
+      }
+    ],
+    "near_count": 7,
+    "ratio_median": 1.000381,
+    "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
+  },
+  "revision_risk": "T 日换手率分母可能仍是昨收份额，收盘后才换成当日登记份额；11-13 实测 94/254 只被修订，核心15由 −24.9 亿修正为 −123.7 亿。本页初值不能当定稿，也不能据此判断国家队当日买卖。",
+  "next_step": "次日 10:00 复核交易所正式份额后发布权威版本；本初值届时自动标记为已被替代",
+  "identity": "I0 当日买卖主体未确认",
+  "limitation": "初值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
+}
