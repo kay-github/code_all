@@ -166,11 +166,11 @@ $('verdictText').textContent=(H.peak_date?'可回溯窗口内的最高中位恢�
 $('kpis').innerHTML=[
  ['当前中位恢复度',signed(medRec,2),medRec>=0.8?'与季报仓位基本对应':'低于季报满配水平'],
  ['达标组数（≥0.8）',passRec===null?'—':pct1(passRec),'其中 '+(H.dist&&H.dist.latest?H.dist.latest.back80:0)+' 组'],
- ['负关联占比',(function(){const l=H.dist&&H.dist.latest;if(!l||!l.total)return '—';return pct1(l.neg/l.total);})(),'双龙上涨时净值反而跑输'],
+ ['恢复度为负占比',(function(){const l=H.dist&&H.dist.latest;if(!l||!l.total)return '—';return pct1(l.neg/l.total);})(),'核心对照中双龙涨时净值反而跑输'],
  ['同日净值覆盖',fmt(S.latest_nav_coverage*100,1)+'%',`${S.latest_nav_count}/${S.groups} 个观察组`]
 ].map(([k,v,n])=>`<div class="kpi"><small>${esc(k)}</small><b>${esc(v)}</b><small>${esc(n)}</small></div>`).join('');
-$('trendNote').textContent='核心对照只统计披露权重≥'+H.threshold+'% 的 '+H.core_n+' 个观察组，避免小权重做分母放大噪声；其中当日可算出恢复度的 '+(H.dist&&H.dist.latest?H.dist.latest.total:H.core_n)+' 组参与下面的分布与中位。恢复度按同一套20日模型回溯，越靠左样本越少。';
-function card(title,e,cls){const r=e?e.rec:null;return `<div><small>${esc(title)}</small><b class="${cls||''}">${signed(r,2)}</b><small>达标 ${e?pct1(e.pas):'—'} · 负关联 ${e?pct1(e.neg):'—'}</small></div>`;}
+$('trendNote').textContent='核心对照只统计披露权重≥'+H.threshold+'% 的 '+H.core_n+' 个观察组，避免小权重做分母放大噪声；其中当日可算出恢复度的 '+(H.dist&&H.dist.latest?H.dist.latest.total:H.core_n)+' 组参与下面的分布与中位。卡片里的「β为负」统计全部可算观察组的 β<0 占比，与首屏按核心组恢复度统计的负值占比口径不同。恢复度按同一套20日模型回溯，越靠左样本越少。';
+function card(title,e,cls){const r=e?e.rec:null;return `<div><small>${esc(title)}</small><b class="${cls||''}">${signed(r,2)}</b><small>恢复度达标 ${e?pct1(e.pas):'—'} · β为负 ${e?pct1(e.neg):'—'}</small></div>`;}
 const t=H.timeline||[];
 $('cmp').innerHTML=t.length?card('巅峰 · '+H.peak_date,peakH,'up')+card('11-11 双龙暴涨日',t.find(e=>e.d==='2026-11-11')||null)+card('当前 · '+D.end,H.latest,medRec<0?'dn':''):'<div><small>无历史样本</small><b>—</b></div>';
 (function(){const el=$('chart');if(!t.length){el.innerHTML='';return;}
