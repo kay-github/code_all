@@ -159,6 +159,7 @@ def build(manifest_path=None,verify_raw=True):
     rows.sort(key=lambda r:(-(r['signal']['level'] if r['signal']['level'] is not None else -1),
         -(min(x.get('value',-1e9) for x in r['change'].values())),r['code']))
     configuration=dict(rules=rules,securities=securities,verified_reports=verified)
+    history=history_block(raw,factors,calendar,rules,rows,m['run_id'])
     code_hash=code_fingerprint()
     build_id=now().replace(':','').replace('-','').replace('+','_')+'_'+digest([m,configuration,code_hash])[:10]
     folder=DATA/'builds'/build_id;folder.mkdir(parents=True,exist_ok=False)
@@ -174,7 +175,7 @@ def build(manifest_path=None,verify_raw=True):
     peer_coverage={g:dict(expected=len(securities[g]),complete=sum(all(d in price_series.get(c,{}) for d in calendar[-80:]) for c in securities[g])) for g in ['peer_broad','peer_core']}
     a=dict(version=VERSION,build_id=build_id,end=end,report_period=period,built_at=now(),collected_at=cutoff,
         raw_run=m['run_id'],raw_manifest=str(raw_path.resolve()),rules=rules,calendar=calendar,market=factors,
-        summary=summary,rows=rows,stop_signal=False,
+        history=history,summary=summary,rows=rows,stop_signal=False,
         quality=dict(disclosure_issues=disclosure_issues,nav_issues=nav_issues,factor_issues=factor_issues,
             report_pages_complete=all(r['complete'] for r in raw['reports']),catalogue_count=m['catalogue_count'],peer_coverage=peer_coverage,
             nav_fetch_errors={c:v.get('error') for c,v in raw['nav'].items() if v.get('error')},
@@ -209,6 +210,66 @@ def build(manifest_path=None,verify_raw=True):
         for r in rows:f.write(json.dumps(dict(date=end,build_id=build_id,raw_run=m['run_id'],group_id=r['group_id'],nav_date=r['nav_date'],signal=r['signal'],delta=r['change']['broad'].get('value'),rule_version=rules['version']),ensure_ascii=False)+'\n')
     print('构建完成',build_id,'正式净值覆盖',coverage,'发布检查',gate['passed'],flush=True)
     return a,folder
+
+
+def history_block(raw,factors,calendar,rules,rows,run_id,lookback=95,step=5,extra=('2026-11-11',),threshold=3.0):
+    """Backward-looking cross-sections with the same engine; cached per raw run."""
+    from v3_engine import nav_returns as _nr,window_fit as _wf
+    cache=DATA/'history'/(run_id+'.json');data=read(cache)
+    if not data:
+        idx=max(0,len(calendar)-lookback);pts=calendar[idx::step]
+        for d in extra:
+            if d in calendar:pts.append(d)
+        pts=sorted(set(pts))
+        if pts and pts[-1]!=calendar[-1]:pts.append(calendar[-1])
+        series={};done=0
+        for r in rows:
+            code=r['code'];nr=(raw['nav'].get(code) or {}).get('rows') or [];s={}
+            if nr:
+                try:ret,_=_nr(nr,calendar)
+                except Exception:ret={}
+                for p in pts:
+                    f=_wf(ret,factors,calendar,p,20,'broad',rules)
+                    s[p]=round(f['value'],6) if f.get('usable') else None
+            series[code]=s;done+=1
+            if done%400==0:print('历史回溯',done,'/',len(rows),flush=True)
+        data=dict(points=pts,series=series);write(cache,data)
+    pts=data['points'];series=data['series']
+    weight={}
+    for r in rows:
+        f=r['facts'].get('current') or r['facts'].get('last_known')
+        weight[r['code']]=f.get('known_sum_pct') if f else None
+    core=[r for r in rows if (weight.get(r['code']) or 0)>=threshold]
+    timeline=[]
+    for p in pts:
+        v=[series[c][p] for c in series if series[c].get(p) is not None]
+        cv=[series[r['code']][p] for r in core if series.get(r['code'],{}).get(p) is not None]
+        if len(v)<100 or not cv:continue
+        recs=[series[r['code']][p]/(weight[r['code']]/100) for r in core if series.get(r['code'],{}).get(p) is not None]
+        sv=sorted(v);timeline.append(dict(d=p,n=len(v),bn=len(cv),b=round(__import__('statistics').median(v),6),
+            bcore=round(__import__('statistics').median(cv),6),neg=round(sum(1 for x in v if x<0)/len(v),4),
+            rec=round(__import__('statistics').median(recs),4),pas=round(sum(1 for x in recs if x>=0.8)/len(recs),4)))
+    if not timeline:raise RuntimeError('历史回溯无可用时点')
+    peak=max(timeline,key=lambda e:e['b']);latest=timeline[-1]
+    def dist(p):
+        b=[0,0,0,0]
+        for r in core:
+            x=series.get(r['code'],{}).get(p);w=weight.get(r['code'])
+            if x is None or not w:continue
+            v=x/(w/100)
+            b[0 if v>=0.8 else 1 if v>=0.3 else 2 if v>=0 else 3]+=1
+        return dict(back80=b[0],part=b[1],weak=b[2],neg=b[3],total=sum(b))
+    for r in rows:
+        s=series.get(r['code'],{});av={p:v for p,v in s.items() if v is not None}
+        if av:
+            pk=max(av,key=av.get);w=weight.get(r['code'])
+            r['hist']=dict(peak=av[pk],peak_date=pk,rec=round(av[pk]/(w/100),4) if w else None,
+                rec_now=round(av[latest['d']]/(w/100),4) if w and av.get(latest['d']) is not None else None,
+                weight=w)
+        else:r['hist']=dict(peak=None,peak_date=None,rec=None,rec_now=None,weight=weight.get(r['code']))
+    return dict(points=pts,timeline=timeline,peak_date=peak['d'],latest=latest,
+        dist=dict(peak=dist(peak['d']),latest=dist(latest['d']),peak_date=peak['d'],latest_date=latest['d']),
+        core_n=len(core),threshold=threshold)
 
 
 def latest():

@@ -9,7 +9,7 @@ function render(dataset=data){
  const ids=[...page.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(new Set(ids).size,ids.length,'unique DOM identifiers');
  const nodes=Object.fromEntries(ids.map(id=>[id,{innerHTML:'',textContent:'',value:'',disabled:false,handlers:{},addEventListener(k,f){this.handlers[k]=f;},showModal(){this.open=true;},close(){this.open=false;}}]));
- nodes.dataset.textContent=JSON.stringify(dataset);nodes.state.value='all';nodes.origin.value='all';nodes.kind.value='all';
+ nodes.dataset.textContent=JSON.stringify(dataset);nodes.state.value='all';nodes.origin.value='all';nodes.kind.value='all';nodes.pool.value='all';
  const document={getElementById:id=>nodes[id],documentElement:{dataset:{}},querySelectorAll:()=>[]};
  const context={document,window:{},Blob,URL,setTimeout};vm.runInNewContext(script,context);
  return {nodes,document,context};
@@ -34,6 +34,18 @@ test('search, pagination, filters, detail and theme run with real dataset',()=>{
  nodes.state.value='all';nodes.kind.value='enhanced_index';nodes.kind.handlers.change();
  assert.equal((nodes.mobileRows.innerHTML.match(/class="item"/g)||[]).length,Math.min(40,data.rows.filter(r=>r.category==='enhanced_index').length));
  nodes.theme.onclick();assert.equal(document.documentElement.dataset.siteTheme,'dark');nodes.theme.onclick();assert.equal(document.documentElement.dataset.siteTheme,'light');
+});
+test('default sample is the weight-gated core pool, small weights never print a ratio',()=>{
+ const {nodes}=render();
+ const th=data.history.threshold;
+ nodes.pool.value='core';nodes.pool.handlers.change();
+ const core=data.rows.filter(r=>r.hist&&r.hist.weight!==null&&r.hist.weight!==undefined&&r.hist.weight>=th);
+ assert.ok(core.length>0,'core pool is not empty');
+ assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,Math.min(40,core.length));
+ assert.ok(!nodes.fundRows.innerHTML.includes('不换算'),'核心样本不应出现未换算行');
+ nodes.pool.value='small';nodes.pool.handlers.change();
+ assert.ok(nodes.fundRows.innerHTML.includes('不换算'),'小权重行必须显式标注不换算');
+ assert.ok(!/\+\d{4,}\.\d{2}/.test(nodes.fundRows.innerHTML),'小权重行不得输出四位数以上的恢复度');
 });
 test('empty dataset and unknown NAV remain explicit',()=>{
  const d=structuredClone(data);d.rows=[];d.summary.groups=0;d.summary.latest_nav_count=0;d.summary.latest_nav_coverage=0;
