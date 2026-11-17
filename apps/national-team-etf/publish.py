@@ -83,7 +83,7 @@ def stage():
                   note='尚无已同步的盘后初值；不代表没有数据更新，也不代表数据已齐全')
     write_json(DEST/'data/intraday/postclose.json', pc)
     files.append('tools/national-team-etf/data/intraday/postclose.json')
-    for name in MODULES+['README.md','README_v2.md','卖出侧观测手册.md']:
+    for name in MODULES+['README.md','README_v2.md','卖出侧观测手册.md','AGENTS.md']:
         files.append(copy(ROOT/name,SOURCE/name))
     for sub in ['config','tests']:
         for file in (ROOT/sub).rglob('*'):
