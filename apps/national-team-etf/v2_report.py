@@ -398,11 +398,16 @@ window.StageCards=(function(){
     const ahead=pdate&&st.verified&&pdate>st.verified;
     let active='verified';
     if(ahead)active=inSession?'intraday':'postclose';
+    // 盘中卡的日期与文案必须同源：都用 idate。否则盘后初值已经落地时，
+    // 盘中卡还写着「等盘后初值」，同一屏出现互相打架的两句话。
+    const idate=st.intraday||(ahead?pdate:st.verified);
     el.innerHTML=[
       card({name:'盘中',href:'#intraday',badge:'线索级',tone:'tone-live',
-        date:st.intraday||(ahead?pdate:st.verified),
+        date:idate,
         desc:'实时快照，无可靠逐笔方向，不给份额',
-        meta:ahead?(inSession?'每 60 秒刷新，尚未收盘':'今日已收盘，等盘后初值'):'今日已定稿，见次日版本',
+        meta:!ahead?'今日已定稿，见次日版本'
+          :inSession?'每 60 秒刷新，尚未收盘'
+          :(idate===pdate?'已收盘，当日结果见盘后初值':'今日已收盘，等盘后初值'),
         active:active==='intraday'}),
       card({name:'盘后',href:'#postclose',badge:pc?(pc.pending_review?'初值级':'已被替代'):'待生成',tone:'tone-provisional',
         date:pdate||'—',

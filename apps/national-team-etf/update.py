@@ -25,6 +25,16 @@ def publish_provisional(a,path,deploy):
     summary=build_stage(a,series)
     POSTCLOSE.parent.mkdir(parents=True,exist_ok=True)
     write_json(POSTCLOSE,summary)
+    # 兼容旧的盘后初值路径：morning_review 靠它判断「是否存在待复核交易日」。
+    # 不写这一份，次晨复核会以为业务日没变而静默跳过，今天的初值就永远进不了正式区。
+    legacy=dict(generated_at=summary['generated_at'],business_date=summary['business_date'],
+        disclosure_stage=summary['official']['disclosure_stage'],pending_review=True,
+        coverage=summary['official']['coverage'],expected=summary['official']['expected'],
+        complete=summary['official']['complete'],
+        complete_total_policy='覆盖不足时不展示核心15只完整合计，缺口不补0',
+        note='深交所T日晚间初值仅供参考，以T+1早间更新为准；本文件不覆盖生产页、不作为正式发布依据',
+        next_step=summary['next_step'])
+    write_json(DATA.parent/'intraday'/'postclose.json',legacy)
     v=summary['vendor']
     print('盘后初值已生成：业务日 %s · 官方披露 %d/%d · 反推净申赎 %s 亿 · 疑似抹平 %d/%d 只'%(
         summary['business_date'],summary['official']['coverage'],summary['official']['expected'],
@@ -86,10 +96,14 @@ def main():
         run('validate_v2.py')
         run('publish.py',*(['--deploy'] if args.deploy else []))
         if args.phase=='final' and args.deploy:
-            fixed=supersede_previous(a)
-            if fixed:
-                import publish as P
-                P.deploy_postclose(fixed)
+            # 盘后初值的替代标记是附属动作：推送失败只告警，不回滚已完成的正式发布。
+            try:
+                fixed=supersede_previous(a)
+                if fixed:
+                    import publish as P
+                    P.deploy_postclose(fixed)
+            except Exception as exc:
+                print('盘后初值替代标记未发布（不影响正式版）：%r'%exc,flush=True)
     finally:
         lock.unlink(missing_ok=True)
 
