@@ -17,9 +17,20 @@
   "baseline": {
     "min_days": 5,
     "max_days": 20,
-    "source": "本地逐日分钟画像归档（qt 快照区间成交额）；外部分时接口仅作可选补充，实测不稳定",
+    "profile_max_gap_minutes": 1.5,
+    "source": "本地逐日分钟画像归档（qt 快照区间成交额）；仅在相邻快照间隔≤1.5交易分钟时归档，避免把低频单帧塞进分钟桶",
     "cold_start_label": "冷启动：历史同一时段基线不足，仅输出线索，不升级",
     "note": "按分钟时段分位构建；可用交易日不足 min_days 时明确标记，不伪造历史、不联网补造"
+  },
+  "baseline15": {
+    "enabled": true,
+    "min_days": 5,
+    "max_days": 20,
+    "segment_minutes": 15,
+    "window_tolerance_minutes": 2.0,
+    "crosscheck_max_diff_pct": 0.2,
+    "source": "新浪 CN_MarketDataService getKLineData scale=5（单源）；分段汇总须与东财日线成交额勾稽",
+    "note": "只取已收齐的15分钟整段；同一分段序列只认一个来源，不与分时快照或另一来源拼接；勾稽不通过或样本不足时标冷启动、不升级"
   },
   "thresholds": {
     "activity_ratio_L1": 1.8,

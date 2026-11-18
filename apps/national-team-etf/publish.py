@@ -15,6 +15,7 @@ REPO=Path(os.environ.get('GJD_SITE_REPO',ROOT.parents[1] if (ROOT.parents[1]/'.g
 DEST=REPO/'tools/national-team-etf'
 SOURCE=REPO/'apps/national-team-etf'
 MODULES=['cfg.py','v2_common.py','v2_sources.py','v2_engine.py','v2_exchange.py','v2_tracking.py','v2_inventory.py',
+    'v2_intraday_baseline.py',
     'v2_stages.py','v2_release.py','v2_report.py','collect_data.py','pipeline.py','validate_v2.py','publish.py',
     'update.py','serve_preview.py','compat_v2.py','monitor.py','intraday.py',
     'postclose.py','morning_review.py','weekly_report.py','scheduler.py']
@@ -50,9 +51,9 @@ def stage():
     if digest(read_json(ROOT/'config/inventory.json'))!=digest(read_json(path/'configuration.json').get('inventory')):
         raise RuntimeError('存量基准已修改，请重新构建并验收')
     files=[]
-    for src,dst in [('report.html','index.html'),('cycle.html','cycle.html')]:
+    for src,dst in [('report.html','index.html'),('cycle.html','cycle.html'),('segments.html','segments.html')]:
         page=(path/src).read_text(encoding='utf8')
-        if f'content="{a["build_id"]}"' not in page:raise RuntimeError('页面构建号不同')
+        if f'content="{a["build_id"]}"' not in page:raise RuntimeError('页面构建号不同: '+src)
         files.append(copy(path/src,DEST/dst))
     files.append(copy(path/'official_flow.csv',DEST/'data/official_flow.csv'))
     files.append(copy(path/'inventory.csv',DEST/'data/inventory.csv'))
@@ -71,6 +72,23 @@ def stage():
         note='盘中采集器尚未产出快照；不代表没有托底，也不代表行情正常')
     write_json(DEST/'data/intraday/latest.json',live)
     files.append('tools/national-team-etf/data/intraday/latest.json')
+    # 15分钟基线：只同步同段中位数与上日值，供分段活跃度子页计算倍数。
+    # 不公开逐日原始5分钟K、本地路径与错误详情；缺基线时下发显式占位，不伪造。
+    bl=read_json(DATA.parent/'intraday'/'baseline15.json') or {}
+    per_code={}
+    for code,item in (bl.get('per_code') or {}).items():
+        slots={k:{kk:v.get(kk) for kk in ('median','n','prev','prev_date')}
+               for k,v in (item.get('slots') or {}).items()}
+        per_code[code]=dict(days=item.get('days'),first=item.get('first'),last=item.get('last'),slots=slots)
+    baseline=dict(as_of_date=bl.get('as_of_date'),complete=bool(bl.get('complete')),
+                  complete_days=bl.get('complete_days') or [],generated_at=bl.get('generated_at'),
+                  source=bl.get('source'),coverage=bl.get('coverage') or {},
+                  requested=bl.get('requested'),received=bl.get('received'),
+                  per_code=per_code,note=bl.get('note'))
+    if not baseline['as_of_date']:
+        baseline.update(complete=False,note='尚无已同步的15分钟基线；不代表没有交易，缺口不补0')
+    write_json(DEST/'data/intraday/baseline15.json',baseline)
+    files.append('tools/national-team-etf/data/intraday/baseline15.json')
     # 盘后初值摘要：只同步结论字段，不公开逐只原始响应与本地路径。
     # 低频随正式发布；当日 16:30/19:00/21:30 的本地初值仍须等次晨复核，绝不覆盖生产页。
     pcf = read_json(DATA.parent/'intraday'/'postclose.json') or {}

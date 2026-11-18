@@ -14,7 +14,7 @@
 
 - 代码源（改这里）：`D:/work_code2/gjd_research`
 - 站点仓库（发布目标，git 在 `D:/code_all`）：页面 `D:/code_all/tools/national-team-etf/`，源码快照 `D:/code_all/apps/national-team-etf/`
-- 线上：<https://1.688680.xyz/gjd/> 与 <https://1.688680.xyz/gjd/cycle>
+- 线上：<https://1.688680.xyz/gjd/>、<https://1.688680.xyz/gjd/cycle>、分段子页 <https://1.688680.xyz/tools/national-team-etf/segments.html>
 - 发布方式是 **GitHub main → Vercel CI 自动部署**：只改工作区文件不提交，下一次 CI 会把页面静默回滚成旧版。
 
 ---
@@ -39,6 +39,7 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | `data/postclose/latest.json` | **盘后初值**（初值级，不可定稿） | `update.py --phase close --publish-postclose` |
 | `data/intraday/postclose.json` | 旧路径兼容副本，**`morning_review` 靠它判断"有待复核交易日"** | 同上，必须同时写两份 |
 | `data/intraday/latest.json` | 盘中留档（线索级，不产生份额） | `intraday.py --platform-tick` |
+| `data/intraday/baseline15.json` | 15分钟分段成交额基线（20个交易日同段中位数，`complete=false` 时不得升级） | `v2_intraday_baseline.py --build`（`postclose.py` 结束时自动刷新） |
 
 正式区的 `business_date` 早于当天是常态，不是漏更新——盘后与次日本来就是两道工序，中间有时差。
 只有 `pending_review=true` 的盘后初值才表示「今天有东西还没定稿」。
@@ -96,12 +97,13 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | `v2_inventory.py` | 10 份存量刻度 |
 | `v2_stages.py` | 盘后初值摘要（抹平双口径、置信度文案） |
 | `v2_release.py` | 发布闸门 `assess()`，22 项硬条件 |
-| `v2_report.py` | 生成 `report.html` / `cycle.html`（含三阶段版本条与全部内联 CSS/JS，70KB） |
+| `v2_report.py` | 生成 `report.html` / `cycle.html` / `segments.html`（含三阶段版本条与全部内联 CSS/JS；分段子页浏览器端读同源新浪 5 分钟 K） |
 | `validate_v2.py` | 独立验收（含 Node VM 精简 DOM 执行页面脚本） |
 | `publish.py` | 白名单提交 + push + `deploy_postclose()` 独立通道 |
 | `update.py` | 唯一手动总入口（`--phase close/final`） |
 | `morning_review.py` | 次晨 10:00 复核入口，判断「有无待复核交易日」 |
-| `intraday.py` | 盘中留档、事件、通知队列 |
+| `intraday.py` | 盘中留档、事件、通知队列、15分钟整段与交易分钟窗口 |
+| `v2_intraday_baseline.py` | 单源5分钟K → 15分钟同段中位数；与东财日线成交额勾稽 |
 | `postclose.py` | 只刷新官方份额，**不产出初值**（别单独当盘后任务用） |
 
 ### 薄封装（`analyze.py` `today.py` `netflow.py` 等 20 多个）

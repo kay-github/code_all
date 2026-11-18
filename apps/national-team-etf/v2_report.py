@@ -38,6 +38,21 @@ def render(a,folder):
     <section><h2>不再作为判据的旧推论</h2><ul><li>成本线以下不会卖。</li><li>上涨才派发、下跌赎回不是派发。</li><li>只盯一只ETF没有死角。</li><li>根据复权均价比推算一个系数，单边缩放历史份额。</li><li>规模变化或份额下降能够直接确认买卖主体。</li></ul></section>
     <a href="/gjd/">返回当日追踪</a></main></body></html>'''
     (folder/'cycle.html').write_text(cycle.replace('href="#','href="/gjd/#').replace('<title>国家队观察 · ETF通道追踪 ','<title>ETF通道历史复盘 ').replace('<button id="themeToggle" aria-label="切换深浅色">深浅色</button>','<button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button>'),encoding='utf-8')
+    segmeta=json.dumps(dict(build_id=a['build_id'],end=a['end'],
+        members=[dict(code=c,name=a['instruments'][c]['name'],family=a['instruments'][c]['family'])
+                 for c in a['pools']['core15']['members']]),
+        ensure_ascii=False,separators=(',',':')).replace('</','<\\/')
+    head=(page.split('<main>')[0]
+          .replace('<title>国家队观察 · ETF通道追踪 ','<title>分段活跃度 · ETF通道追踪 ')
+          .replace('href="#','href="/gjd/#')
+          .replace('<button id="themeToggle" aria-label="切换深浅色">深浅色</button>',
+                   '<button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button>')
+          .replace('</style></head>',SEGMENTS_CSS+'</style></head>'))
+    segments=(head+'<main>'+SEGMENTS_BODY.replace('__BUILD__',html.escape(a['build_id']))
+              .replace('__END__',html.escape(a['end']))+'</main>'
+              +'<script type="application/json" id="segmeta">'+segmeta+'</script>'
+              +'<script>'+SEGMENTS_JS+'</script></body></html>')
+    (folder/'segments.html').write_text(segments,encoding='utf-8')
 
 INVENTORY_BLOCK=r'''<section id="inventory" aria-labelledby="inventoryTitle">
 <div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span><span class="note" id="inventoryDate"></span></div>
@@ -296,7 +311,7 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   .stage-card{padding:var(--s3)}}
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="#inventory">10份存量对照</a><a href="#intraday">盘中观察</a><a href="#postclose">盘后初值</a><a href="#official">正式份额与预警</a><a href="#channels">历史反推</a><a href="#discover">异常线索</a><a href="#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="#inventory">10份存量对照</a><a href="#intraday">盘中观察</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><a href="#postclose">盘后初值</a><a href="#official">正式份额与预警</a><a href="#channels">历史反推</a><a href="#discover">异常线索</a><a href="#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
 <main><div class="eyebrow">公开数据观察 · __END__ 收盘</div>
 <h1>先看资金变化，再核验是谁</h1><p class="lead">核心15只优先核对交易所正式份额；历史反推和新发现线索继续保留。份额减少可以确认，国家队身份需要独立证据。</p>
 <section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">三个版本，三种可信度</h2>
@@ -556,7 +571,7 @@ window.StageCards=(function(){
       return `<tr><td class="name"><b>${esc(r.name)}</b><small>${r.code} · ${esc(r.family)}</small></td>`+
         `<td>${r.price===null?'—':r.price.toFixed(3)}</td><td>${num(r.pct,2)}</td>`+
         `<td>${num(r.relative,2)}</td><td>${num(r.premium,2)}</td>`+
-        `<td>—<small>需本地基线</small></td><td>${esc(ch.join('、')||'无')}</td><td>${esc(ce||'—')}</td></tr>`;
+        `<td>—<small><a href="/tools/national-team-etf/segments.html">分段视图</a></small></td><td>${esc(ch.join('、')||'无')}</td><td>${esc(ce||'—')}</td></tr>`;
     }).join('')||'<tr><td colspan="8">实时行情不可用；保留最近一次采集器快照，不解释为「没有托底」。</td></tr>';
     const alerts=(S&&S.alerts)||[];
     $('intradayEvents').textContent=S
@@ -609,3 +624,246 @@ window.StageCards=(function(){
   }
 })();
 </script></body></html>'''
+
+SEGMENTS_CSS=r'''<style>
+.seg-legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:8px 0 0}
+.seg-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent);vertical-align:-1px;margin-right:5px}
+.seg-ref{stroke:var(--faint);stroke-dasharray:5 4;stroke-width:1}
+.seg-lunch{stroke:var(--line-strong);stroke-dasharray:3 4}
+.seg-axis{fill:var(--muted);font-size:11px}
+.seg-bar{fill:var(--accent)}
+.seg-bar.weak{fill:var(--line-strong)}
+</style>'''
+
+SEGMENTS_BODY=r'''<main><div class="eyebrow">盘中线索的补充视角 · 与当日追踪共用构建 __BUILD__</div>
+<h1>15 分钟分段活跃度</h1>
+<p class="lead">把最近一个交易日的成交额拆成 16 个已收齐的 15 分钟整段，与近 20 个交易日同段中位数对比。它回答「这一段有多活跃」，不回答「谁在买」。</p>
+<div class="notice">成交活跃度 ≠ 份额变化 ≠ 国家队买入。二级市场换手可能不改变总份额；买卖身份默认 I0，未确认。分段缺失不补 0。</div>
+<div class="statusline" id="segStatus"><span class="pill">加载中</span></div>
+<div class="tools"><button id="segRefresh" type="button">重新抓取</button><span class="note" id="segUpdated"></span><a href="/gjd/#intraday">返回当日追踪</a></div>
+<div class="kpis" id="segKpis"></div>
+<section><h2>分段成交额 · 与同段中位数对比</h2>
+<p class="note" id="segScope"></p>
+<div id="segChart" aria-live="polite"></div>
+<div class="seg-legend"><span><span class="seg-swatch"></span>当日已收整段成交额 ÷ 同段中位</span><span>虚线 = 1.0 倍（与中位持平）</span><span>上午 8 段 · 午后 8 段</span></div>
+<p class="lead" id="segTotals"></p>
+<p class="note">柱高为倍数，悬浮可看金额；金额均为亿元。缺段、缺基线或当日 5 分钟 K 未取到时留空，不补 0。</p></section>
+<section><h2>分 ETF 最新已收段</h2>
+<p class="note">只列已收齐的整段；「覆盖段数」是该 ETF 当日可比的整段数。按最新段倍数降序，— 表示缺数据。</p>
+<div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>最新已收段</th><th>本段 / 亿元</th><th>同段中位 / 亿元</th><th>倍数</th><th>覆盖段数</th><th>说明</th></tr></thead><tbody id="segRows"><tr><td colspan="7">加载中</td></tr></tbody></table></div></section>
+<section><h2>口径与边界</h2>
+<p>数据源：新浪 5 分钟 K（单源），与基线同一序列；不与其他供应商或分时快照拼接。基线取近 20 个交易日的完整日、同段中位数；只有 16 段齐全的交易日进入样本，样本不足 5 日视为冷启动，不做升级判断。</p>
+<p>15:00 段包含收盘集合竞价（14:57–15:00），大额收盘成交会把该段倍数显著抬高；它不是连续竞价时段的可比活跃度，也不能据此判断买卖主体。</p>
+<p>页面在浏览器端额外抓取当日 5 分钟 K。若当日日期未晚于基线日，则退回展示基线样本最后一日，并明确标注「样本内回看」，不用于前视判断。基线由本机盘后任务刷新，随下一次正式发布同步到线上。</p>
+<p>本页不输出国家队概率、盘中买入金额或份额结论；份额与净申赎请看 <a href="/gjd/#official">正式份额</a> 与 <a href="/gjd/#postclose">盘后初值</a>。</p>
+<p class="note">构建 <span class="mono">__BUILD__</span> · 业务日 __END__ · 页面脚本直接读取供应商 JSONP，不产生 Git 提交</p></section>
+<a href="/gjd/">返回当日追踪</a></main>'''
+
+SEGMENTS_JS=r'''(function(){
+  const metaEl=document.getElementById('segmeta');
+  if(!metaEl)return;
+  const META=JSON.parse(metaEl.textContent);
+  const $=id=>document.getElementById(id);
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pill=(text,warn=false)=>`<span class="pill${warn?' risk':''}">${esc(text)}</span>`;
+  const fix2=x=>x===null||x===undefined?'—':Number(x).toFixed(2);
+  const yi=x=>x===null||x===undefined?'—':Number(x).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  const SLOTS=(()=>{const out=[];[[570,690],[780,900]].forEach(([a,b])=>{for(let m=a+15;m<=b;m+=15)out.push({slot:hm(m),morning:m<=690,ends:[m-10,m-5,m].map(hm)});});return out;})();
+  const symOf=c=>(/^[56789]/.test(c)?'sh':'sz')+c;
+  const bjNow=()=>{const d=new Date();return new Date(d.getTime()+(d.getTimezoneOffset()+480)*60000);};
+  const ID='I0 当日买卖主体未确认';
+  let B=null;const bars={};const st={mode:'sample',day:'',errors:[],at:null};
+
+  function parseBars(rows){
+    const now=bjNow(),out=[];
+    (rows||[]).forEach(r=>{
+      const m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec((r&&r.day)||'');
+      const a=Number(r&&r.amount);
+      if(!m||!isFinite(a)||a<0)return;
+      const t=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],0,0);
+      if(t>new Date(now.getTime()-20000))return;
+      out.push({day:m[1]+'-'+m[2]+'-'+m[3],hm:m[4]+':'+m[5],amount:a/1e8});
+    });
+    return out;
+  }
+  function codeSeg(c){
+    const rows=bars[c];if(!rows||!rows.length)return null;
+    let day='';rows.forEach(r=>{if(r.day>day)day=r.day;});
+    const map={};rows.forEach(r=>{if(r.day===day)map[r.hm]=r.amount;});
+    const seg={};
+    SLOTS.forEach(s=>{let ok=true,sum=0;s.ends.forEach(h=>{const v=map[h];if(typeof v!=='number')ok=false;else sum+=v;});if(ok)seg[s.slot]=sum;});
+    return {day,seg};
+  }
+  function jsonpOne(code){
+    return new Promise(resolve=>{
+      const name='gjdseg_'+code+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+      const s=document.createElement('script');
+      s.charset='utf-8';
+      s.src='https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20'+name+'=/CN_MarketDataService.getKLineData?symbol='+symOf(code)+'&scale=5&ma=no&datalen=48&_='+Date.now();
+      let done=false;
+      const finish=ok=>{
+        if(done)return;done=true;
+        try{s.remove();}catch(e){}
+        const v=window[name];
+        try{delete window[name];}catch(e){}
+        resolve(ok&&Array.isArray(v)?v:null);
+      };
+      s.onload=()=>finish(true);s.onerror=()=>finish(false);
+      if(!document.head||typeof document.head.appendChild!=='function'){finish(false);return;}
+      document.head.appendChild(s);
+      setTimeout(()=>finish(false),9000);
+    });
+  }
+  function sumOf(list){
+    const v=list.reduce((o,r)=>{if(r.ratio===null||r.ratio===undefined)return o;o.a+=r.amount;o.m+=r.median;o.n++;return o;},{a:0,m:0,n:0});
+    return {amount:v.n?v.a:null,median:v.n?v.m:null,n:v.n,ratio:(v.n&&v.m>0)?v.a/v.m:null};
+  }
+  function computeMode(){
+    let latest='';
+    META.members.forEach(m=>{const x=codeSeg(m.code);if(x&&x.day>latest)latest=x.day;});
+    const asOf=(B&&B.as_of_date)||'';
+    st.mode=(latest&&asOf&&latest>asOf)?'live':'sample';
+    st.day=st.mode==='live'?latest:(asOf||latest||'');
+  }
+  function summarize(){
+    const rows=SLOTS.map(s=>({slot:s.slot,morning:s.morning,amount:null,median:null,n:0,ratio:null}));
+    let used=0;
+    META.members.forEach(m=>{
+      const b=((B&&B.per_code)||{})[m.code];if(!b)return;
+      const live=st.mode==='live'?codeSeg(m.code):null;
+      let any=false;
+      SLOTS.forEach((s,i)=>{
+        const slotStats=(b.slots||{})[s.slot];
+        if(!slotStats||slotStats.median===null||slotStats.median===undefined||!(slotStats.median>0))return;
+        let a=null;
+        if(st.mode==='live')a=(live&&live.day===st.day&&live.seg[s.slot]!==undefined)?live.seg[s.slot]:null;
+        else a=(slotStats.prev===null||slotStats.prev===undefined)?null:slotStats.prev;
+        if(a===null)return;
+        rows[i].amount=(rows[i].amount??0)+a;
+        rows[i].median=(rows[i].median??0)+slotStats.median;
+        rows[i].n++;any=true;
+      });
+      if(any)used++;
+    });
+    rows.forEach(r=>{if(r.n&&r.median>0)r.ratio=r.amount/r.median;});
+    return {rows,used};
+  }
+  function drawChart(rows){
+    const el=$('segChart');if(!el)return;
+    const W=Math.max(320,el.clientWidth||760),H=250,padL=46,padR=12,padT=20,padB=34;
+    const plotW=W-padL-padR,plotH=H-padT-padB,base=padT+plotH;
+    const values=rows.map(r=>r.ratio).filter(v=>v!==null&&v!==undefined);
+    const max=Math.max(1.2,...values)*1.08;
+    const bw=plotW/SLOTS.length;
+    let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="16个15分钟整段的成交额相对同段中位倍数">`;
+    svg+=`<line x1="${padL}" x2="${W-padR}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+    const ref=base-plotH/max;
+    svg+=`<line class="seg-ref" x1="${padL}" x2="${W-padR}" y1="${ref}" y2="${ref}"/>`;
+    svg+=`<text class="seg-axis" x="${padL-6}" y="${ref+4}" text-anchor="end">1.0×</text>`;
+    svg+=`<text class="seg-axis" x="${padL-6}" y="${padT+10}" text-anchor="end">${max.toFixed(1)}×</text>`;
+    rows.forEach((r,i)=>{
+      const x=padL+i*bw+bw*0.16;
+      if(r.ratio===null||r.ratio===undefined){svg+=`<text class="seg-axis" x="${x+bw*0.34}" y="${base-6}" text-anchor="middle">—</text>`;return;}
+      const h=Math.min(plotH,r.ratio/max*plotH);
+      svg+=`<rect class="${r.ratio<1?'seg-bar weak':'seg-bar'}" x="${x}" y="${base-h}" width="${bw*0.68}" height="${Math.max(1,h)}" rx="2"><title>${r.slot} 合计 ${yi(r.amount)} 亿 / 同段中位 ${yi(r.median)} 亿 = ${fix2(r.ratio)}× · 覆盖 ${r.n} 只</title></rect>`;
+      if(W>=680)svg+=`<text class="seg-axis" x="${x+bw*0.34}" y="${base+12}" text-anchor="middle">${fix2(r.ratio)}</text>`;
+    });
+    ['09:45','10:30','11:30','13:45','14:30','15:00'].forEach(lbl=>{
+      const idx=SLOTS.findIndex(s=>s.slot===lbl);if(idx<0)return;
+      svg+=`<text class="seg-axis" x="${padL+idx*bw+bw*0.34}" y="${H-4}" text-anchor="middle">${lbl}</text>`;
+    });
+    const mid=SLOTS.length/2;
+    svg+=`<line class="seg-lunch" x1="${padL+mid*bw}" x2="${padL+mid*bw}" y1="${padT}" y2="${base}"/>`;
+    svg+='</svg>';
+    el.innerHTML=svg;
+  }
+  function chrome(summary){
+    const b=B||{},live=st.mode==='live';
+    const covered=summary.rows.filter(r=>r.ratio!==null).length;
+    const am=sumOf(summary.rows.filter(r=>r.morning)),pm=sumOf(summary.rows.filter(r=>!r.morning)),day=sumOf(summary.rows);
+    const latest=[...summary.rows].reverse().find(r=>r.ratio!==null&&r.ratio!==undefined);
+    $('segStatus').innerHTML=[
+      pill('业务日 '+(st.day||b.as_of_date||'—')),
+      pill('基线 '+(b.as_of_date||'缺失')+' · 完整日 '+((b.complete_days||[]).length),!b.complete),
+      pill(live?'模式：最近交易日':'模式：样本内回看',!live),
+      pill('刷新 '+(st.at?st.at.toLocaleTimeString('zh-CN',{hour12:false}):'—')),
+      pill('未取到 '+(st.errors.length||0)+' 只',st.errors.length>0),
+      pill('身份：'+ID),
+      pill('来源：新浪5分钟K')
+    ].join('');
+    $('segKpis').innerHTML=[
+      ['最新已收段',latest?fix2(latest.ratio)+'×':'—',latest?latest.slot+' · 覆盖 '+latest.n+' 只':'尚无收齐的整段'],
+      ['上午累计',am.ratio===null?'—':fix2(am.ratio)+'×',am.ratio===null?'缺段留空':yi(am.amount)+' / 中位 '+yi(am.median)+' 亿'],
+      ['午后累计',pm.ratio===null?'—':fix2(pm.ratio)+'×',pm.ratio===null?'缺段留空':yi(pm.amount)+' / 中位 '+yi(pm.median)+' 亿'],
+      ['已收整段',covered+'/16','覆盖 ETF '+summary.used+' 只；缺段不补0']
+    ].map(([a,b,c])=>`<div class="kpi"><div class="label">${esc(a)}</div><div class="value" style="font-size:24px">${esc(b)}</div><div class="label">${esc(c)}</div></div>`).join('');
+    $('segScope').textContent=live
+      ? `最近交易日（${st.day}）为浏览器端抓取的新浪 5 分钟 K；基线截至 ${b.as_of_date}，早于该日，不构成前视比较。`
+      : `没有晚于基线日（${b.as_of_date||'—'}）的完整分段，改为展示基线样本最后一日 ${st.day||'—'} 的分段；该日包含在中位数样本内，只作回看，不用于前视判断。`;
+    if(!b.complete)$('segScope').textContent+=' 基线当前未通过完整性检查（勾稽或样本不足），以下倍数只作观察，不用于升级判断。';
+    if(st.errors.length)$('segScope').textContent+=' 未取到当日 5 分钟 K 的代码已从合计中剔除，不补 0：'+st.errors.join('、')+'。';
+    $('segTotals').textContent=day.ratio===null
+      ? '当前没有可比的完整段：基线或当日 5 分钟 K 不足，缺口不补 0。'
+      : `已收 ${day.n} 个整段合计 ${yi(day.amount)} 亿，同段中位合计 ${yi(day.median)} 亿，整体 ${fix2(day.ratio)}×；上午 ${am.ratio===null?'—':fix2(am.ratio)+'×'}，午后 ${pm.ratio===null?'—':fix2(pm.ratio)+'×'}。倍数只表示成交活跃度，不是净申购，也不是国家队买入金额。`;
+    $('segUpdated').textContent=st.at?('本次抓取 '+st.at.toLocaleTimeString('zh-CN',{hour12:false})+' · 盘中每 5 分钟自动刷新'):'';
+    const list=META.members.map(m=>{
+      const b2=((B&&B.per_code)||{})[m.code];
+      const liveSeg=st.mode==='live'?codeSeg(m.code):null;
+      let last=null,count=0;
+      SLOTS.forEach(s=>{
+        const slotStats=b2&&b2.slots?b2.slots[s.slot]:null;
+        if(!slotStats||!(slotStats.median>0))return;
+        let a=null;
+        if(st.mode==='live')a=(liveSeg&&liveSeg.day===st.day&&liveSeg.seg[s.slot]!==undefined)?liveSeg.seg[s.slot]:null;
+        else a=(slotStats.prev===null||slotStats.prev===undefined)?null:slotStats.prev;
+        if(a===null)return;
+        count++;last={slot:s.slot,amount:a,median:slotStats.median,ratio:a/slotStats.median};
+      });
+      const notes=[];
+      if(!b2)notes.push('无基线');
+      if(st.mode==='live'&&(!liveSeg||liveSeg.day!==st.day))notes.push('当日5分钟K缺失');
+      else if(st.mode==='live'&&Object.keys(liveSeg.seg).length<SLOTS.length)notes.push('部分整段未收齐，不补0');
+      return {m,last,count,notes};
+    });
+    list.sort((x,y)=>(y.last?y.last.ratio:-1)-(x.last?x.last.ratio:-1));
+    $('segRows').innerHTML=list.map(x=>`<tr><td class="name"><b>${esc(x.m.name)}</b><small>${esc(x.m.code)} · ${esc(x.m.family)}</small></td>`+
+      `<td>${x.last?x.last.slot:'—'}</td><td>${x.last?yi(x.last.amount):'—'}</td><td>${x.last?yi(x.last.median):'—'}</td>`+
+      `<td>${x.last?fix2(x.last.ratio)+'×':'—'}</td><td>${x.count}/16</td><td>${esc(x.notes.join('；')||'—')}</td></tr>`).join('')
+      ||'<tr><td colspan="7">暂无可用分段</td></tr>';
+    drawChart(summary.rows);
+  }
+  function renderMissing(){
+    $('segStatus').innerHTML=[pill('基线缺失',true),pill('身份：'+ID),pill('来源：新浪5分钟K')].join('');
+    $('segKpis').innerHTML='';
+    $('segScope').textContent='尚未同步 15 分钟基线（data/intraday/baseline15.json）。基线由本机盘后任务生成，随下一次正式发布同步；缺口不补 0，也不代表没有交易。';
+    $('segTotals').textContent='';
+    $('segRows').innerHTML='<tr><td colspan="7">暂无可用基线，无法计算同段倍数</td></tr>';
+    $('segChart').innerHTML='';
+    $('segUpdated').textContent='';
+  }
+  function render(){computeMode();chrome(summarize());}
+  function load(){
+    st.at=new Date();st.errors=[];
+    const p=(typeof fetch==='function')
+      ?fetch('/tools/national-team-etf/data/intraday/baseline15.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+      :Promise.resolve(null);
+    p.then(b=>{
+      B=(b&&b.per_code&&Object.keys(b.per_code).length)?b:null;
+      if(!B){renderMissing();return;}
+      if(typeof document.createElement!=='function'||!document.head){chrome(summarize());return;}
+      st.at=new Date();
+      const codes=META.members.map(m=>m.code);
+      Promise.all(codes.map(jsonpOne)).then(list=>{
+        codes.forEach((c,i)=>{if(list[i])bars[c]=parseBars(list[i]);else st.errors.push(c);});
+        render();
+      });
+    });
+  }
+  if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>{if(B)drawChart(summarize().rows);});
+  const btn=$('segRefresh');if(btn&&btn.addEventListener)btn.addEventListener('click',load);
+  const t=bjNow(),mins=t.getHours()*60+t.getMinutes(),wd=t.getDay();
+  if(typeof setInterval==='function'&&wd>=1&&wd<=5&&mins>=565&&mins<=910)setInterval(load,300000);
+  load();
+})();'''
+

@@ -30,6 +30,7 @@ class IntradayTest(unittest.TestCase):
             mock.patch.object(I, 'STATE_FILE', d / 'state.json'),
             mock.patch.object(I, 'LATEST_FILE', d / 'latest.json'),
             mock.patch.object(I, 'BASELINE_FILE', d / 'baseline.json'),
+            mock.patch.object(I, 'BASELINE15_FILE', d / 'baseline15.json'),
             mock.patch.object(I, 'PENDING_FILE', d / 'pending.jsonl'),
             mock.patch.object(I, 'LOG_FILE', d / 'run.log'),
             mock.patch.object(I, 'PROFILE_DIR', d / 'profiles'),

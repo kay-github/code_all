@@ -19,7 +19,7 @@ import time
 import math
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone, timedelta, date as date_cls
+from datetime import datetime, timezone, timedelta, time as dt_time, date as date_cls
 from pathlib import Path
 
 if hasattr(sys.stdout, 'reconfigure'):
@@ -37,6 +37,7 @@ LOCK = IDIR / 'intraday.lock'
 STATE_FILE = IDIR / 'state.json'
 LATEST_FILE = IDIR / 'latest.json'
 BASELINE_FILE = IDIR / 'baseline.json'
+BASELINE15_FILE = IDIR / 'baseline15.json'
 PENDING_FILE = IDIR / 'notify_pending.jsonl'
 LOG_FILE = IDIR / 'run.log'
 
@@ -74,6 +75,94 @@ def fnum(v):
 def parse_hhmm(s):
     h, m = s.split(':')
     return int(h) * 60 + int(m)
+
+
+# 固定半场边界：午休不参与任何窗口与分段，避免 11:30→13:00 的空档被算进「5/15/30分钟」。
+SESSION_RANGES = ((parse_hhmm('09:30'), parse_hhmm('11:30')),
+                  (parse_hhmm('13:00'), parse_hhmm('15:00')))
+SEGMENT_MINUTES = int(RULES.get('baseline15', {}).get('segment_minutes', 15) or 15)
+
+
+def hhmm(minute):
+    return '%02d:%02d' % (minute // 60, minute % 60)
+
+
+def session_index(t):
+    """交易日内的累计交易分钟；午休不计数，开盘前为0、收盘后为全天。"""
+    m = t.hour * 60 + t.minute + t.second / 60 + t.microsecond / 6e7
+    total = 0.0
+    for a, b in SESSION_RANGES:
+        if m >= b:
+            total += b - a
+        elif m > a:
+            total += m - a
+    return total
+
+
+def session_floor(t):
+    """当前半场起点对应的累计交易分钟（上午0，午后120）。"""
+    morning = SESSION_RANGES[0][1] - SESSION_RANGES[0][0]
+    return 0.0 if session_index(t) <= morning else float(morning)
+
+
+def trading_gap_minutes(t1, t2):
+    """同一交易日内的交易分钟差；跨日或反向返回 None。"""
+    if not t1 or not t2 or t1.date() != t2.date():
+        return None
+    gap = session_index(t2) - session_index(t1)
+    return gap if gap >= 0 else None
+
+
+def session_segments(day, size=SEGMENT_MINUTES):
+    """返回 [(结束时刻标签, 段起, 段止)]；段止为该段真正收盘的整点时刻。"""
+    out = []
+    for a, b in SESSION_RANGES:
+        m = a
+        while m + size <= b:
+            out.append((hhmm(m + size),
+                        datetime.combine(day, dt_time(m // 60, m % 60), tzinfo=TZ),
+                        datetime.combine(day, dt_time((m + size) // 60, (m + size) % 60), tzinfo=TZ)))
+            m += size
+    return out
+
+
+def _anchor(state, code, target, cutoff, tolerance=None):
+    """在滚动快照里找最接近 target 的累计量锚点（同一交易日、不晚于 cutoff）。"""
+    tol = (tolerance if tolerance is not None
+           else RULES.get('baseline15', {}).get('window_tolerance_minutes', 2.0))
+    best = None
+    for x in state['windows'].get(code, []):
+        t = quote_datetime(x['t'])
+        if not t or t.date() != target.date() or t > cutoff:
+            continue
+        d = abs(session_index(t) - session_index(target))
+        if best is None or d < best[0]:
+            best = (d, x, t)
+    if not best or best[0] > tol:
+        return None
+    return dict(rec=best[1], t=best[2], distance_minutes=best[0])
+
+
+def latest_segment(state, code, day, cutoff):
+    """最近一个已收齐的15分钟整段；两个端点都必须有足够近的快照，否则返回 None。"""
+    if not day:
+        return None
+    for slot, start, end in reversed(session_segments(day)):
+        if end > cutoff:
+            continue
+        a = _anchor(state, code, start, cutoff)
+        b = _anchor(state, code, end, cutoff)
+        if not a or not b or b['t'] <= a['t']:
+            continue
+        av, bv = a['rec'].get('amount'), b['rec'].get('amount')
+        if av is None or bv is None or bv < av:
+            continue
+        return dict(slot=slot, start=start.isoformat(), end=end.isoformat(),
+                    amount_wan=bv - av,
+                    start_anchor=a['rec']['t'], end_anchor=b['rec']['t'],
+                    start_offset=round(a['distance_minutes'], 2),
+                    end_offset=round(b['distance_minutes'], 2))
+    return None
 
 
 def session_state(t=None):
@@ -215,7 +304,12 @@ def accumulate_profile(business_date, records, state):
         prev = state['prev'].get(code, {})
         if r.get('amount_wan') is None or prev.get('amount_wan') is None:
             continue
-        if r.get('quote_time', '') <= prev.get('quote_time', ''):
+        prev_t, cur_t = quote_datetime(prev.get('quote_time')), quote_datetime(r.get('quote_time'))
+        gap = trading_gap_minutes(prev_t, cur_t)
+        # 低频/断线时两个快照之间可能横跨十几分钟：这种差值是整段成交额，
+        # 塞进一分钟桶会让「同分钟中位数」的分母失真，宁可归档缺口。
+        max_gap = float(RULES.get('baseline', {}).get('profile_max_gap_minutes', 1.5))
+        if gap is None or gap <= 0 or gap > max_gap:
             continue
         delta = r['amount_wan'] - prev['amount_wan']
         if delta < 0:
@@ -279,17 +373,43 @@ def push_window(state, code, rec):
                               if (quote_datetime(x['t']) or tz_now()) >= cutoff][-60:]
 
 
-def window_delta(state, code, field, minutes):
-    w = state['windows'].get(code, [])
+def window_delta_detail(state, code, field, minutes):
+    """按交易分钟回溯窗口；不跨午休、不在半场起点之前取值。
+
+    快照是低频/不等间隔的，因此只认落在目标时刻 tolerance 分钟内的锚点；
+    找不到就返回 None（缺数），不作近似。
+    """
+    w = state['windows'].get(code) or []
     if not w:
         return None
-    end = quote_datetime(w[-1]['t']) or tz_now()
-    start = end - timedelta(minutes=minutes)
-    older = [x for x in w if (quote_datetime(x['t']) or tz_now()) <= start]
-    if not older:
+    end_t = quote_datetime(w[-1]['t'])
+    if not end_t:
         return None
-    a, b = older[-1].get(field), w[-1].get(field)
-    return (b - a) if (a is not None and b is not None) else None
+    target = session_index(end_t) - minutes
+    if target < session_floor(end_t):
+        return None
+    tol = RULES.get('baseline15', {}).get('window_tolerance_minutes', 2.0)
+    best = None
+    for x in w:
+        t = quote_datetime(x['t'])
+        if not t or t.date() != end_t.date() or t > end_t:
+            continue
+        d = abs(session_index(t) - target)
+        if best is None or d < best[0]:
+            best = (d, x, t)
+    if not best or best[0] > tol:
+        return None
+    a, b = best[1].get(field), w[-1].get(field)
+    if a is None or b is None:
+        return None
+    return dict(value=b - a, target_minutes=minutes,
+                actual_minutes=round(session_index(end_t) - session_index(best[2]), 2),
+                anchor=best[1]['t'], offset_minutes=round(best[0], 2))
+
+
+def window_delta(state, code, field, minutes):
+    d = window_delta_detail(state, code, field, minutes)
+    return d['value'] if d else None
 
 
 def median(xs):
@@ -299,7 +419,7 @@ def median(xs):
 
 # ---------------------------------------------------------------- 信号
 
-def compute_signals(records, state, baseline):
+def compute_signals(records, state, baseline, baseline15=None, business_date=None):
     """逐只 + 汇总。全部为「线索」，不含身份结论、不含国家队金额。"""
     idx = {c: records[c] for c in index_codes() if c in records}
     idx_pct = {}
@@ -312,8 +432,15 @@ def compute_signals(records, state, baseline):
         if code not in idx and (code in CORE or code in FAMILY):
             fam_pct.setdefault(FAMILY.get(code, '行业主题/待核验'), []).append(r.get('pct'))
 
+    quotes = sorted(t for t in (quote_datetime(v.get('quote_time')) for v in records.values()) if t)
+    cutoff = quotes[-1] if quotes else tz_now()
+    business_date = business_date or (cutoff.date().isoformat() if quotes else None)
+    b15 = baseline15 or {}
+    # 基线自身不能包含被消费的业务日，否则就是拿当天比当天。
+    b15_ok = (bool(b15.get('complete')) and bool(business_date)
+              and str(b15.get('as_of_date') or '') < business_date)
     bl = (baseline or {}).get('per_code', {})
-    cold = not (baseline or {}).get('complete')
+    cold = not b15_ok and not (baseline or {}).get('complete')
     rows, levels = [], []
     for code, r in sorted(records.items()):
         if code in idx:
@@ -330,7 +457,42 @@ def compute_signals(records, state, baseline):
         hm = r.get('quote_time', '')[8:12]
         hm_fmt = hm[:2] + ':' + hm[2:] if len(hm) == 4 else None
         base_amt = (bl.get(code) or {}).get(hm_fmt)
-        activity = (d_amount / base_amt) if (d_amount and base_amt and base_amt > 0) else None
+        prev_t, cur_t = quote_datetime(prev.get('quote_time')), quote_datetime(r.get('quote_time'))
+        gap = trading_gap_minutes(prev_t, cur_t)
+        max_gap = float(RULES.get('baseline', {}).get('profile_max_gap_minutes', 1.5))
+        # 分钟兜底只在相邻快照覆盖≤1.5交易分钟时可用；否则差值是一个整段，不是一分钟。
+        minute_activity = (d_amount / base_amt
+                           if d_amount is not None and base_amt and base_amt > 0
+                           and gap is not None and 0 < gap <= max_gap else None)
+
+        seg = latest_segment(state, code, cutoff.date(), cutoff) if b15_ok else None
+        slot_stats = ((b15.get('per_code', {}).get(code) or {}).get('slots', {}).get(seg['slot'])
+                      if seg else None)
+        seg_yi = round(seg['amount_wan'] / 1e4, 4) if seg else None
+        activity15 = (seg_yi / slot_stats['median']
+                      if seg_yi is not None and slot_stats and slot_stats.get('median') else None)
+        activity = activity15 if activity15 is not None else minute_activity
+        activity_basis = ('segment15' if activity15 is not None
+                          else 'minute' if minute_activity is not None else None)
+        segment15 = None
+        if seg:
+            segment15 = dict(slot=seg['slot'], amount_yi=seg_yi, median_yi=None,
+                             prev_yi=None, prev_ratio=None, n=0, ratio=None,
+                             samples=None,
+                             start_anchor=seg['start_anchor'], end_anchor=seg['end_anchor'],
+                             boundary_offset=round(max(seg['start_offset'], seg['end_offset']), 2))
+            if slot_stats and slot_stats.get('median'):
+                segment15.update(median_yi=round(slot_stats['median'], 4),
+                                 prev_yi=(round(slot_stats['prev'], 4)
+                                          if slot_stats.get('prev') is not None else None),
+                                 prev_ratio=(round(seg_yi / slot_stats['prev'], 3)
+                                             if slot_stats.get('prev') else None),
+                                 n=slot_stats.get('n', 0),
+                                 samples=slot_stats.get('n', 0),
+                                 ratio=round(activity15, 3) if activity15 is not None else None)
+        baseline15_status = ('ok' if activity15 is not None else
+                             'no_baseline' if not b15_ok else
+                             'no_segment' if not seg else 'slot_missing')
         prem_d15 = window_delta(state, code, 'premium', 15)
         prem_d5 = window_delta(state, code, 'premium', 5)
         pct_d15 = window_delta(state, code, 'pct', 15)
@@ -362,7 +524,9 @@ def compute_signals(records, state, baseline):
                          premium=r.get('premium_pct'), iopv=r.get('iopv'),
                          premium_delta_5m=prem_d5, premium_delta_15m=prem_d15,
                          pct_delta_15m=pct_d15, amount_delta_wan=d_amount,
-                         activity_ratio=activity, channels=channels,
+                         activity_ratio=activity, activity_basis=activity_basis,
+                         baseline15_status=baseline15_status, segment15=segment15,
+                         channels=channels,
                          counter_evidence=counter, direction=direction,
                          quote_time=r.get('quote_time'),
                          data_status='ok' if r.get('price') is not None else 'unavailable'))
@@ -382,9 +546,27 @@ def compute_signals(records, state, baseline):
         leadership = 'support_clue'
     elif ret and len(ret) >= len(sup) * 2:
         leadership = 'retreat_clue'
+    paired = [x for x in rows if x.get('segment15') and x['segment15'].get('median_yi')]
+    seg_summary = None
+    if paired:
+        seg_sum = sum(x['segment15']['amount_yi'] for x in paired)
+        med_sum = sum(x['segment15']['median_yi'] for x in paired)
+        seg_summary = dict(slot=paired[0]['segment15']['slot'], covered=len(paired),
+                           total=len(rows), amount_yi=round(seg_sum, 2),
+                           median_yi=round(med_sum, 2),
+                           ratio=round(seg_sum / med_sum, 3) if med_sum else None,
+                           min_samples=min(x['segment15'].get('n') or 0 for x in paired),
+                           note='核心ETF同段合计与同段中位数之比；不是全市场成交量，也不是国家队金额')
+    b15_days = len(b15.get('complete_days') or [])
     return dict(rows=rows, sync=sync, leadership=leadership, cold_start=cold,
-                baseline_days=(baseline or {}).get('observed_days', 0),
-                baseline_min_days=RULES.get('baseline', {}).get('min_days', 5),
+                baseline_days=(b15_days if b15 else (baseline or {}).get('observed_days', 0)),
+                baseline_min_days=RULES.get('baseline15' if b15 else 'baseline', {}).get('min_days', 5),
+                baseline15=dict(as_of_date=b15.get('as_of_date'),
+                                complete=bool(b15.get('complete')), usable=b15_ok,
+                                days=b15_days, source=b15.get('source'),
+                                note=('15分钟整段同段中位数；基线日期必须早于当前业务日'
+                                      if b15 else '尚无15分钟分段基线，只走分钟兜底或冷启动')),
+                segment_summary=seg_summary,
                 identity=IDENTITY_NOTE,
                 direction_data='qt快照含买卖五档；无可靠逐笔/主动成交方向，方向待确认')
 
@@ -581,7 +763,8 @@ def tick(state, baseline, replay_records=None, replay_meta=None, at=None, cadenc
     for c, r in records.items():
         push_window(state, c, r)
     accumulate_profile(business_date, records, state)
-    sig = compute_signals(records, state, baseline)
+    b15 = read_json(BASELINE15_FILE) or {}
+    sig = compute_signals(records, state, baseline, baseline15=b15, business_date=business_date)
     sig['quote_time'] = meta.get('quote_time')
     level = 'L0' if out_of_session else decide_level(sig, state, fresh)
     if low_cadence and level in ('L2', 'L3'):
@@ -661,6 +844,7 @@ def tick(state, baseline, replay_records=None, replay_meta=None, at=None, cadenc
         official_note='正式份额区保留最后一版已核验结果；本区不改动',
         cold_start=sig['cold_start'], baseline_days=sig['baseline_days'],
         baseline_min_days=sig['baseline_min_days'],
+        baseline15=sig['baseline15'], segments=sig['segment_summary'],
         # 休市时 rows/sync 来自上一交易日的残留快照，只作留档，不得当作当日实时线索。
         signals_realtime=not out_of_session,
         signals_note=('非交易时段：以下逐只明细为上一交易日残留快照，不参与当日判断'

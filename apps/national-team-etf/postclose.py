@@ -106,6 +106,15 @@ def main():
     if last:
         write_json(POSTCLOSE, dict(last, retries_exhausted=True))
     log('有界重试结束，保留上一版线上页面；不自动发布')
+    # 15分钟分段基线是盘中观察区的分母，与正式份额互不影响；
+    # 失败只告警，不回滚盘后初值，也不改动正式构建。
+    try:
+        import v2_intraday_baseline as B
+        b = B.build()
+        log('15分钟基线已刷新：as_of=%s complete=%s 取数 %d/%d'
+            % (b.get('as_of_date'), b.get('complete'), b.get('received'), b.get('requested')))
+    except Exception as exc:
+        log('15分钟基线刷新失败（不影响盘后初值）：%r' % exc)
 
 
 if __name__ == '__main__':

@@ -97,8 +97,9 @@ python update.py --offline --deploy
 | `v2_sources.py` / `v2_exchange.py` | 行情源 / 交易所正式份额（含次晨成熟度判定） |
 | `v2_engine.py` / `v2_tracking.py` / `v2_inventory.py` | 净申赎与窗口 / 风险等级与事件记忆 / 10份刻度 |
 | `v2_stages.py` | 盘后初值摘要（抹平双口径、置信度文案） |
+| `v2_intraday_baseline.py` | 15分钟分段成交额基线：同段中位数、日线总额勾稽、防前视 |
 | `v2_release.py` | 发布闸门 `assess()` |
-| `v2_report.py` | 生成 `report.html`、`cycle.html`（内联 CSS/JS 约 70KB） |
+| `v2_report.py` | 生成 `report.html`、`cycle.html`、`segments.html`（内联 CSS/JS；分段子页读同源新浪 5 分钟 K） |
 | `validate_v2.py` / `publish.py` | 独立验收 / 白名单提交与推送 |
 | `update.py` | 唯一手动总入口（`--phase close` / `--phase final` / `--end`） |
 

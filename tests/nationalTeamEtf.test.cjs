@@ -7,8 +7,10 @@ const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'../tools/national-team-etf');
 const page=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const cycle=fs.readFileSync(path.join(root,'cycle.html'),'utf8');
+const segments=fs.readFileSync(path.join(root,'segments.html'),'utf8');
 const publicData=JSON.parse(fs.readFileSync(path.join(root,'data/latest.json'),'utf8'));
 const data=JSON.parse(page.match(/<script type="application\/json" id="dataset">([\s\S]*?)<\/script>/)[1]);
+const segmeta=JSON.parse(segments.match(/<script type="application\/json" id="segmeta">([\s\S]*?)<\/script>/)[1]);
 const script=[...page.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('src=')&&!m[1].includes('application/json')).map(m=>m[2]).join('\n');
 
 test('release file checksums survive Git newline normalization',()=>{
@@ -166,4 +168,95 @@ test('three-stage strip renders all three versions with distinct confidence labe
   assert.match(html,/定稿级/,'次日才是定稿级');
   assert.ok(!/日期/.test(html),'日期缺失时应显示待更新而不是占位词');
  }finally{e.off();}
+});
+
+// 分段活跃度子页：与主页面共用同一构建，只读脱敏后的15分钟基线；
+// 不公开逐日原始K、本地路径或错误详情。
+test('segment page shares the build and reads the sanitized 15-minute baseline',()=>{
+ assert.equal(segmeta.build_id,data.build_id);
+ assert.equal(segmeta.end,data.end);
+ assert.equal(segmeta.members.length,15);
+ const codes=data.pools.core15.members;
+ assert.deepEqual(segmeta.members.map(x=>x.code).sort(),codes.slice().sort());
+ assert.match(segments,/data\/intraday\/baseline15\.json/);
+ assert.match(segments,/I0 当日买卖主体未确认/);
+ assert.match(segments,/缺口不补 0|不补 0/);
+ assert.match(segments,/不是净申购/);
+ const receipt=JSON.parse(fs.readFileSync(path.join(root,'data/release.json'),'utf8'));
+ assert.ok(receipt.files['tools/national-team-etf/segments.html'],'分段页必须进入发布回执');
+ assert.ok(receipt.files['tools/national-team-etf/data/intraday/baseline15.json'],'基线必须进入发布回执');
+ const b=JSON.parse(fs.readFileSync(path.join(root,'data/intraday/baseline15.json'),'utf8'));
+ assert.equal(b.raw_dir,undefined,'不得公开本地原始目录');
+ assert.equal(b.crosschecks,undefined,'勾稽详情不必公开');
+ const n=Object.keys(b.per_code||{}).length;
+ assert.ok(n===0||n===15,'基线要么完整覆盖核心15只，要么显式为0，不做部分拼接');
+ for(const [code,item] of Object.entries(b.per_code||{})){
+  assert.ok(item.slots&&Object.keys(item.slots).length>0,code);
+  for(const s of Object.values(item.slots)){
+   assert.equal(typeof s.median,'number',code);
+   assert.ok(s.median>=0,code);
+  }
+ }
+});
+
+function renderSegments(mode){
+ const ids=[...segments.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+ const nodes=Object.fromEntries(ids.map(id=>[id,{innerHTML:'',textContent:'',clientWidth:760,handlers:{},
+  addEventListener(k,f){this.handlers[k]=f;}}]));
+ nodes.segmeta.textContent=JSON.stringify(segmeta);
+ const slots=['09:45','10:00','10:15','10:30','10:45','11:00','11:15','11:30',
+  '13:15','13:30','13:45','14:00','14:15','14:30','14:45','15:00'];
+ const perCode={};
+ for(const m of segmeta.members){
+  const sl={};
+  for(const s of slots)sl[s]={median:1,n:20,prev:.9,prev_date:'2026-11-13'};
+  perCode[m.code]={days:20,first:'2026-10-19',last:'2026-11-13',slots:sl};
+ }
+ const baseline={as_of_date:'2026-11-13',complete:true,complete_days:slots,per_code:perCode,note:'test'};
+ const ends=[];
+ for(let m=575;m<=690;m+=5)ends.push(m);
+ for(let m=785;m<=900;m+=5)ends.push(m);
+ const bars=ends.map(m=>({day:'2026-11-14 '+String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+':00',
+  open:'4',high:'4',low:'4',close:'4',volume:'1',amount:String(2e8)}));
+ const segScript=[...segments.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+  .filter(m=>!m[1].includes('src=')&&!m[1].includes('application/json')).map(m=>m[2]).join('\n');
+ let timerId=0;
+ const context={window:{addEventListener(){}},setInterval:()=>0,clearInterval(){},
+  setTimeout:(fn,ms)=>ms>=1000?++timerId:setTimeout(fn,ms),
+  fetch:()=>Promise.resolve(mode==='nobase'?{ok:false,json:()=>Promise.resolve(null)}:{ok:true,json:()=>Promise.resolve(baseline)}),
+  Promise,console};
+ context.document={getElementById:id=>nodes[id],head:{appendChild(s){
+   const name=decodeURIComponent(s.src.split('var%20')[1].split('=')[0]);
+   if(mode!=='nobars')context.window[name]=bars;
+   setImmediate(()=>s.onload&&s.onload());
+  }},createElement:()=>({charset:'',src:'',onload:null,onerror:null,remove(){}}),documentElement:{dataset:{}}};
+ context.window.document=context.document;
+ const rejections=[];const onReject=e=>rejections.push(e);
+ process.on('unhandledRejection',onReject);
+ vm.runInNewContext(segScript,context);
+ return {nodes,rejections,off(){process.removeListener('unhandledRejection',onReject);}};
+}
+const settleSegment=async()=>{for(let i=0;i<30;i++)await new Promise(r=>setImmediate(r));};
+
+test('segment page computes live, sample, and missing-baseline branches without errors',async()=>{
+ const live=renderSegments('live');
+ try{await settleSegment();
+  assert.deepEqual(live.rejections,[]);
+  assert.match(live.nodes.segStatus.innerHTML,/身份：I0/);
+  assert.match(live.nodes.segKpis.innerHTML,/6\.00×/,live.nodes.segKpis.innerHTML.slice(0,300));
+  assert.equal((live.nodes.segRows.innerHTML.match(/<tr>/g)||[]).length,15);
+  assert.equal((live.nodes.segChart.innerHTML.match(/<rect/g)||[]).length,16);
+ }finally{live.off();}
+ const sample=renderSegments('nobars');
+ try{await settleSegment();
+  assert.deepEqual(sample.rejections,[]);
+  assert.match(sample.nodes.segKpis.innerHTML,/0\.90×/,sample.nodes.segKpis.innerHTML.slice(0,300));
+  assert.match(sample.nodes.segScope.textContent,/样本最后一日/);
+ }finally{sample.off();}
+ const missing=renderSegments('nobase');
+ try{await settleSegment();
+  assert.deepEqual(missing.rejections,[]);
+  assert.match(missing.nodes.segStatus.innerHTML,/基线缺失/);
+  assert.match(missing.nodes.segScope.textContent,/尚未同步/);
+ }finally{missing.off();}
 });
