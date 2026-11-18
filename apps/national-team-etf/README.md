@@ -23,7 +23,7 @@
 
 ## 三个版本，三种可信度
 
-同一天的数据分三次成型，页面顶部有三阶段版本条，引用时必须认准版本：
+同一天的数据分三次成型，页面首屏先给「最新定稿日 / 10份刻度 / 一句话解读」，三阶段版本条保留在首屏下方；引用时必须认准版本：
 
 | 版本 | 产出时点 | 数据来源 | 可信度 | 线上位置 |
 | --- | --- | --- | --- | --- |
@@ -99,7 +99,7 @@ python update.py --offline --deploy
 | `v2_stages.py` | 盘后初值摘要（抹平双口径、置信度文案） |
 | `v2_intraday_baseline.py` | 15分钟分段成交额基线：同段中位数、日线总额勾稽、防前视 |
 | `v2_release.py` | 发布闸门 `assess()` |
-| `v2_report.py` | 生成 `report.html`、`cycle.html`、`segments.html`（内联 CSS/JS；分段子页读同源新浪 5 分钟 K） |
+| `v2_report.py` | 生成 `report.html`、`cycle.html`、`segments.html`（首屏结论区 + 内联 CSS/JS；分段子页读同源新浪 5 分钟 K） |
 | `validate_v2.py` / `publish.py` | 独立验收 / 白名单提交与推送 |
 | `update.py` | 唯一手动总入口（`--phase close` / `--phase final` / `--end`） |
 

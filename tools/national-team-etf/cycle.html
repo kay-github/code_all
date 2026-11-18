@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="gjd-build-id" content="20261118T164058_0800_c5345cf25f"><title>ETF通道历史复盘 2026-11-17</title>
+<meta name="gjd-build-id" content="20261118T171007_0800_ac45e94cdb"><title>ETF通道历史复盘 2026-11-17</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e639c'/%3E%3Cpath d='M6 23l6-7 4 4 9-11' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
 <script src="/assets/site-theme.js"></script><link rel="stylesheet" href="/assets/workspace-theme.css">
 <style>
@@ -242,11 +242,58 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .stage-meta{font-size:11px;color:var(--faint);line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:760px){.stage-grid{grid-template-columns:1fr;gap:var(--s2)}
   .stage-card{padding:var(--s3)}}
+/* ==== 焦点首屏：结论、分品种、刻度 ==== */
+.focus-hero{background:transparent;border:0;box-shadow:none;padding:0;margin:var(--s4) 0 var(--s5)}
+.focus-hero h1{font-size:clamp(28px,4.2vw,44px);line-height:1.18;letter-spacing:-1.2px;margin:var(--s3) 0 var(--s2);max-width:1000px}
+.focus-status{margin:var(--s3) 0 var(--s2)}
+.focus-points{display:grid;gap:var(--s2);margin:var(--s4) 0 var(--s5);max-width:1000px}
+.focus-points ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--s2)}
+.focus-points li{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
+.focus-points li:nth-child(2){border-left-color:var(--amber)}
+.focus-points .focus-caveat{font-size:11.5px;color:var(--faint);margin:0;padding-left:2px}
+.focus-points p{margin:0}
+.focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:start}
+.focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
+.focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
+.focus-card-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.focus-card-head h2{margin:0;font-size:17px}
+.focus-more{font-size:12px;text-decoration:none;white-space:nowrap}
+.focus-card table{font-size:12.5px}
+.focus-card th,.focus-card td{padding:8px}
+.focus-card .scroll{max-height:430px;border:1px solid var(--line);border-radius:9px}
+.focus-foot{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3);padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px}
+.focus-foot .note{margin:0;flex:1;min-width:180px}
+.focus-foot a{font-size:12px;white-space:nowrap}
+.focus-stage{font-size:12.5px;line-height:1.6;margin:var(--s2) 0;color:var(--text)}
+.focus-stage b{font-size:14px}
+.inventory-gauge{margin:var(--s3) 0 var(--s1)}
+.gauge-track{position:relative;height:10px;background:var(--inset);border-radius:999px;border:1px solid var(--line)}
+.gauge-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent-line),var(--accent));max-width:100%}
+.gauge-start,.gauge-now{position:absolute;top:-4px;width:2px;height:18px;background:var(--muted)}
+.gauge-start{opacity:.45}
+.gauge-now{background:var(--accent);width:3px}
+.gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
+.gauge-legend{font-size:10.5px;color:var(--faint);margin-top:2px}
+.focus-grid #inventory{margin:0;min-width:0;border-top:1px solid var(--line);box-shadow:var(--shadow-sm);padding:var(--s4);border-radius:var(--r-card)}
+.focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
+.focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
+.focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
+.focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.8px}
+.focus-grid #inventory .lead{margin-bottom:var(--s2)}
+.detail-eyebrow{margin-top:var(--s6);margin-bottom:var(--s1)}
+@media(max-width:860px){
+  .focus-grid{grid-template-columns:1fr}
+  .focus-grid #inventory{order:-1}
+  .focus-hero h1{font-size:clamp(24px,7vw,34px)}
+  .focus-card .scroll{max-height:52vh}
+  .focus-foot{align-items:flex-start}
+  .focus-grid #inventory .inventory-kpis{grid-template-columns:1fr 1fr}
+}
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="/gjd/#inventory">10份存量对照</a><a href="/gjd/#intraday">盘中观察</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><a href="/gjd/#postclose">盘后初值</a><a href="/gjd/#official">正式份额与预警</a><a href="/gjd/#channels">历史反推</a><a href="/gjd/#discover">异常线索</a><a href="/gjd/#quality">数据核对</a><a href="/gjd/cycle">历史复盘</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="/gjd/#focus">最新一日</a><a href="/gjd/#inventory">本轮刻度</a><a href="/gjd/#interpretation">通道解读</a><a href="/gjd/#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
 <main>
-    <div class="eyebrow">历史复盘 · 与当日追踪共用构建 20261118T164058_0800_c5345cf25f</div>
+    <div class="eyebrow">历史复盘 · 与当日追踪共用构建 20261118T171007_0800_ac45e94cdb</div>
     <h1>ETF 通道变化的历史底稿</h1><p class="lead">截至 2026-11-17，当前核心15只回溯；区间名称仅供展示，不作为状态引擎的先验。</p>
     <div class="notice">旧版“国家队成本、浮亏、实现收益”已撤回。份额净变化无法还原同一账户的库存与成交批次，也看不到全部二级市场换手。</div>
     <section><h2>统一口径后的区间估算</h2><div class="scroll"><table><thead><tr><th>区间</th><th>起点</th><th>终点</th><th>有效观测净申赎估算</th><th>有效/预期基金日</th></tr></thead><tbody><tr><td>早期区间</td><td>2024-06-03</td><td>2025-12-31</td><td>+4,723.6 亿</td><td>5514/5517</td></tr><tr><td>2026上半年区间</td><td>2026-01-05</td><td>2026-07-15</td><td>-15,736.5 亿</td><td>1905/1905</td></tr><tr><td>7月中旬以来</td><td>2026-07-16</td><td>2026-11-17</td><td>+6,156.9 亿</td><td>1245/1245</td></tr></tbody></table></div>

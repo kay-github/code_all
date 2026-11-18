@@ -97,7 +97,7 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | `v2_inventory.py` | 10 份存量刻度 |
 | `v2_stages.py` | 盘后初值摘要（抹平双口径、置信度文案） |
 | `v2_release.py` | 发布闸门 `assess()`，22 项硬条件 |
-| `v2_report.py` | 生成 `report.html` / `cycle.html` / `segments.html`（含三阶段版本条与全部内联 CSS/JS；分段子页浏览器端读同源新浪 5 分钟 K） |
+| `v2_report.py` | 生成 `report.html` / `cycle.html` / `segments.html`（首屏按「最新一日 / 10份刻度 / 一句话解读」组织，证据与方法默认折叠；含三阶段版本条与全部内联 CSS/JS；分段子页浏览器端读同源新浪 5 分钟 K） |
 | `validate_v2.py` | 独立验收（含 Node VM 精简 DOM 执行页面脚本） |
 | `publish.py` | 白名单提交 + push + `deploy_postclose()` 独立通道 |
 | `update.py` | 唯一手动总入口（`--phase close/final`） |
