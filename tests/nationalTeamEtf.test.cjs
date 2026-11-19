@@ -90,8 +90,9 @@ test('inventory mix shows all core components with matching percentages and scal
  const expected=point.components.slice().sort((a,b)=>b.current_yi-a.current_yi);
  const rows=[...chart.matchAll(/data-etf="(\d+)">[\s\S]*?class="mix-percent mono">([\d.]+)%[\s\S]*?折合 ([\d.]+) 份/g)];
  assert.equal(rows.length,15);
- assert.match(chart,/<details><summary>展开其余 10 只 ETF<\/summary>/);
- assert.equal(chart.slice(0,chart.indexOf('<details>')).match(/data-etf=/g).length,5);
+ assert.match(page,/id="inventory"[^>]*>[\s\S]*?<\/section>\s*<section id="inventoryMixCard"/);
+ assert.match(chart,/<details><summary>展开其余 9 只 ETF<\/summary>/);
+ assert.equal(chart.slice(0,chart.indexOf('<details>')).match(/data-etf=/g).length,6);
  for(const [i,row] of rows.entries()){
   const item=expected[i],weight=item.current_yi/point.current_yi;
   assert.equal(row[1],item.code);

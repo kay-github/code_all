@@ -78,14 +78,15 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 <div id="inventoryGauge" class="inventory-gauge"></div>
 <p id="inventoryStage" class="focus-stage"></p>
 <p class="note" id="inventoryBasis"></p>
-<div class="inventory-mix">
-<h3>核心 ETF 构成</h3>
-<div id="inventoryMix"></div>
-</div>
+<a class="focus-more inventory-mix-link" href="#inventoryMixCard">查看 ETF 构成 ↓</a>
 <details><summary>基准、估算边界与上一轮峰值对照</summary><div id="inventoryMethod"></div>
 <p class="note">“份”是归一化对照刻度，不是实际ETF份数。ETF通道含国家队及其他持有人；二级市场换手可能不改变总份额。本轮净新增是起点至今的存量差，已计入其后净减少，不能叫国家队毛买入额或实际现金流。历史反推与近期正式份额保持独立，不混接。</p></details>
 <details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>当前总存量 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
 <p class="note">固定权重的回溯研究值，不冒充历史当天已发布的实时结果。<a href="/tools/national-team-etf/data/inventory.csv" download>下载同版存量对照CSV</a></p></details>
+</section>
+<section id="inventoryMixCard" class="focus-card inventory-mix" aria-labelledby="inventoryMixTitle">
+<div class="focus-card-head"><h2 id="inventoryMixTitle">核心 ETF 构成</h2><span class="note mix-date">业务日 __END__</span></div>
+<div id="inventoryMix"></div>
 </section>
 </div>
 <div class="focus-foot"><span class="pill" id="intradayStage">加载中</span><span id="liveStripText" class="note"></span><a href="#intraday">盘中明细</a><a href="#postclose">盘后初值</a></div>
@@ -345,7 +346,7 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-points li:nth-child(2){border-left-color:var(--amber)}
 .focus-points .focus-caveat{font-size:11.5px;color:var(--faint);margin:0;padding-left:2px}
 .focus-points p{margin:0}
-.focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:start}
+.focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:stretch}
 .focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
 .focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
 .focus-card-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
@@ -367,21 +368,28 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-now{background:var(--accent);width:3px}
 .gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
 .gauge-legend{font-size:10.5px;color:var(--faint);margin-top:2px}
-.inventory-mix{margin:var(--s4) 0;padding:var(--s3);background:var(--inset);border:1px solid var(--line);border-radius:var(--r-card)}
-.inventory-mix h3{font-size:15px;margin:0 0 4px}
-.inventory-mix .note{margin:0 0 var(--s2)}
-.mix-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin:0 0 4px}
-.mix-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.inventory-mix{grid-column:1/-1}
+.inventory-mix-link{display:inline-flex;align-items:center;min-height:32px}
+.mix-date{margin:0}
+.mix-context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin:0 0 var(--s3)}
+.mix-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:0;padding:0;list-style:none}
+.mix-row{display:flex;flex-direction:column;gap:8px;min-width:0;padding:var(--s3);background:var(--inset);border:1px solid var(--line);border-radius:9px}
 .mix-label{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:baseline}
-.mix-name{min-width:0;overflow-wrap:anywhere;font-size:12.5px;font-weight:650}
-.mix-percent{font-size:13px;text-align:right}
-.mix-code,.mix-units{font-size:10.5px;color:var(--muted)}
+.mix-name{min-width:0;overflow-wrap:anywhere;font-size:13px;font-weight:650}
+.mix-percent{font-size:14px;text-align:right}
+.mix-code,.mix-units{font-size:11px;color:var(--muted)}
 .mix-units{text-align:right;white-space:nowrap}
-.mix-track{height:5px;margin-top:4px;background:var(--line);border-radius:999px}
+.mix-track{height:5px;margin-top:auto;background:var(--line);border-radius:999px}
 .mix-track span{display:block;height:100%;border-radius:inherit;background:var(--accent)}
-.inventory-mix details{margin:var(--s2) 0 0;padding:6px 8px;background:var(--surface);border-radius:8px}
-.inventory-mix details>summary{padding:5px 0;font-size:12px}
-.inventory-mix details .mix-list{margin:6px 0 2px}
+.inventory-mix details{margin:var(--s3) 0 0;background:var(--surface-2)}
+.inventory-mix details>summary{min-height:44px}
+.inventory-mix details .mix-list{margin:var(--s3)}
+@media(max-width:1000px){.mix-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){
+  .mix-list{grid-template-columns:minmax(0,1fr)}
+  .inventory-mix-link{min-height:44px}
+  .inventory-mix details .mix-list{margin:var(--s2)}
+}
 .focus-grid #inventory{margin:0;min-width:0;border-top:1px solid var(--line);box-shadow:var(--shadow-sm);padding:var(--s4);border-radius:var(--r-card)}
 .focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
 .focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
@@ -391,7 +399,7 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .detail-eyebrow{margin-top:var(--s6);margin-bottom:var(--s1)}
 @media(max-width:860px){
   .focus-grid{grid-template-columns:1fr}
-  .focus-grid #inventory{order:-1}
+  .focus-grid #inventory,.focus-grid .inventory-mix{order:-1}
   .focus-hero h1{font-size:clamp(24px,7vw,34px)}
   .focus-card .scroll{max-height:52vh}
   .focus-foot{align-items:flex-start}
@@ -464,9 +472,9 @@ function renderInventoryMix(point){
    <span class="mix-code mono">${esc(x.code)}</span><span class="mix-units mono">折合 ${units.toFixed(2)} 份</span></div>
    <div class="mix-track" aria-hidden="true"><span style="width:${(pct/scale*100).toFixed(3)}%"></span></div></li>`;
  }).join('')}</ol>`;
- const shown=5;
- target.innerHTML=`<p class="note">占核心 ${members.size} 只 ETF 当前恒价总存量的比例</p>
-  <div class="mix-axis" aria-hidden="true"><span>0%</span><span>${scale}%</span></div>${draw(rows.slice(0,shown))}
+ const shown=6;
+ target.innerHTML=`<p class="note mix-context"><span>占核心 ${members.size} 只 ETF 当前恒价总存量的比例</span><span>横条满格为 ${scale}%</span></p>
+  ${draw(rows.slice(0,shown))}
   ${rows.length>shown?`<details><summary>展开其余 ${rows.length-shown} 只 ETF</summary>${draw(rows.slice(shown),shown+1)}</details>`:''}`;
 }
 function renderInventory(){
