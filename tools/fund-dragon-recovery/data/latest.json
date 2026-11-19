@@ -1,19 +1,19 @@
 {
   "version": "3.0.0",
-  "build_id": "20261119T114929_0800_a9d3be67b1",
+  "build_id": "20261119T125340_0800_adcda28cc7",
   "end": "2026-11-18",
   "report_period": "2026-09-30",
-  "built_at": "2026-11-19T11:49:29+08:00",
-  "collected_at": "2026-11-19T11:45:29+08:00",
+  "built_at": "2026-11-19T12:53:40+08:00",
+  "collected_at": "2026-11-19T12:50:33+08:00",
   "summary": {
-    "groups": 3084,
-    "share_entries": 3130,
+    "groups": 3085,
+    "share_entries": 3131,
     "latest_nav_count": 3046,
     "categories": {
-      "active_domestic": 2775,
+      "active_domestic": 2776,
       "enhanced_index": 309
     },
-    "latest_nav_coverage": 0.9876783,
+    "latest_nav_coverage": 0.9873582,
     "states": {
       "初步升温，个基资料不足": 28,
       "初步升温线索": 1,
@@ -25,7 +25,7 @@
       "保持正向收益关联": 93,
       "收益关联走弱": 1113,
       "指数增强，仅作披露与收益观察": 309,
-      "数据或口径不足": 39,
+      "数据或口径不足": 40,
       "数据不足": 10
     },
     "verified_portfolios": 1,
@@ -34,7 +34,7 @@
       "insufficient": 28,
       "passed": 1,
       "not_supported": 24,
-      "not_reviewed": 3031
+      "not_reviewed": 3032
     },
     "model_usable": 3036,
     "identifiable": 3036
@@ -87,39 +87,39 @@
     "timeline": [
       {
         "d": "2026-07-22",
-        "n": 3004,
+        "n": 3005,
         "bn": 2011,
-        "b": -0.075234,
+        "b": -0.075286,
         "bcore": -0.076837,
-        "neg": 0.7247,
+        "neg": 0.7248,
         "rec": -0.9166,
         "pas": 0.184
       },
       {
         "d": "2026-07-29",
-        "n": 3008,
+        "n": 3009,
         "bn": 2012,
-        "b": -0.026631,
+        "b": -0.026697,
         "bcore": -0.003717,
-        "neg": 0.61,
+        "neg": 0.6102,
         "rec": -0.0452,
         "pas": 0.2972
       },
       {
         "d": "2026-08-05",
-        "n": 3014,
+        "n": 3015,
         "bn": 2017,
-        "b": -0.054626,
+        "b": -0.054659,
         "bcore": -0.054777,
-        "neg": 0.78,
+        "neg": 0.7801,
         "rec": -0.7251,
         "pas": 0.0823
       },
       {
         "d": "2026-08-12",
-        "n": 3022,
+        "n": 3023,
         "bn": 2023,
-        "b": -0.063544,
+        "b": -0.063578,
         "bcore": -0.066578,
         "neg": 0.821,
         "rec": -0.8805,
@@ -127,29 +127,29 @@
       },
       {
         "d": "2026-08-19",
-        "n": 3027,
+        "n": 3028,
         "bn": 2025,
-        "b": -0.031267,
+        "b": -0.031293,
         "bcore": -0.026942,
-        "neg": 0.6829,
+        "neg": 0.683,
         "rec": -0.353,
         "pas": 0.164
       },
       {
         "d": "2026-08-26",
-        "n": 3032,
+        "n": 3033,
         "bn": 2026,
-        "b": -0.016272,
+        "b": -0.016311,
         "bcore": -0.001185,
-        "neg": 0.6148,
+        "neg": 0.6149,
         "rec": -0.015,
         "pas": 0.2246
       },
       {
         "d": "2026-09-02",
-        "n": 3034,
+        "n": 3035,
         "bn": 2028,
-        "b": -0.04917,
+        "b": -0.049215,
         "bcore": -0.044425,
         "neg": 0.7456,
         "rec": -0.5777,
@@ -157,21 +157,21 @@
       },
       {
         "d": "2026-09-09",
-        "n": 3037,
+        "n": 3038,
         "bn": 2030,
-        "b": -0.046376,
+        "b": -0.046392,
         "bcore": -0.054336,
-        "neg": 0.7356,
+        "neg": 0.7357,
         "rec": -0.7082,
         "pas": 0.1015
       },
       {
         "d": "2026-09-16",
-        "n": 3042,
+        "n": 3043,
         "bn": 2031,
-        "b": -0.035521,
+        "b": -0.035663,
         "bcore": -0.02908,
-        "neg": 0.7262,
+        "neg": 0.7263,
         "rec": -0.4194,
         "pas": 0.0857
       },
@@ -299,7 +299,7 @@
     "threshold": 3.0
   },
   "quality": {
-    "catalogue_count": 28370,
+    "catalogue_count": 28356,
     "peer_coverage": {
       "peer_broad": {
         "expected": 52,
@@ -323,7 +323,7 @@
       "688825": "requested adjusted price series missing; no unadjusted fallback",
       "688981": "requested adjusted price series missing; no unadjusted fallback"
     },
-    "nav_issues": 8798,
+    "nav_issues": 8799,
     "report_pages_complete": true,
     "disclosure_issues": []
   },
@@ -342,13 +342,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/014754.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=014754&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 47.05,
         "covered_other_weight_pct": 32.97,
         "coverage": 0.7007439,
@@ -453,13 +453,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/014177.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=014177&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:12+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 47.11,
         "covered_other_weight_pct": 32.59,
         "coverage": 0.6917852,
@@ -564,13 +564,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/006879.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=006879&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:12+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 46.82,
         "covered_other_weight_pct": 32.95,
         "coverage": 0.7037591,
@@ -675,13 +675,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/017303.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=017303&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:12+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 52.18,
         "covered_other_weight_pct": 38.19,
         "coverage": 0.7318896,
@@ -789,13 +789,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/001694.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=001694&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:12+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 55.16,
         "covered_other_weight_pct": 41.14,
         "coverage": 0.7458303,
@@ -905,13 +905,13 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/007460.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9999188,
+      "adjusted_p": 1.0,
       "fund_review": {
         "status": "insufficient",
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=007460&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:50+08:00",
         "known_other_weight_pct": 47.34,
         "covered_other_weight_pct": 33.5,
         "coverage": 0.7076468,
@@ -1022,7 +1022,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=024632&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:14+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 75.37,
         "covered_other_weight_pct": 45.58,
         "coverage": 0.6047499,
@@ -1136,7 +1136,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=025421&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 73.75,
         "covered_other_weight_pct": 63.41,
         "coverage": 0.8597966,
@@ -1279,7 +1279,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=027360&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:51:59+08:00",
         "known_other_weight_pct": 64.34,
         "covered_other_weight_pct": 64.34,
         "coverage": 1.0,
@@ -1435,7 +1435,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=001956&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 56.01,
         "covered_other_weight_pct": 49.77,
         "coverage": 0.8885913,
@@ -1578,7 +1578,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=017878&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:14+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 40.15,
         "covered_other_weight_pct": 17.46,
         "coverage": 0.4348692,
@@ -1690,7 +1690,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=017488&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 43.78,
         "covered_other_weight_pct": 37.1,
         "coverage": 0.8474189,
@@ -1835,7 +1835,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=016772&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 38.34,
         "covered_other_weight_pct": 29.39,
         "coverage": 0.7665623,
@@ -1981,7 +1981,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=018611&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 87.69,
         "covered_other_weight_pct": 78.72,
         "coverage": 0.8977078,
@@ -2092,7 +2092,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=008528&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 62.46,
         "covered_other_weight_pct": 53.9,
         "coverage": 0.8629523,
@@ -2240,7 +2240,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=010415&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:13+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 53.97,
         "covered_other_weight_pct": 46.8,
         "coverage": 0.8671484,
@@ -2385,7 +2385,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=005090&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 54.36,
         "covered_other_weight_pct": 47.88,
         "coverage": 0.8807947,
@@ -2529,7 +2529,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=024433&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 35.42,
         "covered_other_weight_pct": 26.31,
         "coverage": 0.7428007,
@@ -2673,7 +2673,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=018244&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:57+08:00",
         "known_other_weight_pct": 36.14,
         "covered_other_weight_pct": 32.43,
         "coverage": 0.8973437,
@@ -2816,7 +2816,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=009223&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 57.33,
         "covered_other_weight_pct": 42.79,
         "coverage": 0.7463806,
@@ -2927,7 +2927,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=019829&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:51:59+08:00",
         "known_other_weight_pct": 54.34,
         "covered_other_weight_pct": 48.55,
         "coverage": 0.8934487,
@@ -3071,7 +3071,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=007066&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:57+08:00",
         "known_other_weight_pct": 57.29,
         "covered_other_weight_pct": 48.53,
         "coverage": 0.8470937,
@@ -3214,7 +3214,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=012985&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 45.38,
         "covered_other_weight_pct": 28.92,
         "coverage": 0.6372851,
@@ -3345,7 +3345,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=012917&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 41.15,
         "covered_other_weight_pct": 29.68,
         "coverage": 0.7212637,
@@ -3476,7 +3476,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=010126&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 39.72,
         "covered_other_weight_pct": 30.11,
         "coverage": 0.7580564,
@@ -3619,7 +3619,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=015127&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 45.53,
         "covered_other_weight_pct": 31.86,
         "coverage": 0.6997584,
@@ -3732,7 +3732,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=011828&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 41.72,
         "covered_other_weight_pct": 30.17,
         "coverage": 0.7231544,
@@ -3875,7 +3875,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=008260&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 51.96,
         "covered_other_weight_pct": 41.13,
         "coverage": 0.7915704,
@@ -3989,7 +3989,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=010807&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 24.68,
         "covered_other_weight_pct": 14.77,
         "coverage": 0.5984603,
@@ -4134,7 +4134,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=005967&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 88.15,
         "covered_other_weight_pct": 88.15,
         "coverage": 1.0,
@@ -4284,7 +4284,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/026475.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.2093099,
+      "adjusted_p": 0.2093857,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -4795,7 +4795,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=001613&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 50.4,
         "covered_other_weight_pct": 50.4,
         "coverage": 1.0,
@@ -5163,7 +5163,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=540010&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:52:00+08:00",
         "known_other_weight_pct": 59.47,
         "covered_other_weight_pct": 55.86,
         "coverage": 0.9392971,
@@ -5442,7 +5442,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=180031&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:52:00+08:00",
         "known_other_weight_pct": 58.52,
         "covered_other_weight_pct": 56.38,
         "coverage": 0.9634313,
@@ -5601,7 +5601,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=501081&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:54+08:00",
         "known_other_weight_pct": 54.12,
         "covered_other_weight_pct": 49.03,
         "coverage": 0.9059497,
@@ -6330,7 +6330,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=003659&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:16+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 48.4,
         "covered_other_weight_pct": 48.4,
         "coverage": 1.0,
@@ -6608,7 +6608,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=016165&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 48.93,
         "covered_other_weight_pct": 48.93,
         "coverage": 1.0,
@@ -7031,7 +7031,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=006615&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:57+08:00",
         "known_other_weight_pct": 43.08,
         "covered_other_weight_pct": 43.08,
         "coverage": 1.0,
@@ -7399,7 +7399,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=160220&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:58+08:00",
         "known_other_weight_pct": 57.36,
         "covered_other_weight_pct": 53.54,
         "coverage": 0.9334031,
@@ -7790,7 +7790,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=020018&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:57+08:00",
         "known_other_weight_pct": 57.51,
         "covered_other_weight_pct": 57.51,
         "coverage": 1.0,
@@ -8257,7 +8257,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=001412&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:18+08:00",
+        "fetched_at": "2026-11-19T12:51:57+08:00",
         "known_other_weight_pct": 59.0,
         "covered_other_weight_pct": 59.0,
         "coverage": 1.0,
@@ -8806,7 +8806,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=002577&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:58+08:00",
         "known_other_weight_pct": 55.03,
         "covered_other_weight_pct": 55.03,
         "coverage": 1.0,
@@ -9388,7 +9388,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=027057&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:14+08:00",
+        "fetched_at": "2026-11-19T12:51:52+08:00",
         "known_other_weight_pct": 34.81,
         "covered_other_weight_pct": 34.81,
         "coverage": 1.0,
@@ -9901,7 +9901,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=011899&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:59+08:00",
         "known_other_weight_pct": 47.26,
         "covered_other_weight_pct": 47.26,
         "coverage": 1.0,
@@ -10988,7 +10988,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=006887&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 30.71,
         "covered_other_weight_pct": 30.71,
         "coverage": 1.0,
@@ -11447,7 +11447,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=018956&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:58+08:00",
         "known_other_weight_pct": 53.43,
         "covered_other_weight_pct": 53.43,
         "coverage": 1.0,
@@ -12422,7 +12422,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=740001&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:52:00+08:00",
         "known_other_weight_pct": 40.81,
         "covered_other_weight_pct": 40.81,
         "coverage": 1.0,
@@ -13697,7 +13697,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=001809&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:55+08:00",
         "known_other_weight_pct": 38.37,
         "covered_other_weight_pct": 38.37,
         "coverage": 1.0,
@@ -14702,7 +14702,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=018993&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 46.47,
         "covered_other_weight_pct": 43.87,
         "coverage": 0.9440499,
@@ -15198,7 +15198,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=590002&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:19+08:00",
+        "fetched_at": "2026-11-19T12:51:59+08:00",
         "known_other_weight_pct": 61.23,
         "covered_other_weight_pct": 56.84,
         "coverage": 0.9283031,
@@ -16322,7 +16322,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=006265&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:17+08:00",
+        "fetched_at": "2026-11-19T12:51:56+08:00",
         "known_other_weight_pct": 35.18,
         "covered_other_weight_pct": 35.18,
         "coverage": 1.0,
@@ -18031,7 +18031,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=013250&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:52:00+08:00",
         "known_other_weight_pct": 35.17,
         "covered_other_weight_pct": 35.17,
         "coverage": 1.0,
@@ -18433,7 +18433,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=519736&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:15+08:00",
+        "fetched_at": "2026-11-19T12:51:53+08:00",
         "known_other_weight_pct": 54.39,
         "covered_other_weight_pct": 54.39,
         "coverage": 1.0,
@@ -18589,7 +18589,7 @@
         "note": "按披露权重固定的其他重仓股篮子；只检验收益混淆，不还原当前持仓",
         "source": "https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=018210&topline=10&year=2026&month=9",
         "period": "2026-09-30",
-        "fetched_at": "2026-11-19T11:47:20+08:00",
+        "fetched_at": "2026-11-19T12:51:59+08:00",
         "known_other_weight_pct": 35.97,
         "covered_other_weight_pct": 35.97,
         "coverage": 1.0,
@@ -19062,7 +19062,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/160624.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -42366,7 +42366,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/002027.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -246166,7 +246166,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/519013.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.8881621,
+      "adjusted_p": 0.8884836,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -270393,7 +270393,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/015904.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.515883,
+      "adjusted_p": 0.5160697,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -271706,7 +271706,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/110001.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0013524,
+      "adjusted_p": 0.0013529,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -285099,7 +285099,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/014563.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0005101,
+      "adjusted_p": 0.0005103,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -285535,7 +285535,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/000404.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.9775944,
+      "adjusted_p": 0.9779482,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -285659,7 +285659,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/110013.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0127971,
+      "adjusted_p": 0.0128017,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -285783,7 +285783,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/001018.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0147145,
+      "adjusted_p": 0.0147199,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -287719,7 +287719,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/501203.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0147145,
+      "adjusted_p": 0.0147199,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -289301,7 +289301,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/001076.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0147145,
+      "adjusted_p": 0.0147199,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -292352,7 +292352,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/011479.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.1187892,
+      "adjusted_p": 0.1188322,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -294004,7 +294004,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/018184.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.1556544,
+      "adjusted_p": 0.1557107,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -294419,7 +294419,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/006132.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.0329151,
+      "adjusted_p": 0.032927,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -294821,7 +294821,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/013561.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.6767296,
+      "adjusted_p": 0.6769745,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -295035,7 +295035,7 @@
       "nav_source": "https://fund.eastmoney.com/pingzhongdata/021431.js",
       "recent_return_coverage": 1.0,
       "nav_frequency_warning": false,
-      "adjusted_p": 0.515883,
+      "adjusted_p": 0.5160697,
       "fund_review": {
         "status": "not_reviewed",
         "note": "未完成个基其他重仓股对照，不升级较强线索"
@@ -300804,7 +300804,7 @@
           "low": -0.0002271,
           "high": 0.0197422,
           "idio_std_pp": 1.3135179,
-          "recent": -0.0,
+          "recent": 0.0,
           "identifiable": true
         }
       },
@@ -333239,6 +333239,76 @@
           "code": "017824",
           "period": "2026-06-30",
           "known_sum_pct": 1.89
+        }
+      }
+    },
+    {
+      "code": "018752",
+      "name": "天弘阿尔法优选混合A",
+      "company": "天弘基金",
+      "category": "active_domestic",
+      "members": [
+        "018752"
+      ],
+      "membership_status": "仅名称归并的观察组，组合身份未逐份核验",
+      "seed_group": false,
+      "nav_date": "2026-09-16",
+      "nav_source": "https://fund.eastmoney.com/pingzhongdata/018752.js",
+      "recent_return_coverage": 0.35,
+      "nav_frequency_warning": false,
+      "adjusted_p": 1.0,
+      "fund_review": {
+        "status": "not_reviewed",
+        "note": "未完成个基其他重仓股对照，不升级较强线索"
+      },
+      "hist": {
+        "peak": -0.084476,
+        "peak_date": "2026-08-19",
+        "rec": -5.2797,
+        "rec_now": null,
+        "weight": 1.6
+      },
+      "signal": {
+        "level": null,
+        "label": "数据或口径不足",
+        "confirmed_transaction": false
+      },
+      "models": {
+        "broad": {
+          "20": {
+            "usable": false,
+            "reason": "窗口缺日或当日净值缺失"
+          },
+          "40": {
+            "usable": false,
+            "reason": "窗口缺日或当日净值缺失"
+          },
+          "60": {
+            "usable": false,
+            "reason": "窗口缺日或当日净值缺失"
+          }
+        }
+      },
+      "change": {
+        "broad": {
+          "usable": false,
+          "reason": "前后窗口缺日或当日缺失"
+        },
+        "core": {
+          "usable": false,
+          "reason": "前后窗口缺日或当日缺失"
+        }
+      },
+      "holdout": {
+        "usable": false
+      },
+      "facts": {
+        "current": null,
+        "current_status": "该期反查未见目标记录，当前持有情况未知",
+        "last_known": {
+          "code": "018752",
+          "period": "2026-06-30",
+          "known_sum_pct": 1.6
         }
       }
     },
