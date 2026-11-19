@@ -1,0 +1,115 @@
+name: Market tracker updates
+
+on:
+  schedule:
+    # Beijing time. Later slots give delayed or incomplete sources another chance.
+    - cron: '7 2 * * 1-6'   # ETF final 10:07, including Saturday
+    - cron: '23 4 * * 1-6'  # ETF final 12:23 fallback
+    - cron: '17,39 6 * * 1-5'  # ETF intraday snapshots 14:17 and 14:39
+    - cron: '33 11 * * 1-5' # ETF provisional 19:33
+    - cron: '13 13 * * 1-5' # ETF provisional 21:13 fallback
+    - cron: '43 0 * * 1-6'  # Fund NAV 08:43, including Saturday
+    - cron: '19 3 * * 1-6'  # Fund NAV 11:19 fallback
+  workflow_dispatch:
+    inputs:
+      task:
+        description: Pipeline or verification to run
+        type: choice
+        options: [probe, verify, etf-final, etf-close, etf-intraday, fund]
+        default: probe
+      rebuild:
+        description: Rebuild the latest verified business day if already published
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      task: ${{ steps.select.outputs.task }}
+      group: ${{ steps.select.outputs.group }}
+    steps:
+      - id: select
+        env:
+          MANUAL_TASK: ${{ inputs.task }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          case "$SCHEDULE" in
+            '7 2 * * 1-6'|'23 4 * * 1-6') task=etf-final ;;
+            '17,39 6 * * 1-5') task=etf-intraday ;;
+            '33 11 * * 1-5'|'13 13 * * 1-5') task=etf-close ;;
+            '43 0 * * 1-6'|'19 3 * * 1-6') task=fund ;;
+            '') task="$MANUAL_TASK" ;;
+            *) exit 1 ;;
+          esac
+          case "$task" in
+            etf-*) group=etf ;;
+            probe|verify|fund) group="$task" ;;
+            *) exit 1 ;;
+          esac
+          echo "task=$task" >> "$GITHUB_OUTPUT"
+          echo "group=$group" >> "$GITHUB_OUTPUT"
+
+  update:
+    needs: select
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    concurrency:
+      group: market-tracker-${{ needs.select.outputs.group }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install fund dependencies
+        if: needs.select.outputs.task == 'fund'
+        run: python -m pip install -r apps/fund-dragon-recovery/requirements.txt
+
+      - name: Collect, validate, publish and verify
+        env:
+          TASK: ${{ needs.select.outputs.task }}
+          REBUILD: ${{ inputs.rebuild }}
+        run: |
+          args=("$TASK")
+          if [[ "$REBUILD" == "true" ]]; then args+=(--rebuild); fi
+          python -u -X utf8 scripts/market-cloud-update.py "${args[@]}"
+
+      - name: Retain ETF validation and provenance
+        if: always() && startsWith(needs.select.outputs.task, 'etf-')
+        uses: actions/upload-artifact@v4
+        with:
+          name: etf-update-audit
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            apps/national-team-etf/data/v2/raw/*/manifest.json
+            apps/national-team-etf/data/v2/raw/*/exchange/
+            apps/national-team-etf/data/v2/builds/*/acceptance.json
+            apps/national-team-etf/data/v2/builds/*/release_gate.json
+            apps/national-team-etf/data/intraday/*/snapshots.jsonl
+
+      - name: Retain fund validation and provenance
+        if: always() && needs.select.outputs.task == 'fund'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fund-update-audit
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            apps/fund-dragon-recovery/data/v3/raw/*/manifest.json
+            apps/fund-dragon-recovery/data/v3/builds/*/acceptance.json
+            apps/fund-dragon-recovery/data/v3/builds/*/release_gate.json
