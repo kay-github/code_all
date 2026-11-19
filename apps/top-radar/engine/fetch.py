@@ -2,7 +2,6 @@
 """Tencent qfq daily bars for a sector pool. No local absolute paths."""
 import time
 import json
-import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -10,14 +9,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-try:
-    import baostock as bs
-except Exception:  # optional; GitHub Actions installs it
-    bs = None
-
 from config import BARS, BENCH_SYMBOL, HEADERS, PROXIES, TENCENT_KLINE
-
-_BS_LOCK = threading.Lock()
 
 SINA_KLINE = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
 EASTMONEY_KLINE = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -48,41 +40,6 @@ def _save(sym: str, df: pd.DataFrame):
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out, index=False)
     return sym, len(df), ""
-
-
-def fetch_baostock(sym: str, end: str):
-    """BaoStock qfq bars (adjustflag=2). Serialized: its client is not thread-safe."""
-    if bs is None:
-        return None
-    code = sym[:2] + "." + sym[2:]
-    with _BS_LOCK:
-        lg = bs.login()
-        if lg.error_code != "0":
-            return None
-        try:
-            rs = bs.query_history_k_data_plus(
-                code,
-                "date,open,high,low,close,volume,amount",
-                start_date="2020-12-01",
-                end_date=end,
-                frequency="d",
-                adjustflag="2",
-            )
-            if rs.error_code != "0":
-                return None
-            rows = []
-            while rs.next():
-                rows.append(rs.get_row_data())
-        finally:
-            bs.logout()
-    if len(rows) < 60:
-        return None
-    df = pd.DataFrame(rows, columns=["date", "open", "close", "high", "low", "volume", "amount"])
-    for col in ["open", "close", "high", "low", "volume", "amount"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    df["date"] = pd.to_datetime(df["date"])
-    df = df.dropna(subset=["close"]).drop_duplicates("date").sort_values("date")
-    return df
 
 
 def fetch_sina_factors(sym: str):
