@@ -1,6 +1,7 @@
 (async function () {
   // Only embed reviewed tools. Admin-configured links to other pages keep their link behavior.
   const toolPaths = {
+    taoding: '/taoding',
     investment: '/tools/investment-theory/',
     notes: '/notes/',
     grid: '/tools/grid-trading-manager/',
@@ -10,7 +11,7 @@
     gjd: '/tools/national-team-etf/',
     fundRecovery: '/tools/fund-dragon-recovery/',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);
