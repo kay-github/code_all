@@ -234,6 +234,7 @@ const TIER = {
   4:{name:'深红清仓',color:'#7A1F1A',bg:'#7A1F1A',action:'再减 1/3 或清仓；不接飞刀，等重新站上 MA20 且广度恢复'}
 };
 const state = {summary:null, sector:null, active:null, chart:null};
+const DATA_BASE = location.pathname.startsWith('/taoding') ? '/taoding/data' : './data';
 const $ = (s)=>document.querySelector(s);
 const fmtPct = (x,d=1)=> (x===null||x===undefined||isNaN(x)) ? '—' : (x*100).toFixed(d)+'%';
 const fmtNum = (x,d=3)=> (x===null||x===undefined||isNaN(x)) ? '—' : Number(x).toFixed(d);
@@ -244,7 +245,7 @@ function clearErr(){ $('#err').style.display='none'; }
 
 async function boot(){
   try{
-    const r = await fetch('./data/summary.json',{cache:'no-store'});
+    const r = await fetch(`${DATA_BASE}/summary.json`,{cache:'no-store'});
     if(!r.ok) throw new Error('summary HTTP '+r.status);
     state.summary = await r.json();
     renderTabs();
@@ -272,7 +273,7 @@ async function select(id){
   state.active = id;
   renderTabs();
   try{
-    const r = await fetch(`./data/sectors/${id}.json`,{cache:'no-store'});
+    const r = await fetch(`${DATA_BASE}/sectors/${id}.json`,{cache:'no-store'});
     if(!r.ok) throw new Error('sector HTTP '+r.status);
     state.sector = await r.json();
     clearErr();
