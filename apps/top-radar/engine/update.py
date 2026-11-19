@@ -41,16 +41,29 @@ def _bool(x):
 
 
 def load_registry():
+    remote = None
     try:
         r = requests.get(CONFIG_API + "?view=registry", timeout=8)
         if r.ok:
             data = r.json()
             if isinstance(data, dict) and data.get("sectors"):
-                return data, "remote"
+                remote = data
     except Exception:
         pass
-    with open(REGISTRY, encoding="utf-8") as fh:
-        return json.load(fh), "local"
+    try:
+        with open(REGISTRY, encoding="utf-8") as fh:
+            local = json.load(fh)
+    except Exception:
+        local = {"sectors": []}
+    if remote:
+        # Seed-only sectors (not yet written to Blob) still need to run daily.
+        ids = {s.get("id") for s in remote.get("sectors", [])}
+        for s in local.get("sectors", []):
+            if s.get("id") not in ids:
+                remote["sectors"].append(s)
+        remote["sectors"] = sorted(remote["sectors"], key=lambda s: s.get("order", 99))
+        return remote, "remote+local"
+    return local, "local"
 
 
 def load_pool(sector):

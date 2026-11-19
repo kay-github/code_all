@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-11-19 20:29",
+ "updated_at": "2026-11-19 21:44",
  "source": "remote",
  "sectors": [
   {
@@ -35,6 +35,23 @@
    "coverage": 1.0,
    "stale": false,
    "updated_at": "2026-11-19 20:29"
+  },
+  {
+   "id": "litho_cn",
+   "name": "国产光刻机",
+   "enabled": true,
+   "order": 3,
+   "status": "ok",
+   "as_of": "2026-11-18",
+   "tier": 0,
+   "tier_name": "正常",
+   "action": "正常持有",
+   "R": 20.9,
+   "idx": 3.0713,
+   "dd250": -0.4936,
+   "coverage": 1.0,
+   "stale": false,
+   "updated_at": "2026-11-19 21:44"
   }
  ]
 }

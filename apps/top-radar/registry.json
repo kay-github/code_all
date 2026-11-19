@@ -25,6 +25,18 @@
     "min_tier": 3,
     "orange": "stage"
    }
+  },
+  {
+   "id": "litho_cn",
+   "name": "国产光刻机",
+   "enabled": true,
+   "pool": "pools/litho_cn.json",
+   "order": 3,
+   "push": {
+    "enabled": true,
+    "min_tier": 3,
+    "orange": "stage"
+   }
   }
  ]
 }
