@@ -3,12 +3,12 @@
   "stage_label": "盘后初值",
   "confidence": "provisional",
   "confidence_note": "初值级：T 日反推份额，可能被事后修订，不可作定稿",
-  "business_date": "2026-11-17",
-  "generated_at": "2026-11-17T19:56:41+08:00",
-  "build_id": "20261117T195518_0800_c412ab3e4e",
-  "built_at": "2026-11-17T19:55:18+08:00",
-  "pending_review": false,
-  "superseded_by": "20261118T103749_0800_c312682bbd",
+  "business_date": "2026-11-19",
+  "generated_at": "2026-11-19T16:24:12+08:00",
+  "build_id": "20261119T162331_0800_21e26aac33",
+  "built_at": "2026-11-19T16:23:31+08:00",
+  "pending_review": true,
+  "superseded_by": null,
   "official": {
     "disclosure_stage": "初值或不完整",
     "coverage": 0,
@@ -18,13 +18,13 @@
     "valid_members": 0
   },
   "vendor": {
-    "net_yi": 24.47730130593769,
-    "net_low_yi": 1.883848982054641,
-    "net_high_yi": 46.98988009336015,
+    "net_yi": 38.16234628700511,
+    "net_low_yi": 19.010024548986028,
+    "net_high_yi": 57.29469836313348,
     "valid_members": 15,
     "expected_members": 15,
     "complete": false,
-    "amount_yi": 713.55,
+    "amount_yi": 1061.24,
     "reliable": false,
     "reasons": [
       "供应商换手率反推，分母口径未经验证",
@@ -32,21 +32,21 @@
     ]
   },
   "inventory": {
-    "total_units": 5.721545303555536,
-    "net_added_units": 3.2452994364331995,
-    "current_ratio": 0.5721545303555536,
+    "total_units": 5.893747731988642,
+    "net_added_units": 3.4175018648663054,
+    "current_ratio": 0.5893747731988642,
     "complete": true,
     "provisional": true
   },
   "flattened": {
     "count": 0,
     "members": [],
-    "near_count": 7,
-    "ratio_median": 1.000355,
+    "near_count": 6,
+    "ratio_median": 0.999686,
     "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
   },
   "revision_risk": "T 日换手率分母可能仍是昨收份额，收盘后才换成当日登记份额；11-13 实测 94/254 只被修订，核心15由 −24.9 亿修正为 −123.7 亿。本页初值不能当定稿，也不能据此判断国家队当日买卖。",
-  "next_step": "已由权威构建 20261118T103749_0800_c312682bbd 复核替代；初值保留用于回看当时的判断依据",
+  "next_step": "次日 10:00 复核交易所正式份额后发布权威版本；本初值届时自动标记为已被替代",
   "identity": "I0 当日买卖主体未确认",
   "limitation": "初值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
 }
