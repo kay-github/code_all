@@ -1,4 +1,5 @@
 name: Market tracker updates
+run-name: Market trackers · ${{ inputs.task || github.event.schedule }}
 
 on:
   schedule:
@@ -58,6 +59,8 @@ jobs:
     needs: select
     runs-on: ubuntu-latest
     timeout-minutes: 100
+    env:
+      TZ: Asia/Shanghai
     concurrency:
       group: market-tracker-${{ needs.select.outputs.group }}
       cancel-in-progress: false
