@@ -11,10 +11,7 @@
     },
     "api/top-radar.js": {
       "maxDuration": 30,
-      "includeFiles": [
-        "apps/top-radar/registry.json",
-        "apps/top-radar/pools/*.json"
-      ]
+      "includeFiles": "apps/top-radar/**"
     }
   },
   "routes": [
