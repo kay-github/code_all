@@ -11,6 +11,7 @@ import requests
 from config import BARS, BENCH_SYMBOL, HEADERS, PROXIES, TENCENT_KLINE
 
 SINA_KLINE = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
+EASTMONEY_KLINE = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
 
 
 def tx_sym(code: str) -> str:
@@ -60,6 +61,46 @@ def fetch_sina(sym: str, end: str):
     return df
 
 
+def fetch_eastmoney(sym: str, end: str):
+    """Adjusted (qfq) fallback when Tencent is blocked. Eastmoney's f57 is amount in CNY."""
+    code = code_of(sym)
+    secid = ("1." if sym.startswith("sh") else "0.") + code
+    params = {
+        "secid": secid,
+        "fields1": "f1,f2,f3,f4,f5,f6",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58",
+        "klt": "101",
+        "fqt": "1",
+        "beg": "20201201",
+        "end": "20500101",
+        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+    }
+    r = requests.get(
+        EASTMONEY_KLINE,
+        params=params,
+        headers={**HEADERS, "Referer": "https://quote.eastmoney.com/"},
+        proxies=PROXIES,
+        timeout=20,
+    )
+    js = r.json()
+    klines = ((js.get("data") or {}).get("klines")) or []
+    rows = []
+    for line in klines:
+        f = line.split(",")
+        if len(f) < 7:
+            continue
+        rows.append([f[0], f[1], f[2], f[3], f[4], f[5], f[6]])
+    if not rows:
+        return None
+    df = pd.DataFrame(rows, columns=["date", "open", "close", "high", "low", "volume", "amount"])
+    for col in ["open", "close", "high", "low", "volume", "amount"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["date"] = pd.to_datetime(df["date"])
+    df = df[df["date"] <= pd.Timestamp(end)]
+    df = df.dropna(subset=["close"]).drop_duplicates("date").sort_values("date")
+    return df
+
+
 def fetch_one(sym: str, end: str, backfill: bool = False):
     rows = []
     tencent_failed = False
@@ -85,14 +126,21 @@ def fetch_one(sym: str, end: str, backfill: bool = False):
     if tencent_failed:
         rows = []
     if not rows:
-        # Fallback: Sina unadjusted daily bars. Used only when Tencent is blocked.
+        # Fallback 1: Eastmoney adjusted bars (qfq). Preferred when Tencent is blocked.
+        try:
+            df = fetch_eastmoney(sym, end)
+            if df is not None and len(df) >= 60:
+                return _save(sym, df)
+        except Exception as exc:
+            eastmoney_err = str(exc)[:80]
+        # Fallback 2: Sina unadjusted daily bars. Last resort only.
         try:
             df = fetch_sina(sym, end)
             if df is not None and len(df) >= 60:
                 return _save(sym, df)
         except Exception as exc:
-            return sym, 0, f"tencent blocked; sina failed: {exc}"
-        return sym, 0, "no data (tencent blocked, sina empty)"
+            return sym, 0, f"tencent blocked; eastmoney={locals().get('eastmoney_err', 'empty')}; sina failed: {exc}"
+        return sym, 0, "no data (tencent blocked, eastmoney/sina empty)"
 
     df = pd.DataFrame([r[:6] for r in rows], columns=["date", "open", "close", "high", "low", "volume"])
     for col in ["open", "close", "high", "low", "volume"]:
