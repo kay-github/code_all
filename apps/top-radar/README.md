@@ -104,7 +104,7 @@ GitHub Actions 需要 `MONITOR_SECRET`（已存在于仓库 Secrets）调 `actio
 
 ```bash
 cd D:\code_all
-git add apps/top-radar api/top-radar.js .github/workflows/top-radar-daily.yml vercel.json
+git add apps/top-radar api/health.js lib/topRadarApi.js .github/workflows/top-radar-daily.yml vercel.json .vercelignore
 git commit -m "Update top radar"
 git push
 ```
