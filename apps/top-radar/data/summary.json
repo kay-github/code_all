@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-19 19:16",
- "source": "local",
+ "updated_at": "2026-11-19 20:07",
+ "source": "remote",
  "sectors": [
   {
    "id": "optical",
@@ -29,12 +29,12 @@
    "tier": 0,
    "tier_name": "正常",
    "action": "正常持有",
-   "R": 22.2,
-   "idx": 4.7219,
-   "dd250": -0.4852,
+   "R": 21.8,
+   "idx": 5.0193,
+   "dd250": -0.4851,
    "coverage": 1.0,
    "stale": false,
-   "updated_at": "2026-11-19 19:16"
+   "updated_at": "2026-11-19 20:07"
   }
  ]
 }
