@@ -1,8 +1,8 @@
 {
   "version": "2.2.0",
-  "build_id": "20261118T171007_0800_ac45e94cdb",
-  "business_date": "2026-11-17",
-  "built_at": "2026-11-18T17:10:07+08:00",
+  "build_id": "20261119T123615_0800_61f2e69dba",
+  "business_date": "2026-11-18",
+  "built_at": "2026-11-19T12:36:15+08:00",
   "data_stage": "次晨复核",
   "core_members": [
     "159338",
@@ -22,99 +22,99 @@
     "588080"
   ],
   "latest": {
-    "date": "2026-11-17",
+    "date": "2026-11-18",
     "valid_members": 15,
     "expected_members": 15,
     "complete": true,
-    "net_estimate": 154.56086825185557,
-    "partial_net_estimate": 154.56086825185557,
+    "net_estimate": 144.75921824369664,
+    "partial_net_estimate": 144.75921824369664,
     "share_change_members": 15,
-    "outflow_count": 6,
-    "inflow_count": 9
+    "outflow_count": 8,
+    "inflow_count": 7
   },
   "w5": {
     "complete": true,
-    "net_estimate": 17.716599589380763
+    "net_estimate": 196.93821156723013
   },
   "unit": "亿元；份额为原生份额",
   "valuation": "份额变化×当日成交均价，仅表示证券敞口变化估算，不是实际现金流",
   "identity": "当日买卖主体未确认",
   "inventory": {
     "version": "1.0",
-    "date": "2026-11-17",
+    "date": "2026-11-18",
     "complete": true,
     "latest": {
-      "date": "2026-11-17",
+      "date": "2026-11-18",
       "complete": true,
       "valid_members": 15,
       "expected_members": 15,
       "missing": [],
-      "current_yi": 10163.676812017608,
-      "net_added_yi": 5822.246463156392,
-      "total_units": 5.797113089036979,
-      "net_added_units": 3.320867221914642,
-      "current_ratio": 0.5797113089036979,
-      "alternative_units": 5.488892806142008,
+      "current_yi": 10292.356439727891,
+      "net_added_yi": 5950.926090866676,
+      "total_units": 5.870508806737256,
+      "net_added_units": 3.3942629396149187,
+      "current_ratio": 0.5870508806737256,
+      "alternative_units": 5.558386228246976,
       "components": [
         {
           "code": "159338",
-          "current_yi": 310.60987156064067
+          "current_yi": 306.61761077389986
         },
         {
           "code": "159845",
-          "current_yi": 78.31845664933134
+          "current_yi": 73.95323096216217
         },
         {
           "code": "159915",
-          "current_yi": 1127.935638537055
+          "current_yi": 1144.358002511774
         },
         {
           "code": "159919",
-          "current_yi": 589.7418721318681
+          "current_yi": 606.3349640462428
         },
         {
           "code": "159949",
-          "current_yi": 264.2192918690602
+          "current_yi": 267.4699956815115
         },
         {
           "code": "510050",
-          "current_yi": 475.7044667586207
+          "current_yi": 476.0033521621621
         },
         {
           "code": "510300",
-          "current_yi": 1975.4346987469878
+          "current_yi": 2030.0393745118736
         },
         {
           "code": "510310",
-          "current_yi": 1054.78088625
+          "current_yi": 1072.9366570588234
         },
         {
           "code": "510330",
-          "current_yi": 710.7416893103449
+          "current_yi": 743.2916990234374
         },
         {
           "code": "510500",
-          "current_yi": 614.648342763158
+          "current_yi": 611.318926
         },
         {
           "code": "512050",
-          "current_yi": 185.84318666666667
+          "current_yi": 186.051190017452
         },
         {
           "code": "512100",
-          "current_yi": 462.4740086696035
+          "current_yi": 474.0426395704948
         },
         {
           "code": "563360",
-          "current_yi": 431.53626149882905
+          "current_yi": 428.52086871300764
         },
         {
           "code": "588000",
-          "current_yi": 1402.9805222252746
+          "current_yi": 1397.104901264368
         },
         {
           "code": "588080",
-          "current_yi": 478.70761838016534
+          "current_yi": 474.313027430684
         }
       ]
     },
@@ -158,11 +158,11 @@
     ]
   },
   "source_urls": {
-    "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-10-30&txtEnd=2026-11-17",
-    "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-10-30&txtEnd=2026-11-17",
-    "159915": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-10-30&txtEnd=2026-11-17",
-    "159919": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-10-30&txtEnd=2026-11-17",
-    "159949": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-10-30&txtEnd=2026-11-17",
+    "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-10-31&txtEnd=2026-11-18",
+    "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-10-31&txtEnd=2026-11-18",
+    "159915": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-10-31&txtEnd=2026-11-18",
+    "159919": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-10-31&txtEnd=2026-11-18",
+    "159949": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-10-31&txtEnd=2026-11-18",
     "510050": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
     "510300": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
     "510310": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
