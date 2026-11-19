@@ -90,7 +90,7 @@ input[type=checkbox]{width:auto;accent-color:var(--red)}
 
   <div class="card">
     <h2>立即执行</h2>
-    <p class="hint">“立即跑一次”会触发 GitHub Actions 的 <b>top-radar-daily.yml</b>（workflow_dispatch）。需要在 Vercel 配 <b>GITHUB_DISPATCH_TOKEN</b>（actions:write + contents:write）；没配时接口会返回 503，不影响每天自动跑。</p>
+    <p class="hint">“立即跑一次”会触发 GitHub Actions 的 <b>top-radar-daily.yml</b>（workflow_dispatch）。需要在 Vercel 配 <b>GITHUB_DISPATCH_TOKEN</b>（actions:write + contents:write）；没配时接口会返回 503，不影响每天自动跑。测试 PushPlus 会发一条“光模块 2026-06-09 红色高危”的模拟信号，只用于看样式和链路，不是实盘。</p>
     <div class="actions"><button class="primary" id="runBtn">立即跑一次</button><button id="testBtn">测试 PushPlus</button><button class="ghost" id="refreshBtn">刷新页面</button></div>
     <div class="msg" id="runMsg"></div>
   </div>
