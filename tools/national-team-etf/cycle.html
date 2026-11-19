@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="gjd-build-id" content="20261119T132924_0800_11d11b93aa"><title>ETF通道历史复盘 2026-11-18</title>
+<meta name="gjd-build-id" content="20261119T134523_0800_f5f680801c"><title>ETF通道历史复盘 2026-11-18</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e639c'/%3E%3Cpath d='M6 23l6-7 4 4 9-11' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
 <script src="/assets/site-theme.js"></script><link rel="stylesheet" href="/assets/workspace-theme.css">
 <style>
@@ -193,8 +193,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   header{position:sticky;flex-direction:row;flex-wrap:wrap;align-items:center;gap:0;
     min-height:var(--header-h);padding-top:var(--s2);padding-bottom:var(--s2)}
   header>strong{font-size:13px}
-  nav{order:3;flex:1 0 100%;justify-content:flex-start;gap:2px;margin-top:6px;padding-right:52px}
-  nav a{min-height:0;font-size:12px;padding:5px 10px}
+  nav{order:3;flex:1 0 100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin-top:6px;padding:0}
+  nav a{justify-content:center;min-height:32px;font-size:11.5px;padding:5px 2px}
   #themeToggle{position:absolute;right:var(--s4);top:9px;margin:0;min-height:30px;padding:4px 10px;font-size:11px}
   section,main>section:not([id]),#inventory{padding:var(--s4)}
   section{margin:var(--s3) 0}
@@ -245,13 +245,16 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   .stage-card{padding:var(--s3)}}
 /* ==== 焦点首屏：结论、分品种、刻度 ==== */
 .focus-hero{background:transparent;border:0;box-shadow:none;padding:0;margin:var(--s4) 0 var(--s5)}
-.focus-hero h1{font-size:clamp(28px,4.2vw,44px);line-height:1.18;letter-spacing:-1.2px;margin:var(--s3) 0 var(--s2);max-width:1000px}
+.focus-hero h1{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .4em;font-size:clamp(28px,4.2vw,42px);line-height:1.2;letter-spacing:-.8px;margin:var(--s3) 0 var(--s2)}
+.focus-amount{white-space:nowrap;font-variant-numeric:tabular-nums}
+.focus-amount:empty{display:none}
+.focus-date{font-size:12px;color:var(--muted)}
+.focus-hero #focusSubline{margin-bottom:var(--s3)}
 .focus-status{margin:var(--s3) 0 var(--s2)}
-.focus-points{display:grid;gap:var(--s2);margin:var(--s4) 0 var(--s5);max-width:1000px}
-.focus-points ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--s2)}
-.focus-points li{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
-.focus-points li:nth-child(2){border-left-color:var(--amber)}
-.focus-points:empty{display:none}
+#interpretation{margin:0 0 var(--s4)}
+#interpretation[hidden]{display:none}
+.focus-insight ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px var(--s4);padding:0;list-style:none}
+.focus-insight li{padding:4px 0;color:var(--muted);font-size:12.5px}
 .focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:stretch}
 .focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
 .focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
@@ -269,7 +272,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-start,.gauge-now{position:absolute;top:-4px;width:2px;height:18px;background:var(--muted)}
 .gauge-start{opacity:.45}
 .gauge-now{background:var(--accent);width:3px}
-.gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
+.gauge-labels{position:relative;display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:5px}
+.gauge-origin{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .inventory-mix{grid-column:1/-1}
 .inventory-mix-link{display:inline-flex;align-items:center;min-height:32px}
 .mix-date{margin:0}
@@ -296,20 +300,30 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
 .focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
 .focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
-.focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.8px}
+.focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.5px}
+.focus-grid #inventory .inventory-kpis .kpi:first-child{grid-column:auto}
+.inventory-unit{margin:0 0 0 auto;font-weight:500}
 .focus-grid #inventory .lead{margin-bottom:var(--s2)}
 @media(max-width:860px){
   .focus-grid{grid-template-columns:1fr}
   .focus-grid #inventory,.focus-grid .inventory-mix{order:-1}
-  .focus-hero h1{font-size:clamp(24px,7vw,34px)}
+  .focus-hero h1{font-size:clamp(21px,5.8vw,32px)}
+  .focus-insight ul{grid-template-columns:1fr}
   .focus-card .scroll{max-height:52vh}
-  .focus-grid #inventory .inventory-kpis{grid-template-columns:1fr 1fr}
+  .focus-grid #inventory .inventory-kpis .kpi{padding:8px}
+  .focus-grid #inventory .inventory-kpis .value{font-size:clamp(16px,4.8vw,22px)}
+}
+@media(max-width:300px){
+  :root{--header-h:112px}
+  header nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .focus-grid #inventory .inventory-kpis{grid-template-columns:minmax(0,1fr)}
+  .focus-grid #inventory .inventory-kpis .kpi{flex-direction:row;align-items:baseline;justify-content:space-between;gap:4px}
 }
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察</strong><nav><a href="/gjd/#focus">最新一日</a><a href="/gjd/#inventory">本轮刻度</a><a href="/gjd/#interpretation">通道解读</a><a href="/gjd/#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察</strong><nav><a href="/gjd/#focus">最新一日</a><a href="/gjd/#inventory">本轮刻度</a><a href="/gjd/#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段成交</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
 <main>
-    <div class="eyebrow">历史复盘 · 与当日追踪共用构建 20261119T132924_0800_11d11b93aa</div>
+    <div class="eyebrow">历史复盘 · 与当日追踪共用构建 20261119T134523_0800_f5f680801c</div>
     <h1>ETF 通道变化的历史底稿</h1><p class="lead">截至 2026-11-18，当前核心15只回溯；区间名称仅供展示，不作为状态引擎的先验。</p>
     <div class="notice">旧版“国家队成本、浮亏、实现收益”已撤回。份额净变化无法还原同一账户的库存与成交批次，也看不到全部二级市场换手。</div>
     <section><h2>统一口径后的区间估算</h2><div class="scroll"><table><thead><tr><th>区间</th><th>起点</th><th>终点</th><th>有效观测净申赎估算</th><th>有效/预期基金日</th></tr></thead><tbody><tr><td>早期区间</td><td>2024-06-03</td><td>2025-12-31</td><td>+4,723.6 亿</td><td>5514/5517</td></tr><tr><td>2026上半年区间</td><td>2026-01-05</td><td>2026-07-15</td><td>-15,736.5 亿</td><td>1905/1905</td></tr><tr><td>7月中旬以来</td><td>2026-07-16</td><td>2026-11-18</td><td>+6,283.9 亿</td><td>1260/1260</td></tr></tbody></table></div>

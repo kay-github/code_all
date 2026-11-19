@@ -74,7 +74,7 @@ for(const width of [320,390,1440])test(`view calculations at ${width}px: data, s
  assert.equal((nodes.officialRows.innerHTML.match(/<tr>/g)||[]).length,15);
  assert.equal((nodes.officialMobile.innerHTML.match(/class="cardrow"/g)||[]).length,15);
  assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,15);
- assert.ok(nodes.inventoryTitle.textContent.includes(data.inventory.latest.total_units.toFixed(1)));
+ assert.ok(nodes.inventoryKpis.innerHTML.includes(data.inventory.latest.total_units.toFixed(2)));
  assert.ok(nodes.inventoryKpis.innerHTML.includes('当前总存量'));
  assert.ok(nodes.inventoryKpis.innerHTML.includes('本轮净新增'));
  assert.equal(context.window.GJD.inventoryUnits,data.inventory.latest.total_units);
@@ -107,7 +107,7 @@ test('inventory mix shows all core components with matching percentages and scal
 test('missing inventory suppresses the current ratio and negative net increase remains negative',()=>{
  const missing=structuredClone(data);missing.inventory.complete=false;missing.inventory.latest.complete=false;
  missing.inventory.latest.total_units=null;missing.inventory.latest.net_added_units=null;
- const a=render(390,missing);assert.ok(a.nodes.inventoryTitle.textContent.includes('数据不足'));
+ const a=render(390,missing);assert.match(a.nodes.inventorySummary.textContent,/存量数据未齐/);
  assert.ok(a.nodes.inventoryKpis.innerHTML.includes('—'));assert.equal(a.context.window.GJD.inventoryUnits,null);
  const d=structuredClone(data);d.inventory.latest.net_added_units=-.25;
  const b=render(390,d);assert.ok(b.nodes.inventoryKpis.innerHTML.includes('-0.25'));
@@ -117,23 +117,26 @@ test('empty discovery and incomplete official data show gaps without zero totals
  const d=structuredClone(data);d.discovery.queue=[];d.exchange.latest.complete=false;d.exchange.latest.net_estimate=null;d.exchange.latest.valid_members=14;
  d.exchange.instruments['510300'].latest=null;
  const {nodes}=render(390,d);
- assert.match(nodes.focusHeadline.textContent,/正式份额未齐全/);
+ assert.match(nodes.focusDirection.textContent,/正式份额未齐全/);
+ assert.equal(nodes.focusAmount.textContent,'');
  assert.match(nodes.focusSubline.textContent,/覆盖 14\/15，暂不展示合计/);
- assert.equal(nodes.interpretation.innerHTML,'');
+ assert.equal(nodes.interpretation.hidden,true);
  assert.ok(nodes.discoveryRows.innerHTML.includes('尚无有效扫描数据'));
 });
 
 test('focus first screen answers latest-day movers, 10-part scale, and a data-driven summary',()=>{
  const {nodes}=render(1440);
- assert.match(nodes.focusHeadline.textContent,/^\d{4}-\d{2}-\d{2} · ETF通道(净申购|净赎回|基本持平)/);
+ assert.match(nodes.focusDirection.textContent,/^ETF 通道(净申购|净赎回|基本持平)/);
+ assert.match(page,/<time class="focus-date mono" datetime="\d{4}-\d{2}-\d{2}">/);
  assert.match(nodes.focusSubline.textContent,/买卖主体未确认（I0）/);
  const rows=(nodes.focusRows.innerHTML.match(/<tr>/g)||[]).length;
  assert.ok(rows>0&&rows<=10,rows);
  assert.equal((nodes.focusMobile.innerHTML.match(/class="cardrow"/g)||[]).length,rows);
- assert.match(nodes.interpretation.innerHTML,/此前 4 日合计：/);
- assert.doesNotMatch(nodes.interpretation.innerHTML,/买卖主体未确认|近5日/);
+ assert.match(page,/<details id="interpretation" class="focus-insight"><summary>指数净申赎明细<\/summary>/);
+ assert.match(nodes.interpretationRows.innerHTML,/此前 4 日合计：/);
+ assert.doesNotMatch(nodes.interpretationRows.innerHTML,/买卖主体未确认|近5日/);
  assert.doesNotMatch(page,/id="more"|id="focusDate"/);
- assert.match(nodes.inventoryTitle.textContent,/\/ 10 份/);
+ assert.match(nodes.inventoryBasis.textContent,/10 份基准/);
  assert.match(nodes.inventoryGauge.innerHTML,/gauge-now/);
  assert.ok(page.indexOf('id="focus"')<page.indexOf('id="stages"'));
  assert.ok(page.indexOf('id="focus"')<page.indexOf('id="intraday"'));
@@ -145,8 +148,8 @@ test('focus headline follows the sign of the official net estimate',()=>{
  d.exchange.latest.complete=true;d.exchange.latest.valid_members=15;d.exchange.latest.expected_members=15;
  d.exchange.w5.net_estimate=-80;d.exchange.w5.complete=true;
  const {nodes}=render(390,d);
- assert.match(nodes.focusHeadline.textContent,/净赎回/);
- assert.ok(!nodes.focusHeadline.textContent.includes('净申购'));
+ assert.equal(nodes.focusDirection.textContent,'ETF 通道净赎回');
+ assert.equal(nodes.focusAmount.textContent,'100.0 亿');
  assert.match(nodes.focusSubline.textContent,/15只中 2只增加、13只减少/);
 });
 

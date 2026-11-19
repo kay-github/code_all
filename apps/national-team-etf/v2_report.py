@@ -56,11 +56,11 @@ def render(a,folder):
 
 FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHeadline">
 <div class="statusline focus-status">
-<span class="pill" id="focusStage">交易所正式份额</span>
+<time class="focus-date mono" datetime="__END__">__END__</time><span class="pill" id="focusStage">交易所正式份额</span>
 </div>
-<h1 id="focusHeadline">正式份额加载中</h1>
+<h1 id="focusHeadline"><span id="focusDirection">正式份额加载中</span> <span class="focus-amount" id="focusAmount"></span></h1>
 <p class="lead" id="focusSubline"></p>
-<div id="interpretation" class="focus-points"></div>
+<details id="interpretation" class="focus-insight"><summary>指数净申赎明细</summary><ul id="interpretationRows"></ul></details>
 <div class="focus-grid">
 <section id="focusMovers" class="focus-card" aria-labelledby="focusMoversTitle">
 <div class="focus-card-head"><h2 id="focusMoversTitle">净申购与净赎回排行</h2><a class="focus-more" href="#official">全部 15 只 →</a></div>
@@ -69,7 +69,7 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 </section>
 <section id="inventory" class="focus-card" aria-labelledby="inventoryTitle">
 <div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span></div>
-<h2 id="inventoryTitle">本轮刻度</h2>
+<h2 id="inventoryTitle">本轮刻度 <span class="note inventory-unit">单位：份</span></h2>
 <p id="inventorySummary" class="lead"></p>
 <div class="inventory-kpis" id="inventoryKpis"></div>
 <div id="inventoryGauge" class="inventory-gauge"></div>
@@ -283,8 +283,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   header{position:sticky;flex-direction:row;flex-wrap:wrap;align-items:center;gap:0;
     min-height:var(--header-h);padding-top:var(--s2);padding-bottom:var(--s2)}
   header>strong{font-size:13px}
-  nav{order:3;flex:1 0 100%;justify-content:flex-start;gap:2px;margin-top:6px;padding-right:52px}
-  nav a{min-height:0;font-size:12px;padding:5px 10px}
+  nav{order:3;flex:1 0 100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin-top:6px;padding:0}
+  nav a{justify-content:center;min-height:32px;font-size:11.5px;padding:5px 2px}
   #themeToggle{position:absolute;right:var(--s4);top:9px;margin:0;min-height:30px;padding:4px 10px;font-size:11px}
   section,main>section:not([id]),#inventory{padding:var(--s4)}
   section{margin:var(--s3) 0}
@@ -335,13 +335,16 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   .stage-card{padding:var(--s3)}}
 /* ==== 焦点首屏：结论、分品种、刻度 ==== */
 .focus-hero{background:transparent;border:0;box-shadow:none;padding:0;margin:var(--s4) 0 var(--s5)}
-.focus-hero h1{font-size:clamp(28px,4.2vw,44px);line-height:1.18;letter-spacing:-1.2px;margin:var(--s3) 0 var(--s2);max-width:1000px}
+.focus-hero h1{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .4em;font-size:clamp(28px,4.2vw,42px);line-height:1.2;letter-spacing:-.8px;margin:var(--s3) 0 var(--s2)}
+.focus-amount{white-space:nowrap;font-variant-numeric:tabular-nums}
+.focus-amount:empty{display:none}
+.focus-date{font-size:12px;color:var(--muted)}
+.focus-hero #focusSubline{margin-bottom:var(--s3)}
 .focus-status{margin:var(--s3) 0 var(--s2)}
-.focus-points{display:grid;gap:var(--s2);margin:var(--s4) 0 var(--s5);max-width:1000px}
-.focus-points ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--s2)}
-.focus-points li{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
-.focus-points li:nth-child(2){border-left-color:var(--amber)}
-.focus-points:empty{display:none}
+#interpretation{margin:0 0 var(--s4)}
+#interpretation[hidden]{display:none}
+.focus-insight ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px var(--s4);padding:0;list-style:none}
+.focus-insight li{padding:4px 0;color:var(--muted);font-size:12.5px}
 .focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:stretch}
 .focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
 .focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
@@ -359,7 +362,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-start,.gauge-now{position:absolute;top:-4px;width:2px;height:18px;background:var(--muted)}
 .gauge-start{opacity:.45}
 .gauge-now{background:var(--accent);width:3px}
-.gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
+.gauge-labels{position:relative;display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:5px}
+.gauge-origin{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .inventory-mix{grid-column:1/-1}
 .inventory-mix-link{display:inline-flex;align-items:center;min-height:32px}
 .mix-date{margin:0}
@@ -386,18 +390,28 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
 .focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
 .focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
-.focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.8px}
+.focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.5px}
+.focus-grid #inventory .inventory-kpis .kpi:first-child{grid-column:auto}
+.inventory-unit{margin:0 0 0 auto;font-weight:500}
 .focus-grid #inventory .lead{margin-bottom:var(--s2)}
 @media(max-width:860px){
   .focus-grid{grid-template-columns:1fr}
   .focus-grid #inventory,.focus-grid .inventory-mix{order:-1}
-  .focus-hero h1{font-size:clamp(24px,7vw,34px)}
+  .focus-hero h1{font-size:clamp(21px,5.8vw,32px)}
+  .focus-insight ul{grid-template-columns:1fr}
   .focus-card .scroll{max-height:52vh}
-  .focus-grid #inventory .inventory-kpis{grid-template-columns:1fr 1fr}
+  .focus-grid #inventory .inventory-kpis .kpi{padding:8px}
+  .focus-grid #inventory .inventory-kpis .value{font-size:clamp(16px,4.8vw,22px)}
+}
+@media(max-width:300px){
+  :root{--header-h:112px}
+  header nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .focus-grid #inventory .inventory-kpis{grid-template-columns:minmax(0,1fr)}
+  .focus-grid #inventory .inventory-kpis .kpi{flex-direction:row;align-items:baseline;justify-content:space-between;gap:4px}
 }
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察</strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#interpretation">通道解读</a><a href="#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察</strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段成交</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
 <main>
 __FOCUS_BLOCK__
 <section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">数据版本</h2>
@@ -463,9 +477,8 @@ function renderInventoryMix(point){
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
  renderInventoryMix(ok?r:null);
- $('inventoryTitle').textContent=ok?`本轮刻度：${r.total_units.toFixed(1)} / ${I.baseline_units} 份`:'本轮刻度：当前存量数据不足';
- $('inventorySummary').textContent=ok?`相当于上一轮基准的 ${(r.current_ratio*100).toFixed(1)}%，是本轮起点的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍。`:'当前存量数据未齐，暂不展示比例。';
- $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null],['本轮净新增',ok?r.net_added_units:null],['本轮起点',I?.cycle_start_units??null]].map(([label,v],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}<small>份</small></div></div>`).join('');
+ $('inventorySummary').textContent=ok?`上一轮基准的 ${(r.current_ratio*100).toFixed(1)}% · 起点的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍`:'当前存量数据未齐，暂不展示比例。';
+ $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null],['本轮净新增',ok?r.net_added_units:null],['本轮起点',I?.cycle_start_units??null]].map(([label,v],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}</div></div>`).join('');
  $('inventoryBasis').textContent=I?`10 份基准 ${I.reference_date} · 固定价格 ${I.price_date}`:'基准待核对';
  $('inventoryMethod').innerHTML=I?`<p>10 份基准取上一轮 924 周期结束值。本轮从 ${I.cycle_start} 起算，起点存量取 ${I.cycle_anchor_date}。</p><p>恒价规模（亿元）：10 份基准 ${ip(I.reference_yi)}，起点 ${ip(I.cycle_start_yi)}${ok?`，当前 ${ip(r.current_yi)}，本轮净新增 ${num(r.net_added_yi,1)}`:''}。</p><p>以 ${I.alternative_reference_date} 历史峰值为 10 份时，当前为 ${ok?ip(r.alternative_units):'—'} 份。</p><p class="note">份额来自换手率反推，价格固定在 ${I.price_date}。换手率分母、舍入和历史修订会影响估算。</p>`:'<p>暂无可用基准。</p>';
  $('inventoryDays').innerHTML=(I?.series??[]).slice(-10).reverse().map(x=>`<tr><td>${esc(x.date)}</td><td>${ip(x.total_units)}</td><td>${num(x.net_added_units,2)}</td><td>${x.current_ratio===null?'—':(x.current_ratio*100).toFixed(1)+'%'}</td></tr>`).join('')||'<tr><td colspan="4">尚无完整观察记录</td></tr>';
@@ -482,7 +495,7 @@ function renderInventory(){
  else if(d20!==null&&d20<-.3)label='减仓中';
  const startPct=Math.max(0,Math.min(100,(I.cycle_start_units||0)/I.baseline_units*100));
  const curPct=Math.max(0,Math.min(100,(r.current_ratio||0)*100));
- g.innerHTML=`<div class="gauge-track" role="img" aria-label="当前 ${ip(r.total_units)} 份，起点 ${ip(I.cycle_start_units)} 份，基准 ${I.baseline_units} 份"><div class="gauge-fill" style="width:${curPct}%"></div><span class="gauge-start" style="left:${startPct}%"></span><span class="gauge-now" style="left:${curPct}%"></span></div><div class="gauge-labels"><span>0</span><span>起点 ${I.cycle_start_units.toFixed(2)}</span><span>${I.baseline_units} 份参照</span></div>`;
+ g.innerHTML=`<div class="gauge-track" role="img" aria-label="当前 ${ip(r.total_units)} 份，起点 ${ip(I.cycle_start_units)} 份，基准 ${I.baseline_units} 份"><div class="gauge-fill" style="width:${curPct}%"></div><span class="gauge-start" style="left:${startPct}%"></span><span class="gauge-now" style="left:${curPct}%"></span></div><div class="gauge-labels"><span>0</span><span class="gauge-origin" style="left:${startPct}%">起点</span><span>${I.baseline_units} 份参照</span></div>`;
  stage.innerHTML=`阶段：<b>${esc(label)}</b> · 近20日 ${num(d20,2)} 份，近5日 ${num(d5,2)} 份${peak-r.total_units>.01?`，距本轮峰值 -${(peak-r.total_units).toFixed(2)} 份`:'，基本处于本轮峰值'}。`;
 }
 renderInventory();
@@ -493,11 +506,12 @@ function renderFocus(){
  const state=O.tracking?.latest?.risk.state;
  $('focusStage').textContent=complete?`交易所正式份额${state?` · ${state}`:''}`:'交易所份额';
  if(!complete){
-  $('focusHeadline').textContent=`${D.end} · 正式份额未齐全`;
+  $('focusDirection').textContent='正式份额未齐全';
+  $('focusAmount').textContent='';
   $('focusSubline').textContent=`覆盖 ${of?.valid_members??0}/${of?.expected_members??15}，暂不展示合计。`;
   $('focusRows').innerHTML='<tr><td colspan="6">已取得的逐只数据见「全部 15 只」。</td></tr>';
   $('focusMobile').innerHTML='<div class="empty">已取得的逐只数据见「全部 15 只」。</div>';
-  $('interpretation').textContent='';
+  $('interpretation').hidden=true;
   return;
  }
  const items=Object.values(O.instruments||{}).filter(x=>x&&x.latest&&Number.isFinite(x.latest.net_estimate));
@@ -520,8 +534,8 @@ function renderFocus(){
  $('focusRows').innerHTML=show.map(rowHtml).join('')||'<tr><td colspan="6">尚无可用正式份额</td></tr>';
  $('focusMobile').innerHTML=show.map(r=>`<div class="cardrow"><b>${esc(r.x.name)}</b><small>${r.x.code} · ${esc(r.x.family)}</small><div class="cardmetrics"><span><small>今日净申赎</small>${val(r.net)}</span><span><small>前日</small>${val(r.prev)}</span><span><small>5日累计</small>${val(r.w5)}</span><span><small>份额变化</small>${fmtPct(r.pct)}</span></div><small>${streakText(r.streak,Math.sign(r.net))}</small></div>`).join('')||'<div class="empty">尚无可用正式份额</div>';
  const dir=of.net_estimate>0?'净申购':of.net_estimate<0?'净赎回':'基本持平';
- const amount=of.net_estimate===0?'':` ${num(Math.abs(of.net_estimate)).slice(1)} 亿`;
- $('focusHeadline').textContent=`${D.end} · ETF通道${dir}${amount}`;
+ $('focusDirection').textContent=`ETF 通道${dir}`;
+ $('focusAmount').textContent=of.net_estimate===0?'':`${num(Math.abs(of.net_estimate)).slice(1)} 亿`;
  $('focusSubline').textContent=`${of.expected_members}只中 ${of.inflow_count}只增加、${of.outflow_count}只减少${O.w5?.complete?` · 近5日 ${num(O.w5.net_estimate)} 亿`:''} · 买卖主体未确认（I0）`;
  const fams=Object.entries(O.families||{}).map(([name,f])=>{
   const net=Number.isFinite(f?.latest?.net)?f.latest.net:null;
@@ -536,7 +550,8 @@ function renderFocus(){
  const sellText=negF.length?`主要净赎回：${negF.slice(0,3).map(x=>`${x.name} ${num(x.net)}（${x.neg}/${x.members} 减少）`).join('、')}。`:'';
  const pace=O.w5?.complete?`此前 4 日合计：${num(O.w5.net_estimate-of.net_estimate)} 亿。`:'';
  const notes=[buyText,sellText,pace].filter(Boolean);
- $('interpretation').innerHTML=notes.length?`<ul>${notes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+ $('interpretation').hidden=!notes.length;
+ $('interpretationRows').innerHTML=notes.map(x=>`<li>${esc(x)}</li>`).join('');
 }
 renderFocus();
 $('officialScope').textContent=`业务日 ${D.end}；资料状态：${O.stage}。正式份额与不复权价格配对覆盖 ${of.valid_members}/15。上交所口径为当日清算后份额；深交所按业务日记账，T日晚间初值以T+1早间更新为准。两日均取自同一交易所披露序列，份额披露精度为100份。`;
