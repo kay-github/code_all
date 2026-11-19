@@ -33,7 +33,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install --quiet requests pandas pyarrow numpy
+        run: pip install --quiet requests pandas pyarrow numpy baostock
 
       - name: Build enabled sectors
         run: |

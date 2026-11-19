@@ -73,7 +73,7 @@ def ROOT_POOL(rel):
     return ROOT / rel
 
 
-def build_sector_json(sector, pool, f, asof=None):
+def build_sector_json(sector, pool, f, asof=None, stats=None):
     if asof:
         f = f.loc[:pd.Timestamp(asof)]
         if len(f) == 0:
@@ -174,6 +174,7 @@ def build_sector_json(sector, pool, f, asof=None):
         "n_target": n_target,
         "stale": bool(stale),
         "leaders": [str(x) for x in pool.get("leaders", [])],
+        "sources": (stats or {}).get("sources") or {},
         "site": SITE,
     }
 
@@ -231,7 +232,7 @@ def main():
         print(f"[{sid}] bars {stats}")
         agg = build_features(pool)
         f = score(agg)
-        obj = build_sector_json(sector, pool, f, asof=args.asof)
+        obj = build_sector_json(sector, pool, f, asof=args.asof, stats=stats)
         out = SECTORS / f"{sid}.json"
         out.write_text(json.dumps(obj, ensure_ascii=False, indent=1, default=_json_default), encoding="utf-8")
         built[sid] = obj

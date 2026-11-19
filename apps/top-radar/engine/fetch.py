@@ -2,6 +2,7 @@
 """Tencent qfq daily bars for a sector pool. No local absolute paths."""
 import time
 import json
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -9,7 +10,14 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+try:
+    import baostock as bs
+except Exception:  # optional; GitHub Actions installs it
+    bs = None
+
 from config import BARS, BENCH_SYMBOL, HEADERS, PROXIES, TENCENT_KLINE
+
+_BS_LOCK = threading.Lock()
 
 SINA_KLINE = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
 EASTMONEY_KLINE = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -40,6 +48,41 @@ def _save(sym: str, df: pd.DataFrame):
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out, index=False)
     return sym, len(df), ""
+
+
+def fetch_baostock(sym: str, end: str):
+    """BaoStock qfq bars (adjustflag=2). Serialized: its client is not thread-safe."""
+    if bs is None:
+        return None
+    code = sym[:2] + "." + sym[2:]
+    with _BS_LOCK:
+        lg = bs.login()
+        if lg.error_code != "0":
+            return None
+        try:
+            rs = bs.query_history_k_data_plus(
+                code,
+                "date,open,high,low,close,volume,amount",
+                start_date="2020-12-01",
+                end_date=end,
+                frequency="d",
+                adjustflag="2",
+            )
+            if rs.error_code != "0":
+                return None
+            rows = []
+            while rs.next():
+                rows.append(rs.get_row_data())
+        finally:
+            bs.logout()
+    if len(rows) < 60:
+        return None
+    df = pd.DataFrame(rows, columns=["date", "open", "close", "high", "low", "volume", "amount"])
+    for col in ["open", "close", "high", "low", "volume", "amount"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.dropna(subset=["close"]).drop_duplicates("date").sort_values("date")
+    return df
 
 
 def fetch_sina_factors(sym: str):
@@ -95,6 +138,7 @@ def fetch_sina(sym: str, end: str):
         df = df.drop(columns=["factor"])
     # Sina volume is shares for stocks; for the index it is not used.
     df["amount"] = df["close"] * df["volume"]
+    df.attrs["source"] = "sina_adjusted" if factors else "sina_raw"
     return df
 
 
@@ -167,17 +211,17 @@ def fetch_one(sym: str, end: str, backfill: bool = False):
         try:
             df = fetch_eastmoney(sym, end)
             if df is not None and len(df) >= 60:
-                return _save(sym, df)
+                return _save(sym, df) + ("eastmoney",)
         except Exception as exc:
             eastmoney_err = str(exc)[:80]
-        # Fallback 2: Sina unadjusted daily bars. Last resort only.
+        # Fallback 2: Sina daily bars, adjusted with Sina qfq factors when available.
         try:
             df = fetch_sina(sym, end)
             if df is not None and len(df) >= 60:
-                return _save(sym, df)
+                return _save(sym, df) + (df.attrs.get("source", "sina"),)
         except Exception as exc:
-            return sym, 0, f"tencent blocked; eastmoney={locals().get('eastmoney_err', 'empty')}; sina failed: {exc}"
-        return sym, 0, "no data (tencent blocked, eastmoney/sina empty)"
+            return sym, 0, f"tencent blocked; eastmoney={locals().get('eastmoney_err', 'empty')}; sina failed: {exc}", "none"
+        return sym, 0, "no data (tencent blocked, eastmoney/sina empty)", "none"
 
     df = pd.DataFrame([r[:6] for r in rows], columns=["date", "open", "close", "high", "low", "volume"])
     for col in ["open", "close", "high", "low", "volume"]:
@@ -187,23 +231,25 @@ def fetch_one(sym: str, end: str, backfill: bool = False):
     # Tencent volume is in shares for STAR/BJ, lots (100 shares) elsewhere.
     mult = 1.0 if (sym.startswith("sh68") or sym.startswith("bj")) else 100.0
     df["amount"] = df["close"] * df["volume"] * mult
-    return _save(sym, df)
+    return _save(sym, df) + ("tencent",)
 
 
 def fetch_many(symbols, end: str, backfill: bool = False):
     symbols = list(dict.fromkeys(symbols))
     ok = bad = 0
     errors = []
+    sources = {}
     with ThreadPoolExecutor(max_workers=4) as ex:
         futs = {ex.submit(fetch_one, s, end, backfill): s for s in symbols}
         for fut in as_completed(futs):
-            sym, n, err = fut.result()
+            sym, n, err, source = fut.result()
+            sources[source] = sources.get(source, 0) + 1
             if n:
                 ok += 1
             else:
                 bad += 1
                 errors.append(f"{sym}: {err}")
-    return {"ok": ok, "bad": bad, "errors": errors[:8]}
+    return {"ok": ok, "bad": bad, "errors": errors[:8], "sources": sources}
 
 
 def load_bars(sym: str):
