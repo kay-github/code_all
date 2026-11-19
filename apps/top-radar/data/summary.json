@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-11-19 20:12",
+ "updated_at": "2026-11-19 20:20",
  "source": "remote",
  "sectors": [
   {
@@ -34,7 +34,7 @@
    "dd250": -0.4851,
    "coverage": 1.0,
    "stale": false,
-   "updated_at": "2026-11-19 20:12"
+   "updated_at": "2026-11-19 20:20"
   }
  ]
 }
