@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tencent qfq daily bars for a sector pool. No local absolute paths."""
 import time
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -41,6 +42,32 @@ def _save(sym: str, df: pd.DataFrame):
     return sym, len(df), ""
 
 
+def fetch_sina_factors(sym: str):
+    """Sina qfq step factors: qfq_price = raw_price / factor."""
+    url = f"https://finance.sina.com.cn/realstock/company/{sym}/qfq.js"
+    r = requests.get(
+        url,
+        headers={**HEADERS, "Referer": "https://finance.sina.com.cn/"},
+        proxies=PROXIES,
+        timeout=15,
+    )
+    text = r.text or ""
+    brace = text.find("{")
+    if brace < 0:
+        return []
+    try:
+        data, _ = json.JSONDecoder().raw_decode(text[brace:])
+    except Exception:
+        return []
+    out = []
+    for item in data.get("data", []):
+        try:
+            out.append((pd.Timestamp(item["d"]), float(item["f"])))
+        except Exception:
+            continue
+    return sorted(out)
+
+
 def fetch_sina(sym: str, end: str):
     url = f"{SINA_KLINE}?symbol={sym}&scale=240&ma=no&datalen=1500"
     r = requests.get(url, headers=HEADERS, proxies=PROXIES, timeout=20)
@@ -56,6 +83,16 @@ def fetch_sina(sym: str, end: str):
     df["date"] = pd.to_datetime(df["date"])
     df = df[df["date"] <= pd.Timestamp(end)]
     df = df.dropna(subset=["close"]).drop_duplicates("date").sort_values("date")
+    # Sina raw prices are unadjusted. Apply its qfq factor step when available;
+    # indices have no factors and need no adjustment.
+    factors = fetch_sina_factors(sym)
+    if factors:
+        fac = pd.DataFrame(factors, columns=["date", "factor"]).sort_values("date")
+        df = pd.merge_asof(df.sort_values("date"), fac, on="date", direction="backward")
+        df["factor"] = df["factor"].ffill().fillna(1.0)
+        for col in ["open", "close", "high", "low"]:
+            df[col] = df[col] / df["factor"]
+        df = df.drop(columns=["factor"])
     # Sina volume is shares for stocks; for the index it is not used.
     df["amount"] = df["close"] * df["volume"]
     return df
