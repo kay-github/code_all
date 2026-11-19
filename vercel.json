@@ -1,9 +1,31 @@
 {
-  "functions": { "api/stock.js": { "maxDuration": 60 }, "api/volume.js": { "maxDuration": 30 }, "api/investment-market.js": { "maxDuration": 45 } },
+  "functions": {
+    "api/stock.js": {
+      "maxDuration": 60
+    },
+    "api/volume.js": {
+      "maxDuration": 30
+    },
+    "api/investment-market.js": {
+      "maxDuration": 45
+    },
+    "api/top-radar.js": {
+      "maxDuration": 30,
+      "includeFiles": [
+        "apps/top-radar/registry.json",
+        "apps/top-radar/pools/*.json"
+      ]
+    }
+  },
   "routes": [
     {
       "src": "^/(?:admin(?:/.*)?|index\\.html)?$",
-      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "1.688680.xyz"
+        }
+      ],
       "headers": {
         "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
         "X-Content-Type-Options": "nosniff",
@@ -16,7 +38,9 @@
     },
     {
       "src": "^/admin(?:/.*)?$",
-      "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow, noarchive"
+      },
       "continue": true
     },
     {
@@ -25,17 +49,32 @@
     },
     {
       "src": "^/iframe/?$",
-      "has": [{ "type": "host", "value": "b.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "b.688680.xyz"
+        }
+      ],
       "dest": "/tools/work-portal/iframe.html"
     },
     {
       "src": "^/$",
-      "has": [{ "type": "host", "value": "b2.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "b2.688680.xyz"
+        }
+      ],
       "dest": "/tools/work-portal/houtai.html"
     },
     {
       "src": "^/houtai/?$",
-      "has": [{ "type": "host", "value": "b.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "b.688680.xyz"
+        }
+      ],
       "dest": "/tools/work-portal/houtai.html"
     },
     {
@@ -54,13 +93,25 @@
     },
     {
       "src": "^/333/?$",
-      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "1.688680.xyz"
+        }
+      ],
       "status": 302,
-      "headers": { "Location": "/?tool=investment" }
+      "headers": {
+        "Location": "/?tool=investment"
+      }
     },
     {
       "src": "^(/notes(?:/.*)?)$",
-      "has": [{ "type": "host", "value": "1.688680.xyz" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "1.688680.xyz"
+        }
+      ],
       "dest": "https://myapp-note.vercel.app$1"
     },
     {
@@ -70,12 +121,17 @@
     {
       "src": "^/(?:tools/typo-proofreader(?:/.*)?|cbz/?|shooter(?:\\.html)?/?)$",
       "status": 302,
-      "headers": { "Location": "/", "Cache-Control": "no-store" }
+      "headers": {
+        "Location": "/",
+        "Cache-Control": "no-store"
+      }
     },
     {
       "src": "^/api/proofread(?:-monitor)?/?$",
       "status": 410,
-      "headers": { "Cache-Control": "no-store" }
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     },
     {
       "handle": "filesystem"
@@ -87,6 +143,25 @@
     {
       "src": "^/(?:jjhc|fund-dragon-recovery)/?$",
       "dest": "/tools/fund-dragon-recovery/index.html"
+    },
+    {
+      "src": "^/taoding/?$",
+      "dest": "/apps/top-radar/index.html"
+    },
+    {
+      "src": "^/taoding/method/?$",
+      "dest": "/apps/top-radar/method.html"
+    },
+    {
+      "src": "^/taoding/admin/?$",
+      "dest": "/apps/top-radar/admin.html"
+    },
+    {
+      "src": "^/taoding/data/(.*)$",
+      "dest": "/apps/top-radar/data/$1",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     }
   ]
 }

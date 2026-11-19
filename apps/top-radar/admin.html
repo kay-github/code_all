@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逃顶雷达 · 控制台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315191A'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23B3392C' stroke-width='1.4'/%3E%3Cline x1='16' y1='16' x2='24' y2='8' stroke='%23B3392C' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{--dark:#15191A;--panel:#1D2325;--line:#333A3C;--cream:#EDE6D6;--muted:#A9A294;--red:#B3392C;--orange:#C77A2E;--green:#6E9B7E;--serif:"Noto Serif SC",serif;--sans:"Noto Sans SC",sans-serif;--mono:"IBM Plex Mono",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--dark);color:var(--cream);font-family:var(--sans);line-height:1.7}
+a{color:inherit;text-decoration:none}
+.top{position:sticky;top:0;z-index:10;background:#101415;border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:.1em;display:flex;gap:10px;align-items:center}
+.brand span{color:var(--muted);font-size:11px;letter-spacing:.06em}
+.nav{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+.nav a:hover{color:#fff}
+.wrap{max-width:1120px;margin:0 auto;padding:30px 22px 60px}
+.hero h1{font-family:var(--serif);font-size:clamp(28px,4vw,42px);margin:0 0 8px;font-weight:700}
+.hero p{color:var(--muted);font-size:13.5px;max-width:70ch;margin:0}
+.status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 28px}
+.st{border:1px solid var(--line);background:var(--panel);padding:12px 14px;min-width:0}
+.st .l{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.04em}
+.st .v{font-family:var(--mono);font-size:18px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .v.small{font-size:13px}
+.card{border:1px solid var(--line);background:var(--panel);padding:18px 18px 16px;margin-bottom:16px}
+.card h2{font-family:var(--serif);font-size:20px;margin:0 0 6px;font-weight:700}
+.card .hint{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.7}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.field{min-width:0}
+.field label{display:block;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.04em;margin-bottom:5px}
+input,textarea,select{width:100%;background:#121718;border:1px solid var(--line);color:var(--cream);padding:9px 11px;font-family:var(--sans);font-size:13px;outline:none}
+input:focus,textarea:focus{border-color:var(--red)}
+textarea{min-height:110px;resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.7}
+button{border:1px solid var(--line);background:transparent;color:var(--cream);padding:9px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--red);border-color:var(--red);color:#fff}
+button.primary:hover{background:#9E3025}
+button.ghost{color:var(--muted)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.msg{font-size:12.5px;line-height:1.7;padding:9px 12px;margin-top:12px;border-left:3px solid var(--muted);background:#121718;color:var(--muted);display:none;white-space:pre-wrap}
+.msg.ok{border-color:var(--green);color:#BFD9C8;display:block}
+.msg.bad{border-color:var(--red);color:#E9B9B2;display:block}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;vertical-align:middle}
+th{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500}
+td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+td.name{font-weight:500}
+.switch{display:flex;align-items:center;gap:7px;font-size:12px}
+input[type=checkbox]{width:auto;accent-color:var(--red)}
+.tag{display:inline-block;padding:1px 6px;border:1px solid currentColor;font-size:10px;font-family:var(--mono);white-space:nowrap}
+.t2{color:var(--orange)}.t3{color:var(--red)}.t4{color:#D98A80}.t0,.t1{color:var(--muted)}
+.note{font-size:11.5px;color:var(--muted);line-height:1.8}
+.note b{color:var(--cream);font-weight:500}
+@media(max-width:800px){
+  .status{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .row,.row3{grid-template-columns:1fr}
+  .top-in{padding:10px 14px}
+  .wrap{padding:22px 14px 40px}
+  table{min-width:640px}
+  .table-scroll{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in"><div class="brand">TOP RADAR <span>控制台</span></div><div class="nav"><a href="/taoding">实时雷达</a><a href="/taoding/method">方法与复盘</a></div></div></div>
+<div class="wrap">
+  <div class="hero"><h1>控制台</h1><p>这里只做三件事：看状态、跑一次、管板块。结果与判断在实时雷达页，不在这里重复。</p></div>
+
+  <div class="status">
+    <div class="st"><div class="l">数据更新</div><div class="v small" id="updated">—</div></div>
+    <div class="st"><div class="l">板块</div><div class="v" id="secCount">—</div></div>
+    <div class="st"><div class="l">监控中</div><div class="v" id="onCount">—</div></div>
+    <div class="st"><div class="l">数据源</div><div class="v small" id="source">—</div></div>
+  </div>
+
+  <div class="card">
+    <h2>访问密钥</h2>
+    <p class="hint">写操作需要 Vercel 环境变量 <b>MONITOR_SECRET</b>。密钥只保存在本机浏览器 localStorage，不上传到任何地方。没有密钥也可以看状态，但不能改开关、跑数、测试推送。</p>
+    <div class="row">
+      <div class="field"><label>MONITOR_SECRET</label><input id="secret" type="password" placeholder="粘贴密钥" autocomplete="off"></div>
+      <div class="field" style="display:flex;align-items:flex-end;gap:10px"><button class="primary" id="saveSecret">保存并验证</button><button class="ghost" id="clearSecret">清除</button></div>
+    </div>
+    <div class="msg" id="secretMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>立即执行</h2>
+    <p class="hint">“立即跑一次”会触发 GitHub Actions 的 <b>top-radar-daily.yml</b>（workflow_dispatch）。需要在 Vercel 配 <b>GITHUB_DISPATCH_TOKEN</b>（actions:write + contents:write）；没配时接口会返回 503，不影响每天自动跑。</p>
+    <div class="actions"><button class="primary" id="runBtn">立即跑一次</button><button id="testBtn">测试 PushPlus</button><button class="ghost" id="refreshBtn">刷新页面</button></div>
+    <div class="msg" id="runMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>板块开关</h2>
+    <p class="hint">休眠 = 不抓数、不算分、不推送，但保留历史。新增板块后默认监控中；第一次跑数后才会出现完整历史。</p>
+    <div class="table-scroll"><table id="sectors"><thead><tr><th style="width:26%">板块</th><th style="width:17%">ID</th><th style="width:14%">状态</th><th style="width:11%">档位</th><th style="width:14%">业务日</th><th style="width:18%">监控</th></tr></thead><tbody></tbody></table></div>
+    <div class="msg" id="sectorMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>新增板块</h2>
+    <p class="hint">填名称和代码列表。代码一行一个或用逗号分隔；系统会自动抓名称、校验代码，写入配置。保存后下一次跑数（或点“立即跑一次”）开始计算。建议主题板块 20–60 只，龙头和二线都放。</p>
+    <div class="row">
+      <div class="field"><label>板块名称</label><input id="newName" placeholder="例如：半导体设备"></div>
+      <div class="field"><label>ID（可选，英文/数字/下划线）</label><input id="newId" placeholder="留空自动生成"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="field"><label>成分代码（必填）</label><textarea id="newCodes" placeholder="002371&#10;688012&#10;688072"></textarea></div>
+      <div class="field"><label>龙头代码（可选，逗号分隔）</label><textarea id="newLeaders" placeholder="002371,688012" style="min-height:110px"></textarea></div>
+    </div>
+    <div class="actions"><button class="primary" id="addBtn">添加板块</button><span class="note" id="addHint">添加不会立刻产生历史；下一次跑数会回补 2020-12 起的数据。</span></div>
+    <div class="msg" id="addMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>推送规则（只读）</h2>
+    <p class="note">
+      <b>红色 / 深红</b>：档位变化当天即时推，单次。<br>
+      <b>橙色</b>：进入橙色推一次；之后每 7 天最多补一次“仍在橙色”，不每天推。<br>
+      <b>解除</b>：从橙色及以上回到正常 / 观察，推一次。<br>
+      <b>不推</b>：正常 ↔ 观察之间切换；同一天同一板块只推一次；数据超过 2 个交易日视为 stale，不推。<br>
+      推送走 Vercel <b>PUSHPLUS_TOKEN</b>，单推，不建群组。
+    </p>
+  </div>
+</div>
+
+<script>
+const API = '/api/top-radar';
+const $ = s => document.querySelector(s);
+let secret = localStorage.getItem('topRadarSecret') || '';
+let registry = null, summary = null;
+$('#secret').value = secret;
+
+function msg(el, text, ok){ const e=$(el); e.textContent=text; e.className='msg '+(ok?'ok':'bad'); }
+function clearMsg(el){ const e=$(el); e.className='msg'; e.textContent=''; }
+function headers(){ return secret ? {'Authorization':'Bearer '+secret,'Content-Type':'application/json'} : {'Content-Type':'application/json'}; }
+async function jget(url){ const r=await fetch(url,{cache:'no-store'}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch(e){throw new Error('HTTP '+r.status+' '+t.slice(0,80))} if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j; }
+async function jpost(action, body){ const r=await fetch(`${API}?action=${action}`,{method:'POST',headers:headers(),body:JSON.stringify(body||{})}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch(e){throw new Error('HTTP '+r.status+' '+t.slice(0,80))} if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j; }
+
+async function load(){
+  try{
+    try{ registry = await jget(`${API}?view=registry`); }
+    catch(e){
+      if(location.hostname==='127.0.0.1'||location.hostname==='localhost') registry = await jget('./registry.json');
+      else throw e;
+    }
+    summary = await jget('./data/summary.json').catch(()=>null);
+    $('#updated').textContent = summary ? summary.updated_at : '数据未生成';
+    $('#source').textContent = summary ? (summary.source||'—') : '—';
+    const list = registry.sectors||[];
+    $('#secCount').textContent = list.length;
+    $('#onCount').textContent = list.filter(s=>s.enabled).length;
+    renderSectors(list);
+  }catch(e){ msg('#sectorMsg','读取配置失败：'+e.message,false); }
+}
+function renderSectors(list){
+  const sum = summary ? summary.sectors||[] : [];
+  const byId = {}; sum.forEach(s=>byId[s.id]=s);
+  const tb=$('#sectors tbody');
+  tb.innerHTML = list.sort((a,b)=>(a.order||99)-(b.order||99)).map(s=>{
+    const x=byId[s.id]||{};
+    const tier = x.tier!==undefined && x.status==='ok' ? `<span class="tag t${x.tier}">${x.tier_name||''}</span>` : '<span class="tag t0">待跑数</span>';
+    return `<tr><td class="name">${s.name||s.id}</td><td class="num">${s.id}</td><td>${s.enabled?'<span style="color:var(--green)">监控中</span>':'<span style="color:var(--muted)">休眠</span>'}</td><td>${tier}</td><td class="num">${x.as_of||'—'}</td><td><label class="switch"><input type="checkbox" data-id="${s.id}" ${s.enabled?'checked':''}>${s.enabled?'开':'关'}</label></td></tr>`;
+  }).join('');
+  tb.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.onchange = async ()=>{
+      if(!secret){ cb.checked=!cb.checked; msg('#sectorMsg','先保存 MONITOR_SECRET 再改开关。',false); return; }
+      try{ await jpost('set-enabled',{id:cb.dataset.id,enabled:cb.checked}); msg('#sectorMsg',`${cb.dataset.id} 已${cb.checked?'开启':'休眠'}。下一次跑数生效。`,true); await load(); }
+      catch(e){ cb.checked=!cb.checked; msg('#sectorMsg','保存失败：'+e.message,false); }
+    };
+  });
+}
+
+$('#saveSecret').onclick = async ()=>{
+  secret = $('#secret').value.trim(); localStorage.setItem('topRadarSecret',secret);
+  if(!secret){ msg('#secretMsg','请先填密钥。',false); return; }
+  try{ await jpost('verify',{}); msg('#secretMsg','密钥有效。',true); }
+  catch(e){ msg('#secretMsg','验证失败：'+e.message,false); }
+};
+$('#clearSecret').onclick = ()=>{ secret=''; localStorage.removeItem('topRadarSecret'); $('#secret').value=''; msg('#secretMsg','已清除本机密钥。',true); };
+$('#runBtn').onclick = async ()=>{
+  if(!secret){ msg('#runMsg','先保存密钥。',false); return; }
+  if(!confirm('触发一次 GitHub Actions 跑数？通常 2–4 分钟。')) return;
+  msg('#runMsg','已提交，等待 Actions 执行…',true);
+  try{ const r=await jpost('run',{}); msg('#runMsg',r.message||'已触发。去 Actions 看进度；完成后刷新本页。',true); }
+  catch(e){ msg('#runMsg','触发失败：'+e.message+(e.message.includes('503')?'（需在 Vercel 配 GITHUB_DISPATCH_TOKEN）':''),false); }
+};
+$('#testBtn').onclick = async ()=>{
+  if(!secret){ msg('#runMsg','先保存密钥。',false); return; }
+  if(!confirm('会向你的 PushPlus 发一条测试消息，继续？')) return;
+  try{ const r=await jpost('test',{}); msg('#runMsg',r.message||'测试消息已发送。',true); }
+  catch(e){ msg('#runMsg','测试失败：'+e.message,false); }
+};
+$('#refreshBtn').onclick = ()=> location.reload();
+
+$('#addBtn').onclick = async ()=>{
+  if(!secret){ msg('#addMsg','先保存密钥。',false); return; }
+  const name=$('#newName').value.trim();
+  const codes=$('#newCodes').value.split(/[\s,，、]+/).map(x=>x.trim()).filter(Boolean);
+  const leaders=$('#newLeaders').value.split(/[\s,，、]+/).map(x=>x.trim()).filter(Boolean);
+  if(!name || !codes.length){ msg('#addMsg','板块名称和成分代码都要填。',false); return; }
+  msg('#addMsg','提交中…',true);
+  try{
+    const r=await jpost('add-sector',{id:$('#newId').value.trim(),name,codes,leaders});
+    msg('#addMsg',`已添加 ${r.name}（${r.id}），共 ${r.count} 只。下一次跑数开始计算；可点“立即跑一次”。`,true);
+    $('#newName').value=''; $('#newId').value=''; $('#newCodes').value=''; $('#newLeaders').value='';
+    await load();
+  }catch(e){ msg('#addMsg','添加失败：'+e.message,false); }
+};
+
+load();
+</script>
+</body>
+</html>

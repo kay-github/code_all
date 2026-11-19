@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逃顶雷达 · 只做一件事：发现顶部，提示逃跑</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315191A'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23B3392C' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23EDE6D6' stroke-width='1'/%3E%3Cline x1='16' y1='16' x2='24' y2='8' stroke='%23B3392C' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F5F2EA; --paper2:#FAF8F2; --ink:#1C1A17; --muted:#6D675B;
+  --line:#D9D2C2; --dark:#15191A; --cream:#EDE6D6;
+  --red:#B3392C; --orange:#C77A2E; --deep:#7A1F1A; --green:#3E6B52;
+  --serif:"Noto Serif SC",Songti SC,SimSun,serif;
+  --sans:"Noto Sans SC","PingFang SC",Microsoft YaHei,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{line-height:1.75}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+.topbar{position:sticky;top:0;z-index:20;background:var(--dark);color:var(--cream);border-bottom:1px solid #2A3032}
+.topbar-in{max-width:1240px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:24px;height:24px;flex:0 0 auto}
+.brand b{font-family:var(--mono);font-size:13px;letter-spacing:.12em;font-weight:600}
+.brand span{font-size:12px;color:#A9A294;letter-spacing:.08em}
+.topnav{display:flex;gap:18px;font-size:13px;color:#CFC7B6;flex:0 0 auto}
+.topnav a:hover{color:#fff}
+.hero{background:var(--dark);color:var(--cream);border-bottom:1px solid #2A3032}
+.hero-in{max-width:1240px;margin:0 auto;padding:44px 24px 40px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,.75fr);gap:48px;align-items:end}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:#A9A294;text-transform:uppercase}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,4.4vw,54px);line-height:1.18;margin:12px 0 14px;letter-spacing:-.01em}
+.hero-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:#EDE6D6}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.hero-status .date{font-family:var(--mono);color:#A9A294;font-size:12px}
+.hero-action{font-size:16px;line-height:1.8;color:#D8D0BF;max-width:56ch;margin:14px 0 0;min-height:2.8em}
+.hero-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:20px;font-family:var(--mono);font-size:12px;color:#A9A294}
+.hero-meta b{color:#EDE6D6;font-weight:500}
+.hero-read{border-left:1px solid #333A3C;padding-left:32px;min-width:0}
+.big{font-family:var(--mono);font-size:clamp(52px,7vw,84px);line-height:1;font-weight:600;letter-spacing:-.03em}
+.big-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#A9A294;margin-top:6px}
+.mini{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #333A3C;padding-top:10px;margin-top:14px;font-size:12px;color:#A9A294}
+.mini b{font-family:var(--mono);color:#EDE6D6;font-weight:500}
+.tabs-wrap{max-width:1240px;margin:0 auto;padding:0 24px;background:var(--paper2);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 13px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab:hover{border-color:#A9A294}
+.tab.on{background:var(--ink);color:var(--paper2);border-color:var(--ink)}
+.tab .st{width:6px;height:6px;border-radius:50%;background:#9A9384}
+.tab.on .st{background:currentColor}
+.tab .sleep{font-family:var(--mono);font-size:10px;color:#8A8375}
+.tab.on .sleep{color:#C9C1B0}
+.main{max-width:1240px;margin:0 auto;padding:38px 24px 56px}
+section{margin-bottom:42px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+.sec-head h2{font-family:var(--serif);font-size:clamp(22px,2.4vw,30px);font-weight:700;margin:0;line-height:1.3}
+.sec-head .note{font-size:12px;color:var(--muted);font-family:var(--mono);text-align:right;min-width:0}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.metric{border:1px solid var(--line);background:var(--paper2);padding:16px 16px 14px;min-width:0}
+.metric .lab{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.metric .val{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1.2;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.metric .val.small{font-size:20px}
+.metric .val.red{color:var(--red)}
+.metric .val.orange{color:var(--orange)}
+.metric .val.green{color:var(--green)}
+.tierbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tier{border:1px solid var(--line);background:var(--paper2);padding:12px 12px 11px;cursor:pointer;text-align:left;min-width:0;position:relative}
+.tier .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tier .t{font-size:14px;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tier .a{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tier.on{color:#fff;border-color:transparent}
+.tier.on .n,.tier.on .a{color:rgba(255,255,255,.72)}
+.tier.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:currentColor}
+.tier.t0.on,.tier.t1.on{background:#4A463C}
+.tier.t2.on{background:var(--orange)}
+.tier.t3.on{background:var(--red)}
+.tier.t4.on{background:var(--deep)}
+.tier-detail{border:1px solid var(--line);border-top:0;background:var(--paper2);padding:14px 16px;font-size:13px;color:#3A362C;line-height:1.8}
+.tier-detail b{font-family:var(--mono)}
+.chart-box{border:1px solid var(--line);background:var(--paper2);padding:12px 8px 4px}
+#chart{width:100%;height:330px}
+.chart-cap{font-size:12px;color:var(--muted);padding:6px 10px 8px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.legend i{width:10px;height:10px;display:inline-block;margin-right:4px;vertical-align:-1px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--paper2)}
+table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:620px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;text-align:left;vertical-align:top}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);font-weight:500;background:#F1EDE2}
+td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;padding:2px 7px;font-size:11px;font-family:var(--mono);border:1px solid currentColor;white-space:nowrap}
+.tag.t2{color:var(--orange)} .tag.t3{color:var(--red)} .tag.t4{color:var(--deep)} .tag.t0,.tag.t1{color:var(--muted)}
+.empty{padding:22px 14px;color:var(--muted);font-size:13px}
+.gate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.gate .q{border:1px solid var(--line);background:var(--paper2);padding:12px 13px;min-width:0}
+.gate .q .h{font-size:12px;color:var(--muted)}
+.gate .q .v{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:6px}
+.gate .q.yes .v{color:var(--green)}
+.gate .q.no .v{color:var(--muted)}
+.gate-note{font-size:12.5px;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:10px 14px;margin-top:10px;line-height:1.75}
+.push-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.push-card{border:1px solid var(--line);background:var(--paper2);padding:14px 16px;min-width:0}
+.push-card h3{font-family:var(--serif);font-size:17px;margin:0 0 8px;font-weight:700}
+.push-card p{font-size:12.5px;color:#3A362C;line-height:1.8;margin:0}
+.push-card .mono{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.footer{border-top:1px solid var(--line);background:var(--paper2);padding:24px;color:var(--muted);font-size:11.5px;line-height:1.8}
+.footer-in{max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer a{border-bottom:1px solid #BDB5A2}
+.err{display:none;background:#F7E4E1;border:1px solid #D9A79F;color:#7A1F1A;padding:12px 16px;margin:16px 24px;font-size:13px}
+@media(max-width:900px){
+  .hero-in{grid-template-columns:1fr;gap:26px;padding:32px 18px 30px}
+  .hero-read{border-left:0;border-top:1px solid #333A3C;padding:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+  .big{grid-column:1/2;font-size:56px}
+  .big-label{grid-column:1/2}
+  .mini{margin-top:10px}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tierbar{grid-template-columns:1fr;gap:4px}
+  .tier .a{-webkit-line-clamp:1}
+  .gate{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .push-grid{grid-template-columns:1fr}
+  .main{padding:28px 18px 44px}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:4px}
+  .sec-head .note{text-align:left}
+  #chart{height:260px}
+  .topbar-in{padding:10px 18px}
+  .brand span{display:none}
+  .topnav{gap:12px;font-size:12px}
+  table{min-width:560px}
+}
+@media(max-width:520px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .metric .val{font-size:21px}
+  .hero-action{font-size:15px}
+  .big{font-size:48px}
+  .mini{font-size:11px}
+}
+@media(max-width:700px){
+  table{min-width:0}
+  th,td{padding:8px 6px;font-size:12px}
+  th:nth-child(3),td:nth-child(3){display:none}
+  th:nth-child(1){width:26%!important}
+  th:nth-child(2){width:20%!important}
+  th:nth-child(4){width:9%!important}
+  th:nth-child(5){width:45%!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#B3392C" stroke-width="1.4"/><circle cx="16" cy="16" r="6" fill="none" stroke="#EDE6D6" stroke-width="1"/><line x1="16" y1="16" x2="24" y2="8" stroke="#B3392C" stroke-width="2"/></svg>
+      <b>TOP RADAR</b><span>逃顶雷达</span>
+    </div>
+    <nav class="topnav"><a href="/taoding/method">方法与复盘</a><a href="/taoding/admin">控制台</a></nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <div class="hero-main" style="min-width:0">
+      <div class="kicker">ESC / TOP SIGNAL · 只做一件事：发现顶部，提示逃跑</div>
+      <h1 id="sectorName">加载中</h1>
+      <div class="hero-status"><span class="dot t0" id="statusDot"></span><span id="tierName">—</span><span class="date" id="asOf">—</span></div>
+      <p class="hero-action" id="heroAction">正在读取数据。</p>
+      <div class="hero-meta"><span>指数 <b id="metaIdx">—</b></span><span>距一年高 <b id="metaDD">—</b></span><span>有效成分 <b id="metaN">—</b></span></div>
+    </div>
+    <div class="hero-read">
+      <div class="big" id="bigR">—</div>
+      <div class="big-label">R / 0–100 · 越高越像顶</div>
+      <div class="mini"><span>指数</span><b id="bigIdx">—</b></div>
+      <div class="mini"><span>较一年高</span><b id="bigDD">—</b></div>
+      <div class="mini"><span>数据</span><b id="bigDate">—</b></div>
+    </div>
+  </div>
+</section>
+
+<div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+<div class="err" id="err"></div>
+
+<main class="main">
+  <section>
+    <div class="sec-head"><h2>今天该做什么</h2><div class="note" id="actionNote">按当前档位执行，不预测单日涨跌</div></div>
+    <div class="metrics" id="metrics"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>五档状态</h2><div class="note">点击档位看触发条件</div></div>
+    <div class="tierbar" id="tierbar"></div>
+    <div class="tier-detail" id="tierDetail">—</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>指数与档位带</h2><div class="note" id="chartNote">过去 260 个交易日</div></div>
+    <div class="chart-box">
+      <div id="chart"></div>
+      <div class="chart-cap"><span>底色 = 当时档位；线 = 板块等权指数</span><span class="legend"><span><i style="background:rgba(199,122,46,.5)"></i>橙色</span><span><i style="background:rgba(179,57,44,.5)"></i>红色</span><span><i style="background:rgba(122,31,26,.55)"></i>深红</span></span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>信号记录</h2><div class="note">只在档位变化时记录；档位 ≠ 每次有效开火，四问不全时按提示降级</div></div>
+    <div class="table-wrap"><table id="signals"><thead><tr><th style="width:16%">日期</th><th style="width:14%">档位</th><th style="width:13%">指数</th><th style="width:9%">R</th><th style="width:48%">动作</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>开火四问</h2><div class="note">四问全过，规则才适用；否则信号只作参考</div></div>
+    <div class="gate" id="gate"></div>
+    <div class="gate-note" id="gateNote">—</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>推送与运行</h2><div class="note" id="updated">—</div></div>
+    <div class="push-grid">
+      <div class="push-card"><h3>推送规则</h3><p>红色 / 深红：档位变化当天即时推。<br>橙色：进入时推一次，之后每周最多一次“仍在橙色”。<br>风险解除：回到正常 / 观察时推一次。</p><p class="mono" style="margin-top:8px">PushPlus 单推 · 无群组</p></div>
+      <div class="push-card"><h3>数据与运行</h3><p>工作日 15:10 跑数，16:10 兜底。<br>数据源：腾讯日线 qfq，异常时新浪备用。<br>指数 = 池内全部成分等权；某日缺数据不计入。<br>业务日 = 最近有效成分 ≥85% 的交易日；半盘数据自动回退。</p><p class="mono" style="margin-top:8px" id="dataRange">—</p></div>
+      <div class="push-card"><h3>它不是什么</h3><p>不是基本面估值工具，不预测目标价，不替代止损纪律。<br>它只回答：<b>现在像不像顶、该不该减</b>。允许误触发，所以用分批减仓，而不是一次清仓。</p><p class="mono" style="margin-top:8px"><a href="/taoding/method" style="border-bottom:1px solid #BDB5A2">读完整方法与 2026-06 复盘 →</a></p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer"><div class="footer-in"><div>数据：腾讯行情日线（前复权），异常时新浪备用。指数为池内等权，仅用于状态判断。<br>R 为 252 日滚动分位综合分；档位不是买卖建议，减仓比例按个人风险承受调整。</div><div style="text-align:right">TOP RADAR · 2026<br><a href="/taoding/method">方法与复盘</a>　<a href="/taoding/admin">控制台</a></div></div></footer>
+
+<script src="https://fastly.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+const TIER = {
+  0:{name:'正常',color:'#6D675B',bg:'#4A463C',action:'正常持有'},
+  1:{name:'观察',color:'#8A7A55',bg:'#4A463C',action:'正常持有，停止加仓'},
+  2:{name:'橙色预警',color:'#C77A2E',bg:'#C77A2E',action:'停止加仓；止损上移至最近 10 日低点'},
+  3:{name:'红色高危',color:'#B3392C',bg:'#B3392C',action:'减仓 1/3（保守可减 1/2）；剩余止损设 MA20 下方 2%'},
+  4:{name:'深红清仓',color:'#7A1F1A',bg:'#7A1F1A',action:'再减 1/3 或清仓；不接飞刀，等重新站上 MA20 且广度恢复'}
+};
+const state = {summary:null, sector:null, active:null, chart:null};
+const $ = (s)=>document.querySelector(s);
+const fmtPct = (x,d=1)=> (x===null||x===undefined||isNaN(x)) ? '—' : (x*100).toFixed(d)+'%';
+const fmtNum = (x,d=3)=> (x===null||x===undefined||isNaN(x)) ? '—' : Number(x).toFixed(d);
+const shortDate = (s)=> s ? s.slice(5) : '—';
+
+function showErr(msg){ const e=$('#err'); e.textContent=msg; e.style.display='block'; }
+function clearErr(){ $('#err').style.display='none'; }
+
+async function boot(){
+  try{
+    const r = await fetch('./data/summary.json',{cache:'no-store'});
+    if(!r.ok) throw new Error('summary HTTP '+r.status);
+    state.summary = await r.json();
+    renderTabs();
+    const list = state.summary.sectors || [];
+    const first = list.find(x=>x.enabled && x.status==='ok') || list.find(x=>x.status==='ok') || list[0];
+    if(first) await select(first.id);
+    else showErr('还没有任何板块数据。请到控制台添加板块或等待下一次更新。');
+  }catch(e){
+    showErr('读取数据失败：'+e.message+'。如果是本地打开，请用本地服务器访问；线上请确认 data/summary.json 已生成。');
+  }
+}
+
+function renderTabs(){
+  const el = $('#tabs'); el.innerHTML='';
+  (state.summary.sectors||[]).forEach(s=>{
+    const b = document.createElement('button');
+    b.className='tab'+(s.id===state.active?' on':'');
+    b.innerHTML = `<span class="st"></span><span>${s.name||s.id}</span>` + (s.enabled?'':'<span class="sleep">休眠</span>');
+    b.onclick = ()=> select(s.id);
+    el.appendChild(b);
+  });
+}
+
+async function select(id){
+  state.active = id;
+  renderTabs();
+  try{
+    const r = await fetch(`./data/sectors/${id}.json`,{cache:'no-store'});
+    if(!r.ok) throw new Error('sector HTTP '+r.status);
+    state.sector = await r.json();
+    clearErr();
+    renderAll();
+  }catch(e){
+    showErr(`读取 ${id} 失败：`+e.message);
+  }
+}
+
+function renderAll(){
+  const d=state.sector, l=d.latest, t=TIER[l.tier]||TIER[0];
+  $('#sectorName').textContent = d.meta.name;
+  $('#statusDot').className = 'dot t'+l.tier;
+  $('#tierName').textContent = l.tier_name;
+  $('#asOf').textContent = l.date + (d.meta.stale ? ' · 数据滞后' : '');
+  $('#heroAction').textContent = l.action;
+  $('#metaIdx').textContent = fmtNum(l.idx);
+  $('#metaDD').textContent = fmtPct(l.dd250);
+  $('#metaN').textContent = `${d.meta.effective_n} / ${d.meta.n_constituents}` + (d.meta.coverage!==undefined && d.meta.coverage!==null ? ` · ${Math.round(d.meta.coverage*100)}%` : '');
+  $('#bigR').textContent = fmtNum(l.R,1);
+  $('#bigR').style.color = l.tier<=1 ? '#C9C1B0' : t.color;
+  $('#statusDot').style.background = l.tier<=1 ? '#C9C1B0' : t.color;
+  $('#bigIdx').textContent = fmtNum(l.idx);
+  $('#bigDD').textContent = fmtPct(l.dd250);
+  $('#bigDate').textContent = l.date;
+  $('#actionNote').textContent = `当前：${l.tier_name} · ${l.action}`;
+  renderMetrics(l); renderTier(l); renderChart(d); renderSignals(d); renderGate(d);
+  $('#updated').textContent = `更新 ${state.summary.updated_at||'—'} · 业务日 ${l.date}`;
+  $('#dataRange').textContent = `${d.meta.data_start} → ${d.meta.data_end} · ${d.meta.effective_n}/${d.meta.n_constituents} 只有效`;
+}
+
+function metric(lab,val,sub,cls=''){
+  return `<div class="metric"><div class="lab"><span>${lab}</span></div><div class="val ${cls}">${val}</div><div class="sub">${sub}</div></div>`;
+}
+function renderMetrics(l){
+  const crowd = l.amt_share!==null && l.amt_share!==undefined ? fmtPct(l.amt_share) : fmtNum(l.amt_ratio60,2)+'x';
+  const crowdSub = l.amt_share!==null && l.amt_share!==undefined ? '池内成交额 / 全市场' : '池内成交额 / 60 日均';
+  const nearHigh = (l.dd250 ?? -1) > -0.10 || l.tier >= 2;
+  $('#metrics').innerHTML = [
+    metric('一年涨幅', fmtPct(l.ret250), 'ret250 · 位置越高越危险', (l.ret250>0.5 && nearHigh)?'red':''),
+    metric('60 日涨幅', fmtPct(l.ret60), '加速段是否还在', (l.ret60>0.3 && nearHigh)?'red':(l.ret60>0?'':'green')),
+    metric('距 60 日线', fmtPct(l.dist60), '离均线多远', (l.dist60>0.15 && nearHigh)?'red':(l.dist60<0?'green':'')),
+    metric('距一年高', fmtPct(l.dd250), '越接近 0，越在顶部区', l.dd250>-0.08?'orange':'green'),
+    metric('RSI(14)', fmtNum(l.rsi14,1), '情绪温度，>75 偏热', l.rsi14>75?'red':'green'),
+    metric('涨停家数', l.limit_up, '池内当日涨停数量', l.limit_up>=5?'red':'green'),
+    metric('拥挤度', crowd, crowdSub, (((l.amt_share&&l.amt_share>0.1)||(l.amt_ratio60>2)) && nearHigh)?'red':''),
+    metric('20 日破位', l.break20_20d+' 天', `反抽失败 ${l.rebreak20_20d} 次 · C=${l.C}`, (l.break20_20d>=5 && (l.tier>=2 || l.near))?'orange':''),
+  ].join('');
+}
+
+function renderTier(l){
+  $('#tierbar').innerHTML = [0,1,2,3,4].map(i=>{
+    const t=TIER[i];
+    return `<button class="tier t${i} ${i===l.tier?'on':''}" data-i="${i}"><div class="n">0${i}</div><div class="t">${t.name}</div><div class="a">${t.action}</div></button>`;
+  }).join('');
+  $('#tierbar').querySelectorAll('.tier').forEach(b=>b.onclick=()=>showTier(+b.dataset.i,l));
+  showTier(l.tier,l);
+}
+function showTier(i,l){
+  const t=TIER[i];
+  const map = {
+    0:'R < 55，或没有同时满足“高温 + 近一年高 + 确认”。正常持有。',
+    1:'R ≥ 55。停止加仓，但不动仓位。',
+    2:'R ≥ 70 + 高温 + 距一年高 ≤ 8% + 尚未红色。停止加仓，止损上移。',
+    3:'R ≥ 75 + 高温 + 距一年高 ≤ 8% + 至少 1 个确认（跌破 MA20 / 反抽失败 / 放量长阴 / MA20 转负）。减 1/3。',
+    4:'红档后 20 日内，距一年高 ≤ -8% 且再确认。再减 1/3 或清仓。'
+  };
+  $('#tierDetail').innerHTML = `<b style="color:${t.color}">${t.name}</b>　${map[i]}<br><span style="color:#6D675B">当前：${l.tier_name} · R ${fmtNum(l.R,1)} · ${l.action}</span>`;
+}
+
+function renderChart(d){
+  const hist=(d.history||[]).slice(-260);
+  if(!hist.length) return;
+  const dates=hist.map(x=>x.d), vals=hist.map(x=>x.idx);
+  const bands=[]; let cur=null;
+  hist.forEach((p,i)=>{ if(p.tier>=2){ if(!cur||cur.tier!==p.tier){cur={tier:p.tier,start:i};bands.push(cur);} cur.end=i;} else {cur=null;} });
+  const areaData=bands.map(b=>[
+    {xAxis:dates[b.start],itemStyle:{color:(b.tier===2?'rgba(199,122,46,.15)':b.tier===3?'rgba(179,57,44,.14)':'rgba(122,31,26,.16)')}},
+    {xAxis:dates[b.end]}
+  ]);
+  let topI=0; vals.forEach((v,i)=>{if(v>vals[topI])topI=i;});
+  let redI=hist.findIndex(x=>x.tier>=3), deepI=hist.findIndex(x=>x.tier>=4);
+  const pts=[{name:'顶',coord:[dates[topI],vals[topI]],value:fmtNum(vals[topI],1)}];
+  if(redI>=0) pts.push({name:'首次红',coord:[dates[redI],vals[redI]],value:fmtNum(vals[redI],1)});
+  if(deepI>=0) pts.push({name:'深红',coord:[dates[deepI],vals[deepI]],value:fmtNum(vals[deepI],1)});
+  const compact=window.innerWidth<700;
+  if(!state.chart){ state.chart=echarts.init(document.getElementById('chart')); window.addEventListener('resize',()=>state.chart.resize()); }
+  state.chart.setOption({
+    backgroundColor:'transparent',
+    animation:false,
+    grid:{left:10,right:18,top:26,bottom:30,containLabel:true},
+    tooltip:{trigger:'axis',backgroundColor:'#15191A',borderColor:'#333A3C',textStyle:{color:'#EDE6D6',fontFamily:'IBM Plex Mono',fontSize:11},formatter:ps=>{const i=ps[0].dataIndex;const x=hist[i];return `${x.d}<br>指数 ${fmtNum(x.idx)}<br>R ${fmtNum(x.R,1)}<br>档位 ${TIER[x.tier].name}`;}},
+    xAxis:{type:'category',data:dates,boundaryGap:false,axisLine:{lineStyle:{color:'#C9C1B0'}},axisTick:{show:false},axisLabel:{color:'#6D675B',fontFamily:'IBM Plex Mono',fontSize:10,interval:Math.ceil(dates.length/(compact?6:12)),formatter:v=>shortDate(v)}},
+    yAxis:{type:'value',scale:true,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#E3DDCF'}},axisLabel:{color:'#6D675B',fontFamily:'IBM Plex Mono',fontSize:10,formatter:v=>Number(v).toFixed(1)}},
+    series:[{
+      type:'line',data:vals,showSymbol:false,smooth:false,
+      lineStyle:{width:1.4,color:'#1C1A17'},
+      areaStyle:{color:'rgba(28,26,23,.035)'},
+      markArea:{silent:true,data:areaData},
+      markPoint:{symbol:'circle',symbolSize:7,label:{show:!compact,position:'top',fontSize:10,fontFamily:'IBM Plex Mono',color:'#1C1A17',formatter:p=>p.name},data:pts,itemStyle:{color:'#B3392C'}}
+    }]
+  },true);
+}
+
+function renderSignals(d){
+  const rows=(d.signals||[]).slice(-10).reverse();
+  const tb=$('#signals tbody');
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="5" class="empty">暂无档位变化。当前档位持续中。</td></tr>'; return; }
+  tb.innerHTML=rows.map(s=>`<tr><td class="num">${s.d}</td><td><span class="tag t${s.tier}">${s.tier_name}</span></td><td class="num">${fmtNum(s.idx)}</td><td class="num">${fmtNum(s.R,1)}</td><td>${s.action}</td></tr>`).join('');
+}
+
+function renderGate(d){
+  const g=d.gate||{};
+  const items=[
+    ['一年涨幅在自身历史前 20%',g.ret250],
+    ['60 日在加速、20 日线向上',g.accel],
+    ['情绪到极值',g.hot],
+    ['仍在一年高点 8% 以内',g.near]
+  ];
+  $('#gate').innerHTML=items.map(([h,v])=>`<div class="q ${v?'yes':'no'}"><div class="h">${h}</div><div class="v">${v?'是':'否'}</div></div>`).join('');
+  const n=[g.ret250,g.accel,g.hot,g.near].filter(Boolean).length;
+  $('#gateNote').innerHTML = g.all
+    ? `四问全过（${n}/4）。这个板块处于“值得开火”的状态，档位信号可以直接执行。`
+    : `四问只过 ${n}/4。当前档位仍可参考，但规则适配性不足：越靠后的条件不过，越应该把信号降级为“提示”，而不是机械减仓。`;
+}
+
+boot();
+</script>
+</body>
+</html>

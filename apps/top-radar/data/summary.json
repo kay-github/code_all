@@ -1,0 +1,40 @@
+{
+ "updated_at": "2026-11-19 19:16",
+ "source": "local",
+ "sectors": [
+  {
+   "id": "optical",
+   "name": "光模块/光通信",
+   "enabled": false,
+   "order": 1,
+   "status": "ok",
+   "as_of": "2026-11-18",
+   "tier": 0,
+   "tier_name": "正常",
+   "action": "正常持有",
+   "R": 17.4,
+   "idx": 3.8975,
+   "dd250": -0.4876,
+   "coverage": 0.956,
+   "stale": false,
+   "updated_at": "2026-11-19 19:16"
+  },
+  {
+   "id": "semi_equip",
+   "name": "半导体设备",
+   "enabled": true,
+   "order": 2,
+   "status": "ok",
+   "as_of": "2026-11-18",
+   "tier": 0,
+   "tier_name": "正常",
+   "action": "正常持有",
+   "R": 22.2,
+   "idx": 4.7219,
+   "dd250": -0.4852,
+   "coverage": 1.0,
+   "stale": false,
+   "updated_at": "2026-11-19 19:16"
+  }
+ ]
+}

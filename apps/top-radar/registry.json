@@ -1,0 +1,30 @@
+{
+ "version": 1,
+ "updated_at": "2026-11-19",
+ "sectors": [
+  {
+   "id": "optical",
+   "name": "光模块/光通信",
+   "enabled": false,
+   "pool": "pools/optical.json",
+   "order": 1,
+   "push": {
+    "enabled": true,
+    "min_tier": 3,
+    "orange": "stage"
+   }
+  },
+  {
+   "id": "semi_equip",
+   "name": "半导体设备",
+   "enabled": true,
+   "pool": "pools/semi_equip.json",
+   "order": 2,
+   "push": {
+    "enabled": true,
+    "min_tier": 3,
+    "orange": "stage"
+   }
+  }
+ ]
+}

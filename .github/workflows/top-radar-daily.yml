@@ -1,0 +1,51 @@
+name: top-radar-daily
+
+# 北京时间周一至周五 15:10（UTC 07:10），16:10（UTC 08:10）兜底。
+# 页面在 Vercel，跑数与推送在 GitHub Actions；结果 commit 后由 Vercel 自动部署。
+on:
+  schedule:
+    - cron: '10 7 * * 1-5'
+    - cron: '10 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: top-radar-daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: Asia/Shanghai
+      MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests pandas pyarrow numpy
+
+      - name: Build enabled sectors
+        run: |
+          python apps/top-radar/engine/update.py --sector enabled
+          python apps/top-radar/engine/push.py
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/top-radar/data/summary.json apps/top-radar/data/sectors
+          if [ -f apps/top-radar/data/push_state.json ]; then git add apps/top-radar/data/push_state.json; fi
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "Top radar update $(date -u +%F)"
+            git push
+          fi
