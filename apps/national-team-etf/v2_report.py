@@ -56,22 +56,19 @@ def render(a,folder):
 
 FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHeadline">
 <div class="statusline focus-status">
-<span class="pill" id="focusStage">定稿级</span><span class="pill" id="focusDate">业务日 __END__</span>
-<span class="pill" id="coreState"></span><span class="pill">当日买卖主体未确认</span><span class="pill" id="coverage"></span>
+<span class="pill" id="focusStage">交易所正式份额</span>
 </div>
 <h1 id="focusHeadline">正式份额加载中</h1>
 <p class="lead" id="focusSubline"></p>
 <div id="interpretation" class="focus-points"></div>
 <div class="focus-grid">
 <section id="focusMovers" class="focus-card" aria-labelledby="focusMoversTitle">
-<div class="focus-card-head"><h2 id="focusMoversTitle">① 最新一日 · 分品种</h2><a class="focus-more" href="#official">全部15只 →</a></div>
-<p class="note" id="focusMoversScope">按今日净额排序，默认展示净买5只与净卖5只；前日与5日为同一正式份额口径。</p>
+<div class="focus-card-head"><h2 id="focusMoversTitle">净申购与净赎回排行</h2><a class="focus-more" href="#official">全部 15 只 →</a></div>
 <div class="scroll desktop-core"><table><thead><tr><th>ETF / 家族</th><th>今日净申赎 / 亿</th><th>前日 / 亿</th><th>5日累计 / 亿</th><th>份额变化%</th><th>连续</th></tr></thead><tbody id="focusRows"></tbody></table></div>
 <div id="focusMobile" class="mobile-cards"></div>
-<p class="note" id="focusNote">金额为份额变化×当日成交均价，表示证券敞口变化，不是实际现金流；身份 I0，不能识别买家。缺口不补0。</p>
 </section>
 <section id="inventory" class="focus-card" aria-labelledby="inventoryTitle">
-<div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span><span class="note" id="inventoryDate"></span></div>
+<div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span></div>
 <h2 id="inventoryTitle">本轮刻度</h2>
 <p id="inventorySummary" class="lead"></p>
 <div class="inventory-kpis" id="inventoryKpis"></div>
@@ -80,16 +77,15 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 <p class="note" id="inventoryBasis"></p>
 <a class="focus-more inventory-mix-link" href="#inventoryMixCard">查看 ETF 构成 ↓</a>
 <details><summary>基准、估算边界与上一轮峰值对照</summary><div id="inventoryMethod"></div>
-<p class="note">“份”是归一化对照刻度，不是实际ETF份数。ETF通道含国家队及其他持有人；二级市场换手可能不改变总份额。本轮净新增是起点至今的存量差，已计入其后净减少，不能叫国家队毛买入额或实际现金流。历史反推与近期正式份额保持独立，不混接。</p></details>
+<p class="note">“份”为归一化刻度。本轮净新增＝当前总存量减起点存量，已计入净减少。</p></details>
 <details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>当前总存量 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
-<p class="note">固定权重的回溯研究值，不冒充历史当天已发布的实时结果。<a href="/tools/national-team-etf/data/inventory.csv" download>下载同版存量对照CSV</a></p></details>
+<p class="note"><a href="/tools/national-team-etf/data/inventory.csv" download>下载存量 CSV</a></p></details>
 </section>
 <section id="inventoryMixCard" class="focus-card inventory-mix" aria-labelledby="inventoryMixTitle">
 <div class="focus-card-head"><h2 id="inventoryMixTitle">核心 ETF 构成</h2><span class="note mix-date">业务日 __END__</span></div>
 <div id="inventoryMix"></div>
 </section>
 </div>
-<div class="focus-foot"><span class="pill" id="intradayStage">加载中</span><span id="liveStripText" class="note"></span><a href="#intraday">盘中明细</a><a href="#postclose">盘后初值</a></div>
 </section>'''
 
 TEMPLATE=r'''<!doctype html>
@@ -317,6 +313,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 /* ==== 三阶段版本条：盘中 / 盘后 / 次日 ==== */
 #stages{margin:var(--s5) 0 0;background:transparent;border:0;box-shadow:none;padding:0}
 #stages>h2{margin-bottom:var(--s2)}
+#intraday .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+.intraday-meta{display:flex;flex-wrap:wrap;gap:var(--s2)}
 .stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3);margin-top:var(--s3)}
 .stage-card{display:flex;flex-direction:column;gap:6px;min-width:0;padding:var(--s4);
   background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line-strong);
@@ -333,7 +331,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .stage-badge.tone-verified{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
 .stage-date{font:700 19px/1.3 ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .stage-desc{font-size:12px;color:var(--text);line-height:1.5}
-.stage-meta{font-size:11px;color:var(--faint);line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:760px){.stage-grid{grid-template-columns:1fr;gap:var(--s2)}
   .stage-card{padding:var(--s3)}}
 /* ==== 焦点首屏：结论、分品种、刻度 ==== */
@@ -344,8 +341,7 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-points ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--s2)}
 .focus-points li{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
 .focus-points li:nth-child(2){border-left-color:var(--amber)}
-.focus-points .focus-caveat{font-size:11.5px;color:var(--faint);margin:0;padding-left:2px}
-.focus-points p{margin:0}
+.focus-points:empty{display:none}
 .focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:stretch}
 .focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
 .focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
@@ -355,9 +351,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-card table{font-size:12.5px}
 .focus-card th,.focus-card td{padding:8px}
 .focus-card .scroll{max-height:430px;border:1px solid var(--line);border-radius:9px}
-.focus-foot{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3);padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px}
-.focus-foot .note{margin:0;flex:1;min-width:180px}
-.focus-foot a{font-size:12px;white-space:nowrap}
 .focus-stage{font-size:12.5px;line-height:1.6;margin:var(--s2) 0;color:var(--text)}
 .focus-stage b{font-size:14px}
 .inventory-gauge{margin:var(--s3) 0 var(--s1)}
@@ -367,7 +360,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-start{opacity:.45}
 .gauge-now{background:var(--accent);width:3px}
 .gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
-.gauge-legend{font-size:10.5px;color:var(--faint);margin-top:2px}
 .inventory-mix{grid-column:1/-1}
 .inventory-mix-link{display:inline-flex;align-items:center;min-height:32px}
 .mix-date{margin:0}
@@ -396,39 +388,31 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
 .focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.8px}
 .focus-grid #inventory .lead{margin-bottom:var(--s2)}
-.detail-eyebrow{margin-top:var(--s6);margin-bottom:var(--s1)}
 @media(max-width:860px){
   .focus-grid{grid-template-columns:1fr}
   .focus-grid #inventory,.focus-grid .inventory-mix{order:-1}
   .focus-hero h1{font-size:clamp(24px,7vw,34px)}
   .focus-card .scroll{max-height:52vh}
-  .focus-foot{align-items:flex-start}
   .focus-grid #inventory .inventory-kpis{grid-template-columns:1fr 1fr}
 }
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#interpretation">通道解读</a><a href="#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
-<main><div class="eyebrow">公开数据观察 · __END__ 收盘</div>
+<header><strong>国家队观察</strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#interpretation">通道解读</a><a href="#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
+<main>
 __FOCUS_BLOCK__
-<section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">三个版本，三种可信度</h2>
-<p class="note">同一天的数据会经历三次成型；后一版替代前一版，引用时请认准版本。</p>
-<div class="stage-grid" id="stageCards"></div>
-<details><summary>三版差异与引用规则</summary><p>盘中只有线索，无可靠逐笔方向，不产生份额；盘后是收盘初值，份额可能被事后修订；次日复核交易所正式份额后才是定稿。后一版替代前一版，不互相顶替；引用时请认准版本。</p></details></section>
-<div class="eyebrow detail-eyebrow">证据与明细 · 默认折叠，点击展开</div>
-<section id="more"><details><summary>更多指标与观察池规模</summary><div class="kpis" id="kpis"></div></details></section>
-<section id="intraday"><h2>盘中观察区（线索级）</h2>
-<details><summary>展开盘中行情、同步广度与事件</summary>
-<p class="note" id="intradayScope">业务日、行情时间、采集时间、延迟、覆盖范围与身份状态分别显示。本区是线索，不是正式份额，也不是国家队买卖确认。</p>
-<div class="statusline" id="intradayStatus"></div>
+<section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">数据版本</h2>
+<div class="stage-grid" id="stageCards"></div></section>
+<section id="intraday"><h2>盘中观察</h2>
+<details><summary>行情与通道线索</summary>
+<div class="statusline"><span class="pill" id="intradayStage">等待行情</span><span class="intraday-meta" id="intradayStatus"></span></div>
 <div class="kpis" id="intradayKpis"></div>
-<div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>现价</th><th>涨跌%</th><th>相对指数</th><th>折溢价%</th><th>放量倍数</th><th>通道线索</th><th>反向证据</th></tr></thead><tbody id="intradayRows"></tbody></table></div>
-<p class="note" id="intradayEvents"></p>
-<p class="note">实时行情由浏览器直接读取供应商快照（JSONP，约60秒刷新），不产生 Git 提交或完整部署。本机每分钟 cmd 计划任务已于 2026-11-15 全部卸载，改由 WorkBuddy 平台定时任务做低频留档：本地事件等级上限 L1，5/15/30 分钟窗口以本表浏览器端为准，采集器摘要非实时，提醒延迟为任务周期级。缺可靠逐笔/主动成交方向时标注「方向待确认」。核心ETF角色、放量、折溢价、同步交易都不能证明国家队身份；不输出国家队概率或盘中买入金额。</p></details></section>
-<section id="postclose"><h2>盘后初值 · 独立观察区</h2>
-<details><summary>展开盘后初值（初值级，不可定稿）</summary>
+<div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>现价</th><th>涨跌%</th><th>相对指数</th><th>折溢价%</th><th>通道线索</th><th>反向证据</th></tr></thead><tbody id="intradayRows"></tbody></table></div>
+<p class="note">行情约每 60 秒刷新。盘中只观察价格与成交线索，买卖主体未知。<a href="/tools/national-team-etf/segments.html">查看分段成交与放量</a></p>
+<details><summary>云端留档与事件</summary><p class="note" id="intradayEvents"></p></details></details></section>
+<section id="postclose"><h2>盘后初值</h2>
+<details><summary>反推净申赎与刻度</summary>
 <p class="note" id="postcloseScope"></p>
-<div id="postcloseBody"></div>
-<p class="note">收盘初值只作本地预览与观察，不覆盖上方已核验的正式份额结果。覆盖数不足时不展示核心15只完整合计；深交所当晚初值以次日早间更新为准，须复核后才可正式发布。盘中没有净申购不能单独判定盘中承接线索错误——二级市场买卖可能不改变总份额。</p></details></section>
+<div id="postcloseBody"></div></details></section>
 <section id="official"><h2>交易所正式份额 · 核心15只</h2><details><summary>展开完整15只明细、来源与修订</summary><p class="note" id="officialScope"></p><div class="scroll desktop-core"><table><thead><tr><th>ETF / 家族</th><th>前日 / 亿份</th><th>当日 / 亿份</th><th>变化 / 亿份</th><th>变化比例</th><th>敞口估算 / 亿元</th><th>5日 / 亿元</th><th>正式份额状态</th><th>来源</th></tr></thead><tbody id="officialRows"></tbody></table></div><div id="officialMobile" class="mobile-cards"></div><details><summary>最近交易日的正式份额变化</summary><div class="scroll"><table><thead><tr><th>日期</th><th>敞口估算 / 亿元</th><th>减少 / 增加</th><th>覆盖</th></tr></thead><tbody id="officialDays"></tbody></table></div></details><p class="note">正式份额确认的是基金净申赎。金额按份额变化×当日不复权成交均价估算，表示证券敞口变化；不是国家队实际现金流。无法据此识别赎回账户，也不能覆盖全部二级市场卖出。</p></details></section>
 <section><h2>核心正式份额 · 分通道减仓观察</h2><details><summary>展开分通道减仓观察</summary><p class="note">使用相同固定核心成员，正式份额独立计算5/10/20日与事件状态；未覆盖的窗口不补历史反推。短期回补不自动清除旧事件。规则阈值尚未用实名交易校准。</p><div class="scroll"><table><thead><tr><th>家族</th><th>当日 / 亿元</th><th>5日</th><th>10日</th><th>20日</th><th>状态</th></tr></thead><tbody id="officialFamilies"></tbody></table></div></details></section>
 <section><h2>历史补充 · 核心通道近100日换手率反推</h2><details><summary>展开近100日反推图</summary><div class="legend"><span>红：净申购</span><span>绿：净赎回</span><span>金额单位：亿元；缺失留空</span></div><p class="note">以下为供应商换手率反推序列，分母可能滞后或修订。与上方正式披露独立计算，避免混接两种口径；当日判断优先看上方正式份额。</p><div id="chart"></div></details></section>
@@ -437,10 +421,9 @@ __FOCUS_BLOCK__
 <div class="scroll desktop-core"><table><thead><tr><th>ETF / 跟踪家族</th><th>今日估算</th><th>5日</th><th>10日</th><th>20日</th><th>份额回撤</th><th>预警状态</th><th>身份依据</th></tr></thead><tbody id="fundRows"></tbody></table></div><div id="mobileRows" class="mobile-cards"></div><p id="fundCount" class="note"></p>
 <details><summary>状态与身份如何分开判断</summary><p>“流出线索”保留尚未超出误差的小变化；“持续流出/加速”结合累计净赎回、规模比例和持续性；“暂缓/持续观察”保留事件过程；连续有效回补才解除。它们描述资金通道，不等于国家队减持确认。</p><p>I0：身份未知。I1：核心通道线索，角色本身不证明身份。I2：有已核验的历史持有人或政策关联资料，仍不证明当日交易。I3：当日、标的和方向都有实名公开证据。未经校准不展示概率。行为候选另看累计份额、历史异常、成交活跃和跨家族一致性；这些条件可能相关，不自动升级身份等级。</p><p>研究阈值：5日净赎回占期初规模0.5%、或稳健份额回撤1%，并结合持续天数；加速阈值为5日2%或单日1%。阈值可改、尚未以实名交易真值校准。</p></details></details></section>
 <section><h2>固定境内池 · 家族视角</h2><details><summary>展开家族视角</summary><p class="note" id="familyScope"></p><div class="scroll"><table><thead><tr><th>家族</th><th>今日</th><th>5日</th><th>10日</th><th>流出广度</th><th>覆盖</th><th>状态</th></tr></thead><tbody id="familyRows"></tbody></table></div></details></section>
-<section id="discover"><h2>供应商目录发现 · 小线索也保留</h2><details><summary>展开供应商目录发现</summary><p class="note" id="discoveryScope"></p><div class="tools"><label for="direction">线索排序</label><select id="direction"><option value="out">5日流出</option><option value="in">5日流入</option><option value="small">今日小额变化</option></select><button id="download">下载本页数据</button></div><div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>今日估算</th><th>5日估算</th><th>舍入范围是否跨0</th><th>样本关系</th></tr></thead><tbody id="discoveryRows"></tbody></table></div><p class="note">分页完整仅指本次供应商目录，不代表已核对交易所全量ETF，可能遗漏新上市或未收录产品。目录按当前信息分类，尚未核实的家族会明确标记。发现队列不悄然改动固定历史总额；新候选需要登记后才能变更观察池版本。</p></details></section>
-<section id="quality"><h2>数据可信程度</h2><details><summary>展开数据质量、误差与跨源核对</summary><div id="qualitySummary"></div><details><summary>误差、缺口与跨源核对</summary><div id="qualityDetails"></div></details><details><summary>方法、来源与识别边界</summary><p>估算份额＝成交量(手)×10000÷换手率(%)。相邻交易日份额差按真实份额合并比例换算，再乘当日不复权成交均价。份额对应证券敞口变化，未必是现金流，也不提供买卖主体。</p><p>换手率两位小数的舍入区间按±0.005个百分点传播；5日累计利用共享端点误差，不简单相加每日误差。区间不是统计置信区间，未涵盖分母日期错误、数据源修订等风险。</p><p>不把快照贴成历史日线，不用复权价格计算历史规模，不以指数涨跌、成本线、政策语言关闭监控。未登记的疑似份额行动会隔离；缺失不记0。</p><p><a href="https://etf.sse.com.cn/fund/quertion/">上交所ETF机制</a> · <a href="https://www.sse.com.cn/disclosure/fund/announcement/c/new/2024-09-23/510310_20240923_G18B.pdf">510310官方合并比例</a></p></details></details></section>
-<section><h2>历史检验正在验证什么</h2><details><summary>展开历史检验说明</summary><p id="evaluation"></p><p class="note">未来资金变化可以检验撤退预警的用途，不能证明买卖主体。历史回放使用当前修订数据；新版本开始逐次保存发布资料，后续可做真正的时点回放。</p></details></section>
-<footer>数据截止 __END__ · 构建 __BUILD__<br>首屏为交易所正式份额（定稿级）；盘中线索、盘后初值、历史反推与方法说明分别下沉保留。金额均为敞口变化估算，不能观测所有二级市场交易；国家队成本、持仓盈亏、实现收益不在可确认数据范围内。</footer>
+<section id="discover"><h2>ETF 候选扫描</h2><details><summary>候选 ETF 与样本关系</summary><p class="note" id="discoveryScope"></p><div class="tools"><label for="direction">线索排序</label><select id="direction"><option value="out">5日流出</option><option value="in">5日流入</option><option value="small">今日小额变化</option></select><button id="download">下载本页数据</button></div><div class="scroll"><table><thead><tr><th>ETF / 家族</th><th>今日估算</th><th>5日估算</th><th>舍入范围是否跨0</th><th>样本关系</th></tr></thead><tbody id="discoveryRows"></tbody></table></div><p class="note">分页完整仅指本次供应商目录，不代表已核对交易所全量ETF，可能遗漏新上市或未收录产品。目录按当前信息分类，尚未核实的家族会明确标记。发现队列不悄然改动固定历史总额；新候选需要登记后才能变更观察池版本。</p></details></section>
+<section id="quality"><h2>数据可信程度</h2><details><summary>展开数据质量、误差与跨源核对</summary><div id="qualitySummary"></div><details><summary>误差、缺口与跨源核对</summary><div id="qualityDetails"></div></details><details><summary>方法、来源与识别边界</summary><p>估算份额＝成交量(手)×10000÷换手率(%)。相邻交易日份额差按真实份额合并比例换算，再乘当日不复权成交均价。份额对应证券敞口变化，未必是现金流，也不提供买卖主体。</p><p>换手率两位小数的舍入区间按±0.005个百分点传播；5日累计利用共享端点误差，不简单相加每日误差。区间不是统计置信区间，未涵盖分母日期错误、数据源修订等风险。</p><p>不把快照贴成历史日线，不用复权价格计算历史规模，不以指数涨跌、成本线、政策语言关闭监控。未登记的疑似份额行动会隔离；缺失不记0。</p><p><a href="https://etf.sse.com.cn/fund/quertion/">上交所ETF机制</a> · <a href="https://www.sse.com.cn/disclosure/fund/announcement/c/new/2024-09-23/510310_20240923_G18B.pdf">510310官方合并比例</a></p></details><details><summary>历史回放检验</summary><p id="evaluation"></p></details></details></section>
+<footer>正式数据截止 __END__ · 构建 __BUILD__</footer>
 </main><script type="application/json" id="dataset">__DATA__</script><script>
 const D=JSON.parse(document.getElementById('dataset').textContent),$=id=>document.getElementById(id);
 $('themeToggle').onclick=()=>{if(window.ToolSiteTheme){window.ToolSiteTheme.toggle();}else{document.documentElement.dataset.siteTheme=document.documentElement.dataset.siteTheme==='dark'?'light':'dark';}};
@@ -480,15 +463,14 @@ function renderInventoryMix(point){
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
  renderInventoryMix(ok?r:null);
- $('inventoryDate').textContent=`业务日 ${D.end}`;
  $('inventoryTitle').textContent=ok?`本轮刻度：${r.total_units.toFixed(1)} / ${I.baseline_units} 份`:'本轮刻度：当前存量数据不足';
- $('inventorySummary').textContent=ok?`对照上一轮924周期的结束刻度（${I.reference_date} = ${I.baseline_units}份），当前水位 ${(r.current_ratio*100).toFixed(1)}%；为本轮起点 ${I.cycle_start_units.toFixed(2)} 份的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍。这是固定核心15只ETF的通道存量，不是国家队实名仓位。`:'缺口不补0，也不把过期值当作当前值；等待完整数据后再展示比例。';
- $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null,'含本轮起点存量'],['本轮净新增',ok?r.net_added_units:null,'起点至今净变化'],['本轮起点已有',I?.cycle_start_units??null,`锚点 ${I?.cycle_anchor_date??'待核对'}`]].map(([label,v,note],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}<small>份 · 对照刻度</small></div><div class="label">${esc(note)}</div></div>`).join('');
- $('inventoryBasis').textContent=I?`10份参照：${I.reference_date}（上一轮924周期的结束刻度），不是起点份额；本轮从 ${I.cycle_start} 起算；价格权重 ${I.price_date}。`:'基准配置待核对。';
- $('inventoryMethod').innerHTML=I?`<p>主基准恒价规模 ${ip(I.reference_yi)} 亿元；本轮起点 ${ip(I.cycle_start_yi)} 亿元。${ok?`当前恒价规模 ${ip(r.current_yi)} 亿元，本轮净新增 ${num(r.net_added_yi,1)} 亿元。`:''}这些都是固定价格折算值，不是当时实际市值或账户成交金额。</p><p>辅助参照：${I.alternative_reference_date} 的上一轮恒价存量峰值若定为10份，当前为 ${ok?ip(r.alternative_units):'—'} 份。主指标始终使用固定年末基准，不每天挑换峰值。</p><p class="note">同源换手率反推份额，存在分母定义、舍入及历史修订风险；与交易所近期正式份额分开展示。调整基准、价格、样本或本轮起点须升基准版本，不能静默改分母。</p>`:'<p>暂无可用基准。</p>';
+ $('inventorySummary').textContent=ok?`相当于上一轮基准的 ${(r.current_ratio*100).toFixed(1)}%，是本轮起点的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍。`:'当前存量数据未齐，暂不展示比例。';
+ $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null],['本轮净新增',ok?r.net_added_units:null],['本轮起点',I?.cycle_start_units??null]].map(([label,v],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}<small>份</small></div></div>`).join('');
+ $('inventoryBasis').textContent=I?`10 份基准 ${I.reference_date} · 固定价格 ${I.price_date}`:'基准待核对';
+ $('inventoryMethod').innerHTML=I?`<p>10 份基准取上一轮 924 周期结束值。本轮从 ${I.cycle_start} 起算，起点存量取 ${I.cycle_anchor_date}。</p><p>恒价规模（亿元）：10 份基准 ${ip(I.reference_yi)}，起点 ${ip(I.cycle_start_yi)}${ok?`，当前 ${ip(r.current_yi)}，本轮净新增 ${num(r.net_added_yi,1)}`:''}。</p><p>以 ${I.alternative_reference_date} 历史峰值为 10 份时，当前为 ${ok?ip(r.alternative_units):'—'} 份。</p><p class="note">份额来自换手率反推，价格固定在 ${I.price_date}。换手率分母、舍入和历史修订会影响估算。</p>`:'<p>暂无可用基准。</p>';
  $('inventoryDays').innerHTML=(I?.series??[]).slice(-10).reverse().map(x=>`<tr><td>${esc(x.date)}</td><td>${ip(x.total_units)}</td><td>${num(x.net_added_units,2)}</td><td>${x.current_ratio===null?'—':(x.current_ratio*100).toFixed(1)+'%'}</td></tr>`).join('')||'<tr><td colspan="4">尚无完整观察记录</td></tr>';
  const g=$('inventoryGauge'),stage=$('inventoryStage');
- if(!ok){g.innerHTML='';stage.textContent='缺口不补0；数据完整后再判断阶段。';return;}
+ if(!ok){g.innerHTML='';stage.textContent='';return;}
  const s=(I.series||[]).filter(x=>x.complete!==false&&Number.isFinite(x.total_units));
  const d5=s.length>5?r.total_units-s[s.length-6].total_units:null;
  const d20=s.length>20?r.total_units-s[s.length-21].total_units:null;
@@ -500,26 +482,22 @@ function renderInventory(){
  else if(d20!==null&&d20<-.3)label='减仓中';
  const startPct=Math.max(0,Math.min(100,(I.cycle_start_units||0)/I.baseline_units*100));
  const curPct=Math.max(0,Math.min(100,(r.current_ratio||0)*100));
- g.innerHTML=`<div class="gauge-track"><div class="gauge-fill" style="width:${curPct}%"></div><span class="gauge-start" style="left:${startPct}%"></span><span class="gauge-now" style="left:${curPct}%"></span></div><div class="gauge-labels"><span>0</span><span>起点 ${I.cycle_start_units.toFixed(2)}</span><span>${I.baseline_units} 份参照</span></div><div class="gauge-legend">粗线：当前 ${r.total_units.toFixed(2)} 份（${(r.current_ratio*100).toFixed(1)}%）；细线：本轮起点</div>`;
- stage.innerHTML=`阶段：<b>${esc(label)}</b> · 近20日 ${num(d20,2)} 份，近5日 ${num(d5,2)} 份${peak-r.total_units>.01?`，距本轮峰值 -${(peak-r.total_units).toFixed(2)} 份`:'，基本处于本轮峰值'}。阶段标签按刻度序列规则生成，仅作观察。`;
+ g.innerHTML=`<div class="gauge-track" role="img" aria-label="当前 ${ip(r.total_units)} 份，起点 ${ip(I.cycle_start_units)} 份，基准 ${I.baseline_units} 份"><div class="gauge-fill" style="width:${curPct}%"></div><span class="gauge-start" style="left:${startPct}%"></span><span class="gauge-now" style="left:${curPct}%"></span></div><div class="gauge-labels"><span>0</span><span>起点 ${I.cycle_start_units.toFixed(2)}</span><span>${I.baseline_units} 份参照</span></div>`;
+ stage.innerHTML=`阶段：<b>${esc(label)}</b> · 近20日 ${num(d20,2)} 份，近5日 ${num(d5,2)} 份${peak-r.total_units>.01?`，距本轮峰值 -${(peak-r.total_units).toFixed(2)} 份`:'，基本处于本轮峰值'}。`;
 }
 renderInventory();
 const core=D.pools.core15.latest,ev=D.pools.core15.evaluation;
 const O=D.exchange,of=O.latest;
-$('coreState').textContent=of.complete?'正式份额：'+(O.tracking?.latest?.risk.state??'待积累')+' · '+O.stage:'正式份额尚未齐全';$('coverage').textContent='正式份额及估值覆盖 '+of.valid_members+'/'+of.expected_members;
-$('kpis').innerHTML=[['今日正式份额敞口估算',of.net_estimate,'份额差 × 当日成交均价；非实际现金流'],['5日正式份额敞口估算',O.w5.net_estimate,O.w5.complete?'最近5个交易日，逐日相加':'连续官方份额或价格尚不完整'],['今日减少的核心ETF',of.outflow_count,'核心15只；身份未确认'],['固定境内观察池',D.pools.fixed_domestic.members.length,'核心15只 + 扩展通道；不含跨境']].map(([label,x,note],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value ${i<2?(x>0?'up':'dn'):''}">${i<2?num(x):x}<small>${i<2?'亿元':'只'}</small></div><div class="label">${esc(note)}</div></div>`).join('');
-const atRisk=D.pools.core15.members.map(c=>D.instruments[c]).filter(x=>x.latest?.risk.memory.active).sort((a,b)=>(a.latest.w5.net??0)-(b.latest.w5.net??0));
 function renderFocus(){
  const complete=!!(of&&of.complete&&Number.isFinite(of.net_estimate)&&of.valid_members===of.expected_members);
- $('focusStage').textContent='定稿级'+(O.stage?' · '+O.stage:'');
- $('focusDate').textContent=`业务日 ${D.end}`;
+ const state=O.tracking?.latest?.risk.state;
+ $('focusStage').textContent=complete?`交易所正式份额${state?` · ${state}`:''}`:'交易所份额';
  if(!complete){
   $('focusHeadline').textContent=`${D.end} · 正式份额未齐全`;
-  $('focusSubline').textContent=`覆盖 ${of?.valid_members??0}/${of?.expected_members??15}；缺口不补0，暂不展示核心池完整合计。`;
-  $('focusRows').innerHTML='<tr><td colspan="6">正式份额未齐全，逐只结果见下方明细；缺口不补0。</td></tr>';
-  $('focusMobile').innerHTML='<div class="empty">正式份额未齐全，缺口不补0。</div>';
-  $('focusMoversScope').textContent='正式份额未齐全；不展示合计，逐只结果见下方明细。';
-  $('interpretation').textContent='正式份额或估值尚未齐全，缺口不补0；保留已取得的逐只结果，暂不展示核心池完整合计。';
+  $('focusSubline').textContent=`覆盖 ${of?.valid_members??0}/${of?.expected_members??15}，暂不展示合计。`;
+  $('focusRows').innerHTML='<tr><td colspan="6">已取得的逐只数据见「全部 15 只」。</td></tr>';
+  $('focusMobile').innerHTML='<div class="empty">已取得的逐只数据见「全部 15 只」。</div>';
+  $('interpretation').textContent='';
   return;
  }
  const items=Object.values(O.instruments||{}).filter(x=>x&&x.latest&&Number.isFinite(x.latest.net_estimate));
@@ -537,15 +515,14 @@ function renderFocus(){
  const sells=rows.filter(r=>r.net<0).slice(-3).reverse();
  const show=[...buys,...sells];
  const fmtPct=v=>v===null||v===undefined?'—':(v>0?'+':'')+v.toFixed(2)+'%';
- const streakText=(n,sign)=>n>=2?(sign>0?`连续${n}日净买`:`连续${n}日净卖`):'—';
+ const streakText=(n,sign)=>n>=2?(sign>0?`连续${n}日净申购`:`连续${n}日净赎回`):'—';
  const rowHtml=r=>`<tr><td class="name"><b>${esc(r.x.name)}</b><small>${r.x.code} · ${esc(r.x.family)}</small></td><td>${val(r.net)}</td><td>${val(r.prev)}</td><td>${val(r.w5)}</td><td>${fmtPct(r.pct)}</td><td>${streakText(r.streak,Math.sign(r.net))}</td></tr>`;
  $('focusRows').innerHTML=show.map(rowHtml).join('')||'<tr><td colspan="6">尚无可用正式份额</td></tr>';
  $('focusMobile').innerHTML=show.map(r=>`<div class="cardrow"><b>${esc(r.x.name)}</b><small>${r.x.code} · ${esc(r.x.family)}</small><div class="cardmetrics"><span><small>今日净申赎</small>${val(r.net)}</span><span><small>前日</small>${val(r.prev)}</span><span><small>5日累计</small>${val(r.w5)}</span><span><small>份额变化</small>${fmtPct(r.pct)}</span></div><small>${streakText(r.streak,Math.sign(r.net))}</small></div>`).join('')||'<div class="empty">尚无可用正式份额</div>';
- $('focusMoversScope').textContent=`业务日 ${D.end} · 按今日净额排序；展示净买 ${buys.length} 只、净卖 ${sells.length} 只；前日/5日为同一正式份额口径。`;
  const dir=of.net_estimate>0?'净申购':of.net_estimate<0?'净赎回':'基本持平';
- const amount=of.net_estimate>0?` ${num(of.net_estimate)} 亿`:of.net_estimate<0?` ${num(Math.abs(of.net_estimate))} 亿`:'';
+ const amount=of.net_estimate===0?'':` ${num(Math.abs(of.net_estimate)).slice(1)} 亿`;
  $('focusHeadline').textContent=`${D.end} · ETF通道${dir}${amount}`;
- $('focusSubline').textContent=`${of.expected_members}只中 ${of.inflow_count}只增加、${of.outflow_count}只减少${O.w5?.complete?` · 近5日 ${num(O.w5.net_estimate)} 亿`:''} · 身份 I0（买卖主体未确认）`;
+ $('focusSubline').textContent=`${of.expected_members}只中 ${of.inflow_count}只增加、${of.outflow_count}只减少${O.w5?.complete?` · 近5日 ${num(O.w5.net_estimate)} 亿`:''} · 买卖主体未确认（I0）`;
  const fams=Object.entries(O.families||{}).map(([name,f])=>{
   const net=Number.isFinite(f?.latest?.net)?f.latest.net:null;
   const members=f?.members||[];
@@ -555,11 +532,11 @@ function renderFocus(){
  }).filter(x=>x.net!==null);
  const posF=fams.filter(x=>x.net>0).sort((a,b)=>b.net-a.net);
  const negF=fams.filter(x=>x.net<0).sort((a,b)=>a.net-b.net);
- const maxR=rows[0],minR=rows[rows.length-1];
- const buyText=posF.length?`买盘：${posF.slice(0,3).map(x=>`${x.name} ${num(x.net)}（${x.pos}/${x.members} 增加）`).join('、')}。`:'买盘：暂无明显净申购。';
- const sellText=negF.length?`卖盘：${negF.slice(0,3).map(x=>`${x.name} ${num(x.net)}（${x.neg}/${x.members} 减少）`).join('、')}。`:'卖盘：暂无明显净赎回。';
- const pace=O.w5?.complete?`节奏：今日 ${num(of.net_estimate)} 亿，近5日 ${num(O.w5.net_estimate)} 亿（前4日 ${num(O.w5.net_estimate-of.net_estimate)} 亿）；单只最大 ${maxR?maxR.x.name+' '+num(maxR.net):'—'} / ${minR?minR.x.name+' '+num(minR.net):'—'}。`:`节奏：今日 ${num(of.net_estimate)} 亿；单只最大 ${maxR?maxR.x.name+' '+num(maxR.net):'—'} / ${minR?minR.x.name+' '+num(minR.net):'—'}。`;
- $('interpretation').innerHTML=`<ul><li>${esc(buyText)}</li><li>${esc(sellText)}</li><li>${esc(pace)}</li></ul><p class="focus-caveat">ETF申赎估算，不是国家队实名买卖；身份 I0。</p>`;
+ const buyText=posF.length?`主要净申购：${posF.slice(0,3).map(x=>`${x.name} ${num(x.net)}（${x.pos}/${x.members} 增加）`).join('、')}。`:'';
+ const sellText=negF.length?`主要净赎回：${negF.slice(0,3).map(x=>`${x.name} ${num(x.net)}（${x.neg}/${x.members} 减少）`).join('、')}。`:'';
+ const pace=O.w5?.complete?`此前 4 日合计：${num(O.w5.net_estimate-of.net_estimate)} 亿。`:'';
+ const notes=[buyText,sellText,pace].filter(Boolean);
+ $('interpretation').innerHTML=notes.length?`<ul>${notes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
 }
 renderFocus();
 $('officialScope').textContent=`业务日 ${D.end}；资料状态：${O.stage}。正式份额与不复权价格配对覆盖 ${of.valid_members}/15。上交所口径为当日清算后份额；深交所按业务日记账，T日晚间初值以T+1早间更新为准。两日均取自同一交易所披露序列，份额披露精度为100份。`;
@@ -588,81 +565,61 @@ $('download').onclick=()=>{const b=new Blob([JSON.stringify(D,null,2)],{type:'ap
 window.GJD={buildId:D.build_id,end:D.end,coreNet:core.net,officialNet:of.net_estimate,coreCount:D.pools.core15.members.length,inventoryUnits:I?.complete?I.latest.total_units:null,inventoryNetUnits:I?.complete?I.latest.net_added_units:null};
 /* 三阶段版本条：盘中 / 盘后 / 次日。三者各自成版，后一版替代前一版。 */
 window.StageCards=(function(){
-  const st={intraday:null,postclose:null,verified:D.end};
+  const st={intraday:null,postclose:null};
   const $=id=>document.getElementById(id);
-  const fmt=v=>v===null||v===undefined?'—':(v>0?'+':'')+Number(v).toFixed(1);
   function card(o){return `<a class="stage-card${o.active?' is-active':''}" href="${o.href}">`+
     `<div class="stage-head"><span class="stage-name">${esc(o.name)}</span><span class="stage-badge ${o.tone}">${esc(o.badge)}</span></div>`+
     `<div class="stage-date">${esc(o.date||'待更新')}</div>`+
-    `<div class="stage-desc">${esc(o.desc)}</div>`+
-    `<div class="stage-meta">${esc(o.meta||'')}</div></a>`;}
+    `${o.desc?`<div class="stage-desc">${esc(o.desc)}</div>`:''}</a>`;}
   function draw(){
     const el=$('stageCards');if(!el)return;
-    const d=new Date(),mins=d.getHours()*60+d.getMinutes(),wd=d.getDay();
-    const inSession=wd>=1&&wd<=5&&mins>=570&&mins<900;
-    const pc=st.postclose,pdate=pc&&pc.business_date;
-    const ahead=pdate&&st.verified&&pdate>st.verified;
-    let active='verified';
-    if(ahead)active=inSession?'intraday':'postclose';
-    // 盘中卡的日期与文案必须同源：都用 idate。否则盘后初值已经落地时，
-    // 盘中卡还写着「等盘后初值」，同一屏出现互相打架的两句话。
-    const idate=st.intraday||(ahead?pdate:st.verified);
+    const live=st.intraday,pc=st.postclose;
+    const active=live?.fresh?'intraday':pc?.pending_review&&pc.business_date>D.end?'postclose':'verified';
     el.innerHTML=[
-      card({name:'盘中',href:'#intraday',badge:'线索级',tone:'tone-live',
-        date:idate,
-        desc:'实时快照，无可靠逐笔方向，不给份额',
-        meta:!ahead?'今日已定稿，见次日版本'
-          :inSession?'每 60 秒刷新，尚未收盘'
-          :(idate===pdate?'已收盘，当日结果见盘后初值':'今日已收盘，等盘后初值'),
-        active:active==='intraday'}),
+      card({name:'盘中',href:'#intraday',badge:'线索级',tone:'tone-live',date:live?.date,
+        desc:live?.status||'等待实时行情',active:active==='intraday'}),
       card({name:'盘后',href:'#postclose',badge:pc?(pc.pending_review?'初值级':'已被替代'):'待生成',tone:'tone-provisional',
-        date:pdate||'—',
-        desc:pc?('反推净申赎 '+fmt(pc.vendor&&pc.vendor.net_yi)+' 亿；份额收盘后可能被修订'):'收盘后生成当日初值，份额不是交易所披露值',
-        meta:pc?('官方披露 '+(pc.official?pc.official.coverage:0)+'/'+(pc.official?pc.official.expected:15)+' · 比值中位 '+((pc.flattened&&pc.flattened.ratio_median!==null&&pc.flattened.ratio_median!==undefined)?pc.flattened.ratio_median.toFixed(4):'—')+' · 抹平 '+(pc.flattened?pc.flattened.count:0)+' 只'):'',
+        date:pc?.business_date,
+        desc:pc&&Number.isFinite(pc.vendor?.net_yi)?`反推净申赎 ${num(pc.vendor.net_yi)} 亿`:pc?'反推净额未齐':'',
         active:active==='postclose'}),
-      card({name:'次日',href:'#official',badge:'定稿级',tone:'tone-verified',
-        date:st.verified,
-        desc:'交易所正式份额，经次日早间复核',
-        meta:'可引用；与上方两版独立口径，不混接',
-        active:active==='verified'}),
+      card({name:'次日',href:'#official',badge:of.complete?'定稿级':'待复核',tone:'tone-verified',
+        date:D.end,desc:of.complete?'交易所正式份额':'正式份额未齐',active:active==='verified'}),
     ].join('');
   }
   draw();
-  return {set(k,v){if(st[k]===v)return;st[k]=v;draw()},draw};
+  return {set(k,v){
+    const prev=st[k];
+    if(prev===v||k==='intraday'&&prev?.date===v.date&&prev?.status===v.status)return;
+    st[k]=v;draw();
+  }};
 })();
 /* 盘后初值：三阶段里的第二版。份额由供应商换手率反推，收盘后可能被修订。 */
 (function(){
-  const stage=String(O.stage||'未提供'),complete=!!of.complete,n=of.valid_members||0,exp=of.expected_members||15;
   const f=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
   function legacy(){
-    $('postcloseScope').textContent=`当前构建业务日 ${D.end}；披露阶段：${stage}；正式份额与估值配对覆盖 ${n}/${exp}。本区不改动上方最后一版已核验结果。`;
-    const rows=[['版本','次日定稿（正式区）'],['业务日',D.end],['覆盖数',n+'/'+exp],
-      ['完整合计',(complete&&n===exp)?'可展示':'不展示：覆盖不足，缺口不补0']];
-    $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
-      rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')+'</tbody></table></div>'+
-      '<p class="note">尚未取到当日盘后初值；此处显示已核验的次日结果。缺口不补 0，也不把缺失解释成「没有买入」。</p>';
+    $('postcloseScope').textContent='暂无可用盘后初值。';
+    $('postcloseBody').innerHTML='<p class="note"><a href="#official">查看交易所正式份额</a></p>';
   }
+  function table(rows){return '<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
+      rows.map(([label,value])=>`<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`).join('')+'</tbody></table></div>';}
   function render(x){
     const o=x.official||{},v=x.vendor||{},iv=x.inventory||{},fl=x.flattened||{};
-    const sup=x.superseded_by;
-    $('postcloseScope').textContent=`业务日 ${x.business_date}；版本：盘后初值（${x.pending_review?'待次日复核':'已被 '+(sup||'权威版本')+' 替代'}）；官方份额披露 ${o.coverage||0}/${o.expected||15}。本区不改动上方已核验的次日结果（业务日 ${D.end}）。`;
+    $('postcloseScope').textContent=`业务日 ${x.business_date} · ${x.pending_review?'待次日复核':'已由正式版替代'} · 反推结果不可作定稿`;
     const rows=[
-      ['版本','盘后初值 · 初值级，不是交易所披露份额'],
-      ['业务日',x.business_date],
-      ['生成时间',x.generated_at||'—'],
-      ['官方份额覆盖',(o.coverage||0)+'/'+(o.expected||15)+(o.complete?'（齐全）':'（未齐全，不展示合计）')],
-      ['供应商反推净申赎',(v.net_yi===null||v.net_yi===undefined)?'数据不足':num(v.net_yi)+' 亿元（不可作定稿）'],
-      ['份额比值中位',(fl.ratio_median===null||fl.ratio_median===undefined)?'—':fl.ratio_median.toFixed(6)+'（1.000000 附近说明分母未换）'],
-      ['严格判定抹平',(fl.count||0)+' 只；宽口径接近不动 '+(fl.near_count||0)+' 只'],
-      ['核心15成交额',(v.amount_yi===null||v.amount_yi===undefined)?'—':Number(v.amount_yi).toLocaleString('zh-CN',{minimumFractionDigits:1,maximumFractionDigits:1})+' 亿元'],
-      ['10份刻度（初值）',(iv.total_units===null||iv.total_units===undefined)?'数据不足':ip(iv.total_units)+' 份'],
-      ['本轮净新增（初值）',(iv.net_added_units===null||iv.net_added_units===undefined)?'数据不足':num(iv.net_added_units,2)+' 份'],
-      ['买卖身份',x.identity||'I0 当日买卖主体未确认'],
-      ['下一步',x.next_step||''],
+      ['反推净申赎',Number.isFinite(v.net_yi)?num(v.net_yi)+' 亿元':'数据不足'],
+      ['核心 15 只成交额',Number.isFinite(v.amount_yi)?num(v.amount_yi).replace(/^\+/,'')+' 亿元':'—'],
+      ['10 份刻度',Number.isFinite(iv.total_units)?ip(iv.total_units)+' 份':'数据不足'],
+      ['本轮净新增',Number.isFinite(iv.net_added_units)?num(iv.net_added_units,2)+' 份':'数据不足'],
+      ['官方份额覆盖',(o.coverage??0)+'/'+(o.expected??15)],
     ];
-    $('postcloseBody').innerHTML='<div class="scroll"><table><thead><tr><th>项目</th><th>值</th></tr></thead><tbody>'+
-      rows.map(([k,t])=>`<tr><td>${esc(k)}</td><td>${esc(t)}</td></tr>`).join('')+'</tbody></table></div>'+
-      `<p class="note">${esc(x.revision_risk||'')}</p>`;
+    const diagnostics=[
+      ['生成时间',x.generated_at||'—'],
+      ['份额比值中位数',Number.isFinite(fl.ratio_median)?fl.ratio_median.toFixed(6):'—'],
+      ['份额疑似抹平',Number.isFinite(fl.count)?`严格 ${fl.count} 只；宽口径 ${fl.near_count??'—'} 只`:'—'],
+    ];
+    $('postcloseBody').innerHTML=table(rows)+`<details><summary>数据核对</summary>${table(diagnostics)}
+      <p class="note">${esc(x.revision_risk||'等待交易所次日复核。')}</p>
+      ${x.superseded_by?`<p class="note">复核构建 ${esc(x.superseded_by)}</p>`:''}</details>`;
     if(window.StageCards)window.StageCards.set('postclose',x);
   }
   if(typeof fetch!=='function'){legacy();return;}
@@ -670,11 +627,8 @@ window.StageCards=(function(){
     if(x&&x.business_date){render(x);return;}
     f('/tools/national-team-etf/data/intraday/postclose.json').then(y=>{
       if(y&&y.business_date){
-        render({business_date:y.business_date,generated_at:y.generated_at,generated_at_note:'legacy',
-          pending_review:y.pending_review,official:{coverage:y.coverage,expected:y.expected,complete:y.complete},
-          vendor:{net_yi:null,amount_yi:null,expected_members:y.expected,reliable:false},
-          inventory:{},flattened:{count:0},revision_risk:y.note||'',
-          identity:'I0 当日买卖主体未确认',next_step:y.next_step||''});
+        render({business_date:y.business_date,generated_at:y.generated_at,pending_review:y.pending_review,
+          official:{coverage:y.coverage,expected:y.expected},revision_risk:y.note||''});
       }else legacy();
     });
   });
@@ -687,24 +641,19 @@ window.StageCards=(function(){
   const nameOf=c=>(D.instruments[c]&&D.instruments[c].name)||c;
   const famOf=c=>(D.instruments[c]&&D.instruments[c].family)||'行业主题/待核验';
   const $=id=>document.getElementById(id);
-  const buf=[];let S=null,liveOK=false,lastFetch=null;
   // 精简 DOM / 无网络环境（含独立验收的 Node VM）不启动实时通道，保留静态结果。
   if(typeof fetch!=='function'||typeof setInterval!=='function'||
      typeof document.createElement!=='function'||!document.head){
     $('intradayStage').textContent='实时通道未启用';
-    $('intradayStatus').innerHTML='<span class="pill">当前环境不支持实时行情脚本</span>';
-    $('intradayKpis').innerHTML='<div class="kpi"><div class="label">状态</div><div class="value" style="font-size:20px">仅静态快照</div></div>';
-    $('intradayRows').innerHTML='<tr><td colspan="8">实时行情未初始化；这不解释为没有托底，正式份额以上方已核验结果为准。</td></tr>';
-    $('intradayEvents').textContent='盘中规则与事件摘要需浏览器环境与采集器快照；此处不推断资金行为。';
-    $('liveStripText').textContent='当前环境不支持实时行情脚本；正式份额以上方定稿为准。';
+    $('intradayRows').innerHTML='<tr><td colspan="7">当前环境无法加载实时行情。</td></tr>';
+    $('intradayEvents').textContent='当前环境无法读取云端留档。';
     return;
   }
   function parseVar(sym){
     const v=window['v_'+sym];if(typeof v!=='string')return null;
     const f=v.split('~');if(f.length<40)return null;
     const g=i=>{const x=parseFloat(f[i]);return isFinite(x)?x:null;};
-    return {price:g(3),pct:g(32),amount:g(37),vol:g(6),premium:f.length>77?g(77):null,
-            iopv:f.length>78?g(78):null,qt:f[30]||''};
+    return {price:g(3),pct:g(32),premium:f.length>77?g(77):null,qt:f[30]||''};
   }
   function qtDate(s){return s&&s.length>=14?`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)} ${s.slice(8,10)}:${s.slice(10,12)}:${s.slice(12,14)}`:'—';}
   function fetchLive(){
@@ -717,47 +666,34 @@ window.StageCards=(function(){
       document.head.appendChild(s);setTimeout(()=>done(false),9000);
     });
   }
-  function render(){
-    const now=new Date();lastFetch=now.toISOString();
+  function render(liveOK){
+    const now=new Date();
     const idxPct={};Object.entries(IDXMAP).forEach(([fam,sym])=>{const r=parseVar(sym);if(r)idxPct[fam]=r.pct;});
     const rows=CORE.map(c=>{
       const r=parseVar(symOf(c));if(!r)return null;
       const fam=famOf(c),ip=(idxPct[fam]===undefined?null:idxPct[fam]);
-      return {code:c,name:nameOf(c),family:fam,price:r.price,pct:r.pct,index_pct:ip,
-        relative:(r.pct!==null&&ip!==null)?r.pct-ip:null,premium:r.premium,iopv:r.iopv,
-        amount:r.amount,qt:r.qt};
+      return {code:c,name:nameOf(c),family:fam,price:r.price,pct:r.pct,
+        relative:(r.pct!==null&&ip!==null)?r.pct-ip:null,premium:r.premium,qt:r.qt};
     }).filter(Boolean);
-    const snap={};rows.forEach(r=>snap[r.code]=r);
     const keyTime=rows.length?rows.map(r=>r.qt).sort().pop():'';
-    if(!buf.length||buf[buf.length-1].__key!==keyTime)buf.push({...snap,__key:keyTime,__at:now.toISOString()});
-    if(buf.length>45)buf.shift();
     const q=keyTime.length>=14?new Date(+keyTime.slice(0,4),+keyTime.slice(4,6)-1,+keyTime.slice(6,8),
       +keyTime.slice(8,10),+keyTime.slice(10,12),+keyTime.slice(12,14)):null;
     const lag=q?Math.round((now-q)/1000):null;
     const stale=(!q||lag>180||q.toDateString()!==now.toDateString());
-    const cold=buf.length<5;
     const support=rows.filter(r=>r.relative!==null&&r.relative>0.15).length;
     const retreat=rows.filter(r=>r.relative!==null&&r.relative<-0.15).length;
     const breadth=rows.length?Math.max(support,retreat)/rows.length:0;
     const leader=support>retreat*2?'承接线索':retreat>support*2?'撤退线索':'方向待确认';
-    $('intradayStage').textContent=stale?'行情过期 / 非交易时段':'盘中实时';
-    if(window.StageCards&&keyTime.length>=8)window.StageCards.set('intraday',`${keyTime.slice(0,4)}-${keyTime.slice(4,6)}-${keyTime.slice(6,8)}`);
-    const liveStrip=$('liveStripText'),liveDay=keyTime.length>=8?`${keyTime.slice(0,4)}-${keyTime.slice(4,6)}-${keyTime.slice(6,8)}`:'—';
-    if(liveStrip)liveStrip.textContent=`${stale?'最近行情':'盘中'} ${liveDay} · ${qtDate(keyTime).slice(11,19)} · 延迟 ${lag===null?'—':lag+' 秒'} · 覆盖 ${rows.length}/${CORE.length} · ${leader}`;
+    const status=!liveOK?'行情请求失败':!rows.length?'暂无行情':stale?'行情过期 / 非交易时段':'盘中实时';
+    $('intradayStage').textContent=status;
+    window.StageCards.set('intraday',{date:q?qtDate(keyTime).slice(0,10):null,status,fresh:liveOK&&!stale});
     $('intradayStatus').innerHTML=
-      pill('业务日 '+(keyTime.length>=8?`${keyTime.slice(0,4)}-${keyTime.slice(4,6)}-${keyTime.slice(6,8)}`:'—'))+
-      pill('行情时间 '+qtDate(keyTime))+
-      pill('采集时间 '+now.toLocaleTimeString('zh-CN',{hour12:false}))+
-      pill('延迟 '+(lag===null?'—':lag+' 秒'),lag===null||lag>180)+
-      pill('覆盖 '+rows.length+'/'+CORE.length,rows.length<CORE.length)+
-      pill('身份：I0 当日买卖主体未确认')+
-      pill(S?('采集器快照 '+(S.generated_at||'—').slice(11,19)):'采集器快照：未发布',!S);
+      (q?pill('行情时间 '+qtDate(keyTime))+pill('延迟 '+lag+' 秒',lag>180):'')+
+      pill('覆盖 '+rows.length+'/'+CORE.length,rows.length<CORE.length);
     $('intradayKpis').innerHTML=[
-      ['观察方向',leader,'多通道线索，不是身份判断'],
-      ['同步广度',(breadth*100).toFixed(0)+'%','同向标的 / 有效标的'],
-      ['5/15/30分钟窗口',cold?'冷启动':'可用','页面打开期间累积；'+buf.length+' 个采样点'],
-      ['数据源状态',liveOK?'实时通道可用':'实时通道不可用',liveOK?'供应商快照':'不可解释为没有托底'],
-    ].map(([a,b,c])=>`<div class="kpi"><div class="label">${esc(a)}</div><div class="value" style="font-size:20px">${esc(b)}</div><div class="label">${esc(c)}</div></div>`).join('');
+      ['观察方向',rows.length?leader:'—'],
+      ['同步广度',rows.length?(breadth*100).toFixed(0)+'%':'—'],
+    ].map(([a,b])=>`<div class="kpi"><div class="label">${esc(a)}</div><div class="value" style="font-size:20px">${esc(b)}</div></div>`).join('');
     $('intradayRows').innerHTML=rows.map(r=>{
       const ch=[];if(r.relative!==null&&Math.abs(r.relative)>=0.15)ch.push(r.relative>0?'相对指数偏强':'相对指数偏弱');
       if(r.premium!==null&&Math.abs(r.premium)>=0.25)ch.push('折溢价偏离');
@@ -765,19 +701,16 @@ window.StageCards=(function(){
       return `<tr><td class="name"><b>${esc(r.name)}</b><small>${r.code} · ${esc(r.family)}</small></td>`+
         `<td>${r.price===null?'—':r.price.toFixed(3)}</td><td>${num(r.pct,2)}</td>`+
         `<td>${num(r.relative,2)}</td><td>${num(r.premium,2)}</td>`+
-        `<td>—<small><a href="/tools/national-team-etf/segments.html">分段视图</a></small></td><td>${esc(ch.join('、')||'无')}</td><td>${esc(ce||'—')}</td></tr>`;
-    }).join('')||'<tr><td colspan="8">实时行情不可用；保留最近一次采集器快照，不解释为「没有托底」。</td></tr>';
-    const alerts=(S&&S.alerts)||[];
-    $('intradayEvents').textContent=S
-      ? `本地采集器：${S.level||'—'}；冷启动 ${S.cold_start?'是':'否'}（已积累 ${S.baseline_days||0}/${S.baseline_min_days||5} 个交易日）；`+
-        `事件 ${S.event_summary?S.event_summary.active:0} 个进行中；最近一次快照提醒 ${alerts.length} 条。`+
-        (alerts.length?'提醒含方向、依据、持续时间、反向证据、时效与待核验事项；同一事件状态不变时静默。':'')+
-        ' 方向数据：无可靠逐笔/主动成交方向，标注待确认。'
-      : '本地采集器快照尚未发布；本表仅展示浏览器端实时线索，不含规则升级与事件历史。';
+        `<td>${esc(ch.join('、')||'无')}</td><td>${esc(ce||'—')}</td></tr>`;
+    }).join('')||'<tr><td colspan="7">暂无可用行情。</td></tr>';
   }
   fetch('/tools/national-team-etf/data/intraday/latest.json',{cache:'no-store'})
-    .then(r=>r.ok?r.json():null).catch(()=>null).then(x=>{S=x;});
-  async function loop(){liveOK=await fetchLive();render();}
+    .then(r=>r.ok?r.json():null).catch(()=>null).then(snapshot=>{
+      $('intradayEvents').textContent=snapshot
+        ? `留档 ${snapshot.generated_at||'—'} · 等级 ${snapshot.level||'—'} · 进行中事件 ${snapshot.event_summary?.active??0} 个 · 本次提醒 ${snapshot.alerts?.length??0} 条`
+        : '暂无云端留档。';
+    });
+  async function loop(){render(await fetchLive());}
   loop();setInterval(loop,60000);
 })();
 /* 阅读体验增强：吸顶导航滚动高亮 + 回到顶部。

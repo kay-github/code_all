@@ -114,24 +114,25 @@ test('missing inventory suppresses the current ratio and negative net increase r
 });
 
 test('empty discovery and incomplete official data show gaps without zero totals',()=>{
- const d=structuredClone(data);d.discovery.queue=[];d.exchange.latest.complete=false;d.exchange.latest.net_estimate=null;
+ const d=structuredClone(data);d.discovery.queue=[];d.exchange.latest.complete=false;d.exchange.latest.net_estimate=null;d.exchange.latest.valid_members=14;
  d.exchange.instruments['510300'].latest=null;
  const {nodes}=render(390,d);
  assert.match(nodes.focusHeadline.textContent,/正式份额未齐全/);
- assert.ok(nodes.interpretation.textContent.includes('暂不展示核心池完整合计'));
+ assert.match(nodes.focusSubline.textContent,/覆盖 14\/15，暂不展示合计/);
+ assert.equal(nodes.interpretation.innerHTML,'');
  assert.ok(nodes.discoveryRows.innerHTML.includes('尚无有效扫描数据'));
- assert.ok(nodes.kpis.innerHTML.includes('—'));
 });
 
 test('focus first screen answers latest-day movers, 10-part scale, and a data-driven summary',()=>{
  const {nodes}=render(1440);
  assert.match(nodes.focusHeadline.textContent,/^\d{4}-\d{2}-\d{2} · ETF通道(净申购|净赎回|基本持平)/);
- assert.match(nodes.focusSubline.textContent,/身份 I0/);
+ assert.match(nodes.focusSubline.textContent,/买卖主体未确认（I0）/);
  const rows=(nodes.focusRows.innerHTML.match(/<tr>/g)||[]).length;
  assert.ok(rows>0&&rows<=10,rows);
  assert.equal((nodes.focusMobile.innerHTML.match(/class="cardrow"/g)||[]).length,rows);
- assert.match(nodes.interpretation.innerHTML,/节奏：/);
- assert.ok(nodes.interpretation.innerHTML.includes('ETF申赎估算，不是国家队实名买卖'));
+ assert.match(nodes.interpretation.innerHTML,/此前 4 日合计：/);
+ assert.doesNotMatch(nodes.interpretation.innerHTML,/买卖主体未确认|近5日/);
+ assert.doesNotMatch(page,/id="more"|id="focusDate"/);
  assert.match(nodes.inventoryTitle.textContent,/\/ 10 份/);
  assert.match(nodes.inventoryGauge.innerHTML,/gauge-now/);
  assert.ok(page.indexOf('id="focus"')<page.indexOf('id="stages"'));
@@ -159,7 +160,7 @@ test('inline favicon prevents the root /favicon.ico 404',()=>{
 test('page keeps the three-stage contract and reads the provisional snapshot separately',()=>{
  assert.match(page,/id="stages"/);
  assert.match(page,/id="stageCards"/);
- assert.match(page,/三个版本，三种可信度/);
+ assert.match(page,/数据版本/);
  assert.match(page,/data\/postclose\/latest\.json/,'盘后初值必须读独立文件，不能复用正式快照');
  assert.match(page,/不可作定稿|份额收盘后可能被修订/,'初值必须显式标注不可定稿');
 });
@@ -167,7 +168,7 @@ test('page keeps the three-stage contract and reads the provisional snapshot sep
 // 精简 DOM 走到「实时通道未启用」静态降级就 return，测不到盘中 render()。
 // pill 曾只在真实浏览器路径被调用，因未定义而每轮抛 ReferenceError，DOM 测试却全绿。
 // 这里补齐浏览器能力强制执行实时分支，把这类错误变成可观测的 DOM 缺口。
-function renderLive(dataset=data){
+function renderLive(dataset=data,provisional=null){
  const ids=[...page.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  const nodes=Object.fromEntries(ids.map(id=>[id,{innerHTML:'',textContent:'',value:'',checked:false,clientWidth:1440,
   handlers:{},addEventListener(k,f){this.handlers[k]=f;}}]));
@@ -179,7 +180,10 @@ function renderLive(dataset=data){
  // 9 秒兜底与下载用的长定时器不真正注册，避免测试进程被挂住。
  const fakeSetTimeout=(fn,ms)=>ms>=1000?++timerId:setTimeout(fn,ms);
  const context={document,window:{addEventListener(){}},setTimeout:fakeSetTimeout,
-  fetch:()=>Promise.resolve({ok:false,json:()=>Promise.resolve(null)}),
+  fetch:url=>Promise.resolve({
+   ok:!!provisional&&url.endsWith('/data/postclose/latest.json'),
+   json:()=>Promise.resolve(provisional),
+  }),
   setInterval:(fn,ms)=>{intervals.push({fn,ms});return intervals.length;},clearInterval:()=>{}};
  const onReject=e=>rejections.push(e);
  process.on('unhandledRejection',onReject);
@@ -192,21 +196,34 @@ test('browser-capable intraday render has no uncaught ReferenceError (pill stays
  const e=renderLive();
  try{
   assert.equal(e.jsonp.length,1,'浏览器环境应发起一次 JSONP 行情请求');
+  const quote=Array(79).fill('');
+  quote[3]='3.5';quote[30]='20261119130500';quote[32]='1.1';
+  const code=data.pools.core15.members[0];
+  e.context.window['v_'+(code.startsWith('5')?'sh':'sz')+code]=quote.join('~');
   e.jsonp[0].onload();
   for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
   assert.deepEqual(e.rejections,[],'实时 render() 抛出了未捕获异常；常见原因是 pill 未定义为全局');
   assert.notEqual(e.nodes.intradayStage.textContent,'实时通道未启用','必须走实时分支，不能是静态降级');
   assert.match(e.nodes.intradayStage.textContent,/盘中实时|行情过期/);
   assert.match(e.nodes.intradayStatus.innerHTML,/<span class="pill/,'render() 应生成完整状态标签');
-  assert.ok(e.nodes.intradayStatus.innerHTML.includes('身份：I0'));
-  assert.ok(e.nodes.intradayStatus.innerHTML.includes('采集器快照：未发布'));
+  assert.match(e.nodes.intradayStatus.innerHTML,/覆盖 1\/15/);
+  assert.match(e.nodes.intradayStatus.innerHTML,/2026-11-19 13:05:00/);
+  assert.match(e.nodes.intradayRows.innerHTML,new RegExp(code));
+  assert.equal((e.nodes.intradayRows.innerHTML.match(/<td[ >]/g)||[]).length,7);
+  assert.doesNotMatch(e.nodes.intradayRows.innerHTML,/segments\.html/);
+  assert.match(e.nodes.intradayEvents.textContent,/暂无云端留档/);
   assert.ok(e.intervals.some(x=>x.ms===60000),'应注册 60 秒轮询');
  }finally{e.off();}
 });
 
-test('three-stage strip renders all three versions with distinct confidence labels',async()=>{
- const e=renderLive();
+test('three-stage strip keeps the provisional figures and diagnostics separate',async()=>{
+ const e=renderLive(data,{
+  business_date:data.end,pending_review:true,
+  vendor:{net_yi:12.3,amount_yi:100},inventory:{total_units:5.5,net_added_units:3},
+  official:{coverage:10,expected:15},flattened:{ratio_median:1,count:4,near_count:7},
+ });
  try{
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
   const html=e.nodes.stageCards.innerHTML;
   assert.match(html,/盘中/);
   assert.match(html,/盘后/);
@@ -214,7 +231,10 @@ test('three-stage strip renders all three versions with distinct confidence labe
   assert.match(html,/线索级/,'盘中只能标线索级');
   assert.match(html,/初值级|待生成/,'盘后是初值级或待生成，不能标定稿');
   assert.match(html,/定稿级/,'次日才是定稿级');
-  assert.ok(!/日期/.test(html),'日期缺失时应显示待更新而不是占位词');
+  assert.match(html,/反推净申赎 \+12.3 亿/);
+  assert.doesNotMatch(html,/抹平|比值中位/);
+  assert.match(e.nodes.postcloseScope.textContent,/不可作定稿/);
+  assert.match(e.nodes.postcloseBody.innerHTML,/<details><summary>数据核对<\/summary>[\s\S]*份额比值中位数[\s\S]*严格 4 只；宽口径 7 只/);
  }finally{e.off();}
 });
 

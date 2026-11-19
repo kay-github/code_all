@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="gjd-build-id" content="20261119T131520_0800_ce2f2dff8a"><title>分段活跃度 · ETF通道追踪 2026-11-18</title>
+<meta name="gjd-build-id" content="20261119T132924_0800_11d11b93aa"><title>分段活跃度 · ETF通道追踪 2026-11-18</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e639c'/%3E%3Cpath d='M6 23l6-7 4 4 9-11' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
 <script src="/assets/site-theme.js"></script><link rel="stylesheet" href="/assets/workspace-theme.css">
 <style>
@@ -223,6 +223,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 /* ==== 三阶段版本条：盘中 / 盘后 / 次日 ==== */
 #stages{margin:var(--s5) 0 0;background:transparent;border:0;box-shadow:none;padding:0}
 #stages>h2{margin-bottom:var(--s2)}
+#intraday .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+.intraday-meta{display:flex;flex-wrap:wrap;gap:var(--s2)}
 .stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3);margin-top:var(--s3)}
 .stage-card{display:flex;flex-direction:column;gap:6px;min-width:0;padding:var(--s4);
   background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line-strong);
@@ -239,7 +241,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .stage-badge.tone-verified{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
 .stage-date{font:700 19px/1.3 ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .stage-desc{font-size:12px;color:var(--text);line-height:1.5}
-.stage-meta{font-size:11px;color:var(--faint);line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:760px){.stage-grid{grid-template-columns:1fr;gap:var(--s2)}
   .stage-card{padding:var(--s3)}}
 /* ==== 焦点首屏：结论、分品种、刻度 ==== */
@@ -250,8 +251,7 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-points ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--s2)}
 .focus-points li{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
 .focus-points li:nth-child(2){border-left-color:var(--amber)}
-.focus-points .focus-caveat{font-size:11.5px;color:var(--faint);margin:0;padding-left:2px}
-.focus-points p{margin:0}
+.focus-points:empty{display:none}
 .focus-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--s4);align-items:stretch}
 .focus-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-sm);padding:var(--s4);margin:0;min-width:0}
 .focus-card>h2{font-size:17px;margin:0 0 var(--s2)}
@@ -261,9 +261,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-card table{font-size:12.5px}
 .focus-card th,.focus-card td{padding:8px}
 .focus-card .scroll{max-height:430px;border:1px solid var(--line);border-radius:9px}
-.focus-foot{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3);padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px}
-.focus-foot .note{margin:0;flex:1;min-width:180px}
-.focus-foot a{font-size:12px;white-space:nowrap}
 .focus-stage{font-size:12.5px;line-height:1.6;margin:var(--s2) 0;color:var(--text)}
 .focus-stage b{font-size:14px}
 .inventory-gauge{margin:var(--s3) 0 var(--s1)}
@@ -273,7 +270,6 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-start{opacity:.45}
 .gauge-now{background:var(--accent);width:3px}
 .gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
-.gauge-legend{font-size:10.5px;color:var(--faint);margin-top:2px}
 .inventory-mix{grid-column:1/-1}
 .inventory-mix-link{display:inline-flex;align-items:center;min-height:32px}
 .mix-date{margin:0}
@@ -302,13 +298,11 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
 .focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.8px}
 .focus-grid #inventory .lead{margin-bottom:var(--s2)}
-.detail-eyebrow{margin-top:var(--s6);margin-bottom:var(--s1)}
 @media(max-width:860px){
   .focus-grid{grid-template-columns:1fr}
   .focus-grid #inventory,.focus-grid .inventory-mix{order:-1}
   .focus-hero h1{font-size:clamp(24px,7vw,34px)}
   .focus-card .scroll{max-height:52vh}
-  .focus-foot{align-items:flex-start}
   .focus-grid #inventory .inventory-kpis{grid-template-columns:1fr 1fr}
 }
 <style>
@@ -321,8 +315,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .seg-bar.weak{fill:var(--line-strong)}
 </style></style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察 <span class="pill">v2.2</span></strong><nav><a href="/gjd/#focus">最新一日</a><a href="/gjd/#inventory">本轮刻度</a><a href="/gjd/#interpretation">通道解读</a><a href="/gjd/#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
-<main><main><div class="eyebrow">盘中线索的补充视角 · 与当日追踪共用构建 20261119T131520_0800_ce2f2dff8a</div>
+<header><strong>国家队观察</strong><nav><a href="/gjd/#focus">最新一日</a><a href="/gjd/#inventory">本轮刻度</a><a href="/gjd/#interpretation">通道解读</a><a href="/gjd/#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段活跃度</a><button onclick="window.ToolSiteTheme?.toggle()" aria-label="切换深浅色">深浅色</button></nav></header>
+<main><main><div class="eyebrow">盘中线索的补充视角 · 与当日追踪共用构建 20261119T132924_0800_11d11b93aa</div>
 <h1>15 分钟分段活跃度</h1>
 <p class="lead">把最近一个交易日的成交额拆成 16 个已收齐的 15 分钟整段，与近 20 个交易日同段中位数对比。它回答「这一段有多活跃」，不回答「谁在买」。</p>
 <div class="notice">成交活跃度 ≠ 份额变化 ≠ 国家队买入。二级市场换手可能不改变总份额；买卖身份默认 I0，未确认。分段缺失不补 0。</div>
@@ -343,8 +337,8 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 <p>15:00 段包含收盘集合竞价（14:57–15:00），大额收盘成交会把该段倍数显著抬高；它不是连续竞价时段的可比活跃度，也不能据此判断买卖主体。</p>
 <p>页面在浏览器端额外抓取当日 5 分钟 K。若当日日期未晚于基线日，则退回展示基线样本最后一日，并明确标注「样本内回看」，不用于前视判断。基线由本机盘后任务刷新，随下一次正式发布同步到线上。</p>
 <p>本页不输出国家队概率、盘中买入金额或份额结论；份额与净申赎请看 <a href="/gjd/#official">正式份额</a> 与 <a href="/gjd/#postclose">盘后初值</a>。</p>
-<p class="note">构建 <span class="mono">20261119T131520_0800_ce2f2dff8a</span> · 业务日 2026-11-18 · 页面脚本直接读取供应商 JSONP，不产生 Git 提交</p></section>
-<a href="/gjd/">返回当日追踪</a></main></main><script type="application/json" id="segmeta">{"build_id":"20261119T131520_0800_ce2f2dff8a","end":"2026-11-18","members":[{"code":"159338","name":"中证A500ETF国泰","family":"中证A500"},{"code":"159845","name":"中证1000ETF华夏","family":"中证1000"},{"code":"159915","name":"创业板ETF易方达","family":"创业板"},{"code":"159919","name":"沪深300ETF嘉实","family":"沪深300"},{"code":"159949","name":"创业板50ETF华安","family":"创业板50"},{"code":"510050","name":"上证50ETF华夏","family":"上证50"},{"code":"510300","name":"沪深300ETF华泰柏瑞","family":"沪深300"},{"code":"510310","name":"沪深300ETF易方达","family":"沪深300"},{"code":"510330","name":"沪深300ETF华夏","family":"沪深300"},{"code":"510500","name":"中证500ETF南方","family":"中证500"},{"code":"512050","name":"A500ETF华夏","family":"中证A500"},{"code":"512100","name":"中证1000ETF南方","family":"中证1000"},{"code":"563360","name":"A500ETF华泰柏瑞","family":"中证A500"},{"code":"588000","name":"科创50ETF华夏","family":"科创50"},{"code":"588080","name":"科创50ETF易方达","family":"科创50"}]}</script><script>(function(){
+<p class="note">构建 <span class="mono">20261119T132924_0800_11d11b93aa</span> · 业务日 2026-11-18 · 页面脚本直接读取供应商 JSONP，不产生 Git 提交</p></section>
+<a href="/gjd/">返回当日追踪</a></main></main><script type="application/json" id="segmeta">{"build_id":"20261119T132924_0800_11d11b93aa","end":"2026-11-18","members":[{"code":"159338","name":"中证A500ETF国泰","family":"中证A500"},{"code":"159845","name":"中证1000ETF华夏","family":"中证1000"},{"code":"159915","name":"创业板ETF易方达","family":"创业板"},{"code":"159919","name":"沪深300ETF嘉实","family":"沪深300"},{"code":"159949","name":"创业板50ETF华安","family":"创业板50"},{"code":"510050","name":"上证50ETF华夏","family":"上证50"},{"code":"510300","name":"沪深300ETF华泰柏瑞","family":"沪深300"},{"code":"510310","name":"沪深300ETF易方达","family":"沪深300"},{"code":"510330","name":"沪深300ETF华夏","family":"沪深300"},{"code":"510500","name":"中证500ETF南方","family":"中证500"},{"code":"512050","name":"A500ETF华夏","family":"中证A500"},{"code":"512100","name":"中证1000ETF南方","family":"中证1000"},{"code":"563360","name":"A500ETF华泰柏瑞","family":"中证A500"},{"code":"588000","name":"科创50ETF华夏","family":"科创50"},{"code":"588080","name":"科创50ETF易方达","family":"科创50"}]}</script><script>(function(){
   const metaEl=document.getElementById('segmeta');
   if(!metaEl)return;
   const META=JSON.parse(metaEl.textContent);
