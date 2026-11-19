@@ -78,6 +78,10 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 <div id="inventoryGauge" class="inventory-gauge"></div>
 <p id="inventoryStage" class="focus-stage"></p>
 <p class="note" id="inventoryBasis"></p>
+<div class="inventory-mix">
+<h3>核心 ETF 构成</h3>
+<div id="inventoryMix"></div>
+</div>
 <details><summary>基准、估算边界与上一轮峰值对照</summary><div id="inventoryMethod"></div>
 <p class="note">“份”是归一化对照刻度，不是实际ETF份数。ETF通道含国家队及其他持有人；二级市场换手可能不改变总份额。本轮净新增是起点至今的存量差，已计入其后净减少，不能叫国家队毛买入额或实际现金流。历史反推与近期正式份额保持独立，不混接。</p></details>
 <details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>当前总存量 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
@@ -363,6 +367,21 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .gauge-now{background:var(--accent);width:3px}
 .gauge-labels{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:5px}
 .gauge-legend{font-size:10.5px;color:var(--faint);margin-top:2px}
+.inventory-mix{margin:var(--s4) 0;padding:var(--s3);background:var(--inset);border:1px solid var(--line);border-radius:var(--r-card)}
+.inventory-mix h3{font-size:15px;margin:0 0 4px}
+.inventory-mix .note{margin:0 0 var(--s2)}
+.mix-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin:0 0 4px}
+.mix-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.mix-label{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:baseline}
+.mix-name{min-width:0;overflow-wrap:anywhere;font-size:12.5px;font-weight:650}
+.mix-percent{font-size:13px;text-align:right}
+.mix-code,.mix-units{font-size:10.5px;color:var(--muted)}
+.mix-units{text-align:right;white-space:nowrap}
+.mix-track{height:5px;margin-top:4px;background:var(--line);border-radius:999px}
+.mix-track span{display:block;height:100%;border-radius:inherit;background:var(--accent)}
+.inventory-mix details{margin:var(--s2) 0 0;padding:6px 8px;background:var(--surface);border-radius:8px}
+.inventory-mix details>summary{padding:5px 0;font-size:12px}
+.inventory-mix details .mix-list{margin:6px 0 2px}
 .focus-grid #inventory{margin:0;min-width:0;border-top:1px solid var(--line);box-shadow:var(--shadow-sm);padding:var(--s4);border-radius:var(--r-card)}
 .focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
 .focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
@@ -425,8 +444,34 @@ const range=w=>w&&w.low!==null?`${num(w.low)} 至 ${num(w.high)} 亿`:'数据不
 // 曾导致真实浏览器每轮抛 ReferenceError。保持全局定义，勿移进 IIFE。
 const pill=(text,warn=false)=>`<span class="pill${warn?' risk':''}">${esc(text)}</span>`;
 const I=D.inventory,ip=x=>x===null||x===undefined?'—':x.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+function renderInventoryMix(point){
+ const target=$('inventoryMix'),total=point?.current_yi,parts=point?.components??[];
+ const members=new Set(I?.members??[]),codes=new Set(parts.map(x=>x.code));
+ const sum=parts.reduce((s,x)=>s+x.current_yi,0);
+ if(!Number.isFinite(total)||total<=0||parts.length!==members.size||codes.size!==members.size||
+    parts.some(x=>!members.has(x.code)||!Number.isFinite(x.current_yi)||x.current_yi<=0)||
+    Math.abs(sum-total)>total*1e-9){
+  target.textContent='当前构成数据未齐，暂不展示占比。';
+  return;
+ }
+ const names=new Map((I.components??[]).map(x=>[x.code,x.name]));
+ const rows=parts.slice().sort((a,b)=>b.current_yi-a.current_yi);
+ const scale=Math.ceil((rows[0].current_yi/total*100+1e-9)/5)*5;
+ const draw=(items,start=1)=>`<ol class="mix-list" role="list" start="${start}">${items.map(x=>{
+  const pct=x.current_yi/total*100,units=x.current_yi/total*point.total_units;
+  return `<li class="mix-row" data-etf="${esc(x.code)}">
+   <div class="mix-label"><span class="mix-name">${esc(names.get(x.code)??x.code)}</span><strong class="mix-percent mono">${pct.toFixed(2)}%</strong>
+   <span class="mix-code mono">${esc(x.code)}</span><span class="mix-units mono">折合 ${units.toFixed(2)} 份</span></div>
+   <div class="mix-track" aria-hidden="true"><span style="width:${(pct/scale*100).toFixed(3)}%"></span></div></li>`;
+ }).join('')}</ol>`;
+ const shown=5;
+ target.innerHTML=`<p class="note">占核心 ${members.size} 只 ETF 当前恒价总存量的比例</p>
+  <div class="mix-axis" aria-hidden="true"><span>0%</span><span>${scale}%</span></div>${draw(rows.slice(0,shown))}
+  ${rows.length>shown?`<details><summary>展开其余 ${rows.length-shown} 只 ETF</summary>${draw(rows.slice(shown),shown+1)}</details>`:''}`;
+}
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
+ renderInventoryMix(ok?r:null);
  $('inventoryDate').textContent=`业务日 ${D.end}`;
  $('inventoryTitle').textContent=ok?`本轮刻度：${r.total_units.toFixed(1)} / ${I.baseline_units} 份`:'本轮刻度：当前存量数据不足';
  $('inventorySummary').textContent=ok?`对照上一轮924周期的结束刻度（${I.reference_date} = ${I.baseline_units}份），当前水位 ${(r.current_ratio*100).toFixed(1)}%；为本轮起点 ${I.cycle_start_units.toFixed(2)} 份的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍。这是固定核心15只ETF的通道存量，不是国家队实名仓位。`:'缺口不补0，也不把过期值当作当前值；等待完整数据后再展示比例。';

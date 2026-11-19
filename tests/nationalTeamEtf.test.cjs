@@ -83,6 +83,26 @@ for(const width of [320,390,1440])test(`view calculations at ${width}px: data, s
  nodes.themeToggle.onclick();assert.equal(document.documentElement.dataset.siteTheme,'light');
 });
 
+test('inventory mix shows all core components with matching percentages and scale units',()=>{
+ const {nodes}=render(390);
+ const chart=nodes.inventoryMix.innerHTML;
+ const point=data.inventory.latest;
+ const expected=point.components.slice().sort((a,b)=>b.current_yi-a.current_yi);
+ const rows=[...chart.matchAll(/data-etf="(\d+)">[\s\S]*?class="mix-percent mono">([\d.]+)%[\s\S]*?折合 ([\d.]+) 份/g)];
+ assert.equal(rows.length,15);
+ assert.match(chart,/<details><summary>展开其余 10 只 ETF<\/summary>/);
+ assert.equal(chart.slice(0,chart.indexOf('<details>')).match(/data-etf=/g).length,5);
+ for(const [i,row] of rows.entries()){
+  const item=expected[i],weight=item.current_yi/point.current_yi;
+  assert.equal(row[1],item.code);
+  assert.equal(row[2],(weight*100).toFixed(2));
+  assert.equal(row[3],(weight*point.total_units).toFixed(2));
+ }
+ assert.ok(Math.abs(rows.reduce((sum,row)=>sum+Number(row[2]),0)-100)<=.08);
+ const partial=structuredClone(data);partial.inventory.latest.components.pop();
+ assert.match(render(320,partial).nodes.inventoryMix.textContent,/暂不展示占比/);
+});
+
 test('missing inventory suppresses the current ratio and negative net increase remains negative',()=>{
  const missing=structuredClone(data);missing.inventory.complete=false;missing.inventory.latest.complete=false;
  missing.inventory.latest.total_units=null;missing.inventory.latest.net_added_units=null;
