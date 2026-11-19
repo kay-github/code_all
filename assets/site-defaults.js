@@ -12,6 +12,7 @@
       { id: 'optical', category: '市场研究', name: '光通信跌幅榜', description: 'A股光通信产业链跌幅榜单，盘中实时刷新，收盘自动更新。', url: '/tools/optical-decline-board/', icon: '光', image: '', color: 'purple', visible: true, newTab: false },
       { id: 'fundRecovery', category: '市场研究', name: '光模块双龙仓位回补', description: '根据净值与定报观察双龙回补线索，区分收益关联和已披露持仓。', url: '/tools/fund-dragon-recovery/', icon: '仓', image: '', color: 'purple', visible: true, newTab: false, pinned: true },
       { id: 'gjd', category: '市场研究', name: '国家队ETF追踪', description: '国家队ETF托底买入与本轮资金流向，附924以来完整建仓到派发周期复盘。', url: '/tools/national-team-etf/', icon: '国', image: '', color: 'orange', visible: true, newTab: false },
+      { id: 'opticalScenario', category: '市场研究', name: '光模块回撤情景实验室', description: '用历史同类状态做概率预演：再创新低、反弹幅度、路径顺序与大盘情景，附样本外校准。', url: '/tools/optical-scenario/', icon: '景', image: '', color: 'blue', visible: true, newTab: false },
     ],
   };
   if (typeof module === 'object' && module.exports) module.exports = defaults;

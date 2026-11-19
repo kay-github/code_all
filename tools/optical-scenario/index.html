@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<meta name="description" content="光模块/光通信深度回撤后的概率预演：历史同类状态的路径分布、关键价位概率、市场情景条件化与每日概率台账。">
+<title>光模块回撤情景实验室 · Drawdown Scenario Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23f0b24a'/%3E%3Cpath d='M7 12h12l6 16h8' stroke='%2310161f' fill='none' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0a0d12; --panel:#11161f; --panel2:#0f141c; --line:#1d2532; --line2:#26303f;
+  --tx:#e6ebf2; --mut:#8b97a8; --dim:#61707f;
+  --up:#e5533d; --dn:#1e9e74; --amber:#f0b24a; --blue:#4a8fd4; --violet:#8b7fd6;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{background-image:radial-gradient(1200px 600px at 15% -10%,rgba(240,178,74,.06),transparent 60%),radial-gradient(900px 500px at 90% 0%,rgba(74,143,212,.06),transparent 55%);background-attachment:fixed}
+a{color:var(--blue);text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 20px 80px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:650;letter-spacing:.5px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+.brand small{color:var(--dim);font-weight:400;font-size:12px;letter-spacing:1.4px;text-transform:uppercase}
+.meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);font-family:var(--mono)}
+.meta b{color:var(--tx);font-weight:600}
+section{margin-top:20px}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:12px;padding:18px}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-h h2{margin:0;font-size:15px;font-weight:650;letter-spacing:.4px}
+.card-h .hint{font-size:12px;color:var(--dim)}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:1.8px;color:var(--dim);text-transform:uppercase}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr 2fr;gap:18px}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.hero-main{padding:20px;border-radius:12px;border:1px solid var(--line);background:
+  radial-gradient(600px 200px at 0% 0%,rgba(229,83,61,.10),transparent 70%),linear-gradient(180deg,#141a24,#0e131a)}
+.hero-main .dd{font-family:var(--mono);font-size:52px;line-height:1;font-weight:600;color:var(--dn);margin:8px 0 4px}
+.hero-main .sub{font-size:13px;color:var(--mut);font-family:var(--mono)}
+.hero-main .stage{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 10px;border-radius:999px;background:rgba(240,178,74,.12);border:1px solid rgba(240,178,74,.28);color:var(--amber);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.kpi .k{font-size:11px;color:var(--dim);margin-bottom:6px}
+.kpi .v{font-family:var(--mono);font-size:19px;font-weight:600}
+.kpi .n{font-size:11px;color:var(--dim);margin-top:4px}
+.up{color:var(--up)} .dn{color:var(--dn)} .amber{color:var(--amber)} .blue{color:var(--blue)} .mut{color:var(--mut)}
+
+/* verdict */
+.verdict{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.vtag{flex:0 0 auto;padding:9px 16px;border-radius:10px;font-size:15px;font-weight:650;border:1px solid}
+.vtag.neg{background:rgba(30,158,116,.10);border-color:rgba(30,158,116,.35);color:#39c896}
+.vtag.mid{background:rgba(240,178,74,.10);border-color:rgba(240,178,74,.35);color:var(--amber)}
+.vtag.pos{background:rgba(229,83,61,.10);border-color:rgba(229,83,61,.35);color:#f0705a}
+.vtext{flex:1 1 380px;min-width:280px}
+.vhead{font-size:14px;color:var(--tx);margin-bottom:8px;font-family:var(--mono)}
+ul.bullets{margin:0;padding-left:18px;color:var(--mut);font-size:13px;line-height:1.85}
+ul.bullets li::marker{color:var(--amber)}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:right;font-weight:500;color:var(--dim);font-size:11.5px;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child{text-align:left}
+.tbl td{text-align:right;padding:9px 8px;border-bottom:1px solid rgba(29,37,50,.7);font-family:var(--mono);white-space:nowrap}
+.tbl td:first-child{text-align:left;font-family:var(--sans);color:var(--tx)}
+.tbl tr:hover td{background:rgba(255,255,255,.025)}
+.tbl .h-row td{font-weight:700;border-left:2px solid var(--amber)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.bar-cell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.bar{height:5px;border-radius:3px;background:var(--line2);position:relative;width:54px;overflow:hidden;flex:0 0 auto}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.bar.up i{background:linear-gradient(90deg,#8f2b1d,var(--up))}
+.bar.dn i{background:linear-gradient(90deg,#12624a,var(--dn))}
+.bar.am i{background:linear-gradient(90deg,#8a6420,var(--amber))}
+
+/* fan */
+.fan-wrap{display:grid;grid-template-columns:1fr 240px;gap:18px}
+@media(max-width:860px){.fan-wrap{grid-template-columns:1fr}}
+svg{display:block;width:100%;height:auto}
+.legend{display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--mut)}
+.legend .li{display:flex;align-items:center;gap:8px}
+.legend .sw{width:18px;height:8px;border-radius:2px}
+
+/* ladder */
+.ladder{display:flex;flex-direction:column;gap:2px}
+.rung{display:grid;grid-template-columns:150px 1fr 200px;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(29,37,50,.6)}
+@media(max-width:760px){.rung{grid-template-columns:110px 1fr 150px}}
+.rung .lv{font-family:var(--mono);font-size:13px}
+.rung .lv small{display:block;color:var(--dim);font-size:10.5px}
+.rung .track{position:relative;height:16px;background:rgba(255,255,255,.03);border-radius:3px;overflow:hidden}
+.rung .track i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.rung .ps{display:flex;gap:8px;justify-content:flex-end;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.rung .ps b{color:var(--tx);font-weight:600}
+
+/* order */
+.order-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.order-grid{grid-template-columns:1fr}}
+.ocard{border:1px solid var(--line);border-radius:10px;padding:14px;background:rgba(255,255,255,.015)}
+.ocard .t{font-size:12px;color:var(--mut)}
+.ocard .p{font-family:var(--mono);font-size:30px;font-weight:650;margin:6px 0 2px}
+.ocard .d{font-size:11.5px;color:var(--dim)}
+.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:12px;background:var(--line)}
+.stack i{height:100%}
+
+/* market */
+.mkt-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--line2);width:min(420px,60vw);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--amber);border:2px solid #0a0d12;cursor:pointer;box-shadow:0 0 10px rgba(240,178,74,.5)}
+.mkt-readout{display:flex;gap:20px;flex-wrap:wrap;align-items:baseline}
+.mkt-readout .big{font-family:var(--mono);font-size:26px;font-weight:650}
+.mkt-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+@media(max-width:900px){.mkt-grid{grid-template-columns:1fr}}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 9px;border-radius:6px;border:1px solid var(--line2);background:rgba(255,255,255,.02);font-size:11.5px;color:var(--mut);cursor:pointer;font-family:var(--mono)}
+.chip.on{border-color:var(--amber);color:var(--amber);background:rgba(240,178,74,.08)}
+
+/* analogs */
+.ana-table td:nth-child(2){font-family:var(--mono)}
+.pill{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10.5px;font-family:var(--mono)}
+.pill.g{background:rgba(30,158,116,.15);color:#3fc39c}
+.pill.r{background:rgba(229,83,61,.15);color:#ef7661}
+
+/* sample */
+.mix{display:flex;flex-direction:column;gap:6px}
+.mrow{display:grid;grid-template-columns:92px 1fr 46px;gap:10px;align-items:center;font-size:12px;color:var(--mut)}
+.mrow .tr{height:8px;background:rgba(255,255,255,.03);border-radius:4px;overflow:hidden}
+.mrow .tr i{display:block;height:100%;background:linear-gradient(90deg,#3a4a5f,#7e8fa6);border-radius:4px}
+
+/* calib */
+.calib{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.calib{grid-template-columns:1fr}}
+.note{font-size:12px;color:var(--dim);line-height:1.7}
+.note b{color:var(--mut);font-weight:600}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--mut);font-size:12.5px;outline:none}
+summary::marker{color:var(--amber)}
+.method p{font-size:12.5px;color:var(--mut);line-height:1.85;margin:8px 0}
+.method code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:4px}
+.footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--dim)}
+.err{padding:14px;border:1px solid rgba(229,83,61,.4);background:rgba(229,83,61,.08);border-radius:10px;color:#f0705a;font-size:13px}
+.loading{color:var(--dim);font-size:13px;font-family:var(--mono)}
+.tip{position:relative;cursor:help;border-bottom:1px dotted var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="dot"></span>光模块回撤情景实验室
+      <small>DRAWDOWN → REBOUND · PROBABILITY LAB</small>
+    </div>
+    <div class="meta" id="topMeta"><span class="loading">载入模型…</span></div>
+  </header>
+
+  <div id="app"></div>
+
+  <footer class="footer">
+    <span>历史类比 + 核权重条件分布 · 概率不是预测，是历史同类状态的结果分布</span>
+    <span id="footBuild"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const SRC = ['./data/model.json','/tools/optical-scenario/data/model.json','data/model.json'];
+const SRC_CAL = ['./data/calibration.json','/tools/optical-scenario/data/calibration.json','data/calibration.json'];
+
+async function tryFetch(paths){
+  for(const p of paths){
+    try{ const r = await fetch(p,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){}
+  }
+  return null;
+}
+
+const pct = (x,d=1)=> (x==null||!isFinite(x))?'—':(x>=0?'+':'')+(x*100).toFixed(d)+'%';
+const pctN = (x,d=1)=> (x==null||!isFinite(x))?'—':(x*100).toFixed(d)+'%';
+const num = (x,d=0)=> (x==null||!isFinite(x))?'—':x.toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const cls = x => (x==null||!isFinite(x))?'mut':(x>=0?'up':'dn');
+const barW = p => Math.max(0,Math.min(1,p||0))*100;
+
+function bar(p,kind){ return '<span class="bar '+kind+'"><i style="width:'+barW(p)+'%"></i></span>'; }
+function pcell(p,kind){ return '<span class="bar-cell"><span>'+(p==null?'—':pctN(p,0))+'</span>'+bar(p,kind)+'</span>'; }
+
+/* ---------------- SVG helpers ---------------- */
+function svgEl(w,h){ const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('viewBox','0 0 '+w+' '+h); s.setAttribute('preserveAspectRatio','xMidYMid meet'); return s; }
+function pathFrom(pts){ return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '); }
+
+function drawFan(fan,state){
+  const W=760,H=330,P={l:46,r:16,t:16,b:34};
+  const days=fan.days, q=fan.q;
+  const all=[].concat(q['10'],q['90']).filter(v=>v!=null);
+  if(!all.length) return '<div class="note">无扇形数据</div>';
+  const ymin=Math.min(...all)-0.03, ymax=Math.max(...all)+0.03;
+  const xmax=days[days.length-1]||120;
+  const X=d=>P.l+(d/xmax)*(W-P.l-P.r);
+  const Y=v=>P.t+(1-(v-ymin)/(ymax-ymin))*(H-P.t-P.b);
+  const s=svgEl(W,H);
+  // grid
+  let g='';
+  for(let i=0;i<=4;i++){
+    const yv=ymin+(ymax-ymin)*i/4, y=Y(yv);
+    g+='<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="#1d2532"/>';
+    g+='<text x="'+(P.l-8)+'" y="'+(y+4)+'" fill="#61707f" font-size="10" text-anchor="end" font-family="monospace">'+((yv-1)*100).toFixed(0)+'%</text>';
+  }
+  for(let d=0;d<=xmax;d+=20){
+    g+='<line x1="'+X(d)+'" y1="'+P.t+'" x2="'+X(d)+'" y2="'+(H-P.b)+'" stroke="#151c26"/>';
+    g+='<text x="'+X(d)+'" y="'+(H-P.b+16)+'" fill="#61707f" font-size="10" text-anchor="middle" font-family="monospace">'+d+'d</text>';
+  }
+  const poly=(lo,hi,fill)=>{
+    const a=[],b=[];
+    days.forEach((d,i)=>{ if(q[lo][i]!=null&&q[hi][i]!=null){ a.push([X(d),Y(q[hi][i])]); b.push([X(d),Y(q[lo][i])]); }});
+    if(!a.length) return '';
+    return '<path d="'+pathFrom(a.concat(b.slice().reverse()))+'" fill="'+fill+'" stroke="none"/>';
+  };
+  g+=poly('10','90','rgba(240,178,74,.10)');
+  g+=poly('25','75','rgba(240,178,74,.20)');
+  // median
+  const med=days.map((d,i)=> q['50'][i]==null?null:[X(d),Y(q['50'][i])]).filter(Boolean);
+  g+='<path d="'+pathFrom(med)+'" fill="none" stroke="#f0b24a" stroke-width="2"/>';
+  // current level line
+  g+='<line x1="'+P.l+'" y1="'+Y(1)+'" x2="'+(W-P.r)+'" y2="'+Y(1)+'" stroke="#4a8fd4" stroke-dasharray="4 4" stroke-width="1"/>';
+  g+='<text x="'+(W-P.r)+'" y="'+(Y(1)-5)+'" fill="#4a8fd4" font-size="10" text-anchor="end" font-family="monospace">当前 100%</text>';
+  // prior trough
+  const tr=state.trough_val/state.close;
+  if(tr>ymin&&tr<ymax){
+    g+='<line x1="'+P.l+'" y1="'+Y(tr)+'" x2="'+(W-P.r)+'" y2="'+Y(tr)+'" stroke="#1e9e74" stroke-dasharray="2 4" stroke-width="1"/>';
+    g+='<text x="'+P.l+'" y="'+(Y(tr)-5)+'" fill="#3fc39c" font-size="10" font-family="monospace">前低 '+pct(tr-1,1)+'</text>';
+  }
+  s.innerHTML=g;
+  return s.outerHTML;
+}
+
+function drawOverlay(list,curPath){
+  const W=760,H=300,P={l:40,r:14,t:14,b:30};
+  // x: -29 .. +24 (weekly)
+  const xs=[], all=[];
+  list.forEach(a=>{
+    const past=a.past||[], fut=a.future||[];
+    const base=past.length?past.filter(v=>v!=null).slice(-1)[0]:1;
+    past.forEach((v,i)=>{ if(v!=null) xs.push([i-29,v]); });
+    fut.forEach((v,i)=>{ if(v!=null&&base!=null) xs.push([i, v*(base==null?1:base)]); });
+    past.forEach(v=>{ if(v!=null) all.push(v); });
+    fut.forEach(v=>{ if(v!=null&&base!=null) all.push(v*base); });
+  });
+  curPath.forEach(v=>{ if(v!=null) all.push(v); });
+  if(!all.length) return '<div class="note">无类比路径</div>';
+  const ymin=Math.min(...all)*0.98, ymax=Math.max(...all)*1.02;
+  const X=i=>P.l+((i+29)/53)*(W-P.l-P.r);
+  const Y=v=>P.t+(1-(v-ymin)/(ymax-ymin))*(H-P.t-P.b);
+  const s=svgEl(W,H);
+  let g='';
+  for(let i=0;i<=4;i++){
+    const yv=ymin+(ymax-ymin)*i/4, y=Y(yv);
+    g+='<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="#1d2532"/>';
+    g+='<text x="'+(P.l-7)+'" y="'+(y+4)+'" fill="#61707f" font-size="10" text-anchor="end" font-family="monospace">'+(yv*100).toFixed(0)+'%</text>';
+  }
+  [-26,-13,0,12,24].forEach(i=>{
+    g+='<line x1="'+X(i)+'" y1="'+P.t+'" x2="'+X(i)+'" y2="'+(H-P.b)+'" stroke="#151c26"/>';
+    g+='<text x="'+X(i)+'" y="'+(H-P.b+15)+'" fill="#61707f" font-size="10" text-anchor="middle" font-family="monospace">'+(i===0?'状态点':(i>0?'+'+i+'周':i+'周'))+'</text>';
+  });
+  // analog lines
+  const palette=['#4a8fd4','#8b7fd6','#c08a3e','#5aa9a0','#a8676a','#7d8fa6'];
+  list.forEach((a,idx)=>{
+    const past=a.past||[], fut=a.future||[];
+    const base=past.filter(v=>v!=null).slice(-1)[0];
+    const p1=past.map((v,i)=> v==null?null:[X(i-29),Y(v)]).filter(Boolean);
+    const p2=fut.map((v,i)=> (v==null||base==null)?null:[X(i),Y(v*base)]).filter(Boolean);
+    if(p1.length) g+='<path d="'+pathFrom(p1)+'" fill="none" stroke="'+palette[idx%palette.length]+'" stroke-width="1.2" opacity="'+(idx<3?0.85:0.45)+'"/>';
+    if(p2.length) g+='<path d="'+pathFrom(p2)+'" fill="none" stroke="'+palette[idx%palette.length]+'" stroke-width="1.2" opacity="'+(idx<3?0.85:0.45)+'" stroke-dasharray="'+(idx<3?'0':'3 3')+'"/>';
+  });
+  // current
+  const cp=curPath.map((v,i)=> v==null?null:[X(i-29),Y(v)]).filter(Boolean);
+  g+='<path d="'+pathFrom(cp)+'" fill="none" stroke="#f0b24a" stroke-width="2.4"/>';
+  // state marker
+  g+='<line x1="'+X(0)+'" y1="'+P.t+'" x2="'+X(0)+'" y2="'+(H-P.b)+'" stroke="#f0b24a" stroke-dasharray="3 3" stroke-width="1" opacity=".7"/>';
+  s.innerHTML=g;
+  return s.outerHTML;
+}
+
+function drawCalib(cal){
+  const W=340,H=210,P={l:38,r:12,t:12,b:28};
+  const s=svgEl(W,H);
+  const bins=(cal&&cal.targets&&cal.targets.newlow&&cal.targets.newlow.bins)||[];
+  if(!bins.length) return '<div class="note">无校准数据</div>';
+  const X=v=>P.l+v*(W-P.l-P.r), Y=v=>P.t+(1-v)*(H-P.t-P.b);
+  let g='<line x1="'+P.l+'" y1="'+Y(0)+'" x2="'+(W-P.r)+'" y2="'+Y(0)+'" stroke="#1d2532"/>';
+  g+='<line x1="'+P.l+'" y1="'+Y(1)+'" x2="'+(W-P.r)+'" y2="'+Y(1)+'" stroke="#1d2532"/>';
+  g+='<line x1="'+P.l+'" y1="'+Y(1)+'" x2="'+X(1)+'" y2="'+Y(0)+'" stroke="#61707f" stroke-dasharray="4 4"/>';
+  g+='<text x="'+(X(0.03))+'" y="'+(Y(0.955))+'" fill="#61707f" font-size="9" text-anchor="start" font-family="monospace">完全校准</text>';
+  bins.forEach(b=>{
+    const x=X(b.pred), y=Y(b.real);
+    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(3+Math.min(6,Math.sqrt(b.n))) +'" fill="rgba(240,178,74,.75)" stroke="#0a0d12"/>';
+    const ly = (y < P.t+16) ? y+16 : y-6;
+    g+='<text x="'+(x+6)+'" y="'+ly+'" fill="#8b97a8" font-size="9" font-family="monospace">'+b.n+'</text>';
+  });
+  [0,0.25,0.5,0.75,1].forEach(v=>{
+    g+='<text x="'+(P.l-6)+'" y="'+(Y(v)+3)+'" fill="#61707f" font-size="9" text-anchor="end" font-family="monospace">'+(v*100)+'%</text>';
+    g+='<text x="'+X(v)+'" y="'+(H-10)+'" fill="#61707f" font-size="9" text-anchor="middle" font-family="monospace">'+(v*100)+'%</text>';
+  });
+  s.innerHTML=g;
+  return s.outerHTML;
+}
+
+/* ---------------- render ---------------- */
+function render(M,C){
+  const st=M.state, d=M.dist, ps=M.path_stats, mk=M.milestones, od=M.order, mkt=M.market, fan=M.fan;
+  const app=document.getElementById('app');
+  const app2=document.getElementById('topMeta');
+  app2.innerHTML='<span>口径 <b>'+M.meta.series_name+'（'+M.meta.series+'）</b></span>'
+    +'<span>数据日 <b>'+M.meta.as_of+'</b></span>'
+    +'<span>生成 <b>'+M.meta.generated_at+'</b></span>';
+
+  const h60=d.horizons['60'], h20=d.horizons['20'];
+  const verdictCls = d.summary && M.summary.verdict.indexOf('再探底')>=0 ? 'neg'
+    : (M.summary.verdict.indexOf('分化')>=0?'mid':'pos');
+
+  let html='';
+
+  /* hero */
+  const ddTxt=pct(st.dd,1);
+  html+='<section class="hero">'
+    +'<div class="hero-main">'
+      +'<div class="eyebrow">CURRENT STATE · 当前状态</div>'
+      +'<div class="dd '+cls(st.dd)+'">'+ddTxt+'</div>'
+      +'<div class="sub">相对前高 '+num(st.peak_val,0)+'（'+st.peak_date+'）</div>'
+      +'<div class="sub" style="margin-top:4px">现价 '+num(st.close,2)+' · 前低 '+num(st.trough_val,1)+'（'+st.trough_date+'）</div>'
+      +'<div class="stage">● '+st.phase_label+'</div>'
+    +'</div>'
+    +'<div class="kpis">'
+      +'<div class="kpi"><div class="k">见顶至今</div><div class="v">'+st.days_from_peak+'<span style="font-size:12px;color:var(--dim)"> 交易日</span></div><div class="n">跌速 '+(st.speed*100).toFixed(1)+'% / 20日</div></div>'
+      +'<div class="kpi"><div class="k">离前低反弹</div><div class="v '+cls(st.bounce)+'">'+pct(st.bounce,1)+'</div><div class="n">距低点 '+st.days_since_low+' 日</div></div>'
+      +'<div class="kpi"><div class="k">相对大盘超额回撤</div><div class="v dn">'+pct(st.excess_dd)+'</div><div class="n">沪深300 同期 '+pct(st.bench_dd)+'</div></div>'
+      +'<div class="kpi"><div class="k">见顶前 250 日涨幅</div><div class="v up">'+pct(st.pre_run,0)+'</div><div class="n">抛物线程度（历史分位高位）</div></div>'
+      +'<div class="kpi"><div class="k">波动放大倍数</div><div class="v">'+(st.vol_ratio?st.vol_ratio.toFixed(2):'—')+'<span style="font-size:11px;color:var(--dim)">x</span></div><div class="n">近20日 / 见顶前120日</div></div>'
+      +'<div class="kpi"><div class="k">均线位置</div><div class="v">'+pct(st.ma20_gap)+' / '+pct(st.ma60_gap)+'</div><div class="n">MA20 / MA60 偏离</div></div>'
+    +'</div>'
+  +'</section>';
+
+  /* verdict */
+  html+='<section class="card"><div class="card-h"><h2>研究结论</h2><span class="hint">历史同类状态加权，未加市场假设</span></div>'
+    +'<div class="verdict"><div class="vtag '+verdictCls+'">'+M.summary.verdict+'</div>'
+    +'<div class="vtext"><div class="vhead">'+M.summary.headline+'</div><ul class="bullets">'
+    +M.summary.bullets.map(b=>'<li>'+b+'</li>').join('')+'</ul></div></div></section>';
+
+  /* probability table */
+  const rows=['5','10','20','40','60','120','250'];
+  const label={'5':'5 日','10':'10 日','20':'20 日','40':'40 日','60':'60 日','120':'120 日','250':'250 日'};
+  html+='<section class="card"><div class="card-h"><h2>概率表 · 各时间窗的结果分布</h2>'
+    +'<span class="hint">中位 = 加权中位数；新低 = 跌破 '+num(st.trough_val,0)+'</span></div><div class="tbl-wrap"><table class="tbl">'
+    +'<thead><tr><th>窗口</th><th>收益中位</th><th>P10</th><th>P90</th><th>再创新低</th><th>有效破位 5%</th><th>涨≥20%</th><th>涨≥30%</th><th>区间最低中位</th><th>区间最高中位</th></tr></thead><tbody>';
+  rows.forEach(h=>{
+    const x=d.horizons[h];
+    html+='<tr'+(h==='60'?' class="h-row"':'')+'><td>'+label[h]+'</td>'
+      +'<td class="'+cls(x.fwd.p50)+'">'+pct(x.fwd.p50)+'</td>'
+      +'<td class="dn">'+pct(x.fwd.p10)+'</td>'
+      +'<td class="up">'+pct(x.fwd.p90)+'</td>'
+      +'<td>'+pcell(x.p_newlow,'dn')+'</td>'
+      +'<td>'+pcell(x.p_break5,'dn')+'</td>'
+      +'<td>'+pcell(x.p_up20,'up')+'</td>'
+      +'<td>'+pcell(x.p_up30,'up')+'</td>'
+      +'<td class="dn">'+pct(x.min_med)+'</td>'
+      +'<td class="up">'+pct(x.max_med)+'</td></tr>';
+  });
+  html+='</tbody></table></div>'
+    +'<div class="note" style="margin-top:10px">有效同类样本 ESS='+d.ess+'（'+d.tier_label+'）；'
+    +'命中率类指标只统计窗口已走完的样本，未走完的不计入分母。'
+    +'窗口越长可用样本越少（近两年的状态还没走完 120/250 日），所以 120 日与 250 日的分位来自更早的样本，两者不能当成同一批样本比较。</div></section>';
+
+  /* fan */
+  html+='<section class="card"><div class="card-h"><h2>未来 120 个交易日路径预演</h2><span class="hint">同类状态的真实后续路径分位数，以当前点位=100%</span></div>'
+    +'<div class="fan-wrap"><div>'+drawFan(fan,st)+'</div>'
+    +'<div class="legend">'
+      +'<div class="li"><span class="sw" style="background:rgba(240,178,74,.35)"></span>P10–P90 区间</div>'
+      +'<div class="li"><span class="sw" style="background:rgba(240,178,74,.55)"></span>P25–P75 区间</div>'
+      +'<div class="li"><span class="sw" style="background:#f0b24a"></span>中位路径</div>'
+      +'<div class="li"><span class="sw" style="background:#4a8fd4"></span>当前点位 100%</div>'
+      +'<div class="li"><span class="sw" style="background:#1e9e74"></span>本轮前低</div>'
+      +'<div style="margin-top:10px;color:var(--dim);font-size:11.5px;line-height:1.7">'
+      +'P10–P90 覆盖 80% 的同类路径。带宽越窄说明历史路径越一致，不代表确定性越高。</div>'
+    +'</div></div></section>';
+
+  /* ladder */
+  html+='<section class="card"><div class="card-h"><h2>关键价位阶梯 · 触及概率</h2><span class="hint">20 / 60 / 120 交易日内至少触及一次的概率</span></div><div class="ladder">';
+  mk.forEach(m=>{
+    const kd = m.kind==='up'?'up':'dn';
+    html+='<div class="rung"><div class="lv">'+num(m.level,0)+'<small>'+m.name+' · '+pct(m.rel,1)+'</small></div>'
+      +'<div class="track"><i class="'+kd+'" style="width:'+barW(m.p60)+'%;background:'+(m.kind==='up'?'linear-gradient(90deg,#5c1f16,#e5533d)':'linear-gradient(90deg,#0f4f3c,#1e9e74)')+'"></i></div>'
+      +'<div class="ps"><span>20d <b>'+(m.p20==null?'—':(m.p20*100).toFixed(0)+'%')+'</b></span>'
+      +'<span>60d <b>'+(m.p60==null?'—':(m.p60*100).toFixed(0)+'%')+'</b></span>'
+      +'<span>120d <b>'+(m.p120==null?'—':(m.p120*100).toFixed(0)+'%')+'</b></span></div></div>';
+  });
+  html+='</div></section>';
+
+  /* order */
+  html+='<section class="card"><div class="card-h"><h2>路径顺序 · 先到哪一边</h2><span class="hint">120 个交易日窗口内，先触及哪个价位</span></div>'
+    +'<div class="order-grid">'
+    +'<div class="ocard"><div class="t">先跌破前低 5%</div><div class="p dn">'+pctN(od.p_dn_first,0)+'</div><div class="d">价位 '+num(od.dn_level,0)+'</div></div>'
+    +'<div class="ocard"><div class="t">先反弹 25%（自前低）</div><div class="p up">'+pctN(od.p_up_first,0)+'</div><div class="d">价位 '+num(od.up_level,0)+'</div></div>'
+    +'<div class="ocard"><div class="t">两者都没到</div><div class="p">'+pctN(od.p_neither,0)+'</div><div class="d">横盘/阴跌消磨</div></div>'
+    +'</div>'
+    +'<div class="stack" style="margin-top:16px"><i class="dn" style="width:'+barW(od.p_dn_first)+'%;background:var(--dn)"></i>'
+    +'<i class="up" style="width:'+barW(od.p_up_first)+'%;background:var(--up)"></i>'
+    +'<i style="width:'+barW(od.p_neither)+'%;background:#3a4a5f"></i></div>'
+    +'<div class="note" style="margin-top:10px">这是"顺序"而不是"幅度"：先破前低不代表最终更低，先反弹也不代表趋势反转。'
+    +'破位样本中，首次跌破前低的时点中位 '+(ps.days_break_p50==null?'—':ps.days_break_p50)+' 个交易日（P25 '+ps.days_break_p25+' / P75 '+ps.days_break_p75+'）。</div></section>';
+
+  /* market */
+  html+='<section class="card"><div class="card-h"><h2>市场情景 · 如果大盘这样走</h2>'
+    +'<span class="hint">历史同类状态中，沪深300 未来 40 日收益与光通信的联合分布</span></div>'
+    +'<div class="mkt-controls"><span class="note" style="margin:0">假设沪深300 未来 40 日</span>'
+    +'<input id="mktRange" type="range" min="-30" max="30" step="1" value="0">'
+    +'<span class="mkt-readout"><span class="big" id="mktVal">0%</span></span>'
+    +'<div class="chips" id="mktChips">'
+    +'<span class="chip" data-v="-20">大盘 -20%</span><span class="chip" data-v="-10">-10%</span>'
+    +'<span class="chip on" data-v="0">0%</span><span class="chip" data-v="10">+10%</span><span class="chip" data-v="20">+20%</span></div></div>'
+    +'<div class="mkt-readout" style="margin-bottom:14px">'
+    +'<span>板块 40 日中枢 <b class="big" id="mktMed">—</b></span>'
+    +'<span class="mut">P10 <b id="mktP10">—</b></span><span class="mut">P90 <b id="mktP90">—</b></span>'
+    +'<span class="mut">同档样本新低概率 <b id="mktNL">—</b></span>'
+    +'<span class="mut">线性传导 α+β·B <b id="mktLin">—</b></span></div>'
+    +'<div class="mkt-grid"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>沪深300（40日）</th><th>板块中位</th><th>P10</th><th>P90</th><th>再创新低</th><th>涨≥20%</th><th>样本占比</th></tr></thead><tbody id="mktBody">';
+  mkt.rows.forEach((r,idx)=>{
+    html+='<tr data-i="'+idx+'"><td>'+r.bucket+'</td>'
+      +'<td class="'+cls(r.med)+'">'+pct(r.med)+'</td><td class="dn">'+pct(r.p10)+'</td><td class="up">'+pct(r.p90)+'</td>'
+      +'<td>'+pcell(r.p_newlow,'dn')+'</td><td>'+pcell(r.p_up20,'up')+'</td>'
+      +'<td class="mut">'+(r.share*100).toFixed(0)+'%</td></tr>';
+  });
+  html+='</tbody></table></div><div>'
+    +'<div class="note">全样本回归（同类状态库内，n='+mkt.n+'）：板块 40 日收益 = α + β × 沪深300 40 日收益</div>'
+    +'<div style="display:flex;gap:22px;margin:10px 0 4px"><div><div class="eyebrow">BETA</div><div style="font-family:var(--mono);font-size:26px;font-weight:650">'+mkt.beta+'</div></div>'
+    +'<div><div class="eyebrow">ALPHA</div><div style="font-family:var(--mono);font-size:26px;font-weight:650">'+pct(mkt.alpha)+'</div></div>'
+    +'<div><div class="eyebrow">R²</div><div style="font-family:var(--mono);font-size:26px;font-weight:650">'+mkt.r2+'</div></div></div>'
+    +'<div class="note">β ＝ 大盘同向变动时板块的放大倍数；α ＝ 大盘 0% 时的均值中枢。'
+    +'滑块的中位线取残差中位（'+pct(mkt.resid_med)+'）叠加，故比 α 略低。分档表是未经相似度加权的经验分布，两者互相校验。</div>'
+    +'</div></div></section>';
+
+  /* analogs */
+  html+='<section class="card"><div class="card-h"><h2>历史类比 · 最像的几段</h2>'
+    +'<span class="hint">虚线之后是这些案例在其状态点之后的真实 120 日</span></div>'
+    +'<div style="margin-bottom:14px">'+drawOverlay(M.analogs.filter(a=>a.past&&a.past.length).slice(0,6),M.current_path)+'</div>'
+    +'<div class="tbl-wrap"><table class="tbl ana-table"><thead><tr><th>指数 / 行业</th><th>状态日</th><th>回撤</th><th>距顶</th><th>离低点</th><th>相似度</th><th>60日收益</th><th>60日新低</th><th>120日收复</th><th>250日收益</th></tr></thead><tbody>';
+  M.analogs.forEach(a=>{
+    html+='<tr><td>'+a.name+'</td><td>'+a.date+'</td><td class="dn">'+pct(a.dd,0)+'</td><td>'+a.days+'</td><td>'+pct(a.bounce,1)+'</td>'
+      +'<td class="mut">'+(a.weight*100).toFixed(0)+'</td>'
+      +'<td class="'+cls(a.fwd60)+'">'+pct(a.fwd60)+'</td>'
+      +'<td>'+(a.newlow60==null?'—':'<span class="pill '+(a.newlow60?'g':'r')+'">'+(a.newlow60?'创新低':'未创新低')+'</span>')+'</td>'
+      +'<td>'+(a.rec120==null?'—':a.rec120.toFixed(2))+'</td>'
+      +'<td class="'+cls(a.fwd250)+'">'+pct(a.fwd250)+'</td></tr>';
+  });
+  html+='</tbody></table></div>'
+    +'<div class="note" style="margin-top:10px">相似度按最高权重归一。类比只用于理解"同类型状态发生过什么"，不是选股或买卖建议。</div></section>';
+
+  /* sample mix + sensitivity */
+  html+='<section class="card"><div class="card-h"><h2>样本构成与深度敏感性</h2><span class="hint">谁在决定这个概率</span></div>'
+    +'<div class="mkt-grid"><div><div class="note" style="margin-bottom:8px">年代权重</div><div class="mix">';
+  const mix=d.era_mix; let mx=0; Object.values(mix).forEach(v=>mx=Math.max(mx,v));
+  Object.keys(mix).forEach(k=>{
+    html+='<div class="mrow"><span>'+k+'</span><span class="tr"><i style="width:'+(mix[k]/mx*100).toFixed(0)+'%"></i></span><span>'+(mix[k]*100).toFixed(0)+'%</span></div>';
+  });
+  html+='</div><div class="note" style="margin-top:12px">季度上限 18%，防止单一股灾霸占概率。'
+    +'2008 权重高是因为"跌幅深 + 跌速快 + 离低点近"在历史上主要出现在那段。</div></div>'
+    +'<div><div class="note" style="margin-bottom:8px">如果把回撤深度假设成…（当前 '+pct(st.dd,0)+'）</div><div class="tbl-wrap"><table class="tbl">'
+    +'<thead><tr><th>回撤</th><th>60日新低</th><th>涨≥20%</th><th>60日中位</th><th>ESS</th></tr></thead><tbody>';
+  M.sensitivity.forEach(r=>{
+    html+='<tr'+(Math.abs(r.dd-st.dd)<0.03?' class="h-row"':'')+'><td>'+pct(r.dd,0)+'</td><td>'+pcell(r.p_newlow60,'dn')+'</td>'
+      +'<td>'+pcell(r.p_up20_60,'up')+'</td><td class="'+cls(r.fwd60_med)+'">'+pct(r.fwd60_med)+'</td><td class="mut">'+r.ess+'</td></tr>';
+  });
+  html+='</tbody></table></div>'
+    +'<div class="note" style="margin-top:8px">这张表只用来做口径稳健性检验（把回撤深度上下挪动看概率是否稳定），不是预测读数。'
+    +'-70% 以下 ESS 明显偏低（样本太薄），只作方向参考。</div></div></div></section>';
+
+  /* calibration */
+  const cn = C && C.targets && C.targets.newlow;
+  html+='<section class="card"><div class="card-h"><h2>模型校准 · 说 80% 真的会发生 80% 吗</h2>'
+    +'<span class="hint">留一 episode 样本外检验（'+((C&&C.n_eval)||0)+' 个历史状态点）</span></div><div class="calib">'
+    +'<div>'+drawCalib(C)+'<div class="note" style="margin-top:6px">横轴模型给的 60 日新低概率，纵轴实际发生率，气泡为样本数。</div></div>'
+    +'<div>';
+  if(cn){
+    const b0 = cn.base_rate*(1-cn.base_rate);
+    let worst=null;
+    cn.bins.forEach(b=>{ const d=b.pred-b.real; if(!worst || Math.abs(d)>Math.abs(worst.d)) worst={bin:b.bin,pred:b.pred,real:b.real,d:d}; });
+    html+='<div class="note" style="margin-bottom:8px">Brier '+cn.brier+'；若一律猜基准率（'+(cn.base_rate*100).toFixed(1)+'%）则为 '+b0.toFixed(3)+'，越低越好。'
+      +'模型平均预测 '+(cn.mean_pred*100).toFixed(1)+'%。</div>'
+      +'<table class="tbl"><thead><tr><th>预测区间</th><th>样本</th><th>平均预测</th><th>实际发生</th></tr></thead><tbody>';
+    cn.bins.forEach(b=>{ html+='<tr><td>'+b.bin+'</td><td>'+b.n+'</td><td>'+(b.pred*100).toFixed(1)+'%</td><td>'+(b.real*100).toFixed(1)+'%</td></tr>'; });
+    html+='</tbody></table>';
+    html+='<div class="note" style="margin-top:10px">最大偏差在「'+worst.bin+'」档：预测 '+(worst.pred*100).toFixed(1)+'%、实际 '+(worst.real*100).toFixed(1)
+      +'%，方向是'+(worst.d>0?'高估':'低估')+'。中低概率段偏向乐观、高概率段比较贴合，'
+      +'所以 20%–40% 的读数建议下修看待，极端概率不要当精确值。</div></div></div></section>';
+  } else {
+    html+='</div></div></section>';
+  }
+
+  /* ledger */
+  const led=M.ledger||[];
+  html+='<section class="card"><div class="card-h"><h2>概率台账 · 随行情推进的漂移</h2><span class="hint">每次运行自动留档，用来检验"概率是否在跟着事实走"</span></div>';
+  if(led.length<2){
+    html+='<div class="note">当前只有 '+led.length+' 条记录（'+((led[0]&&led[0].as_of)||M.meta.as_of)+'）。'
+      +'后续每个交易日运行 <code>src/run.py</code> 后，这里会累计成曲线：同样的价位，若"再创新低"概率持续下降、"反弹 20%"概率上升，说明底部结构在改善。</div>';
+  }else{
+    html+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>数据日</th><th>收盘</th><th>回撤</th><th>离低点</th><th>20日新低</th><th>60日新低</th><th>60日涨20%</th><th>60日中位</th></tr></thead><tbody>';
+    led.slice().reverse().forEach(r=>{
+      html+='<tr><td>'+r.as_of+'</td><td>'+num(r.close,0)+'</td><td class="dn">'+pct(r.dd,1)+'</td><td>'+pct(r.bounce,1)+'</td>'
+        +'<td>'+pctN(r.p_newlow20,0)+'</td><td>'+pctN(r.p_newlow60,0)+'</td><td>'+pctN(r.p_up20_60,0)+'</td><td class="'+cls(r.med_fwd60)+'">'+pct(r.med_fwd60)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  }
+  html+='</section>';
+
+  /* crosscheck */
+  html+='<section class="card"><div class="card-h"><h2>口径交叉校验</h2><span class="hint">不同指数/篮子算出来的"这轮跌了多少"</span></div>'
+    +'<div class="tbl-wrap"><table class="tbl"><thead><tr><th>序列</th><th>最新</th><th>回撤</th><th>离低点</th><th>距顶</th><th>数据日</th></tr></thead><tbody>';
+  M.crosscheck.forEach(c=>{
+    html+='<tr'+(c.name.indexOf('光通信')>=0?' class="h-row"':'')+'><td>'+c.name+'</td><td>'+num(c.last,1)+'</td>'
+      +'<td class="dn">'+pct(c.dd,1)+'</td><td>'+pct(c.bounce,1)+'</td><td>'+c.days+'</td><td class="mut">'+c.as_of+'</td></tr>';
+  });
+  html+='</tbody></table></div><div class="note" style="margin-top:10px">主口径为中证光通信（931723，50 只样本，官方指数、每日更新）。'
+    +'双龙等权回撤更深，说明权重股是本轮杀跌主体；宽口径（含光纤光缆/设备）跌幅较小。</div></section>';
+
+  /* method */
+  html+='<section class="card method"><div class="card-h"><h2>方法、数据与局限</h2><span class="hint">可复算</span></div>'
+    +'<details open><summary>模型在做什么</summary><p>把当前状态写成向量：回撤幅度 <code>dd</code>、距顶天数、离低点反弹幅度、跌速、见顶前 250 日涨幅、'
+    +'相对沪深300 的超额跌幅、波动放大倍数、均线偏离。再到全部 A 股行业/主题指数（'+M.meta.library_codes+' 条序列、'
+    +M.meta.library_rows+' 个历史状态、'+M.meta.library_span[0]+' 起）里，用核权重找同类状态，读出它们之后 5/10/20/40/60/120/250 日的真实结果分布。</p></details>'
+    +'<details><summary>三段式匹配</summary><p>先试 8 维全匹配；有效样本不足 60 就放宽（去掉"抛物线程度/波动放大"两个最苛刻的维度），再不足则退到核心四维（跌幅/距顶天数/离低点反弹/超额跌幅）。'
+    +'本次使用：<b>'+d.tier_label+'</b>，ESS='+d.ess+'。ESS 是有效样本量，不是原始行数。</p></details>'
+    +'<details><summary>为什么剔除"本段自己"</summary><p>预测某序列当前状态时，剔除同序列 ±300 日内的样本，否则模型会拿这段行情自己的后续走势给自己打分，属于未来函数。</p></details>'
+    +'<details><summary>聚类上限</summary><p>同一季度（如 2008Q4、2015Q3）的权重合计不超过 18%。一次系统性股灾在横截面上会产生几百个"相似状态"，'
+    +'不加限制会让 2008 独占 70% 概率。</p></details>'
+    +'<details><summary>市场条件化</summary><p>分档表：把同类状态按"沪深300 未来 40 日收益"分 6 档，分别统计光通信的条件分布；'
+    +'滑块读数：用加权回归 α+β×大盘 的线性传导中枢，区间取残差分位。两者不一致时，说明样本稀疏或关系非线性，以分档表为准。</p></details>'
+    +'<details><summary>五个必须知道的局限</summary>'
+    +'<p>1. <b>样本少且集中</b>：跌 56%、99 个交易日、贴着低点，这种状态在 A 股历史上主要出现在 2008Q1–Q2、2015Q3、2004Q2、2022Q2。概率估计的置信区间比点估计宽得多。<br>'
+    +'2. <b>生存者偏差与结构变化</b>：用今天的指数成分回溯历史，行业内涵（如光模块在 2015 年还不是 AI 算力载体）与当下不同，只能类比"筹码与情绪结构"，不能类比"产业逻辑"。<br>'
+    +'3. <b>政策与流动性外生冲击</b>：2008、2015 都有强外力介入（四万亿、救市），模型无法预知当下的政策反应。<br>'
+    +'4. <b>概率是条件频率，不是因果</b>：它回答"过去同类状态下发生了什么"，不回答"这次一定会怎样"。<br>'
+    +'5. <b>路径顺序用周采样</b>：120 日窗口按 5 交易日采样，先后的判定精度约 ±5 个交易日。</p></details>'
+    +'<details><summary>更新方式</summary><p>数据层 <code>src/run.py</code>：刷新中证光通信日线 → 重算状态 → 重跑引擎 → 写 <code>out/model.json</code> 并留台账。'
+    +'历史库 <code>src/build_analogs.py</code> 季度重建即可（历史标签不会变）。</p></details>'
+    +'</section>';
+
+  app.innerHTML=html;
+  document.getElementById('footBuild').textContent = M.meta.engine+' · '+M.meta.generated_at;
+
+  // market slider
+  const proj=mkt.projection, rowsM=mkt.rows;
+  const range=document.getElementById('mktRange');
+  const fmt=v=> (v>0?'+':'')+v+'%';
+  function updateMkt(v){
+    document.getElementById('mktVal').textContent = fmt(v);
+    const B=v/100;
+    // 经验分档插值：按档位中心取中位/P10/P90，分段线性，两端截断
+    const pts=rowsM.filter(r=>r.med!=null).map(r=>({
+      x: r.lo===-9?-0.30:(r.hi===9?0.30:(r.lo+r.hi)/2), med:r.med, p10:r.p10, p90:r.p90, r:r }));
+    pts.sort((a,b)=>a.x-b.x);
+    let a=pts[0], b2=pts[pts.length-1];
+    if(B<=a.x){ b2=a; } else if(B>=b2.x){ a=b2; }
+    else { for(let i=0;i<pts.length-1;i++){ if(B>=pts[i].x&&B<=pts[i+1].x){ a=pts[i]; b2=pts[i+1]; break; } } }
+    const t=(b2.x===a.x)?0:(B-a.x)/(b2.x-a.x);
+    const lerp=(x,y)=>x+(y-x)*t;
+    const med=lerp(a.med,b2.med), p10=lerp(a.p10,b2.p10), p90=lerp(a.p90,b2.p90);
+    const medEl=document.getElementById('mktMed');
+    medEl.textContent=pct(med); medEl.className='big '+cls(med);
+    document.getElementById('mktP10').textContent=pct(p10);
+    document.getElementById('mktP90').textContent=pct(p90);
+    const lin=mkt.alpha+mkt.beta*B;
+    const linEl=document.getElementById('mktLin');
+    linEl.textContent=pct(lin); linEl.className=cls(lin);
+    // nearest bucket
+    let best=null,bd=1e9;
+    rowsM.forEach(r=>{ const mid=(r.lo=== -9? -0.30 : (r.hi===9?0.30:(r.lo+r.hi)/2)); const dd=Math.abs(mid-B); if(dd<bd){bd=dd;best=r;} });
+    document.getElementById('mktNL').textContent = best&&best.p_newlow!=null?pctN(best.p_newlow,0):'—';
+    document.querySelectorAll('#mktBody tr').forEach(tr=>{
+      const i=+tr.dataset.i; tr.style.background = (rowsM[i]===best)?'rgba(240,178,74,.07)':'';
+    });
+    document.querySelectorAll('#mktChips .chip').forEach(c=>c.classList.toggle('on', +c.dataset.v===v));
+  }
+  range.addEventListener('input',e=>updateMkt(+e.target.value));
+  document.querySelectorAll('#mktChips .chip').forEach(c=>c.addEventListener('click',()=>{range.value=c.dataset.v;updateMkt(+c.dataset.v);}));
+  updateMkt(0);
+}
+
+async function boot(){
+  const M=await tryFetch(SRC);
+  const app=document.getElementById('app');
+  if(!M){ app.innerHTML='<div class="err">模型数据未载入：请确认 <code>data/model.json</code> 与本页同目录。运行 <code>python -X utf8 src/run.py</code> 生成。</div>'; return; }
+  const C=await tryFetch(SRC_CAL);
+  try{ render(M,C); }
+  catch(e){ app.innerHTML='<div class="err">渲染失败：'+e.message+'</div>'; console.error(e); }
+}
+boot();
+})();
+</script>
+</body>
+</html>

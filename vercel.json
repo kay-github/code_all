@@ -163,6 +163,17 @@
       "headers": {
         "Cache-Control": "no-store"
       }
+    },
+    {
+      "src": "^/(?:optsc|optical-scenario)/?$",
+      "dest": "/tools/optical-scenario/index.html"
+    },
+    {
+      "src": "^/tools/optical-scenario/data/(.*)$",
+      "dest": "/tools/optical-scenario/data/$1",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     }
   ]
 }
