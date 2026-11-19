@@ -4,7 +4,7 @@
   "name": "半导体设备",
   "enabled": true,
   "as_of": "2026-11-18",
-  "generated_at": "2026-11-19 20:20",
+  "generated_at": "2026-11-19 20:29",
   "data_start": "2020-12-01",
   "data_end": "2026-11-18",
   "n_constituents": 26,
@@ -16,6 +16,9 @@
    "002371",
    "688012"
   ],
+  "sources": {
+   "tencent": 27
+  },
   "site": "https://1.688680.xyz/taoding"
  },
  "latest": {
