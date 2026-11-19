@@ -2,6 +2,13 @@ const { MAX_TEXT_CHARS, MODEL, PROVIDER } = require("../lib/proofreader");
 const { getProviderStatus, isModelConfigured } = require("../lib/modelProofreader");
 
 module.exports = function handler(req, res) {
+  // Reuse this existing function for the Top Radar control API so the Hobby
+  // plan's 12-serverless-function limit is not exceeded. The public URL is
+  // rewritten in vercel.json: /api/top-radar -> /api/health?tool=top-radar.
+  if (req.query && req.query.tool === 'top-radar') {
+    return require('../lib/topRadarApi')(req, res);
+  }
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");

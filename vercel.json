@@ -9,9 +9,9 @@
     "api/investment-market.js": {
       "maxDuration": 45
     },
-    "api/top-radar.js": {
+    "api/health.js": {
       "maxDuration": 30,
-      "includeFiles": "apps/top-radar/**"
+      "includeFiles": "apps/top-radar/**/*.json"
     }
   },
   "routes": [
@@ -129,6 +129,10 @@
       "headers": {
         "Cache-Control": "no-store"
       }
+    },
+    {
+      "src": "^/api/top-radar/?$",
+      "dest": "/api/health?tool=top-radar"
     },
     {
       "handle": "filesystem"

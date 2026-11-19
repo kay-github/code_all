@@ -7,7 +7,12 @@ __pycache__
 *.log
 .env
 .env.*
-apps/
+apps/top-radar/data/bars
+apps/top-radar/data/_prev_summary.json
+apps/fund-dragon-recovery
+apps/grid-trading-manager
+apps/national-team-etf
+apps/notes
 tests/
 api/proofread.js
 api/proofread-monitor.js
