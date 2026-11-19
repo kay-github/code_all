@@ -79,10 +79,10 @@ input[type=checkbox]{width:auto;accent-color:var(--red)}
   </div>
 
   <div class="card">
-    <h2>访问密钥</h2>
-    <p class="hint">写操作需要 Vercel 环境变量 <b>MONITOR_SECRET</b>。密钥只保存在本机浏览器 localStorage，不上传到任何地方。没有密钥也可以看状态，但不能改开关、跑数、测试推送。</p>
+    <h2>访问密码</h2>
+    <p class="hint">写操作需要一个项目通用密码，由站主发给可信的人。密码只保存在本机浏览器 localStorage，不上传到第三方；不需要填写后台的机器密钥。没有密码也可以看状态，但不能改开关、跑数、测试推送、添加板块。</p>
     <div class="row">
-      <div class="field"><label>MONITOR_SECRET</label><input id="secret" type="password" placeholder="粘贴密钥" autocomplete="off"></div>
+      <div class="field"><label>通用密码</label><input id="secret" type="password" placeholder="输入通用密码" autocomplete="off"></div>
       <div class="field" style="display:flex;align-items:flex-end;gap:10px"><button class="primary" id="saveSecret">保存并验证</button><button class="ghost" id="clearSecret">清除</button></div>
     </div>
     <div class="msg" id="secretMsg"></div>
@@ -169,7 +169,7 @@ function renderSectors(list){
   }).join('');
   tb.querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.onchange = async ()=>{
-      if(!secret){ cb.checked=!cb.checked; msg('#sectorMsg','先保存 MONITOR_SECRET 再改开关。',false); return; }
+      if(!secret){ cb.checked=!cb.checked; msg('#sectorMsg','先保存通用密码再改开关。',false); return; }
       try{ await jpost('set-enabled',{id:cb.dataset.id,enabled:cb.checked}); msg('#sectorMsg',`${cb.dataset.id} 已${cb.checked?'开启':'休眠'}。下一次跑数生效。`,true); await load(); }
       catch(e){ cb.checked=!cb.checked; msg('#sectorMsg','保存失败：'+e.message,false); }
     };
@@ -178,20 +178,20 @@ function renderSectors(list){
 
 $('#saveSecret').onclick = async ()=>{
   secret = $('#secret').value.trim(); localStorage.setItem('topRadarSecret',secret);
-  if(!secret){ msg('#secretMsg','请先填密钥。',false); return; }
-  try{ await jpost('verify',{}); msg('#secretMsg','密钥有效。',true); }
+  if(!secret){ msg('#secretMsg','请先填通用密码。',false); return; }
+  try{ await jpost('verify',{}); msg('#secretMsg','密码有效。',true); }
   catch(e){ msg('#secretMsg','验证失败：'+e.message,false); }
 };
-$('#clearSecret').onclick = ()=>{ secret=''; localStorage.removeItem('topRadarSecret'); $('#secret').value=''; msg('#secretMsg','已清除本机密钥。',true); };
+$('#clearSecret').onclick = ()=>{ secret=''; localStorage.removeItem('topRadarSecret'); $('#secret').value=''; msg('#secretMsg','已清除本机密码。',true); };
 $('#runBtn').onclick = async ()=>{
-  if(!secret){ msg('#runMsg','先保存密钥。',false); return; }
+  if(!secret){ msg('#runMsg','先保存通用密码。',false); return; }
   if(!confirm('触发一次 GitHub Actions 跑数？通常 2–4 分钟。')) return;
   msg('#runMsg','已提交，等待 Actions 执行…',true);
   try{ const r=await jpost('run',{}); msg('#runMsg',r.message||'已触发。去 Actions 看进度；完成后刷新本页。',true); }
   catch(e){ msg('#runMsg','触发失败：'+e.message+(e.message.includes('503')?'（需在 Vercel 配 GITHUB_DISPATCH_TOKEN）':''),false); }
 };
 $('#testBtn').onclick = async ()=>{
-  if(!secret){ msg('#runMsg','先保存密钥。',false); return; }
+  if(!secret){ msg('#runMsg','先保存通用密码。',false); return; }
   if(!confirm('会向你的 PushPlus 发一条测试消息，继续？')) return;
   try{ const r=await jpost('test',{}); msg('#runMsg',r.message||'测试消息已发送。',true); }
   catch(e){ msg('#runMsg','测试失败：'+e.message,false); }
@@ -199,7 +199,7 @@ $('#testBtn').onclick = async ()=>{
 $('#refreshBtn').onclick = ()=> location.reload();
 
 $('#addBtn').onclick = async ()=>{
-  if(!secret){ msg('#addMsg','先保存密钥。',false); return; }
+  if(!secret){ msg('#addMsg','先保存通用密码。',false); return; }
   const name=$('#newName').value.trim();
   const codes=$('#newCodes').value.split(/[\s,，、]+/).map(x=>x.trim()).filter(Boolean);
   const leaders=$('#newLeaders').value.split(/[\s,，、]+/).map(x=>x.trim()).filter(Boolean);

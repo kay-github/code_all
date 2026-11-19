@@ -81,12 +81,14 @@ python -X utf8 push.py --dry-run                      # 推送演练
 
 | 变量 | 用途 | 必需 |
 |---|---|---|
-| `MONITOR_SECRET` | 控制台写操作 / 手动触发 / 测试推送的 Bearer 密钥 | 是（写操作） |
+| `MONITOR_SECRET` | GitHub Actions 调 `notify` 的机器密钥；控制台也兼容，但人不需要填 | 是（仅在 notify） |
+| `TOP_RADAR_ADMIN_PASSWORD` | 控制台通用密码；不配时用内置项目密码 | 否 |
 | `PUSHPLUS_TOKEN` | PushPlus 单推 token | 是（推送） |
 | `GITHUB_DISPATCH_TOKEN` | 立即跑一次触发 workflow_dispatch 的 GitHub PAT（actions:write + contents:write） | 否，没配时 503 |
 | `TOP_RADAR_CONFIG_API` | 引擎读 registry/pool 的 API 根地址，默认 `https://1.688680.xyz/api/top-radar` | 否 |
 
 GitHub Actions 需要 `MONITOR_SECRET`（已存在于仓库 Secrets）调 `action=notify`；不需要在 GitHub 存 PushPlus token。
+控制台使用人类可记的通用密码（服务端默认内置，`TOP_RADAR_ADMIN_PASSWORD` 可覆盖），不再要求填写 `MONITOR_SECRET`。
 
 ## 新增板块
 
