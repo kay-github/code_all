@@ -9,7 +9,7 @@ import io, json, os, re, sys, time
 
 BASE = os.environ.get("OPTICAL_BASE") or "D:/work_code2/"
 MIN_MCAP = 30.0    # 科技股池市值门槛（亿元）
-MAX_TECH = 260     # 科技股池上限（按市值降序，控制抓数耗时与页面体积）
+MAX_TECH = 300     # 科技股池上限（按市值降序，控制抓数耗时与页面体积）
 
 # 消费池（申万一级口径）：必需+可选消费 8 个为「核心」，汽车/医药生物为「关联延伸」
 CONS_CORE_L1 = ["食品饮料", "家用电器", "纺织服饰", "轻工制造",
