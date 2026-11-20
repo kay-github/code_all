@@ -32,3 +32,14 @@ TIER_ACTION = {
     3: "减仓 1/3（保守可减 1/2）；剩余止损设 MA20 下方 2%",
     4: "再减 1/3 或清仓；不接飞刀，等重新站上 MA20 且广度恢复",
 }
+
+# V2 is a shadow calculation: shown on the dashboard and logged, but it does
+# not drive PushPlus notifications. Legacy tier/action above remain authoritative.
+V2_VERSION = "v2-shadow-2026-11"
+V2_TIER_ACTION = {
+    0: "正常持有",
+    1: "正常持有；E 层转弱时不加仓，暂不减仓",
+    2: "停止加仓；止损上移至最近 10 日低点；目标仓位 80%",
+    3: "目标仓位 50%；满仓先减 1/2，橙色后再红减 1/3；剩余止损设 MA20 下方 2%",
+    4: "再减至 25% 或清仓；不接飞刀，等重新站上 MA20 且广度恢复",
+}

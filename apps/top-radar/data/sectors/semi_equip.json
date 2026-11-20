@@ -1945,5 +1945,32 @@
   "days": 1446,
   "start": "2020-12-01",
   "end": "2026-11-18"
- }
+ },
+ "v2": {
+  "version": "v2-shadow-2026-11",
+  "mode": "shadow",
+  "tier": 1,
+  "tier_name": "观察",
+  "action": "正常持有；E 层转弱时不加仓，暂不减仓",
+  "R": 21.8,
+  "E": 3,
+  "C": 1,
+  "vol20": 0.876,
+  "quality_c": null,
+  "red_trend": false,
+  "red_accel": false,
+  "red": false,
+  "deep": false,
+  "orange": false,
+  "recover": false,
+  "trigger": "E≥3 已出现，但近高门未过",
+  "gates": {
+   "hot": true,
+   "near": false,
+   "vol20": true,
+   "quality_c": null
+  },
+  "note": "线上数据保持原基准；V2 为初始影子快照，下一轮云端跑批补齐历史与质量 C 分量。"
+ },
+ "v2_signals": []
 }

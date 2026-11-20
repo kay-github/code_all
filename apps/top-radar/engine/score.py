@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from config import TIER_ACTION, TIER_NAME
+from config import TIER_ACTION, TIER_NAME, V2_TIER_ACTION
 
 
 def roll_pct(s, n=252, minp=60):
@@ -86,5 +86,56 @@ def score(f: pd.DataFrame) -> pd.DataFrame:
     f["gate_hot"] = hot
     f["gate_near"] = near
     f["gate_all"] = f[["gate_ret250", "gate_accel", "gate_hot", "gate_near"]].all(axis=1)
+
+    # ------------------------------------------------------------------
+    # V2 shadow track (research rule, 2026-11-20 validation)
+    # It is calculated and displayed, but legacy tier/action remain the only
+    # source for PushPlus. See config.V2_VERSION / V2_TIER_ACTION.
+    # ------------------------------------------------------------------
+    f["v2_vol"] = (f["vol20"] >= 0.20).fillna(False)
+    f["v2_quality_c"] = (
+        (f["C1"] >= 1)
+        | (f["C3"] >= 1)
+        | ((f["C2"] >= 1) & (f["ret60"] >= 0.40))
+    ).fillna(False)
+
+    f["v2_red_trend"] = (f["R"] >= 80) & hot & near & f["v2_vol"] & f["v2_quality_c"]
+    f["v2_red_accel"] = (f["R"] >= 98) & hot & near & f["v2_vol"] & (f["E"] >= 3)
+    f["v2_red"] = (f["v2_red_trend"] | f["v2_red_accel"]).fillna(False)
+    f["v2_red_latch"] = f["v2_red"].rolling(10, min_periods=1).max().astype(bool)
+
+    f["v2_deep"] = (
+        f["v2_red_latch"] & (f["dd250"] <= -0.08) & (f["C"] >= 1)
+    ).fillna(False)
+    f["v2_deep_latch"] = f["v2_deep"].rolling(20, min_periods=1).max().astype(bool)
+
+    f["v2_orange"] = (
+        ((f["R"] >= 70) | (f["E"] >= 3)) & hot & near & f["v2_vol"]
+        & (~f["v2_red_latch"])
+    ).fillna(False)
+    f["v2_orange_latch"] = f["v2_orange"].rolling(10, min_periods=1).max().astype(bool)
+
+    f["v2_watch"] = ((f["R"] >= 55) | (f["E"] >= 2)).fillna(False)
+    f["v2_tier_raw"] = np.select(
+        [f["v2_deep_latch"], f["v2_red_latch"], f["v2_orange_latch"], f["v2_watch"]],
+        [4, 3, 2, 1],
+        default=0,
+    )
+    f["v2_tier"] = f["v2_tier_raw"].astype(int)
+    f["v2_tier_name"] = f["v2_tier"].map(TIER_NAME)
+    f["v2_action"] = f["v2_tier"].map(V2_TIER_ACTION)
+
+    # Correction: after a red trigger, a new 20-day high with R>=75 means the
+    # reduction can be half restored. Shown as a flag, not an automatic trade.
+    prev_red = (
+        f["v2_red"].fillna(False).astype(bool)
+        .rolling(5, min_periods=1).max().shift(1).fillna(0)
+        .to_numpy(dtype=bool)
+    )
+    new_high = (
+        f["idx"] >= f["idx"].rolling(20, min_periods=1).max()
+    ).fillna(False).to_numpy(dtype=bool)
+    r_high = (f["R"] >= 75).fillna(False).to_numpy(dtype=bool)
+    f["v2_recover"] = prev_red & new_high & r_high
 
     return f

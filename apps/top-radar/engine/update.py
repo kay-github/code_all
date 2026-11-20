@@ -9,7 +9,10 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from config import CONFIG_API, DATA, POOLS, REGISTRY, SECTORS, SITE, TIER_ACTION, TIER_NAME
+from config import (
+    CONFIG_API, DATA, POOLS, REGISTRY, SECTORS, SITE,
+    TIER_ACTION, TIER_NAME, V2_TIER_ACTION, V2_VERSION,
+)
 from features import build_features
 from fetch import ensure_bars, today_str
 from score import score
@@ -86,6 +89,68 @@ def ROOT_POOL(rel):
     return ROOT / rel
 
 
+def _v2_trigger(row):
+    """Human-readable reason for the shadow tier. No trading instruction."""
+    if bool(row.get("v2_deep_latch")):
+        return "V2 红色后回撤 ≥8% + C 确认"
+    if bool(row.get("v2_red_accel")) and bool(row.get("v2_red_trend")):
+        return "R≥80 质量 C 与 R≥98 衰竭红同时成立"
+    if bool(row.get("v2_red_accel")):
+        return "R≥98 + E≥3 衰竭红"
+    if bool(row.get("v2_red_trend")):
+        return "R≥80 + 质量 C + 高波"
+    if bool(row.get("v2_orange")):
+        return "R≥70 或 E≥3 + 高波 + 近高"
+    if int(row.get("E", 0) or 0) >= 3:
+        misses = []
+        if not bool(row.get("near")):
+            misses.append("近高")
+        if not bool(row.get("v2_vol")):
+            misses.append("高波")
+        if not bool(row.get("v2_quality_c")) and bool(row.get("near")) and bool(row.get("v2_vol")):
+            misses.append("质量C")
+        return "E≥3 已出现，但" + (" / ".join(misses) if misses else "确认门") + "未过"
+    if int(row.get("E", 0) or 0) >= 2:
+        return "E=2，内部开始转弱"
+    return "未触发"
+
+
+def _v2_payload(latest):
+    tier = int(latest["v2_tier"])
+    return {
+        "version": V2_VERSION,
+        "mode": "shadow",
+        "tier": tier,
+        "tier_name": TIER_NAME[tier],
+        "action": V2_TIER_ACTION[tier],
+        "R": _num(latest["R"], 1),
+        "E": int(latest["E"]),
+        "C": int(latest["C"]),
+        "vol20": _num(latest.get("vol20"), 4),
+        "quality_c": _bool(latest.get("v2_quality_c")),
+        "red_trend": _bool(latest.get("v2_red_trend")),
+        "red_accel": _bool(latest.get("v2_red_accel")),
+        "red": _bool(latest.get("v2_red")),
+        "deep": _bool(latest.get("v2_deep_latch")),
+        "orange": _bool(latest.get("v2_orange_latch")),
+        "recover": _bool(latest.get("v2_recover")),
+        "trigger": _v2_trigger(latest),
+        "gates": {
+            "hot": _bool(latest.get("hot")),
+            "near": _bool(latest.get("near")),
+            "vol20": _bool(latest.get("v2_vol")),
+            "quality_c": _bool(latest.get("v2_quality_c")),
+        },
+        "components": {
+            "C1": int(latest.get("C1", 0) or 0),
+            "C2": int(latest.get("C2", 0) or 0),
+            "C3": int(latest.get("C3", 0) or 0),
+            "C4": int(latest.get("C4", 0) or 0),
+        },
+        "note": "只展示与留痕，不驱动 PushPlus；现行推送仍按旧规则。",
+    }
+
+
 def build_sector_json(sector, pool, f, asof=None, stats=None):
     if asof:
         f = f.loc[:pd.Timestamp(asof)]
@@ -111,6 +176,8 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
             "idx": _num(row["idx"], 4),
             "tier": int(row["tier"]),
             "R": _num(row["R"], 1),
+            "v2t": int(row["v2_tier"]),
+            "E": int(row["E"]),
         })
 
     signals = []
@@ -128,6 +195,25 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
             })
         prev_tier = t
     signals = signals[-40:]
+
+    v2_signals = []
+    prev_v2 = None
+    for d, row in f.iterrows():
+        t = int(row["v2_tier"])
+        if prev_v2 is not None and t != prev_v2:
+            v2_signals.append({
+                "d": d.strftime("%Y-%m-%d"),
+                "tier": t,
+                "tier_name": TIER_NAME[t],
+                "idx": _num(row["idx"], 4),
+                "R": _num(row["R"], 1),
+                "E": int(row["E"]),
+                "vol20": _num(row.get("vol20"), 4),
+                "action": V2_TIER_ACTION[t],
+                "trigger": _v2_trigger(row),
+            })
+        prev_v2 = t
+    v2_signals = v2_signals[-40:]
 
     crowd_label = "成交额占比"
     crowd_value = _num(latest.get("amt_share"), 4)
@@ -173,6 +259,8 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
         "score": int(sum(bool(latest[k]) for k in ["gate_ret250", "gate_accel", "gate_hot", "gate_near"])),
     }
 
+    v2_obj = _v2_payload(latest)
+
     meta = {
         "id": sector["id"],
         "name": sector["name"],
@@ -195,14 +283,124 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
         "meta": meta,
         "latest": latest_obj,
         "gate": gate,
+        "v2": v2_obj,
         "history": history,
         "signals": signals,
+        "v2_signals": v2_signals,
         "stats": {
             "days": int(len(f)),
             "start": idx[0].strftime("%Y-%m-%d"),
             "end": idx[-1].strftime("%Y-%m-%d"),
         },
     }
+
+
+def write_v2_shadow(summary_sectors, built):
+    """Persist the shadow track separately from push state.
+
+    This file is the audit trail: it records what V2 said while the legacy
+    rules remained responsible for notifications. It is safe to delete/rebuild;
+    history inside each sector JSON is the primary series.
+    """
+    path = DATA / "v2_shadow.json"
+    old = {}
+    if path.exists():
+        try:
+            old = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            old = {}
+    old_by = {s.get("id"): s for s in old.get("sectors", [])}
+    events = list(old.get("events", []))
+    event_keys = {(e.get("sector"), e.get("d"), e.get("to")) for e in events}
+
+    entries = []
+    for s in summary_sectors:
+        if s.get("status") != "ok":
+            continue
+        sid = s["id"]
+        obj = built.get(sid)
+        if obj is None:
+            p = SECTORS / f"{sid}.json"
+            if not p.exists():
+                continue
+            try:
+                obj = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+        v2 = obj.get("v2")
+        if not v2:
+            continue
+        entry = {
+            "id": sid,
+            "name": s.get("name") or sid,
+            "as_of": s.get("as_of"),
+            "tier": v2.get("tier"),
+            "tier_name": v2.get("tier_name"),
+            "action": v2.get("action"),
+            "R": v2.get("R"),
+            "E": v2.get("E"),
+            "vol20": v2.get("vol20"),
+            "trigger": v2.get("trigger"),
+            "red_trend": v2.get("red_trend"),
+            "red_accel": v2.get("red_accel"),
+            "deep": v2.get("deep"),
+            "recover": v2.get("recover"),
+            "stale": s.get("stale", False),
+            "coverage": s.get("coverage"),
+        }
+        entries.append(entry)
+
+        prev = old_by.get(sid)
+        if not prev:
+            key = (sid, entry["as_of"], entry["tier"])
+            if key not in event_keys:
+                events.append({
+                    "type": "init",
+                    "sector": sid,
+                    "name": entry["name"],
+                    "d": entry["as_of"],
+                    "from": None,
+                    "from_name": None,
+                    "to": entry["tier"],
+                    "to_name": entry["tier_name"],
+                    "R": entry["R"],
+                    "E": entry["E"],
+                    "vol20": entry["vol20"],
+                    "trigger": entry["trigger"],
+                })
+                event_keys.add(key)
+        elif prev.get("tier") != entry["tier"] and (
+            not prev.get("as_of") or entry["as_of"] >= prev["as_of"]
+        ):
+            key = (sid, entry["as_of"], entry["tier"])
+            if key not in event_keys:
+                events.append({
+                    "type": "tier_change",
+                    "sector": sid,
+                    "name": entry["name"],
+                    "d": entry["as_of"],
+                    "from": prev.get("tier"),
+                    "from_name": prev.get("tier_name"),
+                    "to": entry["tier"],
+                    "to_name": entry["tier_name"],
+                    "R": entry["R"],
+                    "E": entry["E"],
+                    "vol20": entry["vol20"],
+                    "trigger": entry["trigger"],
+                })
+                event_keys.add(key)
+
+    payload = {
+        "version": V2_VERSION,
+        "mode": "shadow",
+        "push_policy": "legacy_only",
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "note": "V2 只计算、展示、留痕；PushPlus 仍由旧规则触发。",
+        "sectors": entries,
+        "events": events[-200:],
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=_json_default), encoding="utf-8")
+    print(f"v2 shadow: {len(entries)} sectors, {len(payload['events'])} events")
 
 
 def main():
@@ -267,6 +465,7 @@ def main():
                 })
                 continue
         latest = obj["latest"]
+        v2 = obj.get("v2") or {}
         summary_sectors.append({
             "id": sid,
             "name": sector["name"],
@@ -282,6 +481,13 @@ def main():
             "dd250": latest["dd250"],
             "coverage": obj["meta"].get("coverage"),
             "stale": obj["meta"].get("stale", False),
+            "v2_tier": v2.get("tier"),
+            "v2_tier_name": v2.get("tier_name"),
+            "v2_action": v2.get("action"),
+            "v2_R": v2.get("R"),
+            "v2_E": v2.get("E"),
+            "v2_vol20": v2.get("vol20"),
+            "v2_updated_at": obj["meta"]["generated_at"] if v2 else None,
             "updated_at": obj["meta"]["generated_at"],
         })
     summary = {
@@ -291,6 +497,7 @@ def main():
     }
     sp.write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     print("summary:", json.dumps(summary_sectors, ensure_ascii=False))
+    write_v2_shadow(summary_sectors, built)
 
 
 if __name__ == "__main__":

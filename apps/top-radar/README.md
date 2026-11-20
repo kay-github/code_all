@@ -12,8 +12,8 @@
 
 - 腾讯 qfq 日线主源；东财 qfq、新浪（用 qfq 因子还原）备用；`meta.sources` 记录每轮实际来源
 - `engine/features.py`：等权指数、广度、情绪、资金、龙头/基准超额
-- `engine/score.py`：R（位置分位）/ E（情绪背离）/ C（破位确认）→ 五档
-- `engine/update.py`：registry + pool → `data/sectors/<id>.json` + `data/summary.json`
+- `engine/score.py`：R（位置分位）/ E（情绪背离）/ C（破位确认）→ 五档；同时计算 V2 影子档
+- `engine/update.py`：registry + pool → `data/sectors/<id>.json` + `data/summary.json` + `data/v2_shadow.json`
 - GitHub Actions 每工作日 15:10 / 16:10（北京时间）跑，白名单 commit 数据
 - Vercel 静态页面读 JSON；`/api/top-radar` 负责配置、手动触发、测试推送
 
@@ -68,6 +68,20 @@ python -X utf8 push.py --dry-run                      # 推送演练
 
 分档不是自动交易指令；减仓比例按个人风险承受调整。
 
+## V2 双轨（2026-11-20 上线）
+
+V2 是 2026-11 多行业验证后的收紧版规则。当前只做影子：进入计算、仪表盘和 `data/v2_shadow.json` 日志，**不接管 PushPlus**；旧 `tier` / `action` 仍是推送唯一依据。
+
+- 橙色：`(R>=70 OR E>=3) & hot & near & vol20>=0.20`
+- 趋势红：`R>=80 & hot & near & vol20>=0.20 & 质量C`
+- 衰竭红：`R>=98 & hot & near & vol20>=0.20 & E>=3`
+- 深红：V2 红色后 10 日内，`dd250<=-8% & C>=1`
+- 质量C：`C1>=1 OR C3>=1 OR (C2>=1 AND ret60>=0.40)`；C4 单独不算
+- 动作：红色目标仓位 50%（满仓先减 1/2，橙色后再红减 1/3）；深红再降到 25% 或清仓
+- 纠错：红色后 5 个交易日内创新 20 日新高且 R>=75，减掉的仓位补回一半；`v2_recover` 只做标记
+
+切换推送的前置条件：至少积累一段实盘触发、误报和踏空样本，并确认 V2 与旧规则的分歧可解释；在此之前不把 V2 写进 `push.py`。
+
 ## 推送规则
 
 - 只在档位变化时推，同一轮同一板块只推一次。
@@ -77,6 +91,7 @@ python -X utf8 push.py --dry-run                      # 推送演练
 - 数据超过 2 个交易日未更新（`stale=true`）不推。
 - PushPlus 单推，不建群组；token 只存在 Vercel 环境变量 `PUSHPLUS_TOKEN`。
 - 推送卡只保留“板块/档位/日期/R/指数/动作/触发原因”，先看结论和该做什么；完整指标在网页查看。控制台“测试 PushPlus”发送一条光模块 2026-06-09 的模拟红色信号，仅用于检查样式，不是实盘。
+- V2 影子只上仪表盘和 `data/v2_shadow.json`，不进微信；同一板块的新旧档位不合并推送。
 
 ## 环境变量（Vercel）
 

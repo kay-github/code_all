@@ -38,6 +38,8 @@ button{font-family:inherit}
 .hero-action{font-size:16px;line-height:1.8;color:#D8D0BF;max-width:56ch;margin:14px 0 0;min-height:2.8em}
 .hero-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:20px;font-family:var(--mono);font-size:12px;color:#A9A294}
 .hero-meta b{color:#EDE6D6;font-weight:500}
+.hero-v2{font-family:var(--mono);font-size:11px;color:#A9A294;margin-top:10px}
+.hero-v2 b{color:#EDE6D6;font-weight:500}
 .hero-read{border-left:1px solid #333A3C;padding-left:32px;min-width:0}
 .big{font-family:var(--mono);font-size:clamp(52px,7vw,84px);line-height:1;font-weight:600;letter-spacing:-.03em}
 .big-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#A9A294;margin-top:6px}
@@ -101,6 +103,20 @@ tr:last-child td{border-bottom:0}
 .gate .q.yes .v{color:var(--green)}
 .gate .q.no .v{color:var(--muted)}
 .gate-note{font-size:12.5px;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:10px 14px;margin-top:10px;line-height:1.75}
+.dual{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);background:var(--paper2)}
+.dual .col{padding:16px 18px 15px;min-width:0}
+.dual .col+.col{border-left:1px solid var(--line)}
+.dual .k{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--muted)}
+.dual .k .mode{color:var(--orange)}
+.dual .stat{display:flex;align-items:baseline;gap:9px;margin-top:8px;flex-wrap:wrap}
+.dual .stat b{font-family:var(--serif);font-size:24px;line-height:1.2}
+.dual .stat .r{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.dual .act{font-size:12.5px;line-height:1.7;color:#3A362C;margin:8px 0 0;min-height:3.2em}
+.dual .facts{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px}
+.dual .facts b{color:var(--ink);font-weight:500}
+.dual-note{font-size:12px;line-height:1.75;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:9px 13px;margin-top:10px}
+.dual-note b{font-weight:600}
+.dual .v2-wait{font-size:12px;line-height:1.7;color:var(--muted);margin-top:8px}
 .push-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .push-card{border:1px solid var(--line);background:var(--paper2);padding:14px 16px;min-width:0}
 .push-card h3{font-family:var(--serif);font-size:17px;margin:0 0 8px;font-weight:700}
@@ -120,6 +136,8 @@ tr:last-child td{border-bottom:0}
   .tierbar{grid-template-columns:1fr;gap:4px}
   .tier .a{-webkit-line-clamp:1}
   .gate{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dual{grid-template-columns:1fr}
+  .dual .col+.col{border-left:0;border-top:1px solid var(--line)}
   .push-grid{grid-template-columns:1fr}
   .main{padding:28px 18px 44px}
   .sec-head{flex-direction:column;align-items:flex-start;gap:4px}
@@ -167,6 +185,7 @@ tr:last-child td{border-bottom:0}
       <div class="hero-status"><span class="dot t0" id="statusDot"></span><span id="tierName">—</span><span class="date" id="asOf">—</span></div>
       <p class="hero-action" id="heroAction">正在读取数据。</p>
       <div class="hero-meta"><span>指数 <b id="metaIdx">—</b></span><span>距一年高 <b id="metaDD">—</b></span><span>有效成分 <b id="metaN">—</b></span></div>
+      <div class="hero-v2" id="heroV2">V2 影子：—</div>
     </div>
     <div class="hero-read">
       <div class="big" id="bigR">—</div>
@@ -185,6 +204,12 @@ tr:last-child td{border-bottom:0}
   <section>
     <div class="sec-head"><h2>今天该做什么</h2><div class="note" id="actionNote">按当前档位执行，不预测单日涨跌</div></div>
     <div class="metrics" id="metrics"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>双轨对照</h2><div class="note" id="v2Updated">V2 影子 · 只展示和留痕，不参与推送</div></div>
+    <div class="dual" id="dual"></div>
+    <div class="dual-note" id="dualNote">现行推送仍按旧规则。V2 是研究验证版，先进入计算、仪表盘和影子日志；两者不一致时，以现行推送为准。</div>
   </section>
 
   <section>
@@ -215,7 +240,7 @@ tr:last-child td{border-bottom:0}
   <section>
     <div class="sec-head"><h2>推送与运行</h2><div class="note" id="updated">—</div></div>
     <div class="push-grid">
-      <div class="push-card"><h3>推送规则</h3><p>红色 / 深红：档位变化当天即时推。<br>橙色：进入时推一次，之后每周最多一次“仍在橙色”。<br>风险解除：回到正常 / 观察时推一次。</p><p class="mono" style="margin-top:8px">PushPlus 单推 · 无群组</p></div>
+      <div class="push-card"><h3>推送规则</h3><p>红色 / 深红：档位变化当天即时推。<br>橙色：进入时推一次，之后每周最多一次“仍在橙色”。<br>风险解除：回到正常 / 观察时推一次。<br><b>V2 影子只上仪表盘和日志，不进微信。</b></p><p class="mono" style="margin-top:8px">PushPlus 单推 · 旧规则继续生效</p></div>
       <div class="push-card"><h3>数据与运行</h3><p>工作日 15:10 跑数，16:10 兜底。<br>数据源：腾讯日线 qfq，异常时新浪备用。<br>指数 = 池内全部成分等权；某日缺数据不计入。<br>业务日 = 最近有效成分 ≥85% 的交易日；半盘数据自动回退。</p><p class="mono" style="margin-top:8px" id="dataRange">—</p></div>
       <div class="push-card"><h3>它不是什么</h3><p>不是基本面估值工具，不预测目标价，不替代止损纪律。<br>它只回答：<b>现在像不像顶、该不该减</b>。允许误触发，所以用分批减仓，而不是一次清仓。</p><p class="mono" style="margin-top:8px"><a href="/taoding/method" style="border-bottom:1px solid #BDB5A2">读完整方法与 2026-06 复盘 →</a></p></div>
     </div>
@@ -287,7 +312,7 @@ function renderAll(){
   const d=state.sector, l=d.latest, t=TIER[l.tier]||TIER[0];
   $('#sectorName').textContent = d.meta.name;
   $('#statusDot').className = 'dot t'+l.tier;
-  $('#tierName').textContent = l.tier_name;
+  $('#tierName').textContent = l.tier_name + ' · 现行推送';
   $('#asOf').textContent = l.date + (d.meta.stale ? ' · 数据滞后' : '');
   $('#heroAction').textContent = l.action;
   $('#metaIdx').textContent = fmtNum(l.idx);
@@ -300,9 +325,44 @@ function renderAll(){
   $('#bigDD').textContent = fmtPct(l.dd250);
   $('#bigDate').textContent = l.date;
   $('#actionNote').textContent = `当前：${l.tier_name} · ${l.action}`;
-  renderMetrics(l); renderTier(l); renderChart(d); renderSignals(d); renderGate(d);
+  renderMetrics(l); renderDual(d,l); renderTier(l); renderChart(d); renderSignals(d); renderGate(d);
   $('#updated').textContent = `更新 ${state.summary.updated_at||'—'} · 业务日 ${l.date}`;
   $('#dataRange').textContent = `${d.meta.data_start} → ${d.meta.data_end} · ${d.meta.effective_n}/${d.meta.n_constituents} 只有效`;
+}
+
+function tierColor(tier){
+  return tier===4 ? 'var(--deep)' : tier===3 ? 'var(--red)' : tier===2 ? 'var(--orange)' : 'var(--muted)';
+}
+function renderDual(d,l){
+  const v=d.v2;
+  const v2Html = v ? `
+    <div class="col shadow">
+      <div class="k"><span>V2 影子 · 只展示</span><span class="mode">不推送</span></div>
+      <div class="stat"><b style="color:${tierColor(v.tier)}">${v.tier_name}</b><span class="r">${v.trigger||'—'}</span></div>
+      <p class="act">${v.action||'—'}</p>
+      <div class="facts"><span>R <b>${fmtNum(v.R,1)}</b></span><span>E <b>${v.E}</b></span><span>vol20 <b>${fmtPct(v.vol20,0)}</b></span><span>质量C <b>${(v.quality_c===null||v.quality_c===undefined)?'—':(v.quality_c?'是':'否')}</b></span>${v.recover?'<span>纠错 <b>补回一半</b></span>':''}</div>
+      <div class="v2-wait">${v.version||'V2'} · 最近变化 ${(d.v2_signals&&d.v2_signals.length)?d.v2_signals[d.v2_signals.length-1].d+' '+d.v2_signals[d.v2_signals.length-1].tier_name:'暂无'}</div>
+    </div>` : `
+    <div class="col shadow">
+      <div class="k"><span>V2 影子 · 只展示</span><span class="mode">等待生成</span></div>
+      <div class="v2-wait" style="margin-top:12px">该板块还没有 V2 字段。下一轮更新后会自动写入；推送不受影响。</div>
+    </div>`;
+  $('#dual').innerHTML = `
+    <div class="col">
+      <div class="k"><span>现行推送 · 旧规则</span><span>当前生效</span></div>
+      <div class="stat"><b style="color:${tierColor(l.tier)}">${l.tier_name}</b><span class="r">R ${fmtNum(l.R,1)} · C ${l.C}</span></div>
+      <p class="act">${l.action}</p>
+      <div class="facts"><span>距一年高 <b>${fmtPct(l.dd250)}</b></span><span>指数 <b>${fmtNum(l.idx)}</b></span><span>业务日 <b>${l.date}</b></span></div>
+    </div>${v2Html}`;
+  $('#heroV2').innerHTML = v
+    ? `V2 影子：<b>${v.tier_name}</b> · 不推送 · E ${v.E} · vol20 ${fmtPct(v.vol20,0)}`
+    : 'V2 影子：等待下一轮生成';
+  $('#v2Updated').textContent = v
+    ? `V2 ${v.version||''} · ${d.meta.as_of} · 只展示和留痕`
+    : 'V2 影子 · 等待下一轮生成';
+  $('#dualNote').innerHTML = v && v.tier !== l.tier
+    ? `<b>两轨不一致。</b> 现行推送仍是${l.tier_name}；V2 给出${v.tier_name}，只作为提前观察，不改变本次提醒和仓位动作。`
+    : `<b>现行推送仍按旧规则。</b> V2 先进入计算、仪表盘和影子日志；两者一致时也不改变现有推送链路。`;
 }
 
 function metric(lab,val,sub,cls=''){
@@ -365,7 +425,7 @@ function renderChart(d){
     backgroundColor:'transparent',
     animation:false,
     grid:{left:10,right:18,top:26,bottom:30,containLabel:true},
-    tooltip:{trigger:'axis',backgroundColor:'#15191A',borderColor:'#333A3C',textStyle:{color:'#EDE6D6',fontFamily:'IBM Plex Mono',fontSize:11},formatter:ps=>{const i=ps[0].dataIndex;const x=hist[i];return `${x.d}<br>指数 ${fmtNum(x.idx)}<br>R ${fmtNum(x.R,1)}<br>档位 ${TIER[x.tier].name}`;}},
+    tooltip:{trigger:'axis',backgroundColor:'#15191A',borderColor:'#333A3C',textStyle:{color:'#EDE6D6',fontFamily:'IBM Plex Mono',fontSize:11},formatter:ps=>{const i=ps[0].dataIndex;const x=hist[i];return `${x.d}<br>指数 ${fmtNum(x.idx)}<br>R ${fmtNum(x.R,1)}<br>旧规则 ${TIER[x.tier].name}${x.v2t!==undefined?'<br>V2 影子 '+TIER[x.v2t].name:''}`;}},
     xAxis:{type:'category',data:dates,boundaryGap:false,axisLine:{lineStyle:{color:'#C9C1B0'}},axisTick:{show:false},axisLabel:{color:'#6D675B',fontFamily:'IBM Plex Mono',fontSize:10,interval:Math.ceil(dates.length/(compact?6:12)),formatter:v=>shortDate(v)}},
     yAxis:{type:'value',scale:true,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#E3DDCF'}},axisLabel:{color:'#6D675B',fontFamily:'IBM Plex Mono',fontSize:10,formatter:v=>Number(v).toFixed(1)}},
     series:[{

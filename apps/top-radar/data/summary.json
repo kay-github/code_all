@@ -17,7 +17,14 @@
    "dd250": -0.4876,
    "coverage": 0.956,
    "stale": false,
-   "updated_at": "2026-11-19 19:16"
+   "updated_at": "2026-11-19 19:16",
+   "v2_tier": 1,
+   "v2_tier_name": "观察",
+   "v2_action": "正常持有；E 层转弱时不加仓，暂不减仓",
+   "v2_R": 17.4,
+   "v2_E": 3,
+   "v2_vol20": 0.716,
+   "v2_updated_at": "2026-11-20 18:42"
   },
   {
    "id": "semi_equip",
@@ -34,7 +41,14 @@
    "dd250": -0.4851,
    "coverage": 1.0,
    "stale": false,
-   "updated_at": "2026-11-19 20:29"
+   "updated_at": "2026-11-19 20:29",
+   "v2_tier": 1,
+   "v2_tier_name": "观察",
+   "v2_action": "正常持有；E 层转弱时不加仓，暂不减仓",
+   "v2_R": 21.8,
+   "v2_E": 3,
+   "v2_vol20": 0.876,
+   "v2_updated_at": "2026-11-20 18:42"
   },
   {
    "id": "litho_cn",
@@ -51,7 +65,14 @@
    "dd250": -0.4936,
    "coverage": 1.0,
    "stale": false,
-   "updated_at": "2026-11-19 21:44"
+   "updated_at": "2026-11-19 21:44",
+   "v2_tier": 1,
+   "v2_tier_name": "观察",
+   "v2_action": "正常持有；E 层转弱时不加仓，暂不减仓",
+   "v2_R": 20.9,
+   "v2_E": 3,
+   "v2_vol20": 0.8048,
+   "v2_updated_at": "2026-11-20 18:42"
   }
  ]
 }
