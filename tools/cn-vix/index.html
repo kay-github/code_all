@@ -133,7 +133,6 @@ details .note{margin-top:10px}
         <span class="chip on" data-r="1y">近 1 年</span>
         <span class="chip" data-r="3y">近 3 年</span>
         <span class="chip" data-r="all">全部</span>
-        <span class="chip on" data-s="ref"><span class="lg"><span class="sw" style="background:#8b97a8"></span>QVIX 300ETF</span></span>
       </div>
     </div>
     <div class="chart-wrap" id="cwrap">
@@ -155,7 +154,7 @@ details .note{margin-top:10px}
         <thead><tr><th>品种</th><th>参照</th><th>样本</th><th>相关系数</th><th>平均偏差</th><th>系统偏差</th></tr></thead>
         <tbody></tbody>
       </table>
-      <div class="term-note">自算用中金所股指期权结算价；参照为期权论坛 QVIX（ETF 期权口径）。两者标的、行权价密度不同，0.7~0.9 个点的差异属正常。</div>
+      <div class="term-note">自算用中金所股指期权结算价；参照为期权论坛 QVIX（ETF 期权口径）。参照序列个别交易日存在缺失或异常（如 2026-03-23 报 43.6，同日自算 25.2），因此只用于整体相关性统计，不叠加到曲线。</div>
     </div>
   </section>
 
@@ -243,8 +242,7 @@ details .note{margin-top:10px}
     const ioK=document.createElement("div"); ioK.className="kpi";
     ioK.innerHTML = `<div class="k">IO 期限结构</div>
       <div class="v" style="color:${P.IO.color}">${fmt(d.latest.IO.near_iv-d.latest.IO.next_iv)}</div>
-      <div class="d">近月 − 次近月（点）</div>
-      <div class="pbar"><i style="width:100%;background:${P.IO.color}"></i></div>`;
+      <div class="d">近月 − 次近月（点）</div>`;
     mini.appendChild(ioK);
   }
 
@@ -260,7 +258,6 @@ details .note{margin-top:10px}
     const dates=d.series.dates.slice(a,b);
     const series=[];
     ["IO","HO","MO"].forEach(k=>{ if(state.show[k]) series.push({key:k,name:P[k].name,color:P[k].color,data:d.series[k].slice(a,b)}); });
-    if(state.show.ref && d.series.qvix_300etf) series.push({key:"ref",name:REF.name,color:REF.color,data:d.series.qvix_300etf.slice(a,b),dash:true});
 
     const W=1040,H=340,pad={l:46,r:14,t:14,b:30};
     const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
@@ -404,8 +401,6 @@ details .note{margin-top:10px}
         if(ch.dataset.r){
           document.querySelectorAll("#ranges .chip[data-r]").forEach(x=>x.classList.remove("on"));
           ch.classList.add("on"); state.range=ch.dataset.r; drawChart();
-        }else if(ch.dataset.s){
-          state.show.ref=!state.show.ref; ch.classList.toggle("on"); drawChart();
         }
       };
     });
