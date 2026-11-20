@@ -10,8 +10,9 @@
     optical: '/tools/optical-decline-board/',
     gjd: '/tools/national-team-etf/',
     fundRecovery: '/tools/fund-dragon-recovery/',
+    cnvix: '/cnvix',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/cnvix', 'cnvix'], ['/cnvix/', 'cnvix']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);
