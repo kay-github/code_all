@@ -40,7 +40,7 @@ POOL = [
 ]
 
 CAL_LEN = 300        # 内嵌交易日序列长度（覆盖 250 日回撤 + YTD 基准）
-POOL_VER = {"v": "2026-11-20"}   # 实际取值来自 板块池.json 的 version
+POOL_VER = {"v": "2026-11-21"}   # 实际取值来自 板块池.json 的 version
 
 
 def sym(code: str) -> str:
@@ -52,8 +52,9 @@ def sym(code: str) -> str:
 
 
 def load_pool():
-    """返回 (光学核心, 光学延伸, 科技股全部, 消费核心, 消费延伸)
+    """返回 (光学核心, 光学延伸, 科技股全部, 消费核心, 消费延伸, 存储核心, 存储延伸)
     消费元素为 (code, name, 二级行业, 一级行业)
+    存储元素为 (code, name, 细分标签, 汇总分组)
     """
     p = os.path.join(BASE, "板块池.json")
     try:
@@ -65,11 +66,14 @@ def load_pool():
         cons = d.get("cons") or {}
         cc = [(x["code"], x["name"], x.get("ind2") or x["l1"], x["l1"]) for x in cons.get("core", [])]
         ce = [(x["code"], x["name"], x.get("ind2") or x["l1"], x["l1"]) for x in cons.get("ext", [])]
+        st = d.get("storage") or {}
+        stc = [(x["code"], x["name"], x["tag"], x.get("g") or "其他") for x in st.get("core", [])]
+        ste = [(x["code"], x["name"], x["tag"], x.get("g") or "其他") for x in st.get("ext", [])]
         if core and len(tech) > len(core):
-            return core, ext, tech, cc, ce
+            return core, ext, tech, cc, ce, stc, ste
     except Exception as e:
         print("pool fallback:", e)
-    return POOL, [], [], [], []
+    return POOL, [], [], [], [], [], []
 
 
 TM_BLOCKED = {"v": False}  # 腾讯 K线整体被风控（501 挑战页）后不再逐只重试
@@ -213,9 +217,12 @@ def add_rating(rows):
 
 
 def main():
-    core, ext, tech, cons_core, cons_ext = load_pool()
+    core, ext, tech, cons_core, cons_ext, storage_core, storage_ext = load_pool()
     optical = [(c, n, t, "core") for c, n, t in core] + [(c, n, t, "ext") for c, n, t in ext]
+    storage = [(c, n, t, "core", g) for c, n, t, g in storage_core] + \
+              [(c, n, t, "ext", g) for c, n, t, g in storage_ext]
     opt_codes = [x[0] for x in optical]
+    st_codes = [x[0] for x in storage]
     tech_map = {c: (n, i) for c, n, i in tech}
 
     if SKIP_TECH:
@@ -232,7 +239,7 @@ def main():
 
     seen = set()
     all_codes = []
-    for c in opt_codes + [x[0] for x in extra] + cons_codes:
+    for c in opt_codes + [x[0] for x in extra] + st_codes + cons_codes:
         if c not in seen:
             seen.add(c)
             all_codes.append(c)
@@ -283,12 +290,16 @@ def main():
 
     kmap = {c: (k, f) for c, k, f in results}
     ok_opt = sum(1 for c in opt_codes if kmap.get(c, (None, 0))[0])
+    ok_st = sum(1 for c in st_codes if kmap.get(c, (None, 0))[0])
     ok_cons = sum(1 for c in cons_codes if kmap.get(c, (None, 0))[0])
     print("kline ok", sum(1 for _, k, _ in results if k), "/", len(all_codes),
-          "| 光通信", ok_opt, "/", len(opt_codes), "| 消费", ok_cons, "/", len(cons_codes),
+          "| 光通信", ok_opt, "/", len(opt_codes), "| 存储", ok_st, "/", len(st_codes),
+          "| 消费", ok_cons, "/", len(cons_codes),
           "| akshare", n_ak)
     if ok_opt < len(opt_codes) * 0.9:
         raise SystemExit(f"光通信K线成功率过低({ok_opt}/{len(opt_codes)})，保留原有数据不覆盖，请稍后重试")
+    if st_codes and ok_st < len(st_codes) * 0.85:
+        raise SystemExit(f"存储K线成功率过低({ok_st}/{len(st_codes)})，保留原有数据不覆盖，请稍后重试")
     if cons_codes and ok_cons < len(cons_codes) * 0.7:
         print(f"WARN 消费K线成功率偏低({ok_cons}/{len(cons_codes)})，榜单将出现缺项")
 
@@ -368,6 +379,8 @@ def main():
 
     for code, name, tag, tier in optical:
         build(code, name, tag, "optical", tier)
+    for code, name, tag, tier, grp in storage:
+        build(code, name, tag, "storage", tier, grp=grp)
     for code, name, ind in extra:
         build(code, name, ind, "tech", "tech")
     for code, name, ind2, tier, l1 in cons:
@@ -399,6 +412,8 @@ def main():
         "today": today, "intraday": intraday, "weekday": now.weekday(),
         "n": len(rows),
         "n_optical": sum(1 for r in rows if r["board"] == "optical"),
+        "n_storage": sum(1 for r in rows if r["board"] == "storage"),
+        "n_storage_core": sum(1 for r in rows if r["board"] == "storage" and r["tier"] == "core"),
         "n_tech": sum(1 for r in rows if r["board"] == "tech"),
         "n_cons": sum(1 for r in rows if r["board"] == "cons"),
         "n_cons_core": sum(1 for r in rows if r["board"] == "cons" and r["tier"] == "core"),
@@ -479,7 +494,8 @@ def main():
     with io.open(os.path.join(BASE, "光通信跌幅榜_数据.json"), "w", encoding="utf-8") as f:
         json.dump({"meta": meta, "rows": rows}, f, ensure_ascii=False, separators=(",", ":"))
 
-    print("rows", len(rows), "| 光通信", meta["n_optical"], "科技股", meta["n_tech"],
+    print("rows", len(rows), "| 光通信", meta["n_optical"], "存储", meta["n_storage"],
+          "(核心", meta["n_storage_core"], ") 科技股", meta["n_tech"],
           "消费", meta["n_cons"], "(核心", meta["n_cons_core"], ")",
           "| data_date", data_date, "| intraday", intraday,
           "| diverged", meta["n_diverged"], "| qfq", meta["n_qfq"], "| sina_fb", meta["n_sina_fallback"])

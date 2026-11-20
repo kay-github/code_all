@@ -209,7 +209,7 @@
 
   <header>
     <div class="hgroup">
-      <h1>A股 <span class="accent">科技 · 光通信 · 消费</span> 跌幅榜单</h1>
+      <h1>A股 <span class="accent">科技 · 光通信 · 存储 · 消费</span> 跌幅榜单</h1>
       <div class="sub">
         <span class="stamp"><span class="dot"></span><span id="stampTxt">__STAMP__</span></span>
         <span class="livebadge off" id="liveBadge"><span class="ld"></span><span id="liveTxt">连接行情源…</span>
@@ -269,9 +269,13 @@
   <footer>
     <b>口径说明</b>：__CALIBER__；「近20日／近60日」为对应交易日数前的收盘对比；
     「年初至今」基准为上一年最后一个交易日收盘；「距250日高点」以近 250 个交易日<b>盘中最高价</b>为基准（前复权，与东财/工作台软件口径一致）。<br>
-    <b>四个榜单</b>：「光通信跌幅榜」为自建产业链池（核心 __NOPT__ 只 + 关联延伸 __NX__ 只，后者压暗显示且不计入板块中位数）；
+    <b>五个榜单</b>：「光通信跌幅榜」为自建产业链池（核心 __NOPT__ 只 + 关联延伸 __NX__ 只，后者压暗显示且不计入板块中位数）；
     <b>光纤光缆</b>（含光纤、光缆、光棒）属光模块上游配套，按要求<b>保留展示</b>，并在「细分环节」统一标注「（保留）」，不计入光模块整机口径；
     PCB／连接器／材料／测试设备等仅作关联延伸，压暗显示、不参与板块中位数。<br>
+    <b>存储芯片跌幅榜</b>：核心 __NSTC__ 只（DRAM 原厂、NOR/EEPROM、存储主控/接口、存储模组/SSD、存储封测），
+    关联延伸 __NSTX__ 只（通用封测、封装基板/材料、存储设备/材料、系统与分销），合计 __NST__ 只；延伸层压暗显示、不参与板块中位数。
+    成分以东财「存储芯片」概念 144 只为底稿，逐只核对主营构成后剔除纯 PCB／EDA／泛模拟／消费电子等非存储标的，
+    并补入 7 只产业链关键设备/材料/基板标的；细分概念按「DRAM原厂／NOR/EEPROM／主控接口／模组SSD／存储封测／系统分销／封装基板／封装材料／设备／材料」标注。<br>
     「所有科技股跌幅榜」为按行业口径构建的科技股池（同花顺电子／通信／计算机十个二级行业 + 新浪电子器件／电子信息，市值 30 亿以上，剔除 ST、退市与光伏锂电），共 __N__ 只，其中带紫色「光」标记者为光通信池成员。<br>
     <b>消费跌幅榜</b>：申万一级口径，核心 __NCONSC__ 只（食品饮料／家用电器／纺织服饰／轻工制造／商贸零售／社会服务／美容护理／农林牧渔 八个必需＋可选消费行业，市值 50 亿以上，剔除 ST 与退市），
     另含关联延伸 __NCONSX__ 只（汽车、医药生物，按市值截取前 80／100，压暗显示且不计入消费中位数），合计 __NCONS__ 只。
@@ -429,7 +433,7 @@ function afterLive(ok){
   if (ok){
     const votes = {};
     let got = 0;
-    const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
+    const all = [...BOARDS.optical.rows, ...BOARDS.storage.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
     all.forEach(r => {
       const v = window["v_" + sym(r.c)];
       if (!v) return;
@@ -498,7 +502,7 @@ function recalcAll(){
   let jy = -1;
   for (let i = 0; i < CAL.length; i++) if (CAL[i] < yrCut) jy = i;
 
-  const all = [...BOARDS.optical.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
+  const all = [...BOARDS.optical.rows, ...BOARDS.storage.rows, ...BOARDS.tech.rows, ...BOARDS.cons.rows];
   // 同一代码会同时出现在多个 Table。旧实现用「代码→最后一行」当权威源同步，
   // 而重算只对首次出现的行执行 → 未重算的重复行（保留快照价）反而覆盖了已算好的行，
   // 导致实时价拿到了却显示不出来（光通信池全部命中，股价停在盘中快照）。
@@ -574,8 +578,8 @@ function computeRating(){
 /* ---------------- 派生统计 ---------------- */
 function baseRows(bk){
   const rows = BOARDS[bk].rows;
-  // 光通信/消费口径剔除关联延伸（压暗行），只对核心成员做中位数与分布统计
-  return (bk === "optical" || bk === "cons") ? rows.filter(r => !r.x) : rows;
+  // 光通信/存储/消费口径剔除关联延伸（压暗行），只对核心成员做中位数与分布统计
+  return (bk === "optical" || bk === "storage" || bk === "cons") ? rows.filter(r => !r.x) : rows;
 }
 function computeKpi(bk){
   const core = baseRows(bk).filter(r => SEQ[r.c]);
@@ -602,12 +606,13 @@ function computeGs(bk){
 
 /* ---------------- Table 切换 ---------------- */
 function renderTabs(){
-  document.getElementById("tabs").innerHTML = ["tech","optical","cons","rating"].map(k => {
+  document.getElementById("tabs").innerHTML = ["tech","optical","storage","cons","rating"].map(k => {
     const b = BOARDS[k];
     return `<div class="tab${k===BOARD?" on":""}" data-b="${k}">${b.label}<span class="k">${b.rows.length}</span></div>`;
   }).join("");
   document.getElementById("scopeTxt").textContent =
     BOARD === "optical" ? "光模块 · 光器件 · 光芯片 · 光纤光缆 · 连接器线缆 · 设备接入"
+    : BOARD === "storage" ? "DRAM · NOR/EEPROM · 主控接口 · 模组SSD · 封测 · 设备材料 · 系统分销"
     : BOARD === "cons" ? "食品饮料 · 家电 · 纺服 · 轻工 · 商贸零售 · 社服 · 美护 · 农业（+汽车/医药延伸）"
     : BOARD === "rating" ? "技术面强弱评级：抗跌 35% · 回撤 25% · 相对强度 20% · 趋势 20%"
     : "半导体 · 元件连接器 · 光学光电子 · 消费电子 · 通信/计算机 · 软件IT";
@@ -627,8 +632,9 @@ document.getElementById("tabs").addEventListener("click", e => {
 function renderKpi(){
   if (BOARD === "rating") return renderKpiR();
   const K = computeKpi(BOARD);
-  const isOpt = BOARD === "optical", isCons = BOARD === "cons";
+  const isOpt = BOARD === "optical", isCons = BOARD === "cons", isSt = BOARD === "storage";
   const sub = isOpt ? `核心光通信 ${K.ncore} 只 · 延伸 ${K.n - K.ncore} 只`
+            : isSt ? `存储核心 ${K.ncore} 只 · 延伸 ${K.n - K.ncore} 只`
             : isCons ? `消费核心 ${K.ncore} 只 · 延伸（汽车/医药）${K.n - K.ncore} 只`
             : `科技股池 ${K.n} 只（含光通信）`;
   document.getElementById("kpis").innerHTML = [
@@ -666,7 +672,7 @@ const thr = document.getElementById("thr");
 function headLabel(k){
   if (k === "d1") return D1_LABEL;
   if (k !== "t") return null;
-  return (BOARD === "tech" || BOARD === "cons") ? "行业" : null;
+  return (BOARD === "tech" || BOARD === "cons") ? "行业" : BOARD === "storage" ? "概念" : null;
 }
 function renderHead(){
   thr.innerHTML = cols().map(c => `<th class="${c.cls||""}${c.k===sortKey?" on":""}" data-k="${c.k}"
@@ -727,13 +733,14 @@ function render(){
 function renderGs(){
   const GS = computeGs(BOARD);
   const gmax = Math.max(...GS.map(g => Math.abs(g.d20 || 0)), 1);
-  const isOpt = BOARD === "optical", isR = BOARD === "rating";
-  document.getElementById("gTitle").textContent = isR ? "评级分布" : isOpt ? "细分环节汇总" : "行业汇总";
+  const isOpt = BOARD === "optical", isR = BOARD === "rating", isSt = BOARD === "storage";
+  document.getElementById("gTitle").textContent = isR ? "评级分布" : isOpt ? "细分环节汇总"
+    : isSt ? "细分概念汇总" : "行业汇总";
   document.getElementById("gHint").textContent = isR
     ? "各评级组的跌幅与回撤中位数；条形长度按近 20 日跌幅归一"
-    : (isOpt ? "等权口径，各环节成分股中位数；条形长度按近 20 日跌幅归一"
+    : (isOpt || isSt ? "等权口径，各细分概念成分股中位数；条形长度按近 20 日跌幅归一"
              : "等权口径，各行业成分股中位数；条形长度按近 20 日跌幅归一");
-  document.getElementById("gHead").textContent = isR ? "评级" : isOpt ? "环节" : "行业";
+  document.getElementById("gHead").textContent = isR ? "评级" : isOpt ? "环节" : isSt ? "概念" : "行业";
   document.getElementById("gtb").innerHTML = GS.map(g => {
     const w = Math.abs(g.d20 || 0) / gmax * 84;
     const label = isR ? `<span class="gr g${g.g}">${g.g}</span>` : g.g;
@@ -753,6 +760,7 @@ function renderGs(){
 function renderIns(){
   if (BOARD === "rating") return renderInsR();
   if (BOARD === "cons") return renderInsC();
+  if (BOARD === "storage") return renderInsS();
   const K = computeKpi(BOARD);
   const core = baseRows(BOARD).filter(r => SEQ[r.c]);
   const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
@@ -782,6 +790,45 @@ function renderIns(){
      p:`近20日最弱环节为 <b>${worstG?worstG.g:"—"}</b> ${worstG?fmt(worstG.d20):""}，最强为 <b>${bestG?bestG.g:"—"}</b> ${bestG?fmt(bestG.d20):""}，
         两端相差约 <b>${worstG&&bestG?Math.abs(bestG.d20-worstG.d20).toFixed(0):"—"} 个百分点</b>；
         杀跌强度与估值弹性正相关，而非与业绩确定性相关。`},
+    {h:"个股分化极端",
+     p:`近20日最惨 <b>${w20?w20.n:"—"}</b> ${w20?fmt(w20.d20):""}，最抗跌 <b>${b20?b20.n:"—"}</b> 仅 ${b20?fmt(b20.d20):""}，
+        首尾相差约 <b>${w20&&b20?Math.abs(b20.d20-w20.d20).toFixed(0):"—"} 个百分点</b>。
+        年初至今中位 ${fmt(K.ytd_med)}，仍有 <b>${K.ytd_up}</b> 只维持正收益（${topYtd.map(x=>x.n+" "+fmt(x.ytd)).join("、")}）。`},
+    {h:"技术面与相对强弱",
+     p:`${K.dd_50} 只距 250 日高点回撤超 50%，中位回撤 <span class="hl">${fmt(K.dd_med)}</span>；${K.nl} 只创 60 日新低。
+        ${relTxt}`},
+  ].map((o, i) => `<div class="box"><h3><span class="idx">${i+1}</span>${o.h}</h3><p>${o.p}</p></div>`).join("");
+}
+
+/* ---------------- 存储芯片洞察 ---------------- */
+function renderInsS(){
+  const K = computeKpi("storage");
+  const core = baseRows("storage").filter(r => SEQ[r.c]);
+  const w20 = core.filter(r => r.d20 != null).sort((a,b)=>a.d20-b.d20)[0];
+  const b20 = core.filter(r => r.d20 != null).sort((a,b)=>b.d20-a.d20)[0];
+  const topYtd = core.filter(r => r.ytd != null).sort((a,b)=>b.ytd-a.ytd).slice(0,3);
+  const breadth = K.d1_down >= K.ncore * 0.75
+    ? "属无差别抛售下的普跌，存储原厂与模组同步走弱"
+    : (K.d1_down <= K.ncore * 0.35 ? "多数标的翻红，杀跌动能明显衰减，但反弹尚未形成合力"
+        : "涨跌分化，资金在原厂、模组与设备材料之间切换");
+  const gs = computeGs("storage").filter(g => g.d20 != null);
+  const worstG = gs.slice().sort((a,b)=>a.d20-b.d20)[0];
+  const bestG = gs.slice().sort((a,b)=>b.d20-a.d20)[0];
+  const kTech = computeKpi("tech");
+  const rel = (K.d20_med != null && kTech.d20_med != null) ? (K.d20_med - kTech.d20_med) : null;
+  const relTxt = rel == null ? "" :
+    (rel < -2 ? `近20日存储核心中位 <b>${fmt(K.d20_med)}</b>，落后科技股整体 <b>${rel.toFixed(1)}pp</b>，是本轮杀跌的重灾区。`
+              : rel > 2 ? `近20日存储核心中位 <b>${fmt(K.d20_med)}</b>，跑赢科技股整体 <b>+${rel.toFixed(1)}pp</b>，资金并未集中撤离存储。`
+              : `近20日存储核心中位 <b>${fmt(K.d20_med)}</b>，与科技股整体基本同步（差 ${rel.toFixed(1)}pp）。`);
+
+  document.getElementById("ins").innerHTML = [
+    {h:"跌幅结构：日跌 ≠ 趋势",
+     p:`${D1_LABEL}中位 <span class="hl">${fmt(K.d1_med)}</span>，${K.d1_down}/${K.ncore} 下跌、${K.d1_5} 只跌超 5%；
+        近20日中位 <span class="hl">${fmt(K.d20_med)}</span>（${K.d20_30} 只跌超 30%），${breadth}。`},
+    {h:"细分概念分化",
+     p:`近20日最弱概念为 <b>${worstG?worstG.g:"—"}</b> ${worstG?fmt(worstG.d20):""}，最强为 <b>${bestG?bestG.g:"—"}</b> ${bestG?fmt(bestG.d20):""}，
+        两端相差约 <b>${worstG&&bestG?Math.abs(bestG.d20-worstG.d20).toFixed(0):"—"} 个百分点</b>；
+        原厂/模组的估值弹性通常高于设备材料，跌幅差异并不等同于基本面差异。`},
     {h:"个股分化极端",
      p:`近20日最惨 <b>${w20?w20.n:"—"}</b> ${w20?fmt(w20.d20):""}，最抗跌 <b>${b20?b20.n:"—"}</b> 仅 ${b20?fmt(b20.d20):""}，
         首尾相差约 <b>${w20&&b20?Math.abs(b20.d20-w20.d20).toFixed(0):"—"} 个百分点</b>。

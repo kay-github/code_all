@@ -47,6 +47,10 @@ TGORDER = ["光通信", "半导体", "元件/连接器", "光学光电子", "消
 CONS_GORDER = ["食品饮料", "家用电器", "纺织服饰", "轻工制造", "商贸零售",
                "社会服务", "美容护理", "农林牧渔", "汽车", "医药生物"]
 
+# 存储芯片 Tab 细分概念顺序
+ST_GORDER = ["DRAM原厂", "NOR/EEPROM", "主控/接口", "模组/SSD", "存储封测",
+             "系统/分销", "封装基板", "封装材料", "设备", "材料"]
+
 
 def num(v):
     return None if v is None else v
@@ -86,6 +90,17 @@ def main():
             opt_core.append(mk(r, r["tag"], TAGMAP.get(r["tag"], "设备/接入"), False))
         else:
             opt_ext.append(mk(r, r["tag"], "关联延伸", True))
+
+    # 存储芯片：核心/关联延伸；细分概念直接取池内 g（抓数端已写入 grp）
+    st_core, st_ext = [], []
+    for r in rows:
+        if r["board"] != "storage" or not r.get("last"):
+            continue
+        item = mk(r, r["tag"], r.get("grp") or "其他", r["tier"] == "ext")
+        (st_ext if r["tier"] == "ext" else st_core).append(item)
+    st_order = {g: i for i, g in enumerate(ST_GORDER)}
+    st_core.sort(key=lambda x: st_order.get(x["g"], 99))
+    st_ext.sort(key=lambda x: st_order.get(x["g"], 99))
 
     tech_rows, opt_codes = [], {r["code"] for r in rows if r["board"] == "optical"}
     opt_core_codes = {r["code"] for r in rows if r["board"] == "optical" and r["tier"] == "core"}
@@ -165,6 +180,7 @@ def main():
                  "intraday": bool(meta.get("intraday")), "cal_last": meta.get("cal_last"),
                  "pool_version": meta.get("pool_version"),
                  "n_opt": len(opt_core) + len(opt_ext), "n_tech": len(tech_all),
+                 "n_storage": len(st_core) + len(st_ext), "n_storage_core": len(st_core),
                  "n_cons": len(cons_core) + len(cons_ext), "n_cons_core": len(cons_core),
                  "n_rating": len(rating_rows)},
         "cal": cal,
@@ -175,6 +191,9 @@ def main():
             "optical": {"rows": opt_core + opt_ext, "gorder": GORDER,
                         "label": "光通信跌幅榜",
                         "ncore": len(opt_core), "next": len(opt_ext)},
+            "storage": {"rows": st_core + st_ext, "gorder": ST_GORDER,
+                        "label": "存储芯片跌幅榜",
+                        "ncore": len(st_core), "next": len(st_ext)},
             "cons": {"rows": cons_core + cons_ext, "gorder": CONS_GORDER,
                      "label": "消费跌幅榜",
                      "ncore": len(cons_core), "next": len(cons_ext)},
@@ -186,7 +205,7 @@ def main():
 
     hhmm = meta["snapshot"][11:16]
     intraday = bool(meta.get("intraday"))
-    title = f"A股 科技 · 光通信 · 消费 · 跌幅榜单（{meta['data_date']} {MODE(meta)}）"
+    title = f"A股 科技 · 光通信 · 存储 · 消费 · 跌幅榜单（{meta['data_date']} {MODE(meta)}）"
     stamp = (f"数据日 {meta['data_date']} {'盘中' if intraday else '收盘'} {hhmm}" if intraday
              else f"数据日 {meta['data_date']} 收盘")
     if intraday:
@@ -226,6 +245,9 @@ def main():
                 .replace("__NC__", str(len(opt_core) + len(opt_ext)))
                 .replace("__NOPT__", str(len(opt_core)))
                 .replace("__NX__", str(len(opt_ext)))
+                .replace("__NST__", str(len(st_core) + len(st_ext)))
+                .replace("__NSTC__", str(len(st_core)))
+                .replace("__NSTX__", str(len(st_ext)))
                 .replace("__NCONS__", str(len(cons_core) + len(cons_ext)))
                 .replace("__NCONSC__", str(len(cons_core)))
                 .replace("__NCONSX__", str(len(cons_ext))))
@@ -237,6 +259,7 @@ def main():
     print("html ->", os.path.basename(out), "+ 最新.html |",
           len(payload["boards"]["tech"]["rows"]), "tech /",
           len(payload["boards"]["optical"]["rows"]), "optical /",
+          len(payload["boards"]["storage"]["rows"]), "storage /",
           len(payload["boards"]["cons"]["rows"]), "cons |",
           meta["data_date"], "| %.2f MB" % (os.path.getsize(out) / 1048576))
 
