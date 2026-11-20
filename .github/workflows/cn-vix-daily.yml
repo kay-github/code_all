@@ -35,4 +35,10 @@ jobs:
             exit 0
           fi
           git commit -m "cnvix: update $(date -u +%Y-%m-%d)"
-          git push
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1

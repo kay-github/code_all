@@ -120,7 +120,9 @@ def vix_for_expiry(legs, t_years, r=RISK_FREE):
     strikes = sorted(k for k, v in legs.items() if "C" in v and "P" in v)
     if len(strikes) < 6 or t_years <= 0:
         return None
-    k_star = min(strikes, key=lambda k: abs(legs[k]["C"] - legs[k]["P"]))
+    # 平值候选必须两侧都有实际价格（>0.5 点），否则深虚合约同报 0.2 会让 |C-P|=0 被误选
+    cands = [k for k in strikes if min(legs[k]["C"], legs[k]["P"]) > 0.5] or strikes
+    k_star = min(cands, key=lambda k: abs(legs[k]["C"] - legs[k]["P"]))
     fwd = k_star + math.exp(r * t_years) * (legs[k_star]["C"] - legs[k_star]["P"])
     below = [k for k in strikes if k <= fwd]
     if not below:
@@ -321,7 +323,7 @@ def build_json(rows, ref):
                 "price": "中金所日行情「今结算」，缺失退回「今收盘」",
                 "roll": "近月/次近月取到期日距当日 ≥ 7 自然日的前两个合约",
                 "risk_free": "常数 2.0%",
-                "strike": "仅用虚值期权，K0 取认购/认沽均值",
+                "strike": "仅用虚值期权积分，K0 取不高于远期价的最大行权价",
             },
             "sources": {"option": "中国金融期货交易所 每日日行情 CSV（IO/HO/MO）",
                         "reference": "期权论坛 QVIX（akshare 接口，本地刷新）"},
@@ -363,7 +365,7 @@ def main():
     added = fetch_range(rows, start, end)
     new_days = len(set(rows) - before)
     log("新增/覆盖 %d 个交易日，其中新增 %d 天" % (added, new_days))
-    if new_days == 0 and os.path.exists(HIST):
+    if new_days == 0 and os.path.exists(HIST) and not args.rebuild:
         log("无新数据，跳过写入")
         return
     save_history(rows)
