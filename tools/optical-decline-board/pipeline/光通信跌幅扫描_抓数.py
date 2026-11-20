@@ -40,6 +40,7 @@ POOL = [
 ]
 
 CAL_LEN = 300        # 内嵌交易日序列长度（覆盖 250 日回撤 + YTD 基准）
+POOL_VER = {"v": "2026-11-20"}   # 实际取值来自 板块池.json 的 version
 
 
 def sym(code: str) -> str:
@@ -57,6 +58,7 @@ def load_pool():
     p = os.path.join(BASE, "板块池.json")
     try:
         d = json.load(io.open(p, encoding="utf-8"))
+        POOL_VER["v"] = str(d.get("version") or POOL_VER["v"])
         core = [(x["code"], x["name"], x["tag"]) for x in d["optical"]["core"]]
         ext = [(x["code"], x["name"], x["tag"]) for x in d["optical"]["ext"]]
         tech = [(x["code"], x["name"], x["ind"]) for x in d["tech"]]
@@ -405,7 +407,7 @@ def main():
         "n_sina_fallback": sum(1 for r in rows if r.get("qfq") is False),
         "stale": sorted({r["last_date"] for r in rows if r.get("last_date") and r["last_date"] < data_date}),
         "source": "腾讯财经 实时快照 + 前复权日线（限流时回退 akshare / 新浪不复权日线）",
-        "pool_version": "2026-11-13",
+        "pool_version": POOL_VER["v"],
     }
 
     # ---------- 新浪交叉验证 ----------
