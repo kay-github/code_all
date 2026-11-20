@@ -2,7 +2,7 @@
  "version": "v2-shadow-2026-11",
  "mode": "shadow",
  "push_policy": "legacy_only",
- "generated_at": "2026-11-21 00:04",
+ "generated_at": "2026-11-21 00:56",
  "note": "V2 只计算、展示、留痕；PushPlus 仍由旧规则触发。",
  "sectors": [
   {

@@ -2,7 +2,7 @@
  "version": "escape-2026-11",
  "mode": "live",
  "push_policy": "state_change",
- "generated_at": "2026-11-21 00:04",
+ "generated_at": "2026-11-21 00:56",
  "note": "逃命顶是独立的阶段反弹状态机；不替换旧档位，也不改变 V2 影子。",
  "reference": {
   "id": "399006",
