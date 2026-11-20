@@ -32,17 +32,18 @@ jobs:
       - name: Install deps
         run: pip install --quiet requests pandas pyarrow numpy
 
-      - name: Build enabled sectors
+      - name: Build all sectors (escape track includes disabled optical)
         run: |
-          python apps/top-radar/engine/update.py --sector enabled
+          python apps/top-radar/engine/update.py --sector all
           python apps/top-radar/engine/push.py
 
       - name: Commit data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/top-radar/data/summary.json apps/top-radar/data/sectors apps/top-radar/data/v2_shadow.json
+          git add apps/top-radar/data/summary.json apps/top-radar/data/sectors apps/top-radar/data/v2_shadow.json apps/top-radar/data/escape_shadow.json
           if [ -f apps/top-radar/data/push_state.json ]; then git add apps/top-radar/data/push_state.json; fi
+          if [ -f apps/top-radar/data/escape_push_state.json ]; then git add apps/top-radar/data/escape_push_state.json; fi
           if git diff --cached --quiet; then
             echo "no changes"
           else

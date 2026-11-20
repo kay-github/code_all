@@ -10,11 +10,12 @@ import pandas as pd
 import requests
 
 from config import (
-    CONFIG_API, DATA, POOLS, REGISTRY, SECTORS, SITE,
+    BENCH_SYMBOL, CONFIG_API, DATA, POOLS, REGISTRY, SECTORS, SITE,
     TIER_ACTION, TIER_NAME, V2_TIER_ACTION, V2_VERSION,
 )
+from escape import analyze, STATE_NAME
 from features import build_features
-from fetch import ensure_bars, today_str
+from fetch import ensure_bars, load_bars, today_str
 from score import score
 
 
@@ -260,6 +261,7 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
     }
 
     v2_obj = _v2_payload(latest)
+    escape_obj = analyze(f)
 
     meta = {
         "id": sector["id"],
@@ -284,6 +286,7 @@ def build_sector_json(sector, pool, f, asof=None, stats=None):
         "latest": latest_obj,
         "gate": gate,
         "v2": v2_obj,
+        "escape": escape_obj,
         "history": history,
         "signals": signals,
         "v2_signals": v2_signals,
@@ -403,6 +406,129 @@ def write_v2_shadow(summary_sectors, built):
     print(f"v2 shadow: {len(entries)} sectors, {len(payload['events'])} events")
 
 
+def build_reference():
+    """ChiNext only as context; it never drives a sector action."""
+    bench = load_bars(BENCH_SYMBOL)
+    if bench is None or len(bench) < 140:
+        return None
+    b = bench.copy()
+    b["idx"] = pd.to_numeric(b["close"], errors="coerce")
+    r = analyze(b)
+    latest = dict(r.get("latest") or {})
+    latest["action"] = "仅作创业板参照，不单独触发行业动作"
+    latest["state_name"] = latest.get("state_name") or "—"
+    return {
+        "id": "399006",
+        "name": "创业板指",
+        "as_of": latest.get("as_of"),
+        "state": latest.get("state"),
+        "state_name": latest.get("state_name"),
+        "action": latest.get("action"),
+        "trigger": latest.get("trigger"),
+        "index": latest.get("index"),
+        "crash_dd": latest.get("crash_dd"),
+        "rebound_gain": latest.get("rebound_gain"),
+        "retracement": latest.get("retracement"),
+        "high_drawdown": latest.get("high_drawdown"),
+        "color": latest.get("color"),
+        "latest": latest,
+    }
+
+
+def write_escape_shadow(summary_sectors, built, reference=None):
+    """Persist the escape-top state and its transitions.
+
+    This file is the audit trail and the source of PushPlus transitions. It is
+    independent of the legacy tier and of the V2 shadow.
+    """
+    path = DATA / "escape_shadow.json"
+    old = {}
+    if path.exists():
+        try:
+            old = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            old = {}
+    old_by = {s.get("id"): s for s in old.get("sectors", [])}
+    events = list(old.get("events", []))
+    event_keys = {(e.get("sector"), e.get("d"), e.get("to")) for e in events}
+
+    entries = []
+    for s in summary_sectors:
+        if s.get("status") != "ok":
+            continue
+        sid = s["id"]
+        obj = built.get(sid)
+        if obj is None:
+            p = SECTORS / f"{sid}.json"
+            if not p.exists():
+                continue
+            try:
+                obj = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+        esc = obj.get("escape") or {}
+        latest = esc.get("latest")
+        if not latest:
+            continue
+        entry = {
+            "id": sid,
+            "name": s.get("name") or sid,
+            "as_of": latest.get("as_of") or s.get("as_of"),
+            "state": latest.get("state"),
+            "state_name": latest.get("state_name") or STATE_NAME.get(latest.get("state"), latest.get("state")),
+            "action": latest.get("action"),
+            "trigger": latest.get("trigger"),
+            "index": latest.get("index"),
+            "crash_dd": latest.get("crash_dd"),
+            "rebound_gain": latest.get("rebound_gain"),
+            "retracement": latest.get("retracement"),
+            "high_drawdown": latest.get("high_drawdown"),
+            "color": latest.get("color"),
+            "warn_date": latest.get("warn_date"),
+            "confirm_date": latest.get("confirm_date"),
+            "stale": s.get("stale", False),
+            "coverage": s.get("coverage"),
+            "latest": latest,
+        }
+        entries.append(entry)
+
+        prev = old_by.get(sid)
+        if not prev:
+            key = (sid, entry["as_of"], entry["state"])
+            if key not in event_keys:
+                events.append({
+                    "type": "init", "sector": sid, "name": entry["name"], "d": entry["as_of"],
+                    "from": None, "from_name": None, "to": entry["state"], "to_name": entry["state_name"],
+                    "index": entry["index"], "trigger": entry["trigger"],
+                })
+                event_keys.add(key)
+        elif prev.get("state") != entry["state"] and (
+            not prev.get("as_of") or entry["as_of"] >= prev["as_of"]
+        ):
+            key = (sid, entry["as_of"], entry["state"])
+            if key not in event_keys:
+                events.append({
+                    "type": "state_change", "sector": sid, "name": entry["name"], "d": entry["as_of"],
+                    "from": prev.get("state"), "from_name": prev.get("state_name"),
+                    "to": entry["state"], "to_name": entry["state_name"],
+                    "index": entry["index"], "trigger": entry["trigger"],
+                })
+                event_keys.add(key)
+
+    payload = {
+        "version": "escape-2026-11",
+        "mode": "live",
+        "push_policy": "state_change",
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "note": "逃命顶是独立的阶段反弹状态机；不替换旧档位，也不改变 V2 影子。",
+        "reference": reference,
+        "sectors": entries,
+        "events": events[-200:],
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=_json_default), encoding="utf-8")
+    print(f"escape shadow: {len(entries)} sectors, {len(payload['events'])} events")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sector", default="enabled", help="enabled | all | <id>")
@@ -466,6 +592,8 @@ def main():
                 continue
         latest = obj["latest"]
         v2 = obj.get("v2") or {}
+        esc = obj.get("escape") or {}
+        el = esc.get("latest") or {}
         summary_sectors.append({
             "id": sid,
             "name": sector["name"],
@@ -488,16 +616,26 @@ def main():
             "v2_E": v2.get("E"),
             "v2_vol20": v2.get("vol20"),
             "v2_updated_at": obj["meta"]["generated_at"] if v2 else None,
+            "escape_state": el.get("state"),
+            "escape_state_name": el.get("state_name"),
+            "escape_action": el.get("action"),
+            "escape_trigger": el.get("trigger"),
+            "escape_color": el.get("color"),
+            "escape_warn_date": el.get("warn_date"),
+            "escape_confirm_date": el.get("confirm_date"),
             "updated_at": obj["meta"]["generated_at"],
         })
+    reference = build_reference()
     summary = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": source,
+        "escape_reference": reference,
         "sectors": summary_sectors,
     }
     sp.write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     print("summary:", json.dumps(summary_sectors, ensure_ascii=False))
     write_v2_shadow(summary_sectors, built)
+    write_escape_shadow(summary_sectors, built, reference)
 
 
 if __name__ == "__main__":

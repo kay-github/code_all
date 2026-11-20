@@ -117,6 +117,27 @@ tr:last-child td{border-bottom:0}
 .dual-note{font-size:12px;line-height:1.75;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:9px 13px;margin-top:10px}
 .dual-note b{font-weight:600}
 .dual .v2-wait{font-size:12px;line-height:1.7;color:var(--muted);margin-top:8px}
+.escape{border:1px solid var(--line);background:var(--paper2)}
+.escape-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 18px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.escape-state{display:flex;align-items:center;gap:12px;min-width:0}
+.escape-state .badge{display:inline-block;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;white-space:nowrap}
+.escape-state b{font-family:var(--serif);font-size:24px;line-height:1.3}
+.escape-state .sub{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.escape-act{font-size:13px;font-weight:600;line-height:1.6;text-align:right;max-width:52%;min-width:220px}
+.escape-trigger{font-size:12px;line-height:1.75;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:9px 13px;margin:0 18px 14px}
+.escape-facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.escape-facts .f{background:var(--paper2);padding:11px 12px 10px;min-width:0}
+.escape-facts .lab{font-size:10.5px;color:var(--muted)}
+.escape-facts .val{font-family:var(--mono);font-size:17px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.escape-levels{padding:12px 18px 14px;display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+.escape-levels h4{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);font-weight:500;margin:0 0 7px}
+.level-row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #E3DDCF;padding:6px 0;font-size:12px;color:#3A362C}
+.level-row:first-of-type{border-top:0}
+.level-row b{font-family:var(--mono);font-weight:500;color:var(--ink);white-space:nowrap}
+.escape-events{font-size:11.5px;line-height:1.7;color:var(--muted)}
+.escape-events span{display:inline-block;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);padding:2px 6px;margin:0 4px 4px 0;color:#3A362C}
+.escape-ref{font-family:var(--mono);font-size:10.5px;color:var(--muted);padding:0 18px 13px}
+.escape-empty{padding:18px;font-size:12px;color:var(--muted)}
 .push-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .push-card{border:1px solid var(--line);background:var(--paper2);padding:14px 16px;min-width:0}
 .push-card h3{font-family:var(--serif);font-size:17px;margin:0 0 8px;font-weight:700}
@@ -138,6 +159,9 @@ tr:last-child td{border-bottom:0}
   .gate{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dual{grid-template-columns:1fr}
   .dual .col+.col{border-left:0;border-top:1px solid var(--line)}
+  .escape-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .escape-levels{grid-template-columns:1fr}
+  .escape-act{text-align:left;max-width:none;min-width:0}
   .push-grid{grid-template-columns:1fr}
   .main{padding:28px 18px 44px}
   .sec-head{flex-direction:column;align-items:flex-start;gap:4px}
@@ -186,6 +210,7 @@ tr:last-child td{border-bottom:0}
       <p class="hero-action" id="heroAction">正在读取数据。</p>
       <div class="hero-meta"><span>指数 <b id="metaIdx">—</b></span><span>距一年高 <b id="metaDD">—</b></span><span>有效成分 <b id="metaN">—</b></span></div>
       <div class="hero-v2" id="heroV2">V2 影子：—</div>
+      <div class="hero-v2" id="heroEscape">逃命顶：—</div>
     </div>
     <div class="hero-read">
       <div class="big" id="bigR">—</div>
@@ -210,6 +235,11 @@ tr:last-child td{border-bottom:0}
     <div class="sec-head"><h2>双轨对照</h2><div class="note" id="v2Updated">V2 影子 · 只展示和留痕，不参与推送</div></div>
     <div class="dual" id="dual"></div>
     <div class="dual-note" id="dualNote">现行推送仍按旧规则。V2 是研究验证版，先进入计算、仪表盘和影子日志；两者不一致时，以现行推送为准。</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>逃命顶 · 阶段反弹</h2><div class="note" id="escapeUpdated">独立状态机 · 只跟踪大跌后的反弹顶 · 微信按状态变化推送</div></div>
+    <div class="escape" id="escape"><div class="escape-empty">正在读取逃命顶状态。</div></div>
   </section>
 
   <section>
@@ -325,7 +355,7 @@ function renderAll(){
   $('#bigDD').textContent = fmtPct(l.dd250);
   $('#bigDate').textContent = l.date;
   $('#actionNote').textContent = `当前：${l.tier_name} · ${l.action}`;
-  renderMetrics(l); renderDual(d,l); renderTier(l); renderChart(d); renderSignals(d); renderGate(d);
+  renderMetrics(l); renderDual(d,l); renderEscape(d); renderTier(l); renderChart(d); renderSignals(d); renderGate(d);
   $('#updated').textContent = `更新 ${state.summary.updated_at||'—'} · 业务日 ${l.date}`;
   $('#dataRange').textContent = `${d.meta.data_start} → ${d.meta.data_end} · ${d.meta.effective_n}/${d.meta.n_constituents} 只有效`;
 }
@@ -363,6 +393,59 @@ function renderDual(d,l){
   $('#dualNote').innerHTML = v && v.tier !== l.tier
     ? `<b>两轨不一致。</b> 现行推送仍是${l.tier_name}；V2 给出${v.tier_name}，只作为提前观察，不改变本次提醒和仓位动作。`
     : `<b>现行推送仍按旧规则。</b> V2 先进入计算、仪表盘和影子日志；两者一致时也不改变现有推送链路。`;
+}
+
+function renderEscape(d){
+  const e=d.escape, l=e&&e.latest;
+  if(!l){
+    $('#escape').innerHTML='<div class="escape-empty">该板块还没有逃命顶字段；下一轮更新后自动写入。</div>';
+    $('#heroEscape').textContent='逃命顶：等待下一轮生成';
+    $('#escapeUpdated').textContent='独立状态机 · 等待下一轮生成';
+    return;
+  }
+  const color=l.color||'#8A7A55';
+  const ref=(state.summary&&state.summary.escape_reference)||null;
+  const facts=[
+    ['深跌幅度',fmtPct(l.crash_dd),'前高 → 前低'],
+    ['反弹幅度',fmtPct(l.rebound_gain),'自前低'],
+    ['修复比例',fmtPct(l.retracement),'本轮跌幅'],
+    ['自反弹高点',fmtPct(l.high_drawdown),'回撤'],
+    ['成熟度',`${l.maturity_count??0} / 4`,'天数/幅度/乖离/RSI'],
+  ];
+  const left=[
+    ['前高',fmtNum(l.crash_high,3)],
+    ['前低',fmtNum(l.crash_low,3)],
+    ['反弹高点',fmtNum(l.rebound_high,3)],
+    ['当前指数',fmtNum(l.index,3)],
+  ];
+  const right=[
+    ['38.2% 回撤',fmtNum(l.fib_382,3)],
+    ['50% 回撤',fmtNum(l.fib_500,3)],
+    ['61.8% 回撤',fmtNum(l.fib_618,3)],
+    ['MA20 / MA60',`${fmtNum(l.ma20,3)} / ${fmtNum(l.ma60,3)}`],
+    ['MA120',fmtNum(l.ma120,3)],
+  ];
+  const events=(e.events||[]).slice(-5).reverse();
+  const eventHtml=events.length?events.map(x=>`<span>${shortDate(x.d)} · ${x.to_name||x.to}</span>`).join(''):'<span>暂无状态变化</span>';
+  $('#escape').innerHTML=`
+    <div class="escape-head">
+      <div class="escape-state">
+        <span class="badge" style="background:${color}">${l.state_name||l.state}</span>
+        <b>${l.state_name||l.state}</b>
+        <span class="sub">${l.as_of||'—'} · ${l.low_date||'—'} 低点后 ${l.days_since_low??'—'} 日</span>
+      </div>
+      <div class="escape-act">${l.action||'—'}</div>
+    </div>
+    <div class="escape-trigger"><b>触发</b>　${l.trigger||'—'}<br><b>最近阻力</b>　${l.nearest_res||'—'} ${l.res_distance!==null&&l.res_distance!==undefined?'· 距 '+fmtPct(l.res_distance):''}</div>
+    <div class="escape-facts">${facts.map(x=>`<div class="f"><div class="lab">${x[0]}</div><div class="val">${x[1]}</div><div class="lab" style="margin-top:2px">${x[2]}</div></div>`).join('')}</div>
+    <div class="escape-levels">
+      <div><h4>区间刻度</h4>${left.map(x=>`<div class="level-row"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>
+      <div><h4>上方阻力 / 均线</h4>${right.map(x=>`<div class="level-row"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>
+    </div>
+    <div class="escape-events" style="padding:0 18px 10px"><h4 style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);font-weight:500;margin:0 0 6px">最近状态</h4>${eventHtml}</div>
+    <div class="escape-ref">${ref?`创业板参照：${ref.state_name||'—'} · 深跌 ${fmtPct(ref.crash_dd)} · 反弹 ${fmtPct(ref.rebound_gain)}`:'创业板参照：等待生成'}</div>`;
+  $('#heroEscape').innerHTML=`逃命顶：<b>${l.state_name||l.state}</b> · ${l.action||'—'} · 不替代旧档位`;
+  $('#escapeUpdated').textContent=`独立状态机 · ${l.as_of||'—'} · 状态变化推微信`;
 }
 
 function metric(lab,val,sub,cls=''){
