@@ -21,79 +21,34 @@ def card(sector, latest, tier):
     }[tier]
     sector_s = escape(str(sector))
     action_s = escape(str(latest.get("action") or "—"))
-
-    def pct(value):
-        return f"{value * 100:+.1f}%" if value is not None else "—"
-
-    ret250_s = pct(latest.get("ret250"))
-    dd250_s = pct(latest.get("dd250"))
-    rsi_s = latest.get("rsi14") if latest.get("rsi14") is not None else "—"
-    limit_s = latest.get("limit_up") if latest.get("limit_up") is not None else "—"
-    break_s = latest.get("break20_20d") if latest.get("break20_20d") is not None else "—"
-    rebreak_s = latest.get("rebreak20_20d") if latest.get("rebreak20_20d") is not None else "—"
-    c_s = latest.get("C") if latest.get("C") is not None else "—"
-    e_s = latest.get("E") if latest.get("E") is not None else "—"
-    crowd = latest.get("crowd_label") or "拥挤度"
-    crowd_v = latest.get("crowd_value")
-    if latest.get("amt_share") is not None and crowd_v is not None:
-        crowd_s = f"{crowd_v * 100:.1f}%"
-    else:
-        crowd_s = f"{crowd_v:.2f}x" if crowd_v is not None else "—"
-
-    hot_s = "情绪过热" if latest.get("hot") else "情绪未过热"
-    near_s = "仍在一年高附近" if latest.get("near") else "已离开一年高"
-    if tier == 4:
-        next_text = "不接飞刀。等重新站上 MA20、市场广度恢复后再评估；不要用补仓摊低成本。"
-    elif tier == 3:
-        next_text = "若继续破位并进入深红（跌破一年高 8% 且 C≥1），再减 1/3；否则等重新站上 MA20 且广度恢复。"
-    elif tier == 2:
-        next_text = "停止加仓；把止损上移到最近 10 日低点，等 R 和情绪回落再看。"
-    else:
-        next_text = "正常持有，按原有纪律执行；本档位只做观察，不触发减仓。"
-
+    idx = latest.get("idx")
+    idx_s = f"{idx:.3f}" if isinstance(idx, (int, float)) else "—"
+    reason = {
+        4: "红色条件延续 · 跌破一年高 8% · 技术确认",
+        3: "R≥75 · 情绪过热 · 仍在一年高附近 · 技术确认",
+        2: "R≥70 · 情绪过热 · 仍在一年高附近",
+    }.get(tier, "风险指标回到正常区")
     return f"""<div style="margin:0;padding:0;background:#EFE8DB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1C1A17;">
   <div style="max-width:560px;margin:0 auto;background:#F7F2E8;border:1px solid #DED3C1;">
-    <div style="background:#171411;color:#F7F1E6;padding:18px 20px 16px;">
+    <div style="background:#171411;color:#F7F1E6;padding:16px 20px 14px;">
       <div style="font-size:10px;letter-spacing:.18em;color:#A79D8C;">TOP RADAR · 实时信号</div>
-      <div style="margin-top:8px;font-size:22px;line-height:1.3;font-weight:700;">{sector_s}</div>
-      <div style="margin-top:10px;">
+      <div style="margin-top:7px;font-size:21px;line-height:1.3;font-weight:700;">{sector_s}</div>
+      <div style="margin-top:9px;">
         <span style="display:inline-block;background:{color};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;">{TIER_NAME[tier]}</span>
         <span style="font-size:12px;color:#A79D8C;margin-left:8px;">{latest.get('date', '—')}</span>
       </div>
-      <div style="margin-top:16px;font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1;">R {latest.get('R', '—')}<span style="font-size:13px;font-weight:400;color:#A79D8C;"> / 100</span></div>
-      <div style="font-size:12px;color:#A79D8C;margin-top:6px;">指数 {latest.get('idx', '—')} · 越高越像顶</div>
+      <div style="margin-top:14px;font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1;">R {latest.get('R', '—')}<span style="font-size:12px;font-weight:400;color:#A79D8C;"> / 100</span></div>
+      <div style="font-size:12px;color:#A79D8C;margin-top:5px;">指数 {idx_s} · 越高越像顶</div>
     </div>
-    <div style="padding:18px 20px 16px;background:#FFFDF7;">
+    <div style="padding:16px 20px 14px;background:#FFFDF7;">
       <div style="font-size:10px;letter-spacing:.14em;color:#8E8474;">现在该做什么</div>
-      <div style="margin-top:8px;font-size:17px;font-weight:700;line-height:1.55;color:{color};">{action_s}</div>
-      <div style="border-top:1px solid #E8DFCF;margin:16px 0 14px;"></div>
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-size:12px;color:#5E584C;">
-        <tr>
-          <td style="width:50%;padding:0 0 12px 0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">一年涨幅</span><br><b style="font-size:16px;color:#1C1A17;">{ret250_s}</b></td>
-          <td style="width:50%;padding:0 0 12px 0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">距一年高</span><br><b style="font-size:16px;color:#1C1A17;">{dd250_s}</b></td>
-        </tr>
-        <tr>
-          <td style="padding:0 0 12px 0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">RSI(14)</span><br><b style="font-size:15px;color:#1C1A17;">{rsi_s}</b></td>
-          <td style="padding:0 0 12px 0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">涨停家数</span><br><b style="font-size:15px;color:#1C1A17;">{limit_s}</b></td>
-        </tr>
-        <tr>
-          <td style="padding:0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">20 日内破位</span><br><b style="font-size:15px;color:#1C1A17;">{break_s} 天</b></td>
-          <td style="padding:0;vertical-align:top;"><span style="color:#9A907F;font-size:10px;">反抽失败</span><br><b style="font-size:15px;color:#1C1A17;">{rebreak_s} 次</b></td>
-        </tr>
-      </table>
-      <div style="margin-top:14px;font-size:10px;letter-spacing:.14em;color:#8E8474;">触发画像</div>
-      <div style="margin-top:6px;font-size:12px;line-height:1.8;color:#4A4337;">
-        {hot_s} · {near_s} · 确认 C={c_s} · E={e_s}<br>
-        成交拥挤：{crowd} {crowd_s}<br>
-        R 是 252 日滚动分位综合分，单看涨幅不够；破 20 日线只做确认，不做单独预测。
+      <div style="margin-top:7px;font-size:17px;font-weight:700;line-height:1.55;color:{color};">{action_s}</div>
+      <div style="margin-top:14px;padding:10px 12px;background:{bg};border-left:3px solid {color};font-size:12px;line-height:1.7;color:#4A4238;">
+        <b>触发</b>　{reason}
       </div>
-      <div style="margin-top:14px;padding:12px 14px;background:{bg};border-left:3px solid {color};font-size:12px;line-height:1.7;color:#4A4238;">
-        <b>下一步纪律</b><br>{next_text}
-      </div>
-      <a href="{SITE}" style="display:inline-block;margin-top:14px;color:{color};font-weight:700;text-decoration:none;font-size:13px;">打开实时雷达 →</a>
+      <a href="{SITE}" style="display:inline-block;margin-top:12px;color:{color};font-weight:700;text-decoration:none;font-size:13px;">打开实时雷达 →</a>
     </div>
-    <div style="padding:11px 20px 14px;background:#EFE8DB;color:#8A8172;font-size:10px;line-height:1.7;">
-      数据 {latest.get('date', '—')} · {SITE}<br>
+    <div style="padding:10px 20px 13px;background:#EFE8DB;color:#8A8172;font-size:10px;line-height:1.6;">
       只做顶部风险提示，不构成买卖建议；减仓比例按个人风险承受调整。
     </div>
   </div>
