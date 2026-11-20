@@ -183,7 +183,7 @@ details .note{margin-top:10px}
       <summary>数据与复算</summary>
       <div class="note">
         期权链：中国金融期货交易所每日日行情 CSV（IO/HO/MO 全部合约）。参照序列：期权论坛 QVIX（akshare 接口）。<br>
-        全历史序列：<a href="data/history.csv" download>history.csv</a>（日期 / 三品种点位 / 近远月 IV 与到期天数）。<br>
+        全历史序列：<a href="/tools/cn-vix/data/history.csv" download>history.csv</a>（日期 / 三品种点位 / 近远月 IV 与到期天数）。<br>
         更新：工作日收盘后由 GitHub Actions 执行，页面数据文件带构建时间戳。
       </div>
     </details>
@@ -411,7 +411,7 @@ details .note{margin-top:10px}
     });
   }
 
-  fetch("data/cnvix.json",{cache:"no-store"}).then(r=>r.json()).then(boot).catch(err=>{
+  fetch("/tools/cn-vix/data/cnvix.json",{cache:"no-store"}).then(r=>r.json()).then(boot).catch(err=>{
     document.getElementById("io-num").textContent="—";
     document.getElementById("io-sub").textContent="数据加载失败："+err;
   });
