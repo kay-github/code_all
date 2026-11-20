@@ -1,0 +1,14 @@
+{
+ "optical": {
+  "last_state": "waiting",
+  "last_event_key": "optical|2026-11-20|waiting"
+ },
+ "semi_equip": {
+  "last_state": "waiting",
+  "last_event_key": "semi_equip|2026-11-20|waiting"
+ },
+ "litho_cn": {
+  "last_state": "waiting",
+  "last_event_key": "litho_cn|2026-11-20|waiting"
+ }
+}
