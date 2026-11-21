@@ -1,7 +1,7 @@
 {
-  "build_id": "20261120T121838_0800_083c2ecd0c",
-  "business_date": "2026-11-19",
-  "checked_at": "2026-11-20T12:19:33+08:00",
+  "build_id": "20261121T160208_0800_97d44786b6",
+  "business_date": "2026-11-20",
+  "checked_at": "2026-11-21T16:03:12+08:00",
   "hash_format": "sha256; text CRLF normalized to LF; gzip raw bytes",
   "files": {
     "apps/fund-dragon-recovery/.gitignore": "1696b452f4aca8a2a55e9af57a5e73d4d1d854049ae00b1d0489c4dfc25a2024",
@@ -23,7 +23,7 @@
     "apps/fund-dragon-recovery/patch_pool.py": "1d5a78a0f0cebe3a8aad54aaec82ca1d2d161319a7d744e1b3a0e81fda7f0a43",
     "apps/fund-dragon-recovery/probe_scale.py": "fa9c1c7d2faa49ea4c34a1e562554f0b234e2076ff5770eb9ab883b117156b40",
     "apps/fund-dragon-recovery/publish.py": "da2ba8d29faa391d42a2324efd7fb77666a5f35e679b0493d3f8d36e3607d1ef",
-    "apps/fund-dragon-recovery/release.json": "3d6354b0cfba4abae2620fa89e175d8dfcd0638c9ca4b6f1cc42cd0c72aacb2a",
+    "apps/fund-dragon-recovery/release.json": "ce5eb6a8f7a0cfe07d85aea034150eb507050bf545d9f15dcf852f4313c904e5",
     "apps/fund-dragon-recovery/render.py": "2f9d6760dc908b2b438913a7081e1efe2c646c4a08c304cea61943c363c7ebc5",
     "apps/fund-dragon-recovery/render_keepers.py": "a7e2921ee8f58d0293f46fc5b5e8db56fc4f8ce112dbfbb71aff9f502f4f4aba",
     "apps/fund-dragon-recovery/requirements.txt": "105a25c9a24a53a42b52ccc93f930e1ea4a88b42372d440ae7c1b82c3a8b2c64",
@@ -40,13 +40,13 @@
     "apps/fund-dragon-recovery/v3_report.py": "7dd548c46c682cbc09353a7f5b63a4d46aaefbe307d54cfbd9da2a6f0ececfcf",
     "apps/fund-dragon-recovery/v3_sources.py": "a635cce65018a7c03de21a178e0c6fbc45d8e9b4f3ca44f32040ddb1dd07b0cd",
     "apps/fund-dragon-recovery/v3_validate.py": "430c533bacb6de4ec080e7893cce666039a863a03350703afe14a4e7bf0b5cb8",
-    "apps/fund-dragon-recovery/validation-summary.json": "cdb9c9f03db92ed1c53b36b01148b7a4bf3245a3132aa3238e755a97c317302a",
+    "apps/fund-dragon-recovery/validation-summary.json": "897597cddaf26d445fd1d3b7f1e5fb57d34cc8af88516d1dd66180b22630d3ac",
     "apps/fund-dragon-recovery/verify_beta.py": "9f2b0a76e4551601bd8bf74395d3518e1d4f57a1613953a8291d1a6a2e728ae2",
     "apps/fund-dragon-recovery/verify_online.py": "7f9fc6979d4107fdaea04fdef31468564e41de6c6d52cb099e5db6080b1347a2",
     "apps/fund-dragon-recovery/wide_pool.py": "c7b77c0a0df0bfca654d5f2cd7951f9c31964ffce88fe8d4f4d78cadca3c29e5",
     "tests/fundDragonRecovery.test.cjs": "0d0a2378dcb312bef1fee6948962e4ed7b7d32f420ed16cc26b684abf34e0654",
-    "tools/fund-dragon-recovery/data/latest.json": "fa5a24b0690d0dd9370ed348c9d0acc6404952c9462472d62b83a3ecb20953da",
-    "tools/fund-dragon-recovery/data/observations.csv": "f1ce7b8f8a72a6fdedcc9fd48b8247a09c457c7a3619148ad006bf354758d518",
-    "tools/fund-dragon-recovery/index.html": "51ff9d44da72d5d3e2a34533d2025ce26582e595576a7381136955432e0c77b8"
+    "tools/fund-dragon-recovery/data/latest.json": "62de7bb3391aa39e7a0349729381f77e339f314c983c3149bfb6e1180df1d643",
+    "tools/fund-dragon-recovery/data/observations.csv": "2352e19e54cc6a11b63b1318e650357c4156ce89d40d784a2125a262eeff7e51",
+    "tools/fund-dragon-recovery/index.html": "2d36f7ad61e329934827e8397ca37b736c2365f70fe502f416edb0ee3dcd50d2"
   }
 }
