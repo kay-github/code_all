@@ -1,7 +1,7 @@
 # AGENTS.md · 接手说明（AI / 人都先读这一页）
 
 > 目标：让任何接手的人或 AI 在 10 分钟内知道「现在是什么状态、数据可信到哪一层、改哪里、怎么验证」，
-> 不重复踩已知的坑。最后更新 **2026-11-17 20:35**（作者：上一轮接手的会话）。
+> 不重复踩已知的坑。最后更新 **2026-11-21 21:45**（作者：本轮会话）。
 >
 > 读完这页后按顺序读：`README.md` → `../国家队追踪_经验库.md` → `docs/持续追踪实施说明.md` → `docs/存量刻度说明.md`。
 
@@ -36,48 +36,51 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | 文件 | 含义 | 谁写 |
 | --- | --- | --- |
 | `data/v2/latest.json` | **正式区指针**（定稿级，唯一可引用） | `pipeline.py` 构建时 |
-| `data/postclose/latest.json` | **盘后初值**（初值级，不可定稿） | `update.py --phase close --publish-postclose` |
+| `data/postclose/latest.json` | **盘后快照**：早值 / 晚间值 / 部分披露，均不可与正式区混算 | `update.py --phase close --publish-postclose`；云端 `etf-close` |
 | `data/intraday/postclose.json` | 旧路径兼容副本，**`morning_review` 靠它判断"有待复核交易日"** | 同上，必须同时写两份 |
 | `data/intraday/latest.json` | 盘中留档（线索级，不产生份额） | `intraday.py --platform-tick` |
 | `data/intraday/baseline15.json` | 15分钟分段成交额基线（20个交易日同段中位数，`complete=false` 时不得升级） | `v2_intraday_baseline.py --build`（`postclose.py` 结束时自动刷新） |
 
 正式区的 `business_date` 早于当天是常态，不是漏更新——盘后与次日本来就是两道工序，中间有时差。
-只有 `pending_review=true` 的盘后初值才表示「今天有东西还没定稿」。
+`pending_review=true` 且 `superseded_by` 为空的盘后快照才表示「今天有东西还没定稿」；已有正式构建的晚间值会被标记为已替代，但保留原值供回看。
 
 ---
 
-## 2. 当前状态快照（2026-11-17 收盘后）
+## 2. 当前状态快照（2026-11-20 正式版，2026-11-21 晚补跑）
 
 | 项 | 值 |
 | --- | --- |
-| 正式区（定稿级） | 业务日 **2026-11-16**（2026-11-17 晚间补做），官方份额 15/15；完整构建号见 `data/v2/latest.json` |
-| 盘后初值（初值级） | 业务日 **2026-11-17**（19:56 生成），官方披露 0/15，反推净申赎 +24.48 亿；完整构建号见 `data/postclose/latest.json` |
-| 盘中留档（线索级） | 11-17 **缺失**（14:30 平台任务未触发） |
-| 10 份刻度（反推口径） | 11-16 = 5.7069 份 / 本轮净新增 3.2307 份；11-17 初值 = 5.7215 / 3.2453 |
-| 平台定时任务 | 3 个 ACTIVE，但 **11-17 三次全部被中断**，见 §8 |
+| 正式区（定稿级） | 业务日 **2026-11-20**，官方份额 15/15；交易所净申赎 **+920.08 亿**；两日 +1,421.20 亿、5 日 +1,887.53 亿；10 份刻度 **6.5539**；构建号见 `data/v2/latest.json` |
+| 盘后晚间值 | 业务日 **2026-11-20**（21:40 按交易所 T 日份额重算）：SSE 10 只 **+627.0 亿**、SZSE 5 只 **+293.08 亿**，15 只合计 **+920.08 亿**；已由当日正式版替代，保留回看 |
+| 盘后早值 | 11-20 15:48 生成，供应商反推 **+94.62 亿**，仅为正式值的 10.3%；已被替代 |
+| 盘中留档（线索级） | 见 `data/intraday/latest.json`；11-20 未单独核验 |
+| 平台定时任务 | 3 个 ACTIVE；云端 11-21 10:07/12:23 两个正式时点未产出，14:09 本机手动补跑并核验 |
 
 文档里刻意不写死完整构建号：每次发布都会变，写死就必然过期。核对时统一以 `data/v2/latest.json` 与页面 `<meta name="gjd-build-id">` 为准。
 
-11-16 两个口径的差额值得记住：反推 **+144.48 亿**（舍入区间 112.07–176.86），交易所正式份额 **+167.01 亿**，
-差 +22.5 亿仍在舍入区间内。「初值不可当定稿」不是保守文案——同一天可以差 20 亿以上。
+早值失真的量级要记住：11-19 早值 **+38.16 亿** → 正式 **+501.12 亿**（早值仅 7.6%）；11-20 早值 **+94.62 亿** → 正式 **+920.08 亿**（10.3%）。原因不是模型，而是 15:45 时交易所尚未出 T 日清算份额，换手率分母仍是 T-1 份额，份额暴增日会被系统性压低。19:30 后 SSE 已披露 T 日清算份额、SZSE 也出 T 日晚间初值，此时重算的“晚间值”才有意义。
 
 ---
 
-## 3. 最重要的一条：三个版本，三种可信度
+## 3. 最重要的一条：三个版本，盘后分三档
 
-同一天的数据分三次成型，**后一版替代前一版，引用时必须认准版本**。
+同一天的数据分三次成型，**后一版替代前一版，引用时必须认准版本**。盘后这一版内部再分早值、晚间值、部分披露三档，页面盘后卡按 `primary` 显示。
 
 | 版本 | 时点 | 来源 | 可信度 | 落在哪 |
 | --- | --- | --- | --- | --- |
 | 盘中 | 交易时段每 60 秒（浏览器端） | 供应商快照 JSONP | 线索级：无逐笔方向，**不产生份额** | 页面「盘中观察区」 |
-| 盘后 | 当日 19:30 后 | 收盘行情 + 供应商换手率**反推**份额 | 初值级：T 日分母可能是昨收份额，收盘后被修订 | `data/postclose/latest.json`，页面独立区 |
-| 次日 | 次日 10:00 复核后 | 交易所**正式**份额 | 定稿级：可引用 | 正式区（10 份刻度、各 CSV、`release.json`） |
+| 盘后早值 | 15:45 后 | 收盘行情 + 供应商换手率**反推**份额 | 初值级：T 日分母可能是昨收份额，份额暴增日会系统性压低 | `data/postclose/latest.json`，页面盘后卡（`primary=vendor`） |
+| 盘后晚间值 | 19:30 / 21:13 | 交易所 **T 日清算份额**（SSE 正式 + SZSE 晚间初值） | 晚间级：SSE 已清算，SZSE 次晨可能修订；不给 10 份刻度混算 | 同上（`primary=official`） |
+| 盘后部分披露 | 19:30 前后 | 只有 SSE 10 只已披露，SZSE 5 只未出 | 部分级：只展示 SSE 小计，不发布完整 15 合计 | 同上（`primary=official_sse`） |
+| 次日 | 次日 10:00 复核后 | 交易所**正式**份额（15/15） | 定稿级：可引用 | 正式区（10 份刻度、各 CSV、`release.json`） |
 
 边界是硬的：
 
-- 盘后初值 **只能**写独立文件，**不进正式区、不改 `release.json`**（`publish.deploy_postclose()` 单文件白名单）。
-- 次日权威版发布后，盘后初值自动打 `superseded_by`、`pending_review=false`，**保留原值**用于回看当时判断。
+- 盘后快照（早值/晚间值/部分披露）**只能**写独立文件，**不进正式区、不改 `release.json`**（`publish.deploy_postclose()` 单文件白名单）。
+- 晚间值优先用交易所份额；SSE 为 T 日清算份额，SZSE 为 T 日晚间初值，次晨可能修订。**10 份刻度仍只认正式区**，晚间值里 `inventory.comparable=false`。
+- 次日权威版发布后，盘后快照自动打 `superseded_by`、`pending_review=false`，**保留原值**用于回看当时判断。
 - 两版都算「份额变化 × 当日均价」，但 **分母来源不同，禁止拼接**。
+- 云端 `etf-close` 不再因为“同日已有早值”而跳过：正式区未覆盖 `end`、且同日不是完整晚间值时才重跑升级。
 
 ---
 
@@ -95,7 +98,7 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | `v2_engine.py` | 单只/家族净申赎、5/10/20 日窗口、舍入边界 |
 | `v2_tracking.py` | 分通道风险（L0–L3）与事件记忆 |
 | `v2_inventory.py` | 10 份存量刻度 |
-| `v2_stages.py` | 盘后初值摘要（抹平双口径、置信度文案） |
+| `v2_stages.py` | 盘后摘要（早值/晚间值/部分披露判定、SSE/SZSE 拆分、抹平双口径、置信度文案） |
 | `v2_release.py` | 发布闸门 `assess()`，22 项硬条件 |
 | `v2_report.py` | 生成 `report.html` / `cycle.html` / `segments.html`（首屏按「最新一日 / 10份刻度 / 一句话解读」组织，证据与方法默认折叠；含三阶段版本条与全部内联 CSS/JS；分段子页浏览器端读同源新浪 5 分钟 K） |
 | `validate_v2.py` | 独立验收（含 Node VM 精简 DOM 执行页面脚本） |
@@ -104,7 +107,7 @@ for p in ['data/v2/latest.json','data/postclose/latest.json','data/intraday/post
 | `morning_review.py` | 次晨 10:00 复核入口，判断「有无待复核交易日」 |
 | `intraday.py` | 盘中留档、事件、通知队列、15分钟整段与交易分钟窗口 |
 | `v2_intraday_baseline.py` | 单源5分钟K → 15分钟同段中位数；与东财日线成交额勾稽 |
-| `postclose.py` | 只刷新官方份额，**不产出初值**（别单独当盘后任务用） |
+| `postclose.py` | 只刷新官方份额与 15 分钟基线，**不产出盘后摘要**（别单独当盘后任务用） |
 
 ### 薄封装（`analyze.py` `today.py` `netflow.py` 等 20 多个）
 
@@ -117,7 +120,7 @@ data/v2/raw/<ts>_0800/            不可覆盖原始批次（catalogue/history/d
 data/v2/builds/<build_id>/        不可覆盖构建：analysis.json.gz、ledger.json.gz、report.html、
                                   daily_flow.csv、official_flow.csv、inventory.csv、release_gate.json
 data/v2/latest.json               正式区指针
-data/postclose/latest.json        盘后初值
+data/postclose/latest.json        盘后快照（早值/晚间值/部分披露）
 tests/                            98 项 Python 单测 + 1 个 Node 页面契约测试
 ```
 
@@ -143,7 +146,7 @@ a['inventory']['latest']                    # total_units / net_added_units / cu
 1. **反推份额 ≠ 正式份额**。`份额 = 成交量(手)×10000 ÷ 换手率(%)`，分母口径未经验证。
 2. **净申赎 ≠ 份额变化 ≠ 两端点份额差**。三条数不能互相替代（科创50 三段法最典型）。
 3. **缺口不补 0**。核心 15 不齐就不展示合计，宁可空着。
-4. **T 日不写定稿**。当日反推值一律标初值，等交易所正式份额复核。
+4. **T 日不写定稿**。当日早值/晚间值/部分披露一律标盘后级，等交易所正式份额复核；晚间值可用交易所 T 日份额，但 SZSE 仍可能次晨修订。
 5. **身份未知就写 I0**。放量、同步申赎、折溢价都不能独自确认国家队；不输出「国家队概率」。
 6. **闸门不绕过**。`v2_release.assess` 拒绝就是拒绝，改去补数据，不要放宽阈值。
 
@@ -171,13 +174,17 @@ for c in core:
 ### B. 更新数据并发布
 
 ```bash
-# 盘后（当日收盘，只出初值）：采集→构建→初值→只推一个 JSON
+# 盘后早值/晚间值/部分披露：采集→构建→摘要→只推一个 JSON
 python -X utf8 update.py --phase close --publish-postclose
+# 云端 19:33 / 21:13 走同一路径；同日已有早值时也会重跑升级为晚间值
+python scripts/market-cloud-update.py etf-close   # 在 D:/code_all 下
 # 次日（正式）：采集→构建→闸门→验收→白名单提交→push→Vercel
 python -X utf8 update.py --phase final --deploy
 # 补做历史某日（例：错过次晨复核）
 python -X utf8 update.py --phase final --end 2026-11-16 --deploy
 ```
+
+`--phase close` 的盘后摘要按数据完整度自动分档：`postclose_provisional`（早值，`primary=vendor`）、`postclose_evening`（晚间值，`primary=official`，SSE+SZSE 全 15）、`postclose_partial`（只有 SSE，`primary=official_sse`）。
 
 `--phase close` 输出「正式发布检查尚未通过」是**预期**，不是失败。
 

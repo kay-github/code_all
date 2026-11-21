@@ -589,14 +589,19 @@ window.StageCards=(function(){
   function draw(){
     const el=$('stageCards');if(!el)return;
     const live=st.intraday,pc=st.postclose;
-    const active=live?.fresh?'intraday':pc?.pending_review&&pc.business_date>D.end?'postclose':'verified';
+    const active=live?.fresh?'intraday':pc?.pending_review&&pc.business_date>=D.end?'postclose':'verified';
+    const pcBadge=pc?(pc.stage==='postclose_evening'?'晚间值':pc.stage==='postclose_partial'?'部分披露':
+      (pc.pending_review?'初值级':'已被替代')):'待生成';
+    const pcDesc=pc&&Number.isFinite(pc.primary_net_yi)
+      ? (pc.stage==='postclose_evening'?`交易所净申赎 ${num(pc.primary_net_yi,2)} 亿`:
+         pc.stage==='postclose_partial'?`SSE 10只 ${num(pc.primary_net_yi,2)} 亿，SZSE 待披露`:
+         `反推净申赎 ${num(pc.primary_net_yi)} 亿`)
+      : pc&&Number.isFinite(pc.vendor?.net_yi)?`反推净申赎 ${num(pc.vendor.net_yi)} 亿`:pc?'反推净额未齐':'';
     el.innerHTML=[
       card({name:'盘中',href:'#intraday',badge:'线索级',tone:'tone-live',date:live?.date,
         desc:live?.status||'等待实时行情',active:active==='intraday'}),
-      card({name:'盘后',href:'#postclose',badge:pc?(pc.pending_review?'初值级':'已被替代'):'待生成',tone:'tone-provisional',
-        date:pc?.business_date,
-        desc:pc&&Number.isFinite(pc.vendor?.net_yi)?`反推净申赎 ${num(pc.vendor.net_yi)} 亿`:pc?'反推净额未齐':'',
-        active:active==='postclose'}),
+      card({name:'盘后',href:'#postclose',badge:pcBadge,tone:'tone-provisional',
+        date:pc?.business_date,desc:pcDesc,active:active==='postclose'}),
       card({name:'次日',href:'#official',badge:of.complete?'定稿级':'待复核',tone:'tone-verified',
         date:D.end,desc:of.complete?'交易所正式份额':'正式份额未齐',active:active==='verified'}),
     ].join('');
@@ -608,7 +613,7 @@ window.StageCards=(function(){
     st[k]=v;draw();
   }};
 })();
-/* 盘后初值：三阶段里的第二版。份额由供应商换手率反推，收盘后可能被修订。 */
+/* 盘后三档：15:45 早值 / 19:30 晚间值 / 部分披露。晚间值优先用交易所份额。 */
 (function(){
   const f=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
   function legacy(){
@@ -619,21 +624,53 @@ window.StageCards=(function(){
       rows.map(([label,value])=>`<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`).join('')+'</tbody></table></div>';}
   function render(x){
     const o=x.official||{},v=x.vendor||{},iv=x.inventory||{},fl=x.flattened||{};
-    $('postcloseScope').textContent=`业务日 ${x.business_date} · ${x.pending_review?'待次日复核':'已由正式版替代'} · 反推结果不可作定稿`;
-    const rows=[
-      ['反推净申赎',Number.isFinite(v.net_yi)?num(v.net_yi)+' 亿元':'数据不足'],
-      ['核心 15 只成交额',Number.isFinite(v.amount_yi)?num(v.amount_yi).replace(/^\+/,'')+' 亿元':'—'],
-      ['10 份刻度',Number.isFinite(iv.total_units)?ip(iv.total_units)+' 份':'数据不足'],
-      ['本轮净新增',Number.isFinite(iv.net_added_units)?num(iv.net_added_units,2)+' 份':'数据不足'],
-      ['官方份额覆盖',(o.coverage??0)+'/'+(o.expected??15)],
-    ];
+    const primary=x.primary||((o.complete)?'official':'vendor');
+    const pn=Number.isFinite(x.primary_net_yi)?x.primary_net_yi:
+      (primary==='official'?o.net_yi:primary==='official_sse'?(o.sse||{}).net_yi:v.net_yi);
+    const scope=x.stage==='postclose_evening'
+      ? `业务日 ${x.business_date} · 晚间值：SSE 正式 + SZSE T日晚间初值${x.superseded_by?' · 已由正式版替代':' · 待次晨修订'}`
+      : x.stage==='postclose_partial'
+      ? `业务日 ${x.business_date} · 部分披露：SSE 10只已出，SZSE 5只待披露`
+      : `业务日 ${x.business_date} · ${x.pending_review?'待次日复核':'已由正式版替代'} · 反推结果不可作定稿`;
+    $('postcloseScope').textContent=scope;
+    let rows;
+    if(primary==='official'){
+      rows=[
+        ['交易所净申赎',Number.isFinite(pn)?num(pn,2)+' 亿元':'数据不足'],
+        ['其中 SSE 10只',Number.isFinite((o.sse||{}).net_yi)?num(o.sse.net_yi,2)+' 亿元':'—'],
+        ['其中 SZSE 5只',Number.isFinite((o.szse||{}).net_yi)?num(o.szse.net_yi,2)+' 亿元':'—'],
+        ['官方份额覆盖',(o.coverage??0)+'/'+(o.expected??15)],
+        ['核心 15 只成交额',Number.isFinite(v.amount_yi)?num(v.amount_yi).replace(/^\+/,'')+' 亿元':'—'],
+      ];
+    }else if(primary==='official_sse'){
+      rows=[
+        ['SSE 10只小计',Number.isFinite(pn)?num(pn,2)+' 亿元':'数据不足'],
+        ['SZSE 5只','待披露'],
+        ['官方份额覆盖',(o.coverage??0)+'/'+(o.expected??15)],
+        ['核心 15 只成交额',Number.isFinite(v.amount_yi)?num(v.amount_yi).replace(/^\+/,'')+' 亿元':'—'],
+      ];
+    }else{
+      rows=[
+        ['反推净申赎',Number.isFinite(pn)?num(pn)+' 亿元':'数据不足'],
+        ['核心 15 只成交额',Number.isFinite(v.amount_yi)?num(v.amount_yi).replace(/^\+/,'')+' 亿元':'—'],
+        ['10 份刻度',Number.isFinite(iv.total_units)?ip(iv.total_units)+' 份':'数据不足'],
+        ['本轮净新增',Number.isFinite(iv.net_added_units)?num(iv.net_added_units,2)+' 份':'数据不足'],
+        ['官方份额覆盖',(o.coverage??0)+'/'+(o.expected??15)],
+      ];
+    }
     const diagnostics=[
+      ['口径',primary==='vendor'?'供应商换手率反推':'交易所正式份额差分'],
       ['生成时间',x.generated_at||'—'],
       ['份额比值中位数',Number.isFinite(fl.ratio_median)?fl.ratio_median.toFixed(6):'—'],
       ['份额疑似抹平',Number.isFinite(fl.count)?`严格 ${fl.count} 只；宽口径 ${fl.near_count??'—'} 只`:'—'],
     ];
+    const note=x.stage==='postclose_evening'
+      ? 'SSE 为交易所T日清算份额；SZSE 为T日晚间初值，次晨可能修订；10份刻度与供应商反推均待正式复核，不在晚间值中混算。'
+      : x.stage==='postclose_partial'
+      ? 'SSE 10只已披露，SZSE 5只尚未披露；本卡只展示SSE小计，不发布核心15完整合计。'
+      : (x.revision_risk||'等待交易所次日复核。');
     $('postcloseBody').innerHTML=table(rows)+`<details><summary>数据核对</summary>${table(diagnostics)}
-      <p class="note">${esc(x.revision_risk||'等待交易所次日复核。')}</p>
+      <p class="note">${esc(note)}</p>
       ${x.superseded_by?`<p class="note">复核构建 ${esc(x.superseded_by)}</p>`:''}</details>`;
     if(window.StageCards)window.StageCards.set('postclose',x);
   }

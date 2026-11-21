@@ -35,11 +35,13 @@ def publish_provisional(a,path,deploy):
         note='深交所T日晚间初值仅供参考，以T+1早间更新为准；本文件不覆盖生产页、不作为正式发布依据',
         next_step=summary['next_step'])
     write_json(DATA.parent/'intraday'/'postclose.json',legacy)
-    v=summary['vendor']
-    print('盘后初值已生成：业务日 %s · 官方披露 %d/%d · 反推净申赎 %s 亿 · 疑似抹平 %d/%d 只'%(
-        summary['business_date'],summary['official']['coverage'],summary['official']['expected'],
-        '—' if v['net_yi'] is None else round(v['net_yi'],2),
-        summary['flattened']['count'],v['expected_members'] or 0),flush=True)
+    pn=summary.get('primary_net_yi')
+    print('盘后快照已生成：业务日 %s · %s · %s %s 亿 · 官方披露 %d/%d · 疑似抹平 %d/%d 只'%(
+        summary['business_date'],summary.get('stage_label') or '盘后',
+        summary.get('primary_label') or '净申赎',
+        '—' if pn is None else round(pn,2),
+        summary['official']['coverage'],summary['official']['expected'],
+        summary['flattened']['count'],summary['vendor']['expected_members'] or 0),flush=True)
     if deploy:
         import publish as P
         print('已发布盘后初值',P.deploy_postclose(summary),flush=True)

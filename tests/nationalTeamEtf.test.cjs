@@ -241,8 +241,29 @@ test('three-stage strip keeps the provisional figures and diagnostics separate',
  }finally{e.off();}
 });
 
-// 分段活跃度子页：与主页面共用同一构建，只读脱敏后的15分钟基线；
-// 不公开逐日原始K、本地路径或错误详情。
+test('evening postclose card uses the official split and hides vendor inventory',async()=>{
+ const e=renderLive(data,{
+  business_date:data.end,pending_review:true,stage:'postclose_evening',primary:'official',
+  primary_net_yi:920.08,
+  official:{coverage:15,expected:15,complete:true,net_yi:920.08,
+   sse:{coverage:10,expected:10,complete:true,net_yi:627},
+   szse:{coverage:5,expected:5,complete:true,net_yi:293.08}},
+  vendor:{net_yi:720,amount_yi:1424},inventory:{total_units:6.18,net_added_units:3.7},
+  flattened:{ratio_median:1.000152,count:0,near_count:8},
+ });
+ try{
+  for(let i=0;i<4;i++)await new Promise(r=>setImmediate(r));
+  assert.match(e.nodes.stageCards.innerHTML,/晚间值/);
+  assert.match(e.nodes.stageCards.innerHTML,/交易所净申赎 \+920.08 亿/);
+  assert.match(e.nodes.postcloseScope.textContent,/晚间值/);
+  assert.match(e.nodes.postcloseScope.textContent,/待次晨修订/);
+  assert.match(e.nodes.postcloseBody.innerHTML,/交易所净申赎/);
+  assert.match(e.nodes.postcloseBody.innerHTML,/其中 SSE 10只/);
+  assert.match(e.nodes.postcloseBody.innerHTML,/其中 SZSE 5只/);
+  assert.doesNotMatch(e.nodes.postcloseBody.innerHTML,/10 份刻度/,'晚间值不混算供应商10份刻度');
+  assert.match(e.nodes.postcloseBody.innerHTML,/交易所正式份额差分/);
+ }finally{e.off();}
+});
 test('segment page shares the build and reads the sanitized 15-minute baseline',()=>{
  assert.equal(segmeta.build_id,data.build_id);
  assert.equal(segmeta.end,data.end);

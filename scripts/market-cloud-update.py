@@ -215,14 +215,25 @@ def etf_work(task, end, state, rebuild):
     public_postclose = web(ETF) / 'data/postclose/latest.json'
     official = release(ETF)
     if task == 'etf-close':
-        prior_close = read(public_postclose)['business_date']
-        if end <= max(official['business_date'], prior_close):
-            if end == prior_close:
-                summary(f'盘后初值已覆盖 {end}，核对生产文件')
-                verify(ETF, provisional=True)
-            else:
-                summary(f'正式区或更晚盘后初值已覆盖 {end}')
+        prior = read(public_postclose)
+        prior_close = prior.get('business_date') or ''
+        official_day = official['business_date']
+        if end <= official_day:
+            summary(f'正式区已覆盖 {end}（正式业务日 {official_day}），不重复盘后发布')
             return
+        if end < prior_close:
+            summary(f'已有更晚盘后快照 {prior_close}，覆盖 {end}')
+            return
+        if end == prior_close:
+            complete_evening = (
+                prior.get('stage') == 'postclose_evening'
+                and bool((prior.get('official') or {}).get('complete'))
+            )
+            if complete_evening:
+                summary(f'晚间值已完整覆盖 {end}，核对生产文件')
+                verify(ETF, provisional=True)
+                return
+            summary(f'已有同日 {prior.get("stage") or "初值"}，重跑升级为晚间值')
         run(ETF, 'collect_data.py', '--end', end)
         run(ETF, 'pipeline.py')
         analysis, path = latest()

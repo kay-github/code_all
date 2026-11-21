@@ -33,6 +33,19 @@ def series(ratios):
     return out
 
 
+def analysis_full_official(**over):
+    a = analysis()
+    a['exchange'] = dict(
+        stage='初值或不完整',
+        latest=dict(complete=True, net_estimate=7.5, valid_members=2, expected_members=2),
+        instruments={
+            '510300': dict(source='sse', latest=dict(date='2026-11-16', net_estimate=2.5)),
+            '159919': dict(source='szse', latest=dict(date='2026-11-16', net_estimate=5.0)),
+        })
+    a.update(over)
+    return a
+
+
 class StageSummary(unittest.TestCase):
     def test_stage_identity_and_confidence(self):
         x = S.build(analysis(), series({'510300': (100, 101), '159919': (50, 50)}))
@@ -87,6 +100,45 @@ class StageSummary(unittest.TestCase):
         x = S.build(analysis(), series({'510300': (100, 101), '159919': (50, 50)}))
         self.assertIn('不能当定稿', x['revision_risk'])
         self.assertIn('I0', x['identity'])
+
+
+class EveningAndPartial(unittest.TestCase):
+    def test_evening_uses_official_total_and_exchange_split(self):
+        x = S.build(analysis_full_official(), series({'510300': (100, 101), '159919': (50, 50)}))
+        self.assertEqual(x['stage'], 'postclose_evening')
+        self.assertEqual(x['confidence'], 'evening')
+        self.assertEqual(x['primary'], 'official')
+        self.assertAlmostEqual(x['primary_net_yi'], 7.5)
+        self.assertAlmostEqual(x['official']['net_yi'], 7.5)
+        self.assertAlmostEqual(x['official']['sse']['net_yi'], 2.5)
+        self.assertAlmostEqual(x['official']['szse']['net_yi'], 5.0)
+        self.assertTrue(x['official']['complete'])
+        self.assertFalse(x['inventory']['comparable'])
+        self.assertIn('SZSE', x['revision_risk'])
+        self.assertIn('次晨', x['revision_risk'])
+
+    def test_partial_shows_only_sse_subtotal_and_no_full_total(self):
+        a = analysis_full_official()
+        a['exchange']['latest'] = dict(complete=False, net_estimate=None, valid_members=1, expected_members=2)
+        a['exchange']['instruments']['159919']['latest'] = dict(date='2026-11-13')
+        x = S.build(a, series({'510300': (100, 101), '159919': (50, 50)}))
+        self.assertEqual(x['stage'], 'postclose_partial')
+        self.assertEqual(x['confidence'], 'partial')
+        self.assertEqual(x['primary'], 'official_sse')
+        self.assertAlmostEqual(x['primary_net_yi'], 2.5)
+        self.assertIsNone(x['official']['net_yi'])
+        self.assertFalse(x['official']['complete'])
+        self.assertEqual(x['official']['sse']['coverage'], 1)
+        self.assertEqual(x['official']['szse']['coverage'], 0)
+        self.assertIn('不展示核心15只完整合计', x['complete_total_policy'])
+        self.assertFalse(x['inventory']['comparable'])
+
+    def test_provisional_keeps_vendor_primary(self):
+        x = S.build(analysis(), series({'510300': (100, 101), '159919': (50, 50)}))
+        self.assertEqual(x['stage'], 'postclose_provisional')
+        self.assertEqual(x['primary'], 'vendor')
+        self.assertAlmostEqual(x['primary_net_yi'], 2.5)
+        self.assertTrue(x['inventory']['comparable'])
 
 
 class Supersede(unittest.TestCase):

@@ -1,52 +1,69 @@
 {
-  "stage": "postclose_provisional",
-  "stage_label": "盘后初值",
-  "confidence": "provisional",
-  "confidence_note": "初值级：T 日反推份额，可能被事后修订，不可作定稿",
+  "stage": "postclose_evening",
+  "stage_label": "盘后晚间值",
+  "confidence": "evening",
+  "confidence_note": "晚间级：交易所 T 日清算份额（SSE 正式、SZSE T 日晚间初值），待次晨修订",
   "business_date": "2026-11-20",
-  "generated_at": "2026-11-20T15:48:03+08:00",
-  "build_id": "20261120T154658_0800_c82aedad89",
-  "built_at": "2026-11-20T15:46:58+08:00",
+  "generated_at": "2026-11-21T21:49:49+08:00",
+  "build_id": "20261121T214714_0800_d42681d239",
+  "built_at": "2026-11-21T21:47:14+08:00",
   "pending_review": false,
-  "superseded_by": "20261121T141428_0800_061c7fe0ca",
+  "superseded_by": "20261121T214714_0800_d42681d239",
+  "primary": "official",
+  "primary_net_yi": 920.0754081959403,
+  "primary_label": "交易所15只净申赎",
   "official": {
-    "disclosure_stage": "初值或不完整",
-    "coverage": 0,
+    "disclosure_stage": "次晨复核",
+    "coverage": 15,
     "expected": 15,
-    "complete": false,
-    "net_yi": null,
-    "valid_members": 0
+    "complete": true,
+    "net_yi": 920.0754081959403,
+    "valid_members": 15,
+    "sse": {
+      "expected": 10,
+      "coverage": 10,
+      "complete": true,
+      "net_yi": 626.9966922615441
+    },
+    "szse": {
+      "expected": 5,
+      "coverage": 5,
+      "complete": true,
+      "net_yi": 293.07871593439626
+    }
   },
   "vendor": {
-    "net_yi": 94.61509817615884,
-    "net_low_yi": 79.87743128331206,
-    "net_high_yi": 109.3508159693056,
+    "net_yi": 720.891816302928,
+    "net_low_yi": 705.6566227787487,
+    "net_high_yi": 736.1261614102863,
     "valid_members": 15,
     "expected_members": 15,
     "complete": false,
     "amount_yi": 1424.11,
     "reliable": false,
     "reasons": [
-      "供应商换手率反推，分母口径未经验证",
-      "交易所正式份额当日仅披露 0/15 只"
+      "供应商换手率反推，分母口径未经验证"
     ]
   },
   "inventory": {
-    "total_units": 6.185481891639152,
-    "net_added_units": 3.709236024516814,
-    "current_ratio": 0.6185481891639152,
+    "total_units": 6.553913393934341,
+    "net_added_units": 4.077667526812004,
+    "current_ratio": 0.6553913393934341,
     "complete": true,
-    "provisional": true
+    "provisional": true,
+    "comparable": false,
+    "note": "晚间值不混算供应商10份刻度，待正式复核"
   },
   "flattened": {
     "count": 0,
     "members": [],
-    "near_count": 8,
-    "ratio_median": 1.000152,
+    "near_count": 0,
+    "ratio_median": 1.018499,
     "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
   },
-  "revision_risk": "T 日换手率分母可能仍是昨收份额，收盘后才换成当日登记份额；11-13 实测 94/254 只被修订，核心15由 −24.9 亿修正为 −123.7 亿。本页初值不能当定稿，也不能据此判断国家队当日买卖。",
-  "next_step": "已由权威构建 20261121T141428_0800_061c7fe0ca 复核替代；初值保留用于回看当时的判断依据",
+  "revision_risk": "SSE 为交易所T日清算份额；SZSE 为T日晚间初值，次晨可能修订。10份刻度与供应商反推均待正式复核，不在晚间值中混算。",
+  "next_step": "已由权威构建 20261121T214714_0800_d42681d239 复核替代；初值保留用于回看当时的判断依据",
+  "complete_total_policy": "覆盖不足时不展示核心15只完整合计，缺口不补0",
   "identity": "I0 当日买卖主体未确认",
-  "limitation": "初值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
+  "limitation": "盘后值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
 }

@@ -167,8 +167,8 @@ def deploy_postclose(summary):
     """
     if not summary or not summary.get('business_date'):
         raise RuntimeError('盘后初值缺少业务日，拒绝发布')
-    if summary.get('stage')!='postclose_provisional':
-        raise RuntimeError('盘后初值阶段标识不正确，拒绝发布')
+    if summary.get('stage') not in ('postclose_provisional','postclose_evening','postclose_partial'):
+        raise RuntimeError('盘后快照阶段标识不正确，拒绝发布')
     target=DEST/'data/postclose'/'latest.json'
     write_json(target,summary)
     rel=str(target.relative_to(REPO)).replace('\\','/')
