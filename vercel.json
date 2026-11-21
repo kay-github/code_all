@@ -154,6 +154,10 @@
       "dest": "/apps/top-radar/method.html"
     },
     {
+      "src": "^/taoding/escape(?:\\.html)?/?$",
+      "dest": "/apps/top-radar/escape.html"
+    },
+    {
       "src": "^/taoding/escape_report\\.html$",
       "dest": "/apps/top-radar/escape_report.html"
     },

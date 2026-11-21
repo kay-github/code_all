@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>创业板指 · 逃命顶持续监测 | TOP RADAR</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315191A'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23B3392C' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23EDE6D6' stroke-width='1'/%3E%3Cline x1='16' y1='16' x2='24' y2='8' stroke='%23B3392C' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F5F2EA; --paper2:#FAF8F2; --ink:#1C1A17; --muted:#6D675B;
+  --line:#D9D2C2; --dark:#15191A; --cream:#EDE6D6;
+  --red:#B3392C; --orange:#C77A2E; --deep:#7A1F1A; --green:#3E6B52; --gold:#8A7A55;
+  --serif:"Noto Serif SC","Songti SC",SimSun,serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{line-height:1.75}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+.topbar{position:sticky;top:0;z-index:20;background:var(--dark);color:var(--cream);border-bottom:1px solid #2A3032}
+.topbar-in{max-width:1180px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:24px;height:24px;flex:0 0 auto}
+.brand b{font-family:var(--mono);font-size:13px;letter-spacing:.12em;font-weight:600;white-space:nowrap}
+.brand span{font-size:12px;color:#A9A294;letter-spacing:.08em}
+.topnav{display:flex;gap:17px;font-size:13px;color:#CFC7B6;flex-wrap:wrap;justify-content:flex-end}
+.topnav a:hover{color:#fff}
+.topnav .on{color:#fff;border-bottom:1px solid #C77A2E}
+.hero{background:var(--dark);color:var(--cream);border-bottom:1px solid #2A3032;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;width:620px;height:620px;border:1px solid rgba(237,230,214,.12);border-radius:50%;right:-260px;top:-250px;box-shadow:0 0 0 70px rgba(237,230,214,.025),0 0 0 150px rgba(237,230,214,.018);pointer-events:none}
+.hero-in{max-width:1180px;margin:0 auto;padding:46px 24px 42px;display:grid;grid-template-columns:minmax(0,1.42fr) minmax(310px,.78fr);gap:52px;align-items:end;position:relative;z-index:1}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#A9A294;text-transform:uppercase}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,4.8vw,58px);line-height:1.16;margin:14px 0 14px;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:#E08B75}
+.hero-copy{font-size:14px;line-height:1.9;color:#CFC7B6;max-width:62ch;margin:0 0 18px;min-height:3.8em}
+.primary-tag{display:inline-flex;align-items:center;gap:8px;border:1px solid #4A4238;color:#D6C9B5;font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:4px 8px;margin-top:2px}
+.primary-tag i{width:6px;height:6px;background:#C77A2E;display:inline-block}
+.hero-state{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:#EDE6D6;margin-top:2px}
+.hero-state .badge{display:inline-block;color:#fff;font-size:12px;font-weight:700;padding:4px 11px;white-space:nowrap}
+.hero-state .date{font-family:var(--mono);color:#A9A294;font-size:11px}
+.hero-trigger{font-size:12px;line-height:1.8;color:#A9A294;margin:13px 0 0;max-width:64ch}
+.hero-trigger b{color:#D8D0BF;font-weight:500}
+.hero-read{border-left:1px solid #333A3C;padding-left:34px;min-width:0}
+.hero-read .label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#A9A294}
+.big{font-family:var(--mono);font-size:clamp(44px,6vw,70px);line-height:1;font-weight:600;letter-spacing:-.04em;margin-top:8px}
+.big small{font-size:12px;font-weight:400;letter-spacing:.02em;color:#A9A294;margin-left:7px}
+.hero-read .chip{display:inline-block;margin-top:13px;padding:4px 8px;border:1px solid #4A4238;font-family:var(--mono);font-size:10px;color:#D6C9B5}
+.mini{display:flex;justify-content:space-between;gap:14px;border-top:1px solid #333A3C;padding-top:9px;margin-top:11px;font-size:12px;color:#A9A294}
+.mini b{font-family:var(--mono);color:#EDE6D6;font-weight:500}
+.action-box{margin-top:18px;padding:13px 14px 12px;background:#1B2021;border-left:3px solid #C77A2E}
+.action-box .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#A9A294}
+.action-box .v{font-size:16px;font-weight:700;line-height:1.55;color:#EDE6D6;margin-top:5px}
+.action-box .s{font-size:11.5px;color:#A9A294;line-height:1.7;margin-top:5px}
+.update-line{background:#EFEADC;border-bottom:1px solid var(--line);color:var(--muted);font-size:11.5px}
+.update-line-in{max-width:1180px;margin:0 auto;padding:9px 24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.update-line b{font-family:var(--mono);font-weight:500;color:#3A362C}
+.refresh{border:1px solid #BDB5A2;background:transparent;color:var(--muted);font-family:var(--mono);font-size:9.5px;padding:1px 6px;margin-left:6px;cursor:pointer;vertical-align:1px}
+.refresh:hover{color:var(--ink);border-color:var(--ink)}
+.main{max-width:1180px;margin:0 auto;padding:38px 24px 60px}
+section{margin-bottom:46px}
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:18px}
+.sec-head h2{font-family:var(--serif);font-size:clamp(22px,2.5vw,30px);line-height:1.3;margin:4px 0 0;font-weight:700}
+.sec-head .num{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.sec-head .note{font-size:11.5px;line-height:1.7;color:var(--muted);text-align:right;max-width:45ch;margin:2px 0 0}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.metric{background:var(--paper2);padding:15px 13px 13px;min-width:0}
+.metric .lab{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .val{font-family:var(--mono);font-size:21px;line-height:1.25;font-weight:600;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .sub{font-size:10px;color:var(--muted);line-height:1.5;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .val.red{color:var(--red)}
+.metric .val.orange{color:var(--orange)}
+.metric .val.green{color:var(--green)}
+.metric .val.muted{color:var(--gold)}
+.now-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-top:14px}
+.trigger-card{border:1px solid var(--line);background:var(--paper2);padding:16px 18px 15px;min-width:0}
+.trigger-card .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.trigger-card p{font-size:13px;line-height:1.85;color:#3A362C;margin:7px 0 0}
+.trigger-card p b{color:var(--ink)}
+.gate-card{border:1px solid var(--line);background:var(--paper2);padding:15px 17px 13px;min-width:0}
+.gate-card .k{display:flex;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted)}
+.gate-card .rows{margin-top:8px}
+.gate-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #E3DDCF;padding:7px 0;font-size:12px;color:#3A362C}
+.gate-row:first-child{border-top:0}
+.gate-row span{display:flex;align-items:center;gap:8px;min-width:0}
+.gate-row i{width:6px;height:6px;display:inline-block;background:#BDB5A2;flex:0 0 auto}
+.gate-row i.ok{background:var(--green)}
+.gate-row b{font-family:var(--mono);font-weight:500;white-space:nowrap;font-size:11px}
+.gate-note{font-size:11px;color:var(--muted);line-height:1.7;margin-top:7px}
+.chart-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;border:1px solid var(--line);background:var(--paper2)}
+.chart-panel{padding:14px 16px 10px;min-width:0}
+.chart-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline;margin-bottom:4px}
+.chart-top h3{font-family:var(--serif);font-size:18px;margin:0;font-weight:700}
+.chart-top .legend{display:flex;gap:9px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:8px;height:8px;background:#B3392C}
+.chart-svg{width:100%;height:330px;display:block}
+.chart-dates{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 4px 0}
+.chart-dates span:nth-child(2),.chart-dates span:nth-child(3){text-align:center}
+.chart-dates span:last-child{text-align:right}
+.chart-note{font-size:10.5px;color:var(--muted);line-height:1.65;padding:7px 4px 0}
+.chart-empty{height:330px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;border:1px dashed var(--line)}
+.levels{border-left:1px solid var(--line);padding:15px 17px 12px;min-width:0}
+.levels .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.level-row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #E3DDCF;padding:7px 0;font-size:12px;color:#3A362C}
+.level-row:first-of-type{border-top:0}
+.level-row b{font-family:var(--mono);font-weight:500;color:var(--ink);white-space:nowrap}
+.level-row .muted{color:var(--muted);font-family:var(--mono);font-size:10px}
+.level-foot{font-size:10.5px;color:var(--muted);line-height:1.7;margin-top:8px;border-top:1px solid #E3DDCF;padding-top:8px}
+.state-map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);background:var(--line);gap:1px}
+.flow-step{background:var(--paper2);padding:15px 15px 13px;min-width:0;position:relative}
+.flow-step .n{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.flow-step .t{font-family:var(--serif);font-size:18px;font-weight:700;margin-top:4px}
+.flow-step .a{font-size:11.5px;line-height:1.65;color:#3A362C;margin-top:6px;min-height:3.2em}
+.flow-step .c{font-family:var(--mono);font-size:9.5px;line-height:1.6;color:var(--muted);margin-top:6px}
+.flow-step.on{background:#1C1A17;color:#EDE6D6}
+.flow-step.on .n,.flow-step.on .c{color:#A9A294}
+.flow-step.on .t{color:#fff}
+.flow-step.on .a{color:#EDE6D6}
+.flow-step.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#C77A2E}
+.flow-note{font-size:11.5px;line-height:1.8;color:#3A362C;background:#EFEADC;border-left:3px solid #C9BFA8;padding:10px 13px;margin-top:11px}
+.flow-note b{font-weight:600}
+.timeline-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.timeline{border:1px solid var(--line);background:var(--paper2);padding:14px 17px;min-width:0}
+.timeline .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);margin-bottom:5px}
+.event{display:grid;grid-template-columns:80px 86px 1fr;gap:10px;border-top:1px solid #E3DDCF;padding:8px 0;font-size:11.5px;line-height:1.6;color:#3A362C}
+.event:first-of-type{border-top:0}
+.event .d{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.event .tag{font-family:var(--mono);font-size:10px;border:1px solid currentColor;padding:0 5px;justify-self:start;white-space:nowrap}
+.event .why{color:var(--muted)}
+.timeline-empty{padding:12px 0;font-size:12px;color:var(--muted)}
+.why-box{border:1px solid var(--line);background:var(--paper2);padding:15px 17px;min-width:0}
+.why-box h3{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 7px}
+.why-box p{font-size:12px;line-height:1.85;color:#3A362C;margin:0 0 8px}
+.why-box p:last-child{margin-bottom:0}
+.why-box b{color:var(--red)}
+.sector-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sector-card{border:1px solid var(--line);background:var(--paper2);padding:14px 15px 13px;min-width:0}
+.sector-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:9px}
+.sector-card .name{font-family:var(--serif);font-size:17px;font-weight:700}
+.sector-card .tag{font-family:var(--mono);font-size:9.5px;border:1px solid currentColor;padding:1px 5px;white-space:nowrap}
+.sector-card .tag.waiting{color:var(--gold)}
+.sector-card .tag.watch{color:var(--orange)}
+.sector-card .tag.warn{color:var(--red)}
+.sector-card .tag.confirm{color:var(--deep)}
+.sector-card .facts{display:flex;gap:13px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px}
+.sector-card .facts b{color:var(--ink);font-weight:500}
+.sector-card .why{font-size:11px;line-height:1.7;color:#3A362C;margin-top:8px;min-height:3.4em}
+.sector-card .action{font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid #E3DDCF;padding-top:7px;margin-top:7px}
+.sector-note{font-size:11.5px;line-height:1.8;color:var(--muted);margin-top:10px}
+.push-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.push-card{border:1px solid var(--line);background:var(--paper2);padding:14px 16px;min-width:0}
+.push-card h3{font-family:var(--serif);font-size:17px;font-weight:700;margin:0 0 7px}
+.push-card p{font-size:11.5px;line-height:1.8;color:#3A362C;margin:0}
+.push-card .mono{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;line-height:1.7}
+.links{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;margin-top:14px}
+.links a{color:var(--red);border-bottom:1px solid #D9A79F}
+.footer{border-top:1px solid var(--line);background:var(--paper2);padding:24px;color:var(--muted);font-size:11px;line-height:1.8}
+.footer-in{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer a{border-bottom:1px solid #BDB5A2}
+.err{display:none;background:#F7E4E1;border:1px solid #D9A79F;color:#7A1F1A;padding:11px 15px;margin:16px 24px;font-size:12px}
+@media(max-width:980px){
+  .hero-in{grid-template-columns:1fr;gap:24px;padding:34px 18px 30px}
+  .hero-read{border-left:0;border-top:1px solid #333A3C;padding:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:0 20px;align-items:start}
+  .hero-read .big{grid-column:1/2}
+  .hero-read .chip{grid-column:1/3;justify-self:start}
+  .hero-read .mini{grid-column:1/3}
+  .hero-read .action-box{grid-column:1/3}
+  .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .now-grid{grid-template-columns:1fr}
+  .chart-grid{grid-template-columns:1fr}
+  .levels{border-left:0;border-top:1px solid var(--line)}
+  .state-map{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .timeline-wrap{grid-template-columns:1fr}
+  .sector-grid,.push-grid{grid-template-columns:1fr}
+  .sec-head{flex-direction:column;gap:5px}
+  .sec-head .note{text-align:left;max-width:none}
+  .topnav{gap:11px;font-size:12px}
+  .brand span{display:none}
+}
+@media(max-width:560px){
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric .val{font-size:18px}
+  .hero h1{font-size:34px}
+  .big{font-size:45px}
+  .hero-copy{font-size:13px}
+  .chart-svg{height:240px}
+  .chart-empty{height:240px}
+  .event{grid-template-columns:72px 80px 1fr;gap:6px}
+  .event .why{grid-column:3}
+  .hero-read{display:block}
+  .hero-read .mini{margin-top:10px}
+  .update-line-in{padding:8px 18px}
+  .main{padding:28px 18px 44px}
+  .topnav{gap:9px;font-size:11px;flex-wrap:nowrap}
+  .topnav a:nth-child(4){display:none}
+  .brand b{font-size:11px;letter-spacing:.08em}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#B3392C" stroke-width="1.4"/><circle cx="16" cy="16" r="6" fill="none" stroke="#EDE6D6" stroke-width="1"/><line x1="16" y1="16" x2="24" y2="8" stroke="#B3392C" stroke-width="2"/></svg>
+      <b>TOP RADAR</b><span>逃命顶 / 创业板指</span>
+    </div>
+    <nav class="topnav">
+      <a href="/taoding">主仪表盘</a>
+      <a href="/taoding/escape" class="on">逃命顶</a>
+      <a href="/taoding/method">方法与复盘</a>
+      <a href="/taoding/escape_report.html">历史验证</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <div>
+      <div class="kicker">ESCAPE TOP / PRIMARY MONITOR · 399006</div>
+      <div class="primary-tag"><i></i> 主监测对象 · 创业板指</div>
+      <h1>深跌反弹的顶，<br><em>每天盯住。</em></h1>
+      <p class="hero-copy">只跟踪 2026-06-25 高点之后的这段逃命反弹。它不是下一轮牛市顶部，也不猜第一根阴线：等反弹成熟、靠近阻力、再确认转弱，才进入预警。</p>
+      <div class="hero-state">
+        <span class="badge" id="heroStateBadge">读取中</span>
+        <span id="heroStateName">正在读取数据</span>
+        <span class="date" id="heroDate">—</span>
+      </div>
+      <p class="hero-trigger" id="heroTrigger">正在读取创业板状态机。</p>
+    </div>
+    <aside class="hero-read">
+      <div class="label">创业板指 / CHINEXT</div>
+      <div class="big" id="heroIndex">—<small>点</small></div>
+      <div class="chip" id="heroRole">主监测 · 每日更新</div>
+      <div class="mini"><span>2026-06-25 前高</span><b id="heroHigh">—</b></div>
+      <div class="mini"><span>前高 → 前低</span><b id="heroCrash">—</b></div>
+      <div class="mini"><span>自前低反弹</span><b id="heroRebound">—</b></div>
+      <div class="mini"><span>距最近阻力</span><b id="heroRes">—</b></div>
+      <div class="action-box">
+        <div class="k">现在该做什么</div>
+        <div class="v" id="heroAction">—</div>
+        <div class="s" id="heroActionNote">等待状态机给出下一层信号</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div class="update-line"><div class="update-line-in"><span>数据日 <b id="metaAsOf">—</b> · 生成 <b id="metaGenerated">—</b><button class="refresh" id="refreshBtn">刷新</button></span><span id="metaUpdate">每个交易日 15:10 / 16:10 自动重建 · 本页每 5 分钟尝试刷新</span></div></div>
+<div class="err" id="err"></div>
+
+<main class="main">
+  <section>
+    <div class="sec-head">
+      <div><div class="num">01 / NOW</div><h2>当前读数</h2></div>
+      <p class="note">先看“离顶部多远、反弹到哪、有没有接近阻力”，再看状态。所有百分比都是相对本轮前高和前低。</p>
+    </div>
+    <div class="metrics" id="metrics"></div>
+    <div class="now-grid">
+      <div class="trigger-card">
+        <div class="k">触发原因 / TRIGGER</div>
+        <p id="triggerText">正在读取。</p>
+      </div>
+      <div class="gate-card">
+        <div class="k"><span>进入“反弹观察”的四道门</span><span id="gateCount">0 / 4</span></div>
+        <div class="rows" id="gates"></div>
+        <div class="gate-note">四门同时满足才进入观察；观察只是“不新增”，不是卖出信号。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="num">02 / PATH</div><h2>指数路径与关键刻度</h2></div>
+      <p class="note" id="chartNote">从 2026-06-25 前高开始；虚线是本轮跌幅的 Fibonacci 回撤位，横线是前高 / 前低。</p>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-panel">
+        <div class="chart-top">
+          <h3>创业板指 · 本轮深跌与反弹</h3>
+          <div class="legend"><span><i style="background:#1C1A17"></i>指数</span><span><i style="background:#B3392C"></i>预警 / 确认区</span><span><i style="background:#D9D2C2"></i>回撤刻度</span></div>
+        </div>
+        <div id="chartMount"><div class="chart-empty">正在读取路径数据。</div></div>
+        <div class="chart-dates" id="chartDates"></div>
+        <div class="chart-note">纵轴为指数点位。状态色块只在进入观察、预警或确认后出现；深跌段保持空白，避免把“下跌过程”误读成信号。</div>
+      </div>
+      <aside class="levels">
+        <div class="k">区间刻度 / LEVELS</div>
+        <div id="levels"></div>
+        <div class="level-foot" id="levelFoot">前高、前低与 Fibonacci 回撤位都来自同一轮行情；均线是当前值，不是固定刻度。</div>
+      </aside>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="num">03 / STATE</div><h2>状态机：晚两天，但避开主跌段</h2></div>
+      <p class="note">历史回放显示，预测“哪天是顶”会大量误报；确认反弹已经转弱，才是动作层。</p>
+    </div>
+    <div class="state-map" id="stateMap"></div>
+    <div class="flow-note" id="flowNote"><b>当前：</b>正在读取状态。</div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="num">04 / LOG</div><h2>最近状态与判断依据</h2></div>
+      <p class="note">状态变化才记录。没有变化时，保持上一状态，不重复发微信。</p>
+    </div>
+    <div class="timeline-wrap">
+      <div class="timeline">
+        <div class="k">创业板状态轨迹</div>
+        <div id="events"><div class="timeline-empty">正在读取事件。</div></div>
+      </div>
+      <div class="why-box">
+        <h3>为什么不是“见顶就清仓”</h3>
+        <p>历史回放里，逃命预警后 20 日内仍创新高的比例约 <b>64%</b>；预警只能减 <b>1/3</b>，确认再减 <b>1/3</b>。创新高必须撤销，不能把一次预警当成终局。</p>
+        <p>确认层晚于顶部约 2 个交易日，但确认后 20 日内继续跌 5% 的比例约 <b>93%–98%</b>（以“跌破 MA20 / 自高点回落”两种确认口径计）。这就是用“晚一点”换“少挨主跌段”。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="num">05 / CONTEXT</div><h2>同源行业：只做交叉确认</h2></div>
+      <p class="note">行业与创业板共用同一套状态机和门槛；创业板是主监测对象，行业状态用来判断风险是否扩散。</p>
+    </div>
+    <div class="sector-grid" id="sectors"></div>
+    <div class="sector-note" id="sectorNote">正在读取同源行业。</div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="num">06 / DELIVERY</div><h2>推送、更新与边界</h2></div>
+      <p class="note">创业板指现在进入推送循环；等待不推，进入观察 / 预警 / 确认 / 撤销 / 结束各推一次。</p>
+    </div>
+    <div class="push-grid">
+      <div class="push-card">
+        <h3>微信什么时候响</h3>
+        <p>等待反弹：不推。<br>进入反弹观察：推一次。<br>逃命预警：推一次，动作为减 1/3。<br>逃命确认：再推一次，再减 1/3。<br>创新高撤销 / 趋势反转 / 反弹失败：各推一次。</p>
+        <div class="mono">PushPlus 单推 · escape_push_state.json 防重复<br>创业板指（399006）已纳入推送对象</div>
+      </div>
+      <div class="push-card">
+        <h3>每天怎么更新</h3>
+        <p>工作日 15:10 重建，16:10 兜底。源为腾讯前复权日线，失败时东财 / 新浪备用。指数为创业板指官方点位，不是行业等权指数。</p>
+        <div class="modeline mono">D=38% · G=20% · tol=3% · 成熟度 2/4<br>主数据：/taoding/data/escape_shadow.json</div>
+      </div>
+      <div class="push-card">
+        <h3>它不回答什么</h3>
+        <p>不预测绝对底部，不保证每一次反弹都会成熟。若反弹在进入观察前就失败，状态机不会补发一个“事后正确”的信号；这是不猜顶的代价。</p>
+        <div class="mono">不是买卖建议 · 减仓比例按个人风险预算调整</div>
+      </div>
+    </div>
+    <div class="links">
+      <a href="/taoding/method">读完整方法与 2026-06 复盘 →</a>
+      <a href="/taoding/escape_report.html">38/40/45% 历史验证报告 →</a>
+      <a href="/taoding">回到主仪表盘 →</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-in">
+    <div>TOP RADAR · 逃命顶 / 阶段反弹<br>创业板指为主监测对象；行业为同源背景。深跌门槛 38%，反弹门槛 20%，阻力容差 3%。</div>
+    <div style="text-align:right">数据：腾讯行情日线（前复权）<br><a href="/taoding/method">方法</a>　<a href="/taoding/escape_report.html">验证报告</a></div>
+  </div>
+</footer>
+
+<script>
+const DATA_BASE = location.pathname.startsWith('/taoding') ? '/taoding/data' : './data';
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = (x, d = 2) => (x === null || x === undefined || Number.isNaN(Number(x))) ? '—' : Number(x).toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d});
+const idxNum = (x) => num(x, Math.abs(Number(x)) >= 1000 ? 2 : 3);
+const pct = (x, d = 1) => (x === null || x === undefined || Number.isNaN(Number(x))) ? '—' : (Number(x) * 100).toFixed(d) + '%';
+const signedPct = (x, d = 1) => (x === null || x === undefined || Number.isNaN(Number(x))) ? '—' : (Number(x) >= 0 ? '+' : '') + (Number(x) * 100).toFixed(d) + '%';
+const shortDate = (s) => s ? String(s).slice(5) : '—';
+const stateColor = {waiting:'#8A7A55', watch:'#C77A2E', warn:'#B3392C', confirm:'#7A1F1A', trend:'#3E6B52', failed:'#6D675B', idle:'#6D675B', sideways:'#6D675B'};
+const stateName = {waiting:'深跌后等待反弹', watch:'反弹观察', warn:'逃命预警', confirm:'逃命确认', trend:'趋势反转', failed:'反弹失败', idle:'无深跌场景', sideways:'转入震荡'};
+const stateAction = {waiting:'等待反弹成形，不操作', watch:'只观察，不新增', warn:'减 1/3；剩余止损上移', confirm:'再减 1/3；不接飞刀', trend:'移交常规趋势雷达', failed:'结束本次跟踪', idle:'正常跟踪'};
+const FALLBACK = {
+  waiting:'正在读取创业板状态机。',
+  watch:'反弹已经进入观察，等待短线转弱。',
+  warn:'反弹已经转弱，进入预警层。',
+  confirm:'反弹已经确认转弱，进入动作层。',
+  trend:'已经收复前高或修复超过 80%，不再按逃命顶跟踪。',
+  failed:'已经跌破本轮反弹前低，反弹失败。'
+};
+let shadow = null;
+let summary = {};
+let refreshTimer = null;
+
+function showErr(msg) {
+  const e = $('#err');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+function clearErr() { $('#err').style.display = 'none'; }
+
+function primaryData() {
+  if (shadow && shadow.primary && shadow.primary.latest) return shadow.primary;
+  const ref = summary && summary.escape_reference;
+  if (ref && ref.latest) {
+    return Object.assign({}, ref, {role:'primary', monitor:true});
+  }
+  return null;
+}
+
+function renderHero(p) {
+  const l = p.latest || {};
+  const st = l.state || p.state || 'waiting';
+  const color = l.color || p.color || stateColor[st] || '#8A7A55';
+  $('#heroStateBadge').textContent = l.state_name || p.state_name || stateName[st] || '—';
+  $('#heroStateBadge').style.background = color;
+  $('#heroStateName').textContent = l.state_name || p.state_name || stateName[st] || '—';
+  $('#heroDate').textContent = `${l.as_of || p.as_of || '—'} · 低点后 ${l.days_since_low ?? '—'} 日`;
+  $('#heroTrigger').innerHTML = `<b>触发</b>　${esc(l.trigger || p.trigger || '—')}`;
+  $('#heroIndex').innerHTML = `${esc(idxNum(l.index ?? p.index))}<small>点</small>`;
+  $('#heroRole').textContent = '主监测 · 399006 · 每日更新';
+  $('#heroHigh').textContent = idxNum(l.crash_high);
+  $('#heroCrash').textContent = pct(l.crash_dd ?? p.crash_dd);
+  $('#heroRebound').textContent = signedPct(l.rebound_gain ?? p.rebound_gain);
+  $('#heroRes').textContent = (l.nearest_res || '—') + ' · ' + pct(l.res_distance);
+  $('#heroAction').textContent = l.action || p.action || stateAction[st] || '—';
+  const note = st === 'waiting'
+    ? '反弹尚未成熟；不猜底，也不抢反弹。'
+    : st === 'watch'
+      ? '已进入观察；不新增，等预警。'
+      : st === 'warn'
+        ? '预警层：只减 1/3，不是清仓。'
+        : st === 'confirm'
+          ? '确认层：再减 1/3，等重新站上 MA20。'
+          : st === 'trend'
+            ? '结束逃命顶跟踪，交回常规雷达。'
+            : '结束本次跟踪，等待下一次深跌。';
+  $('#heroActionNote').textContent = note;
+  $('#metaAsOf').textContent = l.as_of || p.as_of || '—';
+  $('#metaGenerated').textContent = (shadow && shadow.generated_at) || (summary && summary.updated_at) || '—';
+  $('#metaUpdate').textContent = `${l.as_of || '—'} 数据 · 每个交易日 15:10 / 16:10 自动重建 · 本页每 5 分钟尝试刷新`;
+}
+
+function renderMetrics(p) {
+  const l = p.latest || {};
+  const items = [
+    ['深跌幅度', pct(l.crash_dd), `${idxNum(l.crash_high)} → ${idxNum(l.crash_low)}`, 'red'],
+    ['反弹幅度', signedPct(l.rebound_gain), '自本轮前低', 'orange'],
+    ['修复比例', pct(l.retracement), '本轮跌幅的回撤', ''],
+    ['自反弹高点', signedPct(l.high_drawdown), '当前回撤', ''],
+    ['成熟度', `${l.maturity_count ?? 0} / 4`, '天数 / 幅度 / 乖离 / RSI', 'muted'],
+    ['最近阻力', `${l.nearest_res || '—'}`, `${idxNum(l.nearest_res === 'MA60' ? l.ma60 : l.nearest_res === 'MA120' ? l.ma120 : l.nearest_res === '38.2%回撤' ? l.fib_382 : l.nearest_res === '50%回撤' ? l.fib_500 : l.nearest_res === '61.8%回撤' ? l.fib_618 : null)} · 距 ${pct(l.res_distance)}`, 'muted'],
+  ];
+  $('#metrics').innerHTML = items.map(([lab, val, sub, cls]) => `
+    <div class="metric"><div class="lab">${esc(lab)}</div><div class="val ${cls}">${esc(val)}</div><div class="sub">${esc(sub)}</div></div>`).join('');
+  $('#triggerText').innerHTML = `<b>${esc(l.state_name || p.state_name || '—')}</b>　${esc(l.trigger || p.trigger || '—')}`;
+  const gates = [
+    ['反弹 ≥ 20%', !!((l.rebound_gain ?? 0) >= .20), signedPct(l.rebound_gain)],
+    ['成熟度 ≥ 2 / 4', !!((l.maturity_count ?? 0) >= 2), `${l.maturity_count ?? 0} / 4`],
+    ['距最近阻力 ≤ 3%', !!((l.res_distance ?? 1) <= .03), pct(l.res_distance)],
+    ['低点后 ≥ 10 日', !!((l.days_since_low ?? 0) >= 10), `${l.days_since_low ?? 0} 日`]
+  ];
+  const n = gates.filter(x => x[1]).length;
+  $('#gateCount').textContent = `${n} / 4`;
+  $('#gates').innerHTML = gates.map(([name, ok, v]) => `<div class="gate-row"><span><i class="${ok ? 'ok' : ''}"></i>${esc(name)}</span><b style="color:${ok ? '#3E6B52' : '#8A7A55'}">${esc(v)}</b></div>`).join('');
+}
+
+function renderLevels(p) {
+  const l = p.latest || {};
+  const items = [
+    ['前高', l.crash_high, '2026-06-25'],
+    ['61.8% 回撤', l.fib_618, ''],
+    ['50% 回撤', l.fib_500, ''],
+    ['38.2% 回撤', l.fib_382, ''],
+    ['前低', l.crash_low, l.low_date || ''],
+    ['MA20', l.ma20, '当前值'],
+    ['MA60', l.ma60, '当前值'],
+    ['MA120', l.ma120, '当前值']
+  ];
+  $('#levels').innerHTML = items.map(([name, v, note]) => `<div class="level-row"><span>${esc(name)}</span><b>${idxNum(v)}${note ? `<span class="muted"> · ${esc(note)}</span>` : ''}</b></div>`).join('');
+  $('#levelFoot').textContent = `当前指数 ${idxNum(l.index)}，距 ${l.nearest_res || '—'} ${pct(l.res_distance)}；均线为当前值，随行情变化。`;
+}
+
+function renderChart(p) {
+  const l = p.latest || {};
+  const hist = (p.history || []).filter(x => x && x.idx !== null && x.idx !== undefined && !Number.isNaN(Number(x.idx)));
+  const mount = $('#chartMount');
+  if (hist.length < 2) {
+    mount.innerHTML = '<div class="chart-empty">本轮低点当日，路径只有一个点；下一交易日开始绘制反弹路径。</div>';
+    $('#chartDates').innerHTML = '';
+    return;
+  }
+  const W = 1000, H = 330, padL = 8, padR = 8, padT = 16, padB = 12;
+  const levels = [
+    ['前高', l.crash_high], ['61.8%', l.fib_618], ['50%', l.fib_500],
+    ['38.2%', l.fib_382], ['前低', l.crash_low]
+  ].filter(([,v]) => v !== null && v !== undefined && Number.isFinite(Number(v)));
+  const values = hist.map(x => Number(x.idx));
+  const all = values.concat(levels.map(x => Number(x[1])));
+  let yMin = Math.min(...all), yMax = Math.max(...all);
+  const span = yMax - yMin || 1;
+  yMin -= span * .06; yMax += span * .06;
+  const x = i => padL + i / (hist.length - 1) * (W - padL - padR);
+  const y = v => padT + (yMax - Number(v)) / (yMax - yMin) * (H - padT - padB);
+  const linePts = hist.map((h, i) => `${x(i).toFixed(2)},${y(h.idx).toFixed(2)}`).join(' ');
+  const area = `M ${x(0).toFixed(2)} ${H - padB} L ${linePts.replaceAll(' ', ' L ')} L ${x(hist.length - 1).toFixed(2)} ${H - padB} Z`;
+  const runs = [];
+  let current = null;
+  hist.forEach((h, i) => {
+    if (h.state && h.state !== 'waiting' && h.state !== 'idle') {
+      if (!current || current.state !== h.state) {
+        current = {state: h.state, start: i};
+        runs.push(current);
+      }
+      current.end = i;
+    } else {
+      current = null;
+    }
+  });
+  const bands = runs.map(r => {
+    const c = stateColor[r.state] || '#B3392C';
+    const x0 = x(r.start), x1 = x(Math.min(r.end + 1, hist.length - 1));
+    const opacity = r.state === 'confirm' ? .16 : r.state === 'warn' ? .14 : r.state === 'watch' ? .10 : .08;
+    return `<rect x="${x0.toFixed(2)}" y="${padT}" width="${Math.max(2, x1-x0).toFixed(2)}" height="${H-padT-padB}" fill="${c}" opacity="${opacity}"/>`;
+  }).join('');
+  const grids = [0.25, 0.5, 0.75].map(t => {
+    const yy = padT + t * (H - padT - padB);
+    return `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E3DDCF" stroke-width="1"/>`;
+  }).join('');
+  const levelLines = levels.map(([name, v], i) => {
+    const yy = y(v).toFixed(2);
+    const dash = name.includes('%') ? 'stroke-dasharray="4 4"' : '';
+    const c = name === '前高' || name === '前低' ? '#6D675B' : '#BDB5A2';
+    return `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="${c}" stroke-width="1" ${dash}/>`;
+  }).join('');
+  const currentPt = `<circle cx="${x(hist.length-1).toFixed(2)}" cy="${y(hist[hist.length-1].idx).toFixed(2)}" r="4.5" fill="#B3392C"/><circle cx="${x(hist.length-1).toFixed(2)}" cy="${y(hist[hist.length-1].idx).toFixed(2)}" r="8" fill="none" stroke="#B3392C" stroke-width="1" opacity=".55"/>`;
+  mount.innerHTML = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="创业板指本轮深跌与反弹路径">${bands}${grids}${levelLines}<path d="${area}" fill="rgba(28,26,23,.035)"/><polyline points="${linePts}" fill="none" stroke="#1C1A17" stroke-width="1.6" vector-effect="non-scaling-stroke"/>${currentPt}</svg>`;
+  const d = hist.map(h => h.d);
+  const picks = [0, Math.floor((hist.length-1)/3), Math.floor((hist.length-1)*2/3), hist.length-1];
+  $('#chartDates').innerHTML = picks.map(i => `<span>${shortDate(d[i])}</span>`).join('');
+}
+
+function renderStateMap(p) {
+  const l = p.latest || {};
+  const cur = l.state || p.state || 'waiting';
+  const steps = [
+    ['waiting', '深跌后等待', '深跌 ≥38%，但反弹未成熟或未贴阻力', '不操作'],
+    ['watch', '反弹观察', '反弹 ≥20% + 成熟度 ≥2/4 + 距阻力 ≤3% + 低点后 ≥10 日', '不新增'],
+    ['warn', '逃命预警', '观察中首次跌破 MA10，或自反弹高点回落 3%', '减 1/3'],
+    ['confirm', '逃命确认', '预警后跌破 MA20，或自反弹高点回落 5%', '再减 1/3']
+  ];
+  $('#stateMap').innerHTML = steps.map(([key, name, cond, act], i) => `
+    <div class="flow-step ${cur === key ? 'on' : ''}">
+      <div class="n">0${i+1} / ${key.toUpperCase()}</div>
+      <div class="t">${name}</div>
+      <div class="a">${act}</div>
+      <div class="c">${cond}</div>
+    </div>`).join('');
+  const note = cur === 'waiting'
+    ? '当前在等待反弹成熟。反弹幅度、成熟度、阻力距离和低点后天数必须同时满足，才会进入观察；任何一项不够，都不会提前发预警。'
+    : cur === 'watch'
+      ? '当前在观察。观察层只代表“不新增”，还不是减仓；跌破 MA10 或自反弹高点回落 3% 才进入预警。'
+      : cur === 'warn'
+        ? '当前在预警层。只减 1/3，剩余仓位止损上移；反弹创新高 3% 会撤销预警，回到观察。'
+        : cur === 'confirm'
+          ? '当前在确认层。再减 1/3，等待重新站上 MA20；若反弹创新高 3%，同样撤销并回到观察。'
+          : `当前为 ${l.state_name || cur}；逃命顶跟踪已结束。`;
+  $('#flowNote').innerHTML = `<b>当前：</b>${esc(note)}`;
+}
+
+function renderEvents(p) {
+  const evs = (shadow && shadow.events ? shadow.events : []).filter(e => e && e.sector === '399006').slice(-6).reverse();
+  if (!evs.length) {
+    $('#events').innerHTML = '<div class="timeline-empty">暂无状态变化；当前状态持续中。</div>';
+    return;
+  }
+  $('#events').innerHTML = evs.map(e => {
+    const to = e.to || '';
+    const color = stateColor[to] || '#6D675B';
+    return `<div class="event"><span class="d">${esc(e.d || '—')}</span><span class="tag" style="color:${color}">${esc(e.to_name || stateName[to] || to || '—')}</span><span class="why">${esc(e.trigger || '—')}</span></div>`;
+  }).join('');
+}
+
+function renderSectors() {
+  const sectors = (shadow && shadow.sectors ? shadow.sectors : []).filter(s => s && s.state);
+  if (!sectors.length) {
+    $('#sectors').innerHTML = '<div class="sector-note">暂无同源行业数据。</div>';
+    $('#sectorNote').textContent = '';
+    return;
+  }
+  $('#sectors').innerHTML = sectors.map(s => {
+    const l = s.latest || {};
+    const st = s.state || l.state || 'waiting';
+    return `<div class="sector-card">
+      <div class="top"><div class="name">${esc(s.name || s.id)}</div><span class="tag ${esc(st)}">${esc(s.state_name || stateName[st] || st)}</span></div>
+      <div class="facts"><span>深跌 <b>${pct(s.crash_dd)}</b></span><span>反弹 <b>${signedPct(s.rebound_gain)}</b></span><span>阻力 <b>${pct(l.res_distance)}</b></span></div>
+      <div class="why">${esc(s.trigger || l.trigger || '—')}</div>
+      <div class="action">${esc(s.action || l.action || '—')}${s.stale ? ' · 数据 stale' : ''}</div>
+    </div>`;
+  }).join('');
+  $('#sectorNote').textContent = '光模块在 registry 中仍是休眠行业，但逃命顶按同源状态机继续跟踪；是否继续推送，单独看逃命顶状态，不按 enabled 过滤。';
+}
+
+function renderAll() {
+  const p = primaryData();
+  if (!p || !p.latest) {
+    renderEmpty();
+    return;
+  }
+  renderHero(p);
+  renderMetrics(p);
+  renderLevels(p);
+  renderChart(p);
+  renderStateMap(p);
+  renderEvents(p);
+  renderSectors();
+}
+
+function renderEmpty() {
+  $('#heroStateBadge').textContent = '等待数据';
+  $('#heroStateName').textContent = '没有读到创业板逃命顶字段';
+  $('#heroTrigger').textContent = '检查 /taoding/data/escape_shadow.json 是否存在。';
+  $('#metrics').innerHTML = '<div class="metric"><div class="lab">数据</div><div class="val muted">—</div><div class="sub">等待生成</div></div>';
+  $('#triggerText').textContent = '暂无可读状态。';
+  $('#levels').innerHTML = '<div class="level-row"><span>状态</span><b>等待数据</b></div>';
+  $('#events').innerHTML = '<div class="timeline-empty">暂无状态。</div>';
+  $('#sectors').innerHTML = '<div class="sector-note">暂无同源行业数据。</div>';
+  $('#stateMap').innerHTML = '';
+  $('#chartMount').innerHTML = '<div class="chart-empty">暂无路径数据。</div>';
+  $('#chartDates').innerHTML = '';
+  $('#levels').innerHTML = '';
+}
+
+async function load() {
+  clearErr();
+  try {
+    const [shadowRes, summaryRes] = await Promise.all([
+      fetch(`${DATA_BASE}/escape_shadow.json?t=${Date.now()}`, {cache: 'no-store'}),
+      fetch(`${DATA_BASE}/summary.json?t=${Date.now()}`, {cache: 'no-store'})
+    ]);
+    if (!shadowRes.ok) throw new Error(`escape_shadow.json HTTP ${shadowRes.status}`);
+    shadow = await shadowRes.json();
+    summary = summaryRes.ok ? await summaryRes.json() : {};
+    renderAll();
+  } catch (e) {
+    showErr(`读取失败：${e.message}。请确认静态数据路径。`);
+    if (!shadow) renderEmpty();
+  }
+}
+
+function boot() {
+  $('#refreshBtn') && $('#refreshBtn').addEventListener('click', load);
+  load();
+  refreshTimer = setInterval(load, 300000);
+}
+
+boot();
+</script>
+</body>
+</html>

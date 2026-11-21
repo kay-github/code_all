@@ -406,8 +406,13 @@ def write_v2_shadow(summary_sectors, built):
     print(f"v2 shadow: {len(entries)} sectors, {len(payload['events'])} events")
 
 
-def build_reference():
-    """ChiNext only as context; it never drives a sector action."""
+def build_primary():
+    """Build the ChiNext escape-top monitor.
+
+    ChiNext is the primary monitoring object, not merely a reference. The page
+    and the PushPlus transition loop both read this object. Sector states stay
+    available as same-engine context.
+    """
     bench = load_bars(BENCH_SYMBOL)
     if bench is None or len(bench) < 140:
         return None
@@ -415,11 +420,55 @@ def build_reference():
     b["idx"] = pd.to_numeric(b["close"], errors="coerce")
     r = analyze(b)
     latest = dict(r.get("latest") or {})
-    latest["action"] = "仅作创业板参照，不单独触发行业动作"
     latest["state_name"] = latest.get("state_name") or "—"
+    latest["role"] = "primary"
+    latest["monitor"] = True
+
+    # The state machine's own history starts at the crash low. A standalone
+    # monitor needs the full peak-to-now path, otherwise a fresh low would
+    # render as a single point. Keep at most 260 bars.
+    history = []
+    peak_date = latest.get("peak_date")
+    low_date = latest.get("low_date")
+    if peak_date and low_date:
+        peak_ts = pd.Timestamp(peak_date)
+        low_ts = pd.Timestamp(low_date)
+        chart = b.loc[peak_ts:].copy()
+        if len(chart) > 260:
+            chart = chart.tail(260)
+        post = b.loc[low_ts:].copy()
+        post["rebound_high"] = post["idx"].cummax()
+        event_state = "waiting"
+        state_events = r.get("events") or []
+        for d, row in chart.iterrows():
+            dstr = d.strftime("%Y-%m-%d")
+            idx = _num(row.get("idx"), 4)
+            if d < low_ts:
+                history.append({
+                    "d": dstr, "idx": idx, "phase": "crash",
+                    "state": "waiting", "rebound_gain": None,
+                    "retracement": None, "high_drawdown": None,
+                })
+                continue
+            for e in state_events:
+                if dstr >= e.get("d", ""):
+                    event_state = e.get("to")
+            high = _num(post.loc[d, "rebound_high"], 4)
+            history.append({
+                "d": dstr,
+                "idx": idx,
+                "phase": "rebound",
+                "state": event_state,
+                "rebound_gain": _num(row["idx"] / latest["crash_low"] - 1, 4),
+                "retracement": _num((row["idx"] - latest["crash_low"]) / (latest["crash_high"] - latest["crash_low"]), 4),
+                "high_drawdown": _num(row["idx"] / high - 1, 4) if high else None,
+            })
+
     return {
         "id": "399006",
         "name": "创业板指",
+        "role": "primary",
+        "monitor": True,
         "as_of": latest.get("as_of"),
         "state": latest.get("state"),
         "state_name": latest.get("state_name"),
@@ -431,15 +480,57 @@ def build_reference():
         "retracement": latest.get("retracement"),
         "high_drawdown": latest.get("high_drawdown"),
         "color": latest.get("color"),
+        "warn_date": latest.get("warn_date"),
+        "confirm_date": latest.get("confirm_date"),
+        "latest": latest,
+        "history": history,
+        "events": r.get("events") or [],
+    }
+
+
+def _summary_reference(reference):
+    """Keep summary.json small; full chart belongs in escape_shadow.json."""
+    if not reference:
+        return None
+    out = dict(reference)
+    out.pop("history", None)
+    out.pop("events", None)
+    return out
+
+
+def _escape_entry(sid, name, latest, *, stale=False, coverage=None, role=None):
+    entry = {
+        "id": sid,
+        "name": name or sid,
+        "as_of": latest.get("as_of"),
+        "state": latest.get("state"),
+        "state_name": latest.get("state_name") or STATE_NAME.get(latest.get("state"), latest.get("state")),
+        "action": latest.get("action"),
+        "trigger": latest.get("trigger"),
+        "index": latest.get("index"),
+        "crash_dd": latest.get("crash_dd"),
+        "rebound_gain": latest.get("rebound_gain"),
+        "retracement": latest.get("retracement"),
+        "high_drawdown": latest.get("high_drawdown"),
+        "color": latest.get("color"),
+        "warn_date": latest.get("warn_date"),
+        "confirm_date": latest.get("confirm_date"),
+        "stale": stale,
+        "coverage": coverage,
         "latest": latest,
     }
+    if role:
+        entry["role"] = role
+        entry["monitor"] = role == "primary"
+    return entry
 
 
 def write_escape_shadow(summary_sectors, built, reference=None):
     """Persist the escape-top state and its transitions.
 
     This file is the audit trail and the source of PushPlus transitions. It is
-    independent of the legacy tier and of the V2 shadow.
+    independent of the legacy tier and of the V2 shadow. `primary` is ChiNext
+    and is also consumed by /taoding/escape; `sectors` are same-engine context.
     """
     path = DATA / "escape_shadow.json"
     old = {}
@@ -449,50 +540,12 @@ def write_escape_shadow(summary_sectors, built, reference=None):
         except Exception:
             old = {}
     old_by = {s.get("id"): s for s in old.get("sectors", [])}
+    old_primary = old.get("primary") or old.get("reference")
     events = list(old.get("events", []))
     event_keys = {(e.get("sector"), e.get("d"), e.get("to")) for e in events}
 
-    entries = []
-    for s in summary_sectors:
-        if s.get("status") != "ok":
-            continue
-        sid = s["id"]
-        obj = built.get(sid)
-        if obj is None:
-            p = SECTORS / f"{sid}.json"
-            if not p.exists():
-                continue
-            try:
-                obj = json.load(open(p, encoding="utf-8"))
-            except Exception:
-                continue
-        esc = obj.get("escape") or {}
-        latest = esc.get("latest")
-        if not latest:
-            continue
-        entry = {
-            "id": sid,
-            "name": s.get("name") or sid,
-            "as_of": latest.get("as_of") or s.get("as_of"),
-            "state": latest.get("state"),
-            "state_name": latest.get("state_name") or STATE_NAME.get(latest.get("state"), latest.get("state")),
-            "action": latest.get("action"),
-            "trigger": latest.get("trigger"),
-            "index": latest.get("index"),
-            "crash_dd": latest.get("crash_dd"),
-            "rebound_gain": latest.get("rebound_gain"),
-            "retracement": latest.get("retracement"),
-            "high_drawdown": latest.get("high_drawdown"),
-            "color": latest.get("color"),
-            "warn_date": latest.get("warn_date"),
-            "confirm_date": latest.get("confirm_date"),
-            "stale": s.get("stale", False),
-            "coverage": s.get("coverage"),
-            "latest": latest,
-        }
-        entries.append(entry)
-
-        prev = old_by.get(sid)
+    def record(prev, entry):
+        sid = entry["id"]
         if not prev:
             key = (sid, entry["as_of"], entry["state"])
             if key not in event_keys:
@@ -515,18 +568,59 @@ def write_escape_shadow(summary_sectors, built, reference=None):
                 })
                 event_keys.add(key)
 
+    entries = []
+    for s in summary_sectors:
+        if s.get("status") != "ok":
+            continue
+        sid = s["id"]
+        obj = built.get(sid)
+        if obj is None:
+            p = SECTORS / f"{sid}.json"
+            if not p.exists():
+                continue
+            try:
+                obj = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+        esc = obj.get("escape") or {}
+        latest = esc.get("latest")
+        if not latest:
+            continue
+        entry = _escape_entry(
+            sid, s.get("name") or sid, latest,
+            stale=s.get("stale", False), coverage=s.get("coverage"),
+        )
+        entries.append(entry)
+        record(old_by.get(sid), entry)
+
+    primary = None
+    if reference and reference.get("latest"):
+        primary = _escape_entry(
+            "399006", reference.get("name") or "创业板指",
+            reference["latest"], coverage=1.0, role="primary",
+        )
+        primary["history"] = reference.get("history") or []
+        # Keep an explicit init event even when an older file only had
+        # `reference`, so the standalone page has a visible starting point.
+        has_primary_event = any(e.get("sector") == "399006" for e in events)
+        if not has_primary_event:
+            record(None, primary)
+        else:
+            record(old_primary, primary)
+
     payload = {
         "version": "escape-2026-11",
         "mode": "live",
         "push_policy": "state_change",
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "note": "逃命顶是独立的阶段反弹状态机；不替换旧档位，也不改变 V2 影子。",
-        "reference": reference,
+        "note": "创业板指为主监测对象；行业状态为同源背景。逃命顶不替换旧档位，也不改变 V2 影子。",
+        "primary": primary,
+        "reference": _summary_reference(reference),
         "sectors": entries,
         "events": events[-200:],
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=_json_default), encoding="utf-8")
-    print(f"escape shadow: {len(entries)} sectors, {len(payload['events'])} events")
+    print(f"escape shadow: primary={'yes' if primary else 'no'}, {len(entries)} sectors, {len(payload['events'])} events")
 
 
 def main():
@@ -625,7 +719,8 @@ def main():
             "escape_confirm_date": el.get("confirm_date"),
             "updated_at": obj["meta"]["generated_at"],
         })
-    reference = build_reference()
+    reference_full = build_primary()
+    reference = _summary_reference(reference_full)
     summary = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": source,
@@ -635,7 +730,7 @@ def main():
     sp.write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     print("summary:", json.dumps(summary_sectors, ensure_ascii=False))
     write_v2_shadow(summary_sectors, built)
-    write_escape_shadow(summary_sectors, built, reference)
+    write_escape_shadow(summary_sectors, built, reference_full)
 
 
 if __name__ == "__main__":
