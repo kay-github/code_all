@@ -2,7 +2,7 @@
  "version": "v2-shadow-2026-11",
  "mode": "shadow",
  "push_policy": "legacy_only",
- "generated_at": "2026-11-21 00:56",
+ "generated_at": "2026-11-21 19:47",
  "note": "V2 只计算、展示、留痕；PushPlus 仍由旧规则触发。",
  "sectors": [
   {
@@ -14,14 +14,14 @@
    "action": "正常持有；E 层转弱时不加仓，暂不减仓",
    "R": 14.2,
    "E": 3,
-   "vol20": 0.7251,
+   "vol20": 0.7301,
    "trigger": "E≥3 已出现，但近高未过",
    "red_trend": false,
    "red_accel": false,
    "deep": false,
    "recover": false,
    "stale": false,
-   "coverage": 0.956
+   "coverage": 0.978
   },
   {
    "id": "semi_equip",
@@ -30,7 +30,7 @@
    "tier": 1,
    "tier_name": "观察",
    "action": "正常持有；E 层转弱时不加仓，暂不减仓",
-   "R": 17.9,
+   "R": 18.0,
    "E": 3,
    "vol20": 0.8859,
    "trigger": "E≥3 已出现，但近高未过",
@@ -51,6 +51,24 @@
    "R": 17.0,
    "E": 3,
    "vol20": 0.8349,
+   "trigger": "E≥3 已出现，但近高未过",
+   "red_trend": false,
+   "red_accel": false,
+   "deep": false,
+   "recover": false,
+   "stale": false,
+   "coverage": 1.0
+  },
+  {
+   "id": "storage",
+   "name": "存储芯片",
+   "as_of": "2026-11-20",
+   "tier": 1,
+   "tier_name": "观察",
+   "action": "正常持有；E 层转弱时不加仓，暂不减仓",
+   "R": 15.9,
+   "E": 3,
+   "vol20": 0.7631,
    "trigger": "E≥3 已出现，但近高未过",
    "red_trend": false,
    "red_accel": false,
@@ -102,6 +120,20 @@
    "E": 3,
    "vol20": 0.8048,
    "trigger": "E≥3 已出现，但近高门未过"
+  },
+  {
+   "type": "init",
+   "sector": "storage",
+   "name": "存储芯片",
+   "d": "2026-11-20",
+   "from": null,
+   "from_name": null,
+   "to": 1,
+   "to_name": "观察",
+   "R": 15.9,
+   "E": 3,
+   "vol20": 0.768,
+   "trigger": "E≥3 已出现，但近高未过"
   }
  ]
 }

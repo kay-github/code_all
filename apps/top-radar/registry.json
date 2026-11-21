@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updated_at": "2026-11-19",
+ "updated_at": "2026-11-21",
  "sectors": [
   {
    "id": "optical",
@@ -34,6 +34,18 @@
    "order": 3,
    "push": {
     "enabled": true,
+    "min_tier": 3,
+    "orange": "stage"
+   }
+  },
+  {
+   "id": "storage",
+   "name": "存储芯片",
+   "enabled": false,
+   "pool": "pools/storage.json",
+   "order": 4,
+   "push": {
+    "enabled": false,
     "min_tier": 3,
     "orange": "stage"
    }

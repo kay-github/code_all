@@ -24,6 +24,14 @@ PROXIES = {"http": PROXY, "https": PROXY} if PROXY else None
 
 BENCH_SYMBOL = "sz399006"
 
+# Fixed broad-index references for the escape-top page. ChiNext remains the
+# primary object; STAR50 is a second fixed reference, not a tradeable sector.
+REFERENCE_INDEXES = [
+    {"id": "399006", "name": "创业板指", "symbol": BENCH_SYMBOL, "role": "primary"},
+    {"id": "000688", "name": "科创50", "symbol": "sh000688", "role": "reference"},
+]
+REFERENCE_SYMBOLS = [x["symbol"] for x in REFERENCE_INDEXES]
+
 TIER_NAME = {0: "正常", 1: "观察", 2: "橙色预警", 3: "红色高危", 4: "深红清仓"}
 TIER_ACTION = {
     0: "正常持有",

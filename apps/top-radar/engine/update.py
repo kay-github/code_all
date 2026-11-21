@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 
 from config import (
-    BENCH_SYMBOL, CONFIG_API, DATA, POOLS, REGISTRY, SECTORS, SITE,
+    CONFIG_API, DATA, POOLS, REFERENCE_INDEXES, REGISTRY, SECTORS, SITE,
     TIER_ACTION, TIER_NAME, V2_TIER_ACTION, V2_VERSION,
 )
 from escape import analyze, STATE_NAME
@@ -406,14 +406,15 @@ def write_v2_shadow(summary_sectors, built):
     print(f"v2 shadow: {len(entries)} sectors, {len(payload['events'])} events")
 
 
-def build_primary():
-    """Build the ChiNext escape-top monitor.
+def build_index_monitor(index):
+    """Build one fixed broad-index escape-top monitor.
 
-    ChiNext is the primary monitoring object, not merely a reference. The page
-    and the PushPlus transition loop both read this object. Sector states stay
-    available as same-engine context.
+    ChiNext is the primary object; STAR50 is a fixed reference. Both use the
+    same state machine and expose the same shape, but only ChiNext carries the
+    full peak-to-now chart on the standalone page.
     """
-    bench = load_bars(BENCH_SYMBOL)
+    symbol = index["symbol"]
+    bench = load_bars(symbol)
     if bench is None or len(bench) < 140:
         return None
     b = bench.copy()
@@ -421,7 +422,7 @@ def build_primary():
     r = analyze(b)
     latest = dict(r.get("latest") or {})
     latest["state_name"] = latest.get("state_name") or "—"
-    latest["role"] = "primary"
+    latest["role"] = index.get("role", "reference")
     latest["monitor"] = True
 
     # The state machine's own history starts at the crash low. A standalone
@@ -465,9 +466,9 @@ def build_primary():
             })
 
     return {
-        "id": "399006",
-        "name": "创业板指",
-        "role": "primary",
+        "id": index["id"],
+        "name": index["name"],
+        "role": index.get("role", "reference"),
         "monitor": True,
         "as_of": latest.get("as_of"),
         "state": latest.get("state"),
@@ -486,6 +487,21 @@ def build_primary():
         "history": history,
         "events": r.get("events") or [],
     }
+
+
+def build_primary():
+    """Backward-compatible helper for the ChiNext primary object."""
+    return build_index_monitor(REFERENCE_INDEXES[0])
+
+
+def build_references():
+    """Build both fixed broad-index references, primary first."""
+    out = []
+    for index in REFERENCE_INDEXES:
+        obj = build_index_monitor(index)
+        if obj:
+            out.append(obj)
+    return out
 
 
 def _summary_reference(reference):
@@ -521,16 +537,17 @@ def _escape_entry(sid, name, latest, *, stale=False, coverage=None, role=None):
     }
     if role:
         entry["role"] = role
-        entry["monitor"] = role == "primary"
+        entry["monitor"] = role in ("primary", "reference")
     return entry
 
 
-def write_escape_shadow(summary_sectors, built, reference=None):
+def write_escape_shadow(summary_sectors, built, reference=None, references=None):
     """Persist the escape-top state and its transitions.
 
     This file is the audit trail and the source of PushPlus transitions. It is
-    independent of the legacy tier and of the V2 shadow. `primary` is ChiNext
-    and is also consumed by /taoding/escape; `sectors` are same-engine context.
+    independent of the legacy tier and of the V2 shadow. `references` holds the
+    fixed broad-index objects (ChiNext + STAR50); `sectors` are independent
+    industry monitors that use the same engine.
     """
     path = DATA / "escape_shadow.json"
     old = {}
@@ -540,7 +557,10 @@ def write_escape_shadow(summary_sectors, built, reference=None):
         except Exception:
             old = {}
     old_by = {s.get("id"): s for s in old.get("sectors", [])}
+    old_ref_by = {s.get("id"): s for s in old.get("references", []) if s.get("id")}
     old_primary = old.get("primary") or old.get("reference")
+    if old_primary and old_primary.get("id"):
+        old_ref_by.setdefault(old_primary["id"], old_primary)
     events = list(old.get("events", []))
     event_keys = {(e.get("sector"), e.get("d"), e.get("to")) for e in events}
 
@@ -555,6 +575,15 @@ def write_escape_shadow(summary_sectors, built, reference=None):
                     "index": entry["index"], "trigger": entry["trigger"],
                 })
                 event_keys.add(key)
+        elif prev.get("state") == entry["state"] and prev.get("as_of") == entry["as_of"]:
+            # Same-day rebuilds can use a fallback quote source; keep the
+            # initialization snapshot aligned with the latest published read.
+            for event in events:
+                if (event.get("type") == "init" and event.get("sector") == sid
+                        and event.get("d") == entry["as_of"]):
+                    event["name"] = entry["name"]
+                    event["index"] = entry["index"]
+                    event["trigger"] = entry["trigger"]
         elif prev.get("state") != entry["state"] and (
             not prev.get("as_of") or entry["as_of"] >= prev["as_of"]
         ):
@@ -593,34 +622,42 @@ def write_escape_shadow(summary_sectors, built, reference=None):
         entries.append(entry)
         record(old_by.get(sid), entry)
 
-    primary = None
-    if reference and reference.get("latest"):
-        primary = _escape_entry(
-            "399006", reference.get("name") or "创业板指",
-            reference["latest"], coverage=1.0, role="primary",
+    # Fixed broad-index references. ChiNext is primary; STAR50 is a fixed
+    # reference. Keep the full history only on the primary object.
+    full_refs = list(references or [])
+    if reference and not full_refs:
+        full_refs = [reference]
+    ref_entries = []
+    for ref in full_refs:
+        if not ref or not ref.get("latest"):
+            continue
+        role = ref.get("role") or ("primary" if ref.get("id") == "399006" else "reference")
+        entry = _escape_entry(
+            ref.get("id"), ref.get("name") or ref.get("id"),
+            ref["latest"], coverage=1.0, role=role,
         )
-        primary["history"] = reference.get("history") or []
-        # Keep an explicit init event even when an older file only had
-        # `reference`, so the standalone page has a visible starting point.
-        has_primary_event = any(e.get("sector") == "399006" for e in events)
-        if not has_primary_event:
-            record(None, primary)
-        else:
-            record(old_primary, primary)
+        if role == "primary":
+            entry["history"] = ref.get("history") or []
+        ref_entries.append(entry)
+        record(old_ref_by.get(entry["id"]), entry)
+
+    primary = next((x for x in ref_entries if x.get("role") == "primary"), None)
+    reference_summary = _summary_reference(primary) if primary else None
 
     payload = {
         "version": "escape-2026-11",
         "mode": "live",
         "push_policy": "state_change",
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "note": "创业板指为主监测对象；行业状态为同源背景。逃命顶不替换旧档位，也不改变 V2 影子。",
+        "note": "创业板指为主监测，科创50为固定参考；光模块、存储、半导体设备、国产光刻机独立跟踪。逃命顶不替换旧档位，也不改变 V2 影子。",
         "primary": primary,
-        "reference": _summary_reference(reference),
+        "references": ref_entries,
+        "reference": reference_summary,
         "sectors": entries,
         "events": events[-200:],
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=_json_default), encoding="utf-8")
-    print(f"escape shadow: primary={'yes' if primary else 'no'}, {len(entries)} sectors, {len(payload['events'])} events")
+    print(f"escape shadow: refs={len(ref_entries)}, {len(entries)} sectors, {len(payload['events'])} events")
 
 
 def main():
@@ -719,18 +756,23 @@ def main():
             "escape_confirm_date": el.get("confirm_date"),
             "updated_at": obj["meta"]["generated_at"],
         })
-    reference_full = build_primary()
+    references_full = build_references()
+    reference_full = next((x for x in references_full if x.get("role") == "primary"), None)
+    if reference_full is None:
+        reference_full = next(iter(references_full), None)
     reference = _summary_reference(reference_full)
+    references_summary = [_summary_reference(x) for x in references_full if x]
     summary = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": source,
         "escape_reference": reference,
+        "escape_references": references_summary,
         "sectors": summary_sectors,
     }
     sp.write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     print("summary:", json.dumps(summary_sectors, ensure_ascii=False))
     write_v2_shadow(summary_sectors, built)
-    write_escape_shadow(summary_sectors, built, reference_full)
+    write_escape_shadow(summary_sectors, built, reference_full, references_full)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from config import BARS, BENCH_SYMBOL, HEADERS, PROXIES, TENCENT_KLINE
+from config import BARS, HEADERS, PROXIES, REFERENCE_SYMBOLS, TENCENT_KLINE
 
 SINA_KLINE = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
 EASTMONEY_KLINE = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -225,7 +225,7 @@ def pool_symbols(pool):
 
 
 def ensure_bars(pool, end: str, backfill: bool = False, no_fetch: bool = False):
-    symbols = pool_symbols(pool) + [BENCH_SYMBOL]
+    symbols = pool_symbols(pool) + REFERENCE_SYMBOLS
     if no_fetch:
         return {"ok": 0, "bad": 0, "errors": ["skip fetch"], "symbols": len(symbols)}
     # local cache: if every file exists and covers end, skip network

@@ -89,7 +89,7 @@ def escape_color(state):
     }.get(state, "#6D675B")
 
 
-def escape_card(entry, ref=None):
+def escape_card(entry, ref=None, ref2=None):
     state = entry.get("state") or "waiting"
     color = escape_color(state)
     name = escape(str(entry.get("name") or entry.get("id") or "—"))
@@ -100,17 +100,24 @@ def escape_card(entry, ref=None):
     idx_s = f"{idx:.3f}" if isinstance(idx, (int, float)) else "—"
     def pct(x):
         return f"{x*100:.1f}%" if isinstance(x, (int, float)) else "—"
-    role_tag = " · 主监测" if entry.get("role") == "primary" else ""
-    ref_line = ""
-    if ref:
-        ref_line = (f'<div style="margin-top:8px;font-size:11px;color:#8A8172;">'
-                    f'创业板主监测：{escape(str(ref.get("state_name") or "—"))} · '
-                    f'深跌 {pct(ref.get("crash_dd"))} · 反弹 {pct(ref.get("rebound_gain"))}</div>')
+    role_tag = {"primary": " · 主监测", "reference": " · 固定参考"}.get(
+        entry.get("role"), " · 行业监测"
+    )
+    ref_lines = []
+    for label, obj in (("创业板", ref), ("科创50", ref2)):
+        if not obj:
+            continue
+        ref_lines.append(
+            f'<div style="margin-top:6px;font-size:11px;color:#8A8172;">'
+            f'{label}：{escape(str(obj.get("state_name") or "—"))} · '
+            f'深跌 {pct(obj.get("crash_dd"))} · 反弹 {pct(obj.get("rebound_gain"))}</div>'
+        )
+    ref_line = "".join(ref_lines)
     site_escape = SITE.rstrip("/") + "/escape"
     return f"""<div style="margin:0;padding:0;background:#EFE8DB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1C1A17;">
   <div style="max-width:560px;margin:0 auto;background:#F7F2E8;border:1px solid #DED3C1;">
     <div style="background:#171411;color:#F7F1E6;padding:16px 20px 14px;">
-      <div style="font-size:10px;letter-spacing:.18em;color:#A79D8C;">ESCAPE TOP · 阶段反弹逃命顶{role_tag}</div>
+      <div style="font-size:10px;letter-spacing:.18em;color:#A79D8C;">ESCAPE TOP · 宽基与行业逃命顶{role_tag}</div>
       <div style="margin-top:7px;font-size:21px;line-height:1.3;font-weight:700;">{name}</div>
       <div style="margin-top:9px;">
         <span style="display:inline-block;background:{color};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;">{state_name}</span>
@@ -127,7 +134,7 @@ def escape_card(entry, ref=None):
         <b>自反弹高点</b>　{pct(entry.get('high_drawdown'))}
       </div>
       {ref_line}
-      <a href="{site_escape}" style="display:inline-block;margin-top:12px;color:{color};font-weight:700;text-decoration:none;font-size:13px;">打开创业板逃命顶监测 →</a>
+      <a href="{site_escape}" style="display:inline-block;margin-top:12px;color:{color};font-weight:700;text-decoration:none;font-size:13px;">打开宽基与行业逃命顶监测 →</a>
     </div>
     <div style="padding:10px 20px 13px;background:#EFE8DB;color:#8A8172;font-size:10px;line-height:1.6;">
       只跟踪“大跌后的阶段反弹顶”，不是下一轮牛市顶部；预警是分批减仓，不是一次清仓。不构成买卖建议。
@@ -149,9 +156,12 @@ def push_escape(dry_run=False):
         return False
     state_path = DATA / "escape_push_state.json"
     state = json.load(open(state_path, encoding="utf-8")) if state_path.exists() else {}
-    primary = shadow.get("primary")
-    ref = shadow.get("reference") or primary
-    targets = ([primary] if primary else []) + list(shadow.get("sectors", []))
+    refs = [x for x in (shadow.get("references") or []) if x.get("id")]
+    primary = next((x for x in refs if x.get("role") == "primary"), shadow.get("primary"))
+    secondary = next((x for x in refs if x.get("role") == "reference"), None)
+    if not refs and primary:
+        refs = [primary]
+    targets = list(refs) + list(shadow.get("sectors", []))
     changed = False
     seen = set()
     for s in targets:
@@ -187,7 +197,12 @@ def push_escape(dry_run=False):
         }
         label = title_map.get(new_state, new_state)
         title = f"逃命顶 · {s.get('name') or sid} · {label} · {s.get('as_of') or ''}"
-        ok = send(title, escape_card(s, ref if s.get("id") != "399006" else None), sid, 0, dry_run=dry_run)
+        is_index = s.get("role") in ("primary", "reference")
+        ok = send(
+            title,
+            escape_card(s, None if is_index else primary, None if is_index else secondary),
+            sid, 0, dry_run=dry_run,
+        )
         if ok:
             st["last_state"] = new_state
             st["last_event_key"] = key

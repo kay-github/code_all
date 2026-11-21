@@ -197,7 +197,7 @@ tr:last-child td{border-bottom:0}
       <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#B3392C" stroke-width="1.4"/><circle cx="16" cy="16" r="6" fill="none" stroke="#EDE6D6" stroke-width="1"/><line x1="16" y1="16" x2="24" y2="8" stroke="#B3392C" stroke-width="2"/></svg>
       <b>TOP RADAR</b><span>逃顶雷达</span>
     </div>
-    <nav class="topnav"><a href="/taoding/escape">创业板逃命顶</a><a href="/taoding/method">方法与复盘</a><a href="/taoding/admin">控制台</a></nav>
+    <nav class="topnav"><a href="/taoding/escape">逃命顶监测</a><a href="/taoding/method">方法与复盘</a><a href="/taoding/admin">控制台</a></nav>
   </div>
 </header>
 
@@ -238,9 +238,9 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
-    <div class="sec-head"><h2>逃命顶 · 阶段反弹</h2><div class="note" id="escapeUpdated">独立状态机 · 创业板主监测 · 微信按状态变化推送</div></div>
+    <div class="sec-head"><h2>逃命顶 · 阶段反弹</h2><div class="note" id="escapeUpdated">独立状态机 · 创业板主监测 · 科创50参考 · 微信按状态变化推送</div></div>
     <div class="escape" id="escape"><div class="escape-empty">正在读取逃命顶状态。</div></div>
-    <p style="margin:9px 0 0;font-size:12px"><a href="/taoding/escape" style="color:#B3392C;border-bottom:1px solid #B3392C">打开创业板逃命顶持续监测页 →</a></p>
+    <p style="margin:9px 0 0;font-size:12px"><a href="/taoding/escape" style="color:#B3392C;border-bottom:1px solid #B3392C">打开宽基与行业逃命顶监测页 →</a></p>
   </section>
 
   <section>
@@ -445,8 +445,8 @@ function renderEscape(d){
     </div>
     <div class="escape-events" style="padding:0 18px 10px"><h4 style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);font-weight:500;margin:0 0 6px">最近状态</h4>${eventHtml}</div>
     <div class="escape-ref">${ref?`创业板主监测：${ref.state_name||'—'} · 深跌 ${fmtPct(ref.crash_dd)} · 反弹 ${fmtPct(ref.rebound_gain)}　<a href="/taoding/escape" style="color:#B3392C;border-bottom:1px solid #D9A79F">持续监测页 →</a>`:'创业板主监测：等待生成'}</div>`;
-  $('#heroEscape').innerHTML=`逃命顶：<b>${l.state_name||l.state}</b> · ${l.action||'—'} · 创业板主监测`;
-  $('#escapeUpdated').textContent=`独立状态机 · ${l.as_of||'—'} · 创业板主监测 · 状态变化推微信`;
+  $('#heroEscape').innerHTML=`逃命顶：<b>${l.state_name||l.state}</b> · ${l.action||'—'} · 创业板主监测 / 科创50参考`;
+  $('#escapeUpdated').textContent=`独立状态机 · ${l.as_of||'—'} · 创业板主监测 / 科创50参考 · 状态变化推微信`;
 }
 
 function metric(lab,val,sub,cls=''){

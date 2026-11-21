@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>创业板指 · 逃命顶持续监测 | TOP RADAR</title>
+<title>创业板指 &amp; 科创50 · 逃命顶持续监测 | TOP RADAR</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315191A'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23B3392C' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23EDE6D6' stroke-width='1'/%3E%3Cline x1='16' y1='16' x2='24' y2='8' stroke='%23B3392C' stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -65,6 +65,22 @@ section{margin-bottom:46px}
 .sec-head h2{font-family:var(--serif);font-size:clamp(22px,2.5vw,30px);line-height:1.3;margin:4px 0 0;font-weight:700}
 .sec-head .num{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
 .sec-head .note{font-size:11.5px;line-height:1.7;color:var(--muted);text-align:right;max-width:45ch;margin:2px 0 0}
+.ref-head{display:flex;justify-content:space-between;gap:16px;align-items:baseline;margin-bottom:9px}
+.ref-head .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.ref-head .note{font-size:11px;color:var(--muted);line-height:1.6;text-align:right;max-width:52ch;margin:0}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.ref-card{border:1px solid var(--line);background:var(--paper2);padding:14px 16px 12px;min-width:0;position:relative}
+.ref-card.primary{border-left:3px solid var(--red)}
+.ref-card .h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ref-card .name{font-family:var(--serif);font-size:19px;line-height:1.3;font-weight:700}
+.ref-card .code{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+.ref-card .state{font-family:var(--mono);font-size:9.5px;color:#fff;padding:2px 7px;white-space:nowrap}
+.ref-card .big{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:600;letter-spacing:-.03em;margin-top:8px}
+.ref-card .big small{font-size:10px;font-weight:400;letter-spacing:0;color:var(--muted);margin-left:4px}
+.ref-card .facts{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:7px}
+.ref-card .facts b{color:var(--ink);font-weight:500}
+.ref-card .note{font-size:11px;line-height:1.65;color:#3A362C;border-top:1px solid #E3DDCF;padding-top:7px;margin-top:8px}
+.block-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);margin:16px 0 7px}
 .metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
 .metric{background:var(--paper2);padding:15px 13px 13px;min-width:0}
 .metric .lab{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -130,13 +146,14 @@ section{margin-bottom:46px}
 .event .d{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .event .tag{font-family:var(--mono);font-size:10px;border:1px solid currentColor;padding:0 5px;justify-self:start;white-space:nowrap}
 .event .why{color:var(--muted)}
+.event .why b{color:var(--ink);font-weight:500}
 .timeline-empty{padding:12px 0;font-size:12px;color:var(--muted)}
 .why-box{border:1px solid var(--line);background:var(--paper2);padding:15px 17px;min-width:0}
 .why-box h3{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 7px}
 .why-box p{font-size:12px;line-height:1.85;color:#3A362C;margin:0 0 8px}
 .why-box p:last-child{margin-bottom:0}
 .why-box b{color:var(--red)}
-.sector-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .sector-card{border:1px solid var(--line);background:var(--paper2);padding:14px 15px 13px;min-width:0}
 .sector-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:9px}
 .sector-card .name{font-family:var(--serif);font-size:17px;font-weight:700}
@@ -169,6 +186,7 @@ section{margin-bottom:46px}
   .hero-read .mini{grid-column:1/3}
   .hero-read .action-box{grid-column:1/3}
   .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ref-grid{grid-template-columns:1fr 1fr}
   .now-grid{grid-template-columns:1fr}
   .chart-grid{grid-template-columns:1fr}
   .levels{border-left:0;border-top:1px solid var(--line)}
@@ -182,6 +200,10 @@ section{margin-bottom:46px}
 }
 @media(max-width:560px){
   .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ref-grid{grid-template-columns:1fr}
+  .ref-head{flex-direction:column;gap:3px}
+  .ref-head .note{text-align:left}
+  .sector-grid{grid-template-columns:1fr}
   .metric .val{font-size:18px}
   .hero h1{font-size:34px}
   .big{font-size:45px}
@@ -205,7 +227,7 @@ section{margin-bottom:46px}
   <div class="topbar-in">
     <div class="brand">
       <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="#B3392C" stroke-width="1.4"/><circle cx="16" cy="16" r="6" fill="none" stroke="#EDE6D6" stroke-width="1"/><line x1="16" y1="16" x2="24" y2="8" stroke="#B3392C" stroke-width="2"/></svg>
-      <b>TOP RADAR</b><span>逃命顶 / 创业板指</span>
+      <b>TOP RADAR</b><span>逃命顶 / 宽基与行业</span>
     </div>
     <nav class="topnav">
       <a href="/taoding">主仪表盘</a>
@@ -219,10 +241,10 @@ section{margin-bottom:46px}
 <section class="hero">
   <div class="hero-in">
     <div>
-      <div class="kicker">ESCAPE TOP / PRIMARY MONITOR · 399006</div>
-      <div class="primary-tag"><i></i> 主监测对象 · 创业板指</div>
-      <h1>深跌反弹的顶，<br><em>每天盯住。</em></h1>
-      <p class="hero-copy">只跟踪 2026-06-25 高点之后的这段逃命反弹。它不是下一轮牛市顶部，也不猜第一根阴线：等反弹成熟、靠近阻力、再确认转弱，才进入预警。</p>
+      <div class="kicker">ESCAPE TOP / BROAD INDEX + SECTOR · 399006 / 000688</div>
+      <div class="primary-tag"><i></i> 创业板主监测 · 科创50 固定参考</div>
+      <h1>深跌反弹的顶，<br><em>宽基和行业一起盯住。</em></h1>
+      <p class="hero-copy">同时盯住创业板和科创50两个宽基参考，再拆到光模块、存储、半导体设备、国产光刻机四个独立行业。只跟踪 2026 年的这段逃命反弹；不猜第一根阴线，等反弹成熟、靠近阻力、再确认转弱，才进入预警。</p>
       <div class="hero-state">
         <span class="badge" id="heroStateBadge">读取中</span>
         <span id="heroStateName">正在读取数据</span>
@@ -256,6 +278,12 @@ section{margin-bottom:46px}
       <div><div class="num">01 / NOW</div><h2>当前读数</h2></div>
       <p class="note">先看“离顶部多远、反弹到哪、有没有接近阻力”，再看状态。所有百分比都是相对本轮前高和前低。</p>
     </div>
+    <div class="ref-head">
+      <div class="k">固定参考 / FIXED REFERENCES</div>
+      <p class="note">创业板指主监测，科创50为第二宽基参考；两者共用同一状态机，不混入行业等权指数。</p>
+    </div>
+    <div class="ref-grid" id="references"></div>
+    <div class="block-kicker">主监测 · 创业板指 / PRIMARY READOUT</div>
     <div class="metrics" id="metrics"></div>
     <div class="now-grid">
       <div class="trigger-card">
@@ -309,7 +337,7 @@ section{margin-bottom:46px}
     </div>
     <div class="timeline-wrap">
       <div class="timeline">
-        <div class="k">创业板状态轨迹</div>
+        <div class="k">宽基状态轨迹</div>
         <div id="events"><div class="timeline-empty">正在读取事件。</div></div>
       </div>
       <div class="why-box">
@@ -322,27 +350,27 @@ section{margin-bottom:46px}
 
   <section>
     <div class="sec-head">
-      <div><div class="num">05 / CONTEXT</div><h2>同源行业：只做交叉确认</h2></div>
-      <p class="note">行业与创业板共用同一套状态机和门槛；创业板是主监测对象，行业状态用来判断风险是否扩散。</p>
+      <div><div class="num">05 / SECTORS</div><h2>独立行业/板块：各自跟踪</h2></div>
+      <p class="note">光模块、存储、半导体设备、国产光刻机各自使用同一状态机，独立记录状态；创业板与科创50只作宽基参照。</p>
     </div>
     <div class="sector-grid" id="sectors"></div>
-    <div class="sector-note" id="sectorNote">正在读取同源行业。</div>
+    <div class="sector-note" id="sectorNote">正在读取独立行业。</div>
   </section>
 
   <section>
     <div class="sec-head">
       <div><div class="num">06 / DELIVERY</div><h2>推送、更新与边界</h2></div>
-      <p class="note">创业板指现在进入推送循环；等待不推，进入观察 / 预警 / 确认 / 撤销 / 结束各推一次。</p>
+      <p class="note">创业板、科创50与四个行业均已进入推送循环；等待不推，进入观察 / 预警 / 确认 / 撤销 / 结束各推一次。</p>
     </div>
     <div class="push-grid">
       <div class="push-card">
         <h3>微信什么时候响</h3>
         <p>等待反弹：不推。<br>进入反弹观察：推一次。<br>逃命预警：推一次，动作为减 1/3。<br>逃命确认：再推一次，再减 1/3。<br>创新高撤销 / 趋势反转 / 反弹失败：各推一次。</p>
-        <div class="mono">PushPlus 单推 · escape_push_state.json 防重复<br>创业板指（399006）已纳入推送对象</div>
+        <div class="mono">PushPlus 单推 · escape_push_state.json 防重复<br>创业板（399006）· 科创50（000688）· 四个行业</div>
       </div>
       <div class="push-card">
         <h3>每天怎么更新</h3>
-        <p>工作日 15:10 重建，16:10 兜底。源为腾讯前复权日线，失败时东财 / 新浪备用。指数为创业板指官方点位，不是行业等权指数。</p>
+        <p>工作日 15:10 重建，16:10 兜底。源为腾讯前复权日线，失败时东财 / 新浪备用。创业板与科创50为官方指数点位；行业为池内等权指数。</p>
         <div class="modeline mono">D=38% · G=20% · tol=3% · 成熟度 2/4<br>主数据：/taoding/data/escape_shadow.json</div>
       </div>
       <div class="push-card">
@@ -361,7 +389,7 @@ section{margin-bottom:46px}
 
 <footer class="footer">
   <div class="footer-in">
-    <div>TOP RADAR · 逃命顶 / 阶段反弹<br>创业板指为主监测对象；行业为同源背景。深跌门槛 38%，反弹门槛 20%，阻力容差 3%。</div>
+    <div>TOP RADAR · 逃命顶 / 宽基与行业<br>创业板指主监测，科创50固定参考；光模块、存储、半导体设备、国产光刻机独立跟踪。深跌门槛 38%，反弹门槛 20%，阻力容差 3%。</div>
     <div style="text-align:right">数据：腾讯行情日线（前复权）<br><a href="/taoding/method">方法</a>　<a href="/taoding/escape_report.html">验证报告</a></div>
   </div>
 </footer>
@@ -399,11 +427,42 @@ function clearErr() { $('#err').style.display = 'none'; }
 
 function primaryData() {
   if (shadow && shadow.primary && shadow.primary.latest) return shadow.primary;
+  const refs = summary && summary.escape_references;
+  if (Array.isArray(refs)) {
+    const p = refs.find(x => x && x.role === 'primary' && x.latest);
+    if (p) return Object.assign({}, p, {role:'primary', monitor:true});
+  }
   const ref = summary && summary.escape_reference;
   if (ref && ref.latest) {
     return Object.assign({}, ref, {role:'primary', monitor:true});
   }
   return null;
+}
+
+function renderReferences() {
+  const fromShadow = shadow && Array.isArray(shadow.references) ? shadow.references.filter(x => x && x.state) : [];
+  const fromSummary = summary && Array.isArray(summary.escape_references) ? summary.escape_references.filter(x => x && x.state) : [];
+  const refs = fromShadow.length ? fromShadow : (fromSummary.length ? fromSummary : [primaryData()].filter(Boolean));
+  if (!refs.length) {
+    $('#references').innerHTML = '<div class="sector-note">暂无宽基参考数据。</div>';
+    return;
+  }
+  $('#references').innerHTML = refs.map(r => {
+    const l = r.latest || {};
+    const st = l.state || r.state || 'waiting';
+    const color = l.color || r.color || stateColor[st] || '#8A7A55';
+    const role = r.role === 'primary' ? '主监测' : '固定参考';
+    const idx = l.index ?? r.index;
+    const dd = l.crash_dd ?? r.crash_dd;
+    const reb = l.rebound_gain ?? r.rebound_gain;
+    const mat = l.maturity_count ?? 0;
+    return `<div class="ref-card ${r.role === 'primary' ? 'primary' : ''}">
+      <div class="h"><div><div class="name">${esc(r.name || r.id)}</div><div class="code">${esc(r.id || '—')} · ${role}</div></div><span class="state" style="background:${color}">${esc(l.state_name || r.state_name || stateName[st] || st)}</span></div>
+      <div class="big">${esc(idxNum(idx))}<small>点</small></div>
+      <div class="facts"><span>深跌 <b>${pct(dd)}</b></span><span>反弹 <b>${signedPct(reb)}</b></span><span>成熟度 <b>${st === 'idle' ? '—' : mat + ' / 4'}</b></span></div>
+      <div class="note">${esc(l.action || r.action || stateAction[st] || '—')}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderHero(p) {
@@ -416,7 +475,7 @@ function renderHero(p) {
   $('#heroDate').textContent = `${l.as_of || p.as_of || '—'} · 低点后 ${l.days_since_low ?? '—'} 日`;
   $('#heroTrigger').innerHTML = `<b>触发</b>　${esc(l.trigger || p.trigger || '—')}`;
   $('#heroIndex').innerHTML = `${esc(idxNum(l.index ?? p.index))}<small>点</small>`;
-  $('#heroRole').textContent = '主监测 · 399006 · 每日更新';
+  $('#heroRole').textContent = '主监测 · 399006 · 科创50 参考';
   $('#heroHigh').textContent = idxNum(l.crash_high);
   $('#heroCrash').textContent = pct(l.crash_dd ?? p.crash_dd);
   $('#heroRebound').textContent = signedPct(l.rebound_gain ?? p.rebound_gain);
@@ -567,7 +626,7 @@ function renderStateMap(p) {
 }
 
 function renderEvents(p) {
-  const evs = (shadow && shadow.events ? shadow.events : []).filter(e => e && e.sector === '399006').slice(-6).reverse();
+  const evs = (shadow && shadow.events ? shadow.events : []).filter(e => e && (e.sector === '399006' || e.sector === '000688')).slice(-8).reverse();
   if (!evs.length) {
     $('#events').innerHTML = '<div class="timeline-empty">暂无状态变化；当前状态持续中。</div>';
     return;
@@ -575,7 +634,7 @@ function renderEvents(p) {
   $('#events').innerHTML = evs.map(e => {
     const to = e.to || '';
     const color = stateColor[to] || '#6D675B';
-    return `<div class="event"><span class="d">${esc(e.d || '—')}</span><span class="tag" style="color:${color}">${esc(e.to_name || stateName[to] || to || '—')}</span><span class="why">${esc(e.trigger || '—')}</span></div>`;
+    return `<div class="event"><span class="d">${esc(e.d || '—')}</span><span class="tag" style="color:${color}">${esc(e.to_name || stateName[to] || to || '—')}</span><span class="why"><b>${esc(e.name || e.sector || '—')}</b> · ${esc(e.trigger || '—')}</span></div>`;
   }).join('');
 }
 
@@ -591,12 +650,12 @@ function renderSectors() {
     const st = s.state || l.state || 'waiting';
     return `<div class="sector-card">
       <div class="top"><div class="name">${esc(s.name || s.id)}</div><span class="tag ${esc(st)}">${esc(s.state_name || stateName[st] || st)}</span></div>
-      <div class="facts"><span>深跌 <b>${pct(s.crash_dd)}</b></span><span>反弹 <b>${signedPct(s.rebound_gain)}</b></span><span>阻力 <b>${pct(l.res_distance)}</b></span></div>
+      <div class="facts"><span>深跌 <b>${pct(s.crash_dd)}</b></span><span>反弹 <b>${signedPct(s.rebound_gain)}</b></span><span>成熟 <b>${l.maturity_count ?? 0} / 4</b></span><span>阻力 <b>${pct(l.res_distance)}</b></span></div>
       <div class="why">${esc(s.trigger || l.trigger || '—')}</div>
       <div class="action">${esc(s.action || l.action || '—')}${s.stale ? ' · 数据 stale' : ''}</div>
     </div>`;
   }).join('');
-  $('#sectorNote').textContent = '光模块在 registry 中仍是休眠行业，但逃命顶按同源状态机继续跟踪；是否继续推送，单独看逃命顶状态，不按 enabled 过滤。';
+  $('#sectorNote').textContent = '四个行业各自独立跟踪；光模块、存储在旧档位未启用，但逃命顶不按 enabled 过滤，仍按状态变化记录和推送。';
 }
 
 function renderAll() {
@@ -605,6 +664,7 @@ function renderAll() {
     renderEmpty();
     return;
   }
+  renderReferences();
   renderHero(p);
   renderMetrics(p);
   renderLevels(p);
@@ -621,6 +681,7 @@ function renderEmpty() {
   $('#metrics').innerHTML = '<div class="metric"><div class="lab">数据</div><div class="val muted">—</div><div class="sub">等待生成</div></div>';
   $('#triggerText').textContent = '暂无可读状态。';
   $('#levels').innerHTML = '<div class="level-row"><span>状态</span><b>等待数据</b></div>';
+  $('#references').innerHTML = '<div class="sector-note">暂无宽基参考数据。</div>';
   $('#events').innerHTML = '<div class="timeline-empty">暂无状态。</div>';
   $('#sectors').innerHTML = '<div class="sector-note">暂无同源行业数据。</div>';
   $('#stateMap').innerHTML = '';

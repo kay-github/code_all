@@ -1,4 +1,12 @@
 {
+ "399006": {
+  "last_state": "waiting",
+  "last_event_key": "399006|2026-11-20|waiting"
+ },
+ "000688": {
+  "last_state": "waiting",
+  "last_event_key": "000688|2026-11-20|waiting"
+ },
  "optical": {
   "last_state": "waiting",
   "last_event_key": "optical|2026-11-20|waiting"
@@ -11,8 +19,8 @@
   "last_state": "waiting",
   "last_event_key": "litho_cn|2026-11-20|waiting"
  },
- "399006": {
+ "storage": {
   "last_state": "waiting",
-  "last_event_key": "399006|2026-11-20|waiting"
+  "last_event_key": "storage|2026-11-20|waiting"
  }
 }

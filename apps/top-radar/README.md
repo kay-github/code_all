@@ -91,8 +91,10 @@ V2 是 2026-11 多行业验证后的收紧版规则。当前只做影子：进�
 - 状态：`waiting` → `watch` → `warn` → `confirm`；`trend`（收复前高/修复 >80%）和 `failed`（跌破前低）结束跟踪。
 - 动作：等待不操作；观察不新增；预警减 1/3；确认再减 1/3；反弹超过预警日高点 3% 撤销预警，回到观察。
 - 推送：按状态变化推，`escape_push_state.json` 防重复；等待不推，观察/预警/确认/撤销/结束各推一次；不替代旧档位推送，也不按 sector 的 `enabled` 过滤。
-- 主监测对象：创业板指 `399006` 已升级为 `escape_shadow.primary`，进入同一状态机和 PushPlus 循环；独立页面 `/taoding/escape` 展示其路径、状态轨迹、四道观察门槛和同源行业。
-- 数据：`data/escape_shadow.json` 记录创业板 `primary`、每个 sector 的最新状态与事件；`summary.json` 增加 `escape_*` 字段和 `escape_reference`（创业板主监测摘要）。
+- 固定宽基参考：创业板指 `399006` 为 `escape_shadow.primary`，科创50 `000688` 为 `escape_shadow.references[1]`；两者共用状态机，创业板保留完整路径图。
+- 独立行业：光模块/光通信、存储芯片、半导体设备、国产光刻机各自使用同一状态机，独立记录与推送；存储池为 18 核心 + 45 延伸。
+- 独立页面 `/taoding/escape` 展示两个宽基参考卡、创业板路径、状态轨迹、四道观察门槛和四个行业卡。
+- 数据：`data/escape_shadow.json` 记录 `primary`、`references`、`sectors` 与状态事件；`summary.json` 增加 `escape_reference` 和 `escape_references`。
 - 生产回放（D=38%，1,007 个 episode / 828 个逃命顶）：预警覆盖 69.4%，预警后 20 日内 ≥5% 回撤 41.5%、≥10% 28.9%，首次预警中位提前 3 个交易日；确认后 ≥5% 39.6%、≥10% 27.0%，中位晚于顶部 2 日；约 64% 的预警在 20 日内又创新高，所以只能减 1/3，不能一次清仓。
 - 研究目录：`D:\work_code2\top_detector\escape_research\`（episode 库、规则回放、标签审计、验证报告）。
 
