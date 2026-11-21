@@ -40,14 +40,16 @@ jobs:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
           tasks=()
+          if [[ -n "$SCHEDULE" ]]; then
+            read -r weekday clock < <(TZ=Asia/Shanghai date '+%u %H%M')
+            hhmm=$((10#$clock))
+          fi
           case "$SCHEDULE" in
             '7 2 * * 1-6'|'23 4 * * 1-6') tasks=(etf-final) ;;
             '17,39 6 * * 1-5') tasks=(etf-intraday) ;;
             '33 11 * * 1-5'|'13 13 * * 1-5') tasks=(etf-close) ;;
             '43 0 * * 1-6'|'19 3 * * 1-6') tasks=(fund) ;;
             '11,41 * * * *')
-              read -r weekday clock < <(TZ=Asia/Shanghai date '+%u %H%M')
-              hhmm=$((10#$clock))
               if (( weekday <= 6 && hhmm >= 900 && hhmm < 1345 )); then
                 tasks+=(fund)
               fi
@@ -56,9 +58,6 @@ jobs:
               fi
               if (( weekday <= 5 && hhmm >= 1420 && hhmm < 1500 )); then
                 tasks+=(etf-intraday)
-              fi
-              if (( weekday <= 5 && hhmm >= 1950 )); then
-                tasks+=(etf-close)
               fi
               ;;
             '')
@@ -69,6 +68,14 @@ jobs:
               ;;
             *) exit 1 ;;
           esac
+          # A delayed scheduled event is still an opportunity to publish today's close.
+          if [[ -n "$SCHEDULE" ]] && (( weekday <= 5 && hhmm >= 1900 )); then
+            case "${tasks[*]}" in
+              etf-close) ;;
+              etf-intraday) tasks=(etf-close) ;;
+              *) tasks+=(etf-close) ;;
+            esac
+          fi
           selection='[]'
           if (( ${#tasks[@]} )); then
             printf -v list '"%s",' "${tasks[@]}"

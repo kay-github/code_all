@@ -215,9 +215,13 @@ def etf_work(task, end, state, rebuild):
     public_postclose = web(ETF) / 'data/postclose/latest.json'
     official = release(ETF)
     if task == 'etf-close':
-        prior = max(official['business_date'], read(public_postclose)['business_date'])
-        if end <= prior:
-            summary(f'盘后初值已覆盖 {end}')
+        prior_close = read(public_postclose)['business_date']
+        if end <= max(official['business_date'], prior_close):
+            if end == prior_close:
+                summary(f'盘后初值已覆盖 {end}，核对生产文件')
+                verify(ETF, provisional=True)
+            else:
+                summary(f'正式区或更晚盘后初值已覆盖 {end}')
             return
         run(ETF, 'collect_data.py', '--end', end)
         run(ETF, 'pipeline.py')
