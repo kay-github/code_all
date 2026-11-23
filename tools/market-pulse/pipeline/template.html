@@ -500,12 +500,15 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 </div>
 
 __ECHARTS_TAG__
+<!-- DATA_SCRIPT_START -->
 <script>
-const DATA = __DATA_JSON__;
+window.DATA = __DATA_JSON__;
 </script>
+<!-- DATA_SCRIPT_END -->
+<!-- APP_SCRIPT_START -->
 <script>
 (function(){
-  const D = DATA;
+  const D = window.DATA;
   if (!D) {
     document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
     return;
@@ -1026,6 +1029,7 @@ const DATA = __DATA_JSON__;
   el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
 })();
 </script>
+<!-- APP_SCRIPT_END -->
 </body>
 </html>
 

@@ -1,6 +1,7 @@
 """Render the daily market-pulse HTML from analysis.json + template.html."""
 import json
 import os
+import re
 import shutil
 import sys
 from datetime import datetime
@@ -22,18 +23,34 @@ def main(date: str | None = None):
     if "</script" in payload.lower():
         raise SystemExit("data contains </script>, cannot inline safely")
 
+    app_match = re.search(
+        r"<!-- APP_SCRIPT_START -->\s*<script>\s*(.*?)\s*</script>\s*<!-- APP_SCRIPT_END -->",
+        template,
+        re.S,
+    )
+    if not app_match:
+        raise SystemExit("APP_SCRIPT markers missing from template")
+    app_js = app_match.group(1)
+
     online = os.environ.get("MP_ONLINE") == "1"
     if online:
-        # Absolute URL: /pulse resolves relative "vendor/..." to /vendor/..., which is not
-        # where the page assets live. Keep this absolute so it works from the /pulse route.
+        # External files are required inside the root-site iframe: its CSP allows
+        # same-origin scripts but blocks inline scripts.
         echarts_tag = '<script src="/tools/market-pulse/vendor/echarts.min.js"></script>'
+        data_script = '<script src="/tools/market-pulse/data/latest.js"></script>'
+        app_script = '<script src="/tools/market-pulse/app.js"></script>'
     else:
         echarts = (ROOT / "vendor" / "echarts.min.js").read_text(encoding="utf-8")
         if "</script" in echarts.lower():
             raise SystemExit("echarts contains </script>, cannot inline safely")
         echarts_tag = f"<script>{echarts}</script>"
+        data_script = f"<script>window.DATA = {payload};</script>"
+        app_script = f"<script>{app_js}</script>"
 
-    html = template.replace("__ECHARTS_TAG__", echarts_tag).replace("__DATA_JSON__", payload)
+    html = template.replace("__ECHARTS_TAG__", echarts_tag)
+    html = re.sub(r"<!-- DATA_SCRIPT_START -->.*?<!-- DATA_SCRIPT_END -->", lambda _: data_script, html, flags=re.S)
+    html = re.sub(r"<!-- APP_SCRIPT_START -->.*?<!-- APP_SCRIPT_END -->", lambda _: app_script, html, flags=re.S)
+    html = html.replace("__DATA_JSON__", payload)
     if "__ECHARTS_TAG__" in html or "__DATA_JSON__" in html:
         raise SystemExit("placeholder left unreplaced")
 
@@ -55,6 +72,9 @@ def main(date: str | None = None):
         archive = data_dir / "archive"
         archive.mkdir(parents=True, exist_ok=True)
         (archive / f"{date}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        if online:
+            (data_dir / "latest.js").write_text(f"window.DATA = {payload};\n", encoding="utf-8")
+            (target / "app.js").write_text(app_js, encoding="utf-8")
         vendor = ROOT / "vendor" / "echarts.min.js"
         if online and vendor.exists():
             (target / "vendor").mkdir(parents=True, exist_ok=True)
