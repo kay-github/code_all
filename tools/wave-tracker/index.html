@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="wave-tracker-version" content="4">
+  <meta name="wave-tracker-version" content="5">
   <meta name="description" content="创业板指、科创50、上证指数日线的 ABC 与五浪情景跟踪，附观点出处和量化验证条件。">
   <title>指数波浪跟踪</title>
   <script src="/assets/site-theme.js"></script>
   <link rel="stylesheet" href="/assets/workspace-theme.css">
-  <link rel="stylesheet" href="/tools/wave-tracker/style.css?v=2">
+  <link rel="stylesheet" href="/tools/wave-tracker/style.css?v=5">
   <script defer src="/tools/wave-tracker/app.js?v=4"></script>
   <script type="module" src="/tools/wave-tracker/lab.mjs?v=4"></script>
+  <script type="module" src="/tools/wave-tracker/stocks.mjs?v=1"></script>
 </head>
 <body>
   <main>
@@ -19,7 +20,7 @@
         <a class="home" href="/">大杂烩工具站</a>
         <h1>指数波浪跟踪</h1>
         <p>参考上海波浪玩家的公开视频与博文，逐日检验 ABC 与五浪两种解释。</p>
-        <p class="local-nav"><a id="study-link" href="#author-study">双创视频取证</a><a href="#wave-lab">分析其他标的</a></p>
+        <p class="local-nav"><a id="study-link" href="#author-study">双创视频取证</a><a href="#stock-study">个股每日跟踪</a><a href="#wave-lab">分析其他标的</a></p>
       </div>
       <div class="stamp"><span>最近收盘数据</span><strong id="day">加载中</strong><small>北京时间 · 交易日盘后</small></div>
     </header>
@@ -95,6 +96,10 @@
       </section>
       <footer><span id="build"></span><span>观点依据与模型口径会标记版本</span></footer>
     </div>
+    <section class="panel" id="stock-study" aria-labelledby="stock-study-head">
+      <h2 id="stock-study-head">个股每日跟踪</h2>
+      <div id="stock-study-content">正在读取个股日线和周线。</div>
+    </section>
     <section class="panel lab" id="wave-lab" aria-labelledby="lab-head">
       <h2 id="lab-head">分析其他标的</h2>
       <p class="muted">输入沪深个股代码，或导入股票、指数的日线 CSV。可回到任意收盘日，比较自动锚点与手动画线。</p>

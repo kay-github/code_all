@@ -1,0 +1,52 @@
+name: Stock wave daily update
+
+on:
+  schedule:
+    # Beijing time 15:46 / 16:40, after the completed session.
+    - cron: '46 7 * * 1-5'
+    - cron: '40 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stock-wave-daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify stock wave calculations
+        run: node --test apps/wave-tracker/stock-study.test.mjs
+      - name: Refresh and publish the stock snapshot
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git switch --detach origin/main
+            python apps/wave-tracker/stocks.py
+            git add -- tools/wave-tracker/data/stocks.json
+            if git diff --cached --quiet; then
+              echo 'No new stock snapshot'
+              exit 0
+            fi
+            git commit -m "stock-waves: refresh $(date -u +%F)"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+          done
+          exit 1
+      - name: Verify production stock snapshot
+        run: python apps/wave-tracker/verify.py --stocks --wait 420
