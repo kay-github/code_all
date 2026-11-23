@@ -1,29 +1,29 @@
 {
-  "stage": "postclose_provisional",
-  "stage_label": "盘后早值",
-  "confidence": "provisional",
-  "confidence_note": "早值级：T 日收盘初值，供应商换手率反推，可能被事后修订，不可作定稿",
+  "stage": "postclose_partial",
+  "stage_label": "盘后部分披露",
+  "confidence": "partial",
+  "confidence_note": "部分披露：SSE T 日清算份额已出，SZSE 待披露；不发布核心15完整合计",
   "business_date": "2026-11-23",
-  "generated_at": "2026-11-23T20:44:55+08:00",
-  "build_id": "20261123T204432_0800_8af03745b0",
-  "built_at": "2026-11-23T20:44:32+08:00",
+  "generated_at": "2026-11-23T22:59:13+08:00",
+  "build_id": "20261123T225856_0800_0bad763eed",
+  "built_at": "2026-11-23T22:58:56+08:00",
   "pending_review": true,
   "superseded_by": null,
-  "primary": "vendor",
-  "primary_net_yi": 282.1813564581711,
-  "primary_label": "供应商反推净申赎（低置信）",
+  "primary": "official_sse",
+  "primary_net_yi": 128.42061571051565,
+  "primary_label": "SSE 10只小计（SZSE 5只待披露）",
   "official": {
     "disclosure_stage": "初值或不完整",
-    "coverage": 0,
+    "coverage": 10,
     "expected": 15,
     "complete": false,
     "net_yi": null,
-    "valid_members": 0,
+    "valid_members": 10,
     "sse": {
       "expected": 10,
-      "coverage": 0,
-      "complete": false,
-      "net_yi": null
+      "coverage": 10,
+      "complete": true,
+      "net_yi": 128.42061571051565
     },
     "szse": {
       "expected": 5,
@@ -43,7 +43,7 @@
     "reliable": false,
     "reasons": [
       "供应商换手率反推，分母口径未经验证",
-      "交易所正式份额当日仅披露 0/15 只"
+      "交易所正式份额当日仅披露 10/15 只"
     ]
   },
   "inventory": {
@@ -52,8 +52,8 @@
     "current_ratio": 0.6720637582468323,
     "complete": true,
     "provisional": true,
-    "comparable": true,
-    "note": ""
+    "comparable": false,
+    "note": "部分披露不混算供应商10份刻度，待正式复核"
   },
   "flattened": {
     "count": 0,
@@ -62,8 +62,8 @@
     "ratio_median": 1.000016,
     "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
   },
-  "revision_risk": "T 日换手率分母可能仍是昨收份额，收盘后才换成当日登记份额；11-13 实测 94/254 只被修订，核心15由 −24.9 亿修正为 −123.7 亿。本页早值不能当定稿，也不能据此判断国家队当日买卖。",
-  "next_step": "19:30 交易所T日份额披露后重跑晚间值；次晨复核后发布权威版本",
+  "revision_risk": "SSE 10只已披露T日清算份额；SZSE 5只尚未披露。本卡只展示SSE小计，不发布核心15完整合计，也不混算供应商10份刻度。",
+  "next_step": "等待 SZSE 5只披露后重跑晚间值；次晨正式复核",
   "complete_total_policy": "覆盖不足时不展示核心15只完整合计，缺口不补0",
   "identity": "I0 当日买卖主体未确认",
   "limitation": "盘后值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
