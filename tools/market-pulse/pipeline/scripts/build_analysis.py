@@ -99,7 +99,11 @@ def quality(net, net5):
     }
 
 # ---------------- indices ----------------
-indices = json.loads((RAW / "indices.json").read_text(encoding="utf-8"))
+raw_indices = json.loads((RAW / "indices.json").read_text(encoding="utf-8"))
+if isinstance(raw_indices, dict):
+    indices = [{"code": code, **quote} for code, quote in raw_indices.items()]
+else:
+    indices = raw_indices
 for it in indices:
     it["prev_close"] = r2(it["price"] / (1 + it["change_pct"] / 100))
     it["reversal_from_low"] = r2((it["price"] - it["low"]) / it["low"] * 100)

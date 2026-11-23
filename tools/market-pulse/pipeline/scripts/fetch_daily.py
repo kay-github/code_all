@@ -54,7 +54,8 @@ def run(name, fn, save=True):
 
 
 # 1) index quotes via Tencent (a-stock-data)
-codes = ["000001", "399001", "399006", "000688", "000300", "000905", "000852", "899050"]
+# Full prefixes are required: 000001 is Ping An Bank unless explicitly sh000001.
+codes = ["sh000001", "sz399001", "sz399006", "sh000688", "sh000300", "sh000905", "sh000852", "bj899050"]
 try:
     quotes = ast.tencent_quote(codes)
     (RAW / "indices.json").write_text(json.dumps(quotes, ensure_ascii=False, indent=2), encoding="utf-8")
