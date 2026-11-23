@@ -186,8 +186,10 @@ $('lab-symbol-form').addEventListener('submit', async e => {
 });
 
 $('lab-file').addEventListener('change', async event => {
-  const file = event.target.files[0];
+  const input = event.currentTarget;
+  const file = input.files[0];
   if (!file) return;
+  input.value = '';
   const id = ++sequence;
   try {
     if (file.size > 2_000_000) throw new Error('CSV 请控制在 2 MB 内');
@@ -195,8 +197,6 @@ $('lab-file').addEventListener('change', async event => {
     if (id === sequence) setSeries({ name: file.name, basis: '导入日线', bars });
   } catch (error) {
     if (id === sequence) message(error.message);
-  } finally {
-    event.target.value = '';
   }
 });
 

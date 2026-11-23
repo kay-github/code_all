@@ -22,6 +22,16 @@ class WaveUpdateTests(unittest.TestCase):
         self.assertEqual(levels['C/A', 1.236]['drawn'], 2246.95)
         self.assertGreater(case['c3Ratio'], 2)
 
+    def test_star_video_elapsed_includes_the_anchor_as_a_separate_convention(self):
+        item = RULES['indices'][1]
+        bars = [row for row in self.bars[item['symbol']] if row[0] <= '2026-11-16']
+        by_day = {row[0]: row for row in bars}
+        size_a = by_day[item['start']][2] - by_day[item['a']][3]
+        case = video_study(bars, item, by_day, size_a)
+        self.assertEqual(case['c5Sessions'] + int(case['duration']['includeAnchor']), 3)
+        self.assertEqual((case['duration']['min'], case['duration']['max']), (12, 13))
+        self.assertEqual(case['duration']['spokenFrom'], '2026-11-26')
+
     def test_star_19_week_reference_stays_fixed_after_new_low(self):
         sh = [row for row in self.bars['sh000001'] if row[0] <= '2026-11-20']
         star = [row for row in self.bars['sh000688'] if row[0] <= '2026-11-20']

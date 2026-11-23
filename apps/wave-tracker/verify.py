@@ -29,7 +29,7 @@ def verify():
     payload = (ROOT / name.lstrip('/')).read_bytes()
     expected = json.loads(payload)
     page = fetch('/waves')
-    if b'name="wave-tracker-version" content="2"' not in page or '/tools/wave-tracker/app.js?v=2'.encode() not in page:
+    if b'name="wave-tracker-version" content="3"' not in page or '/tools/wave-tracker/app.js?v=3'.encode() not in page:
         raise RuntimeError('功能页构建版本尚未上线')
     online = fetch(name)
     actual = json.loads(online)

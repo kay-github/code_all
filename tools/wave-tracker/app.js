@@ -43,7 +43,8 @@
     levels('study-ratios', [['C5 区间端点的 C/A', multiple(study.endpointRatio)],
       ['C1 点数', price(study.c1Length)], ['内部 C3 / C1', multiple(study.c3Ratio)],
       ['内部 C5 / C1 候选', multiple(study.c5Ratio)], ['C5 区间低点', price(study.c5Low.price)],
-      ['C4 右端之后的交易日', `${study.c5Sessions} 日`]]);
+      ['C4 右端之后的交易日', `${study.c5Sessions} 日`],
+      ...(study.duration ? [['科创50案例时间窗', `已计 ${study.c5Sessions + Number(study.duration.includeAnchor)} 日 / 估计 ${study.duration.min}–${study.duration.max} 日`]] : [])]);
     $('study-lines').replaceChildren(...study.lines.map(line => {
       const row = node('tr');
       const link = node('td');

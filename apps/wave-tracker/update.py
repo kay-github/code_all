@@ -14,7 +14,7 @@ OUTPUT = APP.parents[1] / 'tools' / 'wave-tracker' / 'data' / 'latest.json'
 CHINA = timezone(timedelta(hours=8))
 RULES = json.loads((APP / 'rules.json').read_text(encoding='utf-8'))
 CASEBOOK = json.loads((APP / 'casebook.json').read_text(encoding='utf-8'))
-MODEL = '2026-11-23.2'
+MODEL = '2026-11-23.3'
 if CASEBOOK['revision'] != RULES['revision']:
     raise ValueError('规则与视频案例版本不一致')
 HISTORY_START = '2026-04-01'
@@ -152,6 +152,7 @@ def video_study(bars, item, by_day, a_size):
         'c1Length': round(first, 2), 'c3Ratio': round((c2 - c3) / first, 4),
         'c5Ratio': round((c4 - c5[LOW]) / first, 4), 'c5Sessions': len(c5_bars),
         'c5From': item['c5From'], 'c5Low': point(c5, LOW, 'C5区间低点'),
+        'duration': case.get('duration'),
         'endpointRatio': round((b - c5[LOW]) / a_size, 4),
         'anchors': [point(by_day[item['c1']], LOW, 'C1'), point(by_day[item['c2']], HIGH, 'C2'),
                     point(by_day[item['c3']], LOW, 'C3'), point(by_day[item['c5From']], HIGH, 'C4 右端')],
