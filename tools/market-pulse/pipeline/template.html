@@ -311,14 +311,14 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 
   <div class="two" style="margin-top:14px">
     <div class="card">
-      <h3>涨停 147 只，但连板梯队断层</h3>
-      <p class="sub">东财涨停池；首板 131、2 板 13、3 板 1、5 板 2；炸板 23（13.5%）</p>
+      <h3 id="zt-title">涨停与连板梯队</h3>
+      <p class="sub" id="zt-sub"></p>
       <div class="chart short" id="chart-zt"></div>
       <p class="note" id="zt-note"></p>
     </div>
     <div class="card">
-      <h3>融资余额：8 个交易日缩了 1,225 亿</h3>
-      <p class="sub">沪深两市融资余额合计；T+1 披露，最新 11-20</p>
+      <h3 id="margin-title">融资余额</h3>
+      <p class="sub" id="margin-sub"></p>
       <div class="chart short" id="chart-margin"></div>
       <p class="note" id="margin-note"></p>
     </div>
@@ -562,6 +562,20 @@ const DATA = __DATA_JSON__;
     if (el('lhb-sub')) el('lhb-sub').textContent = lhbToday
       ? '今日龙虎榜已披露；看机构净买/净卖'
       : '今日龙虎榜 17:00 后披露；先看最近一日的机构净买/净卖';
+    if (el('zt-title')) {
+      const z = D.zt || {};
+      el('zt-title').textContent = `涨停 ${z.count ?? 0} 只，最高 ${z.max_height ?? 0} 板`;
+      el('zt-sub').textContent = `东财涨停池；首板 ${z.first ?? 0}、2 板 ${z.second ?? 0}、3 板 ${z.third ?? 0}、5 板+ ${z.fifth_plus ?? 0}；炸板 ${z.broken ?? 0}（${z.break_rate ?? 0}%）`;
+    }
+    if (el('margin-title')) {
+      const m = D.margin || {};
+      const s = m.series || [];
+      const n = Math.max(0, s.length - 1);
+      const chg = s.length ? s[s.length - 1].total - s[0].total : 0;
+      const amt = Math.abs(chg).toLocaleString('zh-CN', { maximumFractionDigits: 0 });
+      el('margin-title').textContent = `融资余额：${n} 个交易日${chg >= 0 ? '增' : '缩'}了 ${amt} 亿`;
+      el('margin-sub').textContent = `沪深两市融资余额合计；T+1 披露，最新 ${m.date || '—'}`;
+    }
     if (el('caveat-etf-date')) el('caveat-etf-date').textContent = D.etf.date;
     if (el('caveat-margin-date')) el('caveat-margin-date').textContent = D.margin.date;
     if (el('footer-date')) el('footer-date').textContent = D.date + ' · ' + D.weekday;
