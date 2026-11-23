@@ -10,6 +10,7 @@
     optical: '/tools/optical-decline-board/',
     gjd: '/tools/national-team-etf/',
     fundRecovery: '/tools/fund-dragon-recovery/',
+    opticalScenario: '/tools/optical-scenario/',
     waveTracker: '/waves',
     cnvix: '/cnvix',
   };
@@ -20,8 +21,11 @@
   const menu = byId('tool-menu');
   const menuButton = byId('menu-open');
   const panels = byId('tool-panels');
+  const search = byId('tool-search');
+  const countLabel = byId('tool-count');
   const frames = new Map();
   let tools = new Map();
+  let cards = [];
   let siteTitle;
   let activeFrame;
 
@@ -34,12 +38,22 @@
   document.addEventListener('sitethemechange', updateThemeButton);
   updateThemeButton();
 
-  // 后台配置会覆盖 defaults；pinned 工具强制保留入口，避免新功能页从首页消失。
-  function withPinned(config) {
-    const pinned = (window.ToolSiteDefaults?.items || []).filter(item => item.pinned);
-    const urls = new Set((config.items || []).map(item => item.url));
-    const extra = pinned.filter(item => !urls.has(item.url));
-    return extra.length ? { ...config, items: [...(config.items || []), ...extra] } : config;
+  // 代码里的目录是权威版本：后台配置只补充未登记的外部链接，并保留显隐开关。
+  // 这样新加的功能页不会因为后台配置陈旧而从首页消失。
+  function normalize(config) {
+    const base = window.ToolSiteDefaults;
+    const configured = Array.isArray(config?.items) ? config.items : [];
+    const key = value => String(value || '').replace(/\/+$/, '');
+    const byUrl = new Map(configured.filter(item => item && item.url).map(item => [key(item.url), item]));
+    const items = base.items.map(item => {
+      const remote = byUrl.get(key(item.url));
+      return remote && typeof remote.visible === 'boolean' ? { ...item, visible: remote.visible } : { ...item };
+    });
+    const known = new Set(base.items.map(item => key(item.url)));
+    for (const item of configured) {
+      if (item && item.url && !known.has(key(item.url))) items.push({ color: 'tool', visible: true, ...item });
+    }
+    return { title: base.title, subtitle: base.subtitle, items };
   }
 
   function toolId(url) {
@@ -130,30 +144,62 @@
     return link;
   }
 
-  function render(config) {
-    siteTitle = config.title;
-    byId('site-title').textContent = siteTitle;
-    document.querySelector('.subtitle').textContent = config.subtitle;
-    tools = new Map();
-    const cards = config.items.filter(item => item.visible).map(item => {
-      const id = toolId(item.url);
-      if (!id) return item;
-      tools.set(id, item);
-      return { ...item, url: workspaceLink(id), newTab: false, workspaceId: id };
-    });
-    const menuGroups = [];
-    for (const [name, entries] of window.ToolSiteCards.group(cards)) {
+  function buildMenu(items) {
+    const groups = [];
+    for (const [name, entries] of window.ToolSiteCards.group(items)) {
       const section = document.createElement('section');
       section.className = 'menu-group';
       const title = document.createElement('h3');
       title.className = 'menu-category';
       title.textContent = name;
       section.append(title, ...entries.map(menuLink));
-      menuGroups.push(section);
+      groups.push(section);
     }
-    window.ToolSiteCards.render(byId('tools'), cards);
-    byId('menu-items').replaceChildren(...menuGroups);
+    byId('menu-items').replaceChildren(...groups);
+  }
+
+  function matches(entry, query) {
+    if (!query) return true;
+    return [entry.name, entry.description, entry.category, entry.badge]
+      .filter(Boolean).join(' ').toLowerCase().includes(query);
+  }
+
+  function paint() {
+    const query = search ? search.value.trim().toLowerCase() : '';
+    const shown = cards.filter(entry => matches(entry, query));
+    window.ToolSiteCards.render(byId('tools'), shown);
+    if (countLabel) countLabel.textContent = query ? `${shown.length} 个匹配` : `${shown.length} 个`;
+  }
+
+  function render(config) {
+    const catalog = normalize(config);
+    siteTitle = catalog.title;
+    byId('site-title').textContent = siteTitle;
+    byId('workspace-title').textContent = '首页';
+    document.querySelector('.subtitle').textContent = catalog.subtitle;
+    tools = new Map();
+    cards = catalog.items.filter(item => item.visible).map(item => {
+      const id = toolId(item.url);
+      if (!id) return item;
+      tools.set(id, item);
+      return { ...item, url: workspaceLink(id), newTab: false, workspaceId: id };
+    });
+    buildMenu(cards);
+    paint();
     showRoute();
+  }
+
+  if (search) {
+    search.addEventListener('input', paint);
+    search.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { search.value = ''; paint(); search.blur(); }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) {
+        event.preventDefault();
+        search.focus();
+      }
+    });
   }
 
   menuButton.addEventListener('click', () => {
@@ -181,9 +227,9 @@
     if (menu.open) menu.close();
     showRoute();
   });
-  render(withPinned(window.ToolSiteDefaults));
+  render(window.ToolSiteDefaults);
   try {
     const response = await fetch('/api/site/config', { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(10000) });
-    if (response.ok) render(withPinned(await response.json()));
+    if (response.ok) render(await response.json());
   } catch { /* Keep the built-in entries available if the network is unavailable. */ }
 })();

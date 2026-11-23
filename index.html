@@ -29,9 +29,14 @@
   <main id="workspace-main" class="workspace-main">
     <section id="home" class="page" aria-labelledby="site-title">
       <header class="header">
-        <p class="eyebrow">工具工作台</p>
+        <p class="eyebrow">自建工具 <span id="tool-count">12 个</span></p>
         <h1 id="site-title" class="title">大杂烩工具站</h1>
-        <p class="subtitle">轻量、直接、即开即用。</p>
+        <p class="subtitle">行情看板、研究工具、持仓记账，按用途分组。</p>
+        <div class="tool-search" role="search">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="tool-search" type="search" placeholder="搜索：波指、回撤、ETF、网格…" autocomplete="off" aria-label="搜索工具">
+          <kbd>/</kbd>
+        </div>
       </header>
       <section id="tools" class="tool-groups" aria-label="工具快捷入口"></section>
       <noscript>请开启 JavaScript 后查看工具入口。</noscript>
