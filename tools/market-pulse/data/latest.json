@@ -1,7 +1,7 @@
 {
   "date": "2026-11-23",
   "weekday": "周一",
-  "generated_at": "2026-11-23T21:41:48",
+  "generated_at": "2026-11-23T21:55:24",
   "headline": "深V反转：ETF 连续大额托底，大单回补光模块；杠杆仍在出清",
   "indices": [
     {
@@ -284,14 +284,14 @@
     },
     "em_sh": {
       "date": "2026-11-23",
-      "main_yi": 239.17,
+      "main_yi": 240.34,
       "super_yi": 147.25,
-      "large_yi": 91.92,
-      "medium_yi": -90.97,
-      "small_yi": -148.19,
-      "stocks": 700,
+      "large_yi": 93.09,
+      "medium_yi": -91.28,
+      "small_yi": -149.06,
+      "stocks": 800,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-23T21:33:11",
+      "fetched_at": "2026-11-23T21:49:52",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -2330,18 +2330,6 @@
       "tone": "warn"
     },
     {
-      "name": "脑机接口",
-      "chg": 4.38,
-      "net": 7.44,
-      "net5": -9.12,
-      "stocks": 75,
-      "leader": "汉威科技",
-      "prior4": -16.56,
-      "ratio": 44.93,
-      "label": "弱回补",
-      "tone": "warn"
-    },
-    {
       "name": "智谱AI",
       "chg": 4.38,
       "net": 13.04,
@@ -2350,6 +2338,18 @@
       "leader": "海天瑞声",
       "prior4": -32.11,
       "ratio": 40.61,
+      "label": "弱回补",
+      "tone": "warn"
+    },
+    {
+      "name": "脑机接口",
+      "chg": 4.38,
+      "net": 7.44,
+      "net5": -9.12,
+      "stocks": 75,
+      "leader": "汉威科技",
+      "prior4": -16.56,
+      "ratio": 44.93,
       "label": "弱回补",
       "tone": "warn"
     },
@@ -4418,18 +4418,6 @@
       "tone": "neg"
     },
     {
-      "name": "时空大数据",
-      "chg": 2.77,
-      "net": -1.48,
-      "net5": -10.07,
-      "stocks": 71,
-      "leader": "华是科技",
-      "prior4": -8.59,
-      "ratio": -17.23,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "有机硅概念",
       "chg": 2.77,
       "net": 1.37,
@@ -4440,6 +4428,18 @@
       "ratio": 20.66,
       "label": "弱回补",
       "tone": "warn"
+    },
+    {
+      "name": "时空大数据",
+      "chg": 2.77,
+      "net": -1.48,
+      "net5": -10.07,
+      "stocks": 71,
+      "leader": "华是科技",
+      "prior4": -8.59,
+      "ratio": -17.23,
+      "label": "继续流出",
+      "tone": "neg"
     },
     {
       "name": "电力物联网",
@@ -4634,18 +4634,6 @@
       "tone": "warn"
     },
     {
-      "name": "创新药",
-      "chg": 2.63,
-      "net": 27.04,
-      "net5": -15.21,
-      "stocks": 276,
-      "leader": "莱美药业",
-      "prior4": -42.25,
-      "ratio": 64.0,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "小金属概念",
       "chg": 2.63,
       "net": 36.4,
@@ -4655,6 +4643,18 @@
       "prior4": -84.76,
       "ratio": 42.94,
       "label": "弱回补",
+      "tone": "warn"
+    },
+    {
+      "name": "创新药",
+      "chg": 2.63,
+      "net": 27.04,
+      "net5": -15.21,
+      "stocks": 276,
+      "leader": "莱美药业",
+      "prior4": -42.25,
+      "ratio": 64.0,
+      "label": "强回补",
       "tone": "warn"
     },
     {
@@ -4994,18 +4994,6 @@
       "tone": "neg"
     },
     {
-      "name": "氢能源",
-      "chg": 2.4,
-      "net": 38.59,
-      "net5": -21.14,
-      "stocks": 409,
-      "leader": "汉威科技",
-      "prior4": -59.73,
-      "ratio": 64.61,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "养老概念",
       "chg": 2.4,
       "net": 15.49,
@@ -5014,6 +5002,18 @@
       "leader": "汉威科技",
       "prior4": -24.28,
       "ratio": 63.8,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "氢能源",
+      "chg": 2.4,
+      "net": 38.59,
+      "net5": -21.14,
+      "stocks": 409,
+      "leader": "汉威科技",
+      "prior4": -59.73,
+      "ratio": 64.61,
       "label": "强回补",
       "tone": "warn"
     },
@@ -8758,5 +8758,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-23 · 周一"
   },
-  "rendered_at": "2026-11-23T21:41:48"
+  "rendered_at": "2026-11-23T21:55:24"
 }
