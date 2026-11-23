@@ -197,6 +197,8 @@ details .note{margin-top:10px}
       <p><span class="pill">为什么不是万得全A</span>万得全A 是 Wind 专有序列，公开接口取不到，日更的自动更新也就无从谈起。这里用两个可得代理：<b>1999 腿 = 上证综指</b>（对数峰值 +70.4% @T+496，原图 +71.72%，差 1.3pp）；<b>当前腿 = 中证全指</b>（峰值 +54.2%，原图 +57.76%；至今 +21.3%，原图 +25.6%，差 4.2pp 来自全股本加权与自由流通加权的差别）。两条腿在各自年代都是全A 的最佳可得代理，拼接后与原图的形状误差在 1–4pp 量级。</p>
       <ul>
         <li><b>参数必须冻结才看得见走样。</b>主图默认用 2025-10-09 前 250 个交易日定标、之后冻结的 k / a。如果每天重估参数，两条线永远会贴在一起——那不是相似，那是拟合。</li>
+        <li><b>两条线不会重合，也不该重合。</b>幅度缩放 a≈0.65 是按"全区间平方误差最小"定的，不是按"末端对齐"定的：模板腿高度 40~70，当前腿 10~55，a 天生就把蓝线压到六成高，距离本身就是尺度差，不是误差。想让末端贴住今天，a 要压到 0.417，R² 从 0.71 掉到 −0.66；想让主峰对上去，k 要拉到 1.269，R² 降到 0.62。两条路都是"用答案反推参数"。</li>
+        <li><b>自由度加满也救不了那 18%。</b>实测：3 参数（前段一个 k、峰后一个 k）只把 R² 从 0.818 抬到 0.839，代价是 t=391 处多了一个没有现实依据的拐点；4~5 参数（按回踩底 126→152、主峰 391→496 做锚点 warp，等于事先知道峰和底在哪）R² 反而掉到 0.64。残差是结构性的——T+100~200 那段回踩区平均差 +2.3pp、方向一致率只有 39%，这是"9·24 更早熟"的直接后果，调参数调不掉。</li>
         <li><b>样本外 R² 为负是正常的。</b>它说的是"拿前 250 日定标的形状去外推后面 270 日"，R² 为负意味着不如直接猜均值。这类类比可以描述，不能预测。</li>
         <li><b>对齐位置决定前瞻读数。</b>定标参数把今天对到模板 T+561，最优参数对到 T+601，两者相差 40 个交易日，而 2001 年 9–11 月正好是一段急跌，于是 +20 日的模板读数从 −11.9pp 变成 +6.7pp。看区间，不看单点。</li>
         <li><b>日频不同步。</b>60 日收益相关近一年均值在 0 附近，说明两段行情只在"月—季"尺度上像，在"日—周"尺度上无关。别用它做短线。</li>
@@ -263,7 +265,7 @@ function renderHero(){
   $("h-sub").innerHTML="模板同位置 T+"+Math.round(pos)+"（"+S.d.template.dates[S.d.template.t0+Math.min(S.d.template.dates.length-S.d.template.t0-1,Math.round(pos))]+"） r="+sgn(tr,2)+"% → 按 ×"+fmt(p.a,3)+" 折算 <b>"+sgn(tgt,2)+"%</b><br>当前比模板 <b class='"+(gap>=0?"up":"dn")+"'>"+(gap>=0?"低":"高")+" "+fmt(Math.abs(gap),2)+"pp</b>"+(S.param==="base"?"（"+sgn(gap/m.base.sigma,2)+"σ）":"");
   var z=gap/m.base.sigma, r2=m.fit.r2, sync=m.roll_last==null?0:m.roll_last, st=statusChip(z,r2,sync);
   var tag=$("h-tag");
-  tag.textContent="形态 R² "+fmt(r2,2)+(S.param==="base"?" · 偏差 "+sgn(z,1)+"σ":" · 参数非定标，σ 不适用")+" · 同步 "+(m.roll_last==null?"—":sgn(m.roll_last,2));
+  tag.textContent="最优 R² "+fmt(r2,2)+(S.param==="base"?" · 偏差 "+sgn(z,1)+"σ":" · 参数非定标，σ 不适用")+" · 同步 "+(m.roll_last==null?"—":sgn(m.roll_last,2));
   tag.style.color=st.c; tag.style.borderColor=st.c+"55"; tag.style.background=st.c+"14";
   $("m-t").textContent="T+"+n;
 
@@ -271,7 +273,7 @@ function renderHero(){
   var items=[
     {k:"时间拉伸 k",v:"×"+fmt(p.k,3),d:"定标 ×"+fmt(m.base.k,3)+" · 最优 ×"+fmt(m.fit.k,3),c:"blu"},
     {k:"幅度缩放 a",v:"×"+fmt(p.a,3),d:"定标 ×"+fmt(m.base.a,3)+" · 最优 ×"+fmt(m.fit.a,3),c:"amb"},
-    {k:"形态贴合 R²",v:fmt(m.fit.r2,3),d:"相关系数 "+fmt(m.fit.corr,3)+" · RMSE "+fmt(m.fit.rmse,1)+"pp",c:"vio"},
+    {k:"全区间最优 R²",v:fmt(m.fit.r2,3),d:"相关系数 "+fmt(m.fit.corr,3)+" · RMSE "+fmt(m.fit.rmse,1)+"pp · 主图画的是冻结参数",c:"vio"},
     {k:"样本外 R²",v:(m.oos.r2==null?"—":fmt(m.oos.r2,3)),d:"前 250 日定标 → 后 "+m.oos.n+" 日",c:(m.oos.r2!=null&&m.oos.r2<0?"dn":"mut")}
   ];
   items.forEach(function(it){
@@ -294,6 +296,15 @@ function drawMain(){
   var vmin=Math.min(-15,Math.min.apply(null,t.r)), vmax=Math.max(65,Math.max.apply(null,t.r),curMax);
   vmin=Math.floor(vmin/10)*10; vmax=Math.ceil(vmax/10)*10;
   var y=function(v){return pad.t+(1-(v-vmin)/(vmax-vmin))*ph};
+
+  // 当前这一档参数在图上画出的那条线，自己的 R²（和“全区间最优 R²”不是一回事）
+  var sse=0,sst=0,mu=0,i2;
+  for(i2=0;i2<=n;i2++) mu+=m.r[i2]; mu/=(n+1);
+  for(i2=0;i2<=n;i2++){
+    var dd=p.a*tplR(i2*p.k)-m.r[i2];
+    sse+=dd*dd; sst+=(m.r[i2]-mu)*(m.r[i2]-mu);
+  }
+  S.lineR2=sst>0?1-sse/sst:0;
 
   var out="";
   // 网格 + y 轴
@@ -393,7 +404,7 @@ function drawMain(){
   });
   hit.addEventListener("mouseleave",function(){ tip.style.opacity="0"; cross.setAttribute("opacity","0"); });
 
-  $("param-hint").textContent=p.tag;
+  $("param-hint").textContent=p.tag+" · 这条线自己的 R² "+fmt(S.lineR2,3);
 }
 
 /* ---------------- residual ---------------- */
@@ -458,7 +469,11 @@ function renderReads(){
   var d=S.d,m=d.modes[S.mode],sc=d.scan,tp=d.meta.template.peak,st=m.stages,ts=d.template_stages;
   var mk=(lb,txt)=>'<div class="row"><span class="lb">'+lb+'</span><span>'+txt+'</span></div>';
   var rows=[];
-  rows.push(mk("形态","1999-05 起点在 "+sc.n+" 个历史候选里排第 "+sc.rank+"，R² "+fmt(m.fit.r2,3)+"、相关 "+fmt(m.fit.corr,3)+"；第二名是它自己前后两周的邻居。这不是随便挑的窗口。"));
+  var bb=m.base,be=0,bs=0,mu2=0,i3,nn=m.r.length-1;
+  for(i3=0;i3<=nn;i3++) mu2+=m.r[i3]; mu2/=(nn+1);
+  for(i3=0;i3<=nn;i3++){var dv=bb.a*tplR(i3*bb.k)-m.r[i3]; be+=dv*dv; bs+=(m.r[i3]-mu2)*(m.r[i3]-mu2);}
+  var baseR2=bs>0?1-be/bs:0;
+  rows.push(mk("形态","1999-05 起点在 "+sc.n+" 个历史候选里排第 "+sc.rank+"，全区间最优 R² "+fmt(m.fit.r2,3)+"、相关 "+fmt(m.fit.corr,3)+"；第二名是它自己前后两周的邻居。主图那条线用的是 2025-10-09 冻结的 k、a，自身 R² "+fmt(baseR2,3)+"，比 0.82 松一档——冻结是为了坐标不随日漂移，不是拟合失败。"));
   rows.push(mk("节奏","见顶比模板早：当前 T+"+m.peak.t+"（"+m.peak.date+"），模板 T+"+tp.t+"（"+tp.date+"），差 "+(tp.t-m.peak.t)+" 个交易日；回踩底也提前 "+(ts.lo.t-st.lo.t)+" 日。"));
   var gapNow=m.base.a*tplR((m.r.length-1)*m.base.k)-m.r[m.r.length-1];
   rows.push(mk("幅度","峰值时当前比模板折算高 "+fmt(m.peak.r-m.base.a*m.peak.tpl_r_at_mapped,1)+"pp（超涨），现在反过来低 "+fmt(Math.abs(gapNow),1)+"pp（"+sgn(gapNow/m.base.sigma,1)+"σ）。幅度关系在 2026 年 5 月之后换了一次档。"));
