@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="wave-tracker-version" content="1">
+  <meta name="description" content="创业板指、科创50、上证指数日线的 ABC 与五浪情景跟踪，附观点出处和量化验证条件。">
+  <title>指数波浪跟踪</title>
+  <script src="/assets/site-theme.js"></script>
+  <link rel="stylesheet" href="/assets/workspace-theme.css">
+  <link rel="stylesheet" href="/tools/wave-tracker/style.css?v=1">
+  <script defer src="/tools/wave-tracker/app.js?v=1"></script>
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <div>
+        <a class="home" href="/">大杂烩工具站</a>
+        <h1>指数波浪跟踪</h1>
+        <p>参考上海波浪玩家公开博文，逐日用收盘行情检验 ABC 与五浪两种解释。</p>
+      </div>
+      <div class="stamp"><span>最近收盘数据</span><strong id="day">加载中</strong><small>北京时间 · 交易日盘后</small></div>
+    </header>
+    <p id="load" role="status">正在读取最近一期分析。</p>
+    <div id="dashboard" hidden>
+      <div id="indices" class="indices" role="group" aria-label="选择指数"></div>
+      <section class="panel chart-panel" aria-labelledby="instrument">
+        <div class="section-head">
+          <div><h2 id="instrument"></h2><p id="chart-meta" class="muted"></p></div>
+          <div class="ranges" id="ranges" role="group" aria-label="图表时间范围">
+            <button type="button" data-range="all" aria-pressed="true">完整结构</button>
+            <button type="button" data-range="60" aria-pressed="false">近60日</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart" role="img" aria-label="指数收盘曲线、选定的波浪锚点及观察线"></canvas>
+          <div id="chart-tip" class="chart-tip" hidden></div>
+        </div>
+        <ul class="legend" aria-label="图例">
+          <li><i class="close"></i>收盘</li><li><i class="anchors"></i>情景锚点</li>
+          <li><i class="price"></i>末段前高</li><li><i class="low"></i>末段低点</li>
+        </ul>
+        <details id="anchor-details"><summary>查看图上锚点</summary><div id="anchors" class="anchor-list"></div></details>
+      </section>
+      <section class="panel author-note" aria-labelledby="author-head">
+        <h2 id="author-head">博主的公开判断</h2><p id="author-view"></p>
+      </section>
+      <div class="scenarios" aria-label="双情景跟踪">
+        <section class="panel scenario" aria-labelledby="abc-head">
+          <span class="tag">情景一</span><h2 id="abc-head">ABC 调整</h2>
+          <p class="status" id="abc-status"></p><p id="abc-note"></p>
+          <dl id="abc-levels" class="levels"></dl>
+        </section>
+        <section class="panel scenario alternative" aria-labelledby="five-head">
+          <span class="tag">情景二</span><h2 id="five-head">同级五浪下跌</h2>
+          <p class="status" id="five-status"></p><p id="five-note"></p>
+          <dl id="five-levels" class="levels"></dl>
+        </section>
+      </div>
+      <section class="panel" aria-labelledby="cycle-head">
+        <h2 id="cycle-head">11月23日提出的两个时间条件</h2>
+        <p class="muted">这组条件用于观察他提出的12月反弹情景。满足条件后，反弹仍需价格验证。</p>
+        <div id="cycle-checks" class="cycle-checks"></div>
+      </section>
+      <section class="panel" aria-labelledby="history-head">
+        <h2 id="history-head">逐日记录</h2>
+        <p class="muted">记录各期发布时的模型判断，最多保留90期。</p>
+        <div class="table-wrap" tabindex="0" aria-label="可横向滚动的历史表格"><table>
+          <thead><tr><th scope="col">收盘日</th><th scope="col">收盘</th><th scope="col">C/A</th><th scope="col">ABC 状态</th><th scope="col">五浪状态</th></tr></thead>
+          <tbody id="history"></tbody>
+        </table></div>
+      </section>
+      <section class="panel method" aria-labelledby="method-head">
+        <h2 id="method-head">怎么读这两种数浪</h2>
+        <ol>
+          <li><strong>先定级别和起点。</strong>从同一个高点出发，ABC 表示下跌、反弹、再下跌。另一种解释把相同的前两段标为第1和第2浪，并继续观察第3、4、5浪。ABC 的 C 浪自己也可能细分成五段。</li>
+          <li><strong>比较点数长度。</strong>C/A＝（B浪高点－B后最低点）÷（起点高点－A浪低点）。0.809、1.0 是原帖观察上证时用的参照。1.618 是延伸第3浪的经验比例。普通推动浪要求第3浪不能短于第1与第5浪两者，第4浪不能进入第1浪价格区间。楔形等其它变体需人工复核。</li>
+          <li><strong>用后续走势区分。</strong>ABC 案以两日连续收在末段前高之上作为完成的支持；若再创新低，就更新末段低点。五浪案以11月20日当时可知的 B 后最低点作初始锚点，顺查其后的收盘是否回补候选第3浪跌幅的23.6%，再看是否出现弱反弹后破底。百分比和连续收盘规则是工具的量化约定。</li>
+          <li><strong>分开看反弹的分母。</strong>整段下跌的38.2%回补＝末段低点＋（起点高点－末段低点）×0.382。该水平会随低点重算，属于观察线。试算用指数日线的盘中高低点，信号按收盘核对。</li>
+        </ol>
+        <p class="muted">锚点以日线高低价对齐。上证的前三锚点来自博主公开点位。创业板大级别锚点结合原帖和公开讨论回查，科创50的 A/B 及末段前高、C3候选由工具选取。周线按此前19个已过去交易周的最低点滚动计算，周收低于该点才记录周期破位。</p>
+        <details id="sources" open><summary>原帖与研究线索</summary><p><a id="profile" target="_blank" rel="noopener noreferrer">查看新浪公开主页</a></p><div id="source-list"></div></details>
+      </section>
+      <footer><span id="build"></span><span>观点依据与模型口径会标记版本</span></footer>
+    </div>
+  </main>
+</body>
+</html>

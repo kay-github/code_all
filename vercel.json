@@ -184,6 +184,10 @@
       }
     },
     {
+      "src": "^/waves/?$",
+      "dest": "/tools/wave-tracker/index.html"
+    },
+    {
       "src": "^/cnvix/?$",
       "dest": "/tools/cn-vix/index.html"
     },
