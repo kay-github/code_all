@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-23",
+  "started_at": "2026-11-23T21:16:56+08:00",
+  "current": "FAILED: fetch_daily.py",
+  "steps": [
+    {
+      "label": "0/8 东财沪市主力资金快照（可选，失败不阻断）",
+      "script": "fetch_em_flow.py",
+      "critical": false,
+      "returncode": 0,
+      "ok": true,
+      "tail": "4%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 10 missing\n[warn] em page 11 attempt 1: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=11&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 11 attempt 2: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=11&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 11 attempt 3: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=11&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 11 missing\n[warn] em page 12 attempt 1: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=12&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 12 attempt 2: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=12&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 12 attempt 3: HTTPError: 502 Server Error: Bad Gateway for url: https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz=200&pn=12&np=1&fltt=2&invt=2&ut=b2884a393a59ad64002292a3e90d46a5&fs=m%3A1%2Bt%3A2%2Bf%3A%212%2Cm%3A1%2Bt%3A23%2Bf%3A%212%2Cm%3A1%2Bt%3A3%2Bf%3A%212&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf66%2Cf72%2Cf78%2Cf84\n[warn] em page 12 missing\n[ok] em_sh_flow {'date': '2026-11-23', 'main_yi': 239.17, 'super_yi': 147.25, 'large_yi': 91.92, 'medium_yi': -90.97, 'small_yi': -148.19, 'stocks': 700, 'source': 'push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum', 'fetched_at': '2026-11-23T21:17:45', 'note': '沪市全 A 单点快照；深市未取到，不与深市同口径比较。'}"
+    },
+    {
+      "label": "1/8 基础行情 / 行业 / 概念 / 涨停 / 两融",
+      "script": "fetch_daily.py",
+      "critical": true,
+      "returncode": 1,
+      "ok": false,
+      "tail": "Traceback (most recent call last):\n  File \"/home/runner/work/code_all/code_all/tools/market-pulse/pipeline/scripts/fetch_daily.py\", line 28, in <module>\n    import astock_skill as ast\n  File \"/home/runner/work/code_all/code_all/tools/market-pulse/pipeline/vendor/a-stock-data/astock_skill.py\", line 1535, in <module>\n    import baostock as bs\nModuleNotFoundError: No module named 'baostock'"
+    }
+  ],
+  "finished_at": "2026-11-23T21:17:47+08:00"
+}
