@@ -34,9 +34,15 @@ def main(date: str | None = None):
 
     online = os.environ.get("MP_ONLINE") == "1"
     if online:
-        # External files are required inside the root-site iframe: its CSP allows
-        # same-origin scripts but blocks inline scripts.
-        echarts_tag = '<script src="/tools/market-pulse/vendor/echarts.min.js"></script>'
+        # ECharts is served from CDN for the online build. Self-hosting the 1MB
+        # file on this Vercel project stalls when the page is opened inside the
+        # root-site iframe (the request gets a 200 but the body never finishes);
+        # the same file loads fine as a standalone page. The local vendor copy
+        # remains as an offline fallback via echarts-fallback.js.
+        echarts_tag = (
+            '<script src="https://fastly.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>\n'
+            '<script src="/tools/market-pulse/echarts-fallback.js"></script>'
+        )
         data_script = '<script src="/tools/market-pulse/data/latest.js"></script>'
         app_script = '<script src="/tools/market-pulse/app.js"></script>'
     else:
@@ -75,6 +81,12 @@ def main(date: str | None = None):
         if online:
             (data_dir / "latest.js").write_text(f"window.DATA = {payload};\n", encoding="utf-8")
             (target / "app.js").write_text(app_js, encoding="utf-8")
+            (target / "echarts-fallback.js").write_text(
+                "if(!window.echarts){var s=document.createElement('script');"
+                "s.src='/tools/market-pulse/vendor/echarts.min.js';"
+                "s.async=true;document.head.appendChild(s);}\n",
+                encoding="utf-8",
+            )
         vendor = ROOT / "vendor" / "echarts.min.js"
         if online and vendor.exists():
             (target / "vendor").mkdir(parents=True, exist_ok=True)

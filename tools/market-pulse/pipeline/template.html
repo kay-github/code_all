@@ -513,6 +513,18 @@ window.DATA = __DATA_JSON__;
     document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
     return;
   }
+  // Charts must never block the text report. If ECharts fails to load (CDN
+  // blocked, slow edge response), render the full narrative/tables with a
+  // no-op chart shim and leave the chart canvases empty.
+  if (!window.echarts) {
+    const noop = () => {};
+    window.echarts = {
+      init: () => ({setOption: noop, resize: noop, on: noop, off: noop, dispose: noop,
+        getOption: () => ({}), showLoading: noop, hideLoading: noop}),
+      graphic: {LinearGradient: function(){}},
+      registerTheme: noop,
+    };
+  }
   const fmt = (v, d=1) => {
     v = Number(v);
     const body = Math.abs(v).toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d});
