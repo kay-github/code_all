@@ -13,8 +13,9 @@
     opticalScenario: '/tools/optical-scenario/',
     waveTracker: '/waves',
     cnvix: '/cnvix',
+    cycleMirror: '/mirror',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/cnvix', 'cnvix'], ['/cnvix/', 'cnvix']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/cnvix', 'cnvix'], ['/cnvix/', 'cnvix'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);

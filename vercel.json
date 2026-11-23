@@ -197,6 +197,17 @@
       "headers": {
         "Cache-Control": "no-store"
       }
+    },
+    {
+      "src": "^/mirror/?$",
+      "dest": "/tools/cycle-mirror/index.html"
+    },
+    {
+      "src": "^/tools/cycle-mirror/data/(.*)$",
+      "dest": "/tools/cycle-mirror/data/$1",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
     }
   ]
 }

@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<meta name="description" content="5·19（1999）与 9·24（2024）两段行情的对数收益叠加：每日更新的形态贴合度、偏差轨道、同步度与历史排名，用来判断这轮到底像不像、走没走样。">
+<title>周期镜像 · 5·19 vs 9·24</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%234a8fd4'/%3E%3Cpath d='M7 26c5-2 6-10 11-10s6 8 11 8 6-6 4-10' stroke='%23fff' fill='none' stroke-width='2.6'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0a0d12;--panel:#11161f;--panel2:#0e131a;--line:#1d2532;--line2:#26303f;
+  --tx:#e6ebf2;--mut:#8b97a8;--dim:#61707f;
+  --up:#e5533d;--dn:#1e9e74;--amber:#f0b24a;--blue:#4a8fd4;--violet:#8b7fd6;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{background-image:radial-gradient(1100px 560px at 10% -12%,rgba(74,143,212,.08),transparent 62%),radial-gradient(900px 500px at 94% -6%,rgba(229,83,61,.06),transparent 58%);background-attachment:fixed}
+a{color:var(--blue);text-decoration:none}
+.wrap{max-width:1220px;margin:0 auto;padding:20px 18px 72px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:650;letter-spacing:.4px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue)}
+.brand small{color:var(--dim);font-weight:400;font-size:11px;letter-spacing:1.2px;text-transform:uppercase}
+.meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);font-family:var(--mono)}
+.meta b{color:var(--tx);font-weight:600}
+section{margin-top:18px}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.card-h h2{margin:0;font-size:14px;font-weight:650;letter-spacing:.3px}
+.hint{font-size:11.5px;color:var(--dim);font-family:var(--mono)}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+@media(max-width:940px){.hero{grid-template-columns:1fr}}
+.hero-main{position:relative;padding:18px 20px 16px;border-radius:12px;border:1px solid var(--line);background:radial-gradient(620px 240px at 0% 0%,rgba(229,83,61,.10),transparent 70%),linear-gradient(180deg,#141a24,#0e131a);overflow:hidden}
+.hero-main .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;color:var(--dim)}
+.hero-main .big{display:flex;align-items:flex-end;gap:12px;margin:8px 0 2px;flex-wrap:wrap}
+.hero-main .num{font-family:var(--mono);font-size:56px;line-height:.95;font-weight:600;letter-spacing:-1.5px}
+.hero-main .unit{font-family:var(--mono);font-size:13px;padding-bottom:8px;color:var(--mut)}
+.hero-main .sub{font-size:12px;color:var(--mut);font-family:var(--mono);line-height:1.9}
+.hero-main .sub b{color:var(--tx)}
+.tag{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:4px 10px;border-radius:999px;font-size:11.5px;border:1px solid;font-family:var(--mono)}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.mini{grid-template-columns:1fr 1fr}}
+.kpi{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:3px}
+.kpi .k{font-size:11px;color:var(--dim)}
+.kpi .v{font-family:var(--mono);font-size:20px;font-weight:600}
+.kpi .d{font-size:10.5px;color:var(--mut);font-family:var(--mono);line-height:1.5}
+.up{color:var(--up)}.dn{color:var(--dn)}.amb{color:var(--amber)}.blu{color:var(--blue)}.vio{color:var(--violet)}.mut{color:var(--mut)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{padding:4px 9px;border-radius:6px;border:1px solid var(--line2);background:rgba(255,255,255,.02);font-size:11.5px;color:var(--mut);cursor:pointer;font-family:var(--mono);user-select:none;white-space:nowrap}
+.chip.on{border-color:var(--amber);color:var(--amber);background:rgba(240,178,74,.08)}
+.chip.dis{opacity:.35;cursor:not-allowed}
+.chip-h{font-size:11px;color:var(--dim);font-family:var(--mono);margin-right:2px}
+.lg{display:inline-flex;align-items:center;gap:5px}
+.lg .sw{display:inline-block;width:14px;height:2px;border-radius:1px}
+.chart-wrap{position:relative;margin-top:4px}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;z-index:3;background:#0b1018;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:11.5px;font-family:var(--mono);color:var(--tx);white-space:nowrap;opacity:0;transition:opacity .12s;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.tip .t{color:var(--mut);font-size:10.5px;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:14px;line-height:1.7}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:right;font-weight:500;color:var(--dim);font-size:11px;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child{text-align:left}
+.tbl td{text-align:right;padding:7px 8px;border-bottom:1px solid rgba(29,37,50,.7);font-family:var(--mono);white-space:nowrap}
+.tbl td:first-child{text-align:left;font-family:var(--sans);color:var(--tx)}
+.tbl tr:hover td{background:rgba(255,255,255,.025)}
+.tbl tr.hl td{background:rgba(240,178,74,.07)}
+.tbl tr.hl td:first-child{color:var(--amber);font-weight:600}
+.note{font-size:12.5px;color:var(--mut);line-height:1.9}
+.note b{color:var(--tx);font-weight:600}
+.note p{margin:0 0 8px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.note li{margin:5px 0}
+.note li::marker{color:var(--amber)}
+.pill{display:inline-block;padding:2px 7px;border-radius:4px;background:rgba(240,178,74,.10);border:1px solid rgba(240,178,74,.25);color:var(--amber);font-family:var(--mono);font-size:10.5px;margin-right:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:940px){.grid2{grid-template-columns:1fr}}
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--dim);font-family:var(--mono)}
+details{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+summary{cursor:pointer;font-size:12.5px;color:var(--tx);font-weight:600}
+details .note{margin-top:10px}
+.reads{display:flex;flex-direction:column;gap:10px}
+.reads .row{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;font-size:12.5px;line-height:1.85;color:var(--mut)}
+.reads .row .lb{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.reads .row b{color:var(--tx)}
+.warn{display:none;margin-top:10px;padding:8px 10px;border:1px solid rgba(240,178,74,.3);background:rgba(240,178,74,.08);border-radius:8px;font-size:12px;color:var(--amber)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><span class="dot"></span>周期镜像 · 5·19 ↔ 9·24<small>MIRROR</small></div>
+    <div class="meta">
+      <span>数据日 <b id="m-date">—</b></span>
+      <span>构建 <b id="m-build">—</b></span>
+      <span>当前位置 <b id="m-t">—</b></span>
+    </div>
+  </div>
+
+  <div class="warn" id="stale"></div>
+
+  <section class="hero">
+    <div class="hero-main">
+      <div class="eyebrow" id="h-name">—</div>
+      <div class="big">
+        <span class="num" id="h-num">—</span>
+        <span class="unit">累计对数收益</span>
+      </div>
+      <div class="sub" id="h-sub">—</div>
+      <div id="h-tag" class="tag"></div>
+    </div>
+    <div class="mini" id="mini"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">
+      <h2>走势叠加 · 对数累计收益</h2>
+      <div class="chips">
+        <span class="chip-h">口径</span>
+        <span class="chip on" data-mode="alla">全A（中证全指）</span>
+        <span class="chip" data-mode="sh">上证同源</span>
+      </div>
+    </div>
+    <div class="chips" style="margin:-4px 0 10px">
+      <span class="chip-h">参数</span>
+      <span class="chip on" data-param="base">定标冻结</span>
+      <span class="chip" data-param="opt">每日最优</span>
+      <span class="chip" data-param="orig">原图 1.14/0.75</span>
+      <span class="hint" id="param-hint" style="margin-left:4px">—</span>
+    </div>
+    <div class="chart-wrap" id="cwrap">
+      <svg class="chart" id="chart" viewBox="0 0 1080 470" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="chips" style="margin-top:10px">
+      <span class="lg"><span class="sw" style="background:#4a8fd4"></span><span class="mut">1999-05-19 起（模板）</span></span>
+      <span class="lg"><span class="sw" style="background:#e5533d"></span><span class="mut">2024-09-24 起（当前）</span></span>
+      <span class="lg"><span class="sw" style="background:#e5533d;opacity:.5"></span><span class="mut">模板后续（虚线，非预测）</span></span>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="card-h"><h2>偏差轨道</h2><span class="hint" id="res-hint">—</span></div>
+      <div class="chart-wrap" id="rwrap">
+        <svg class="chart" id="resid" viewBox="0 0 1080 210" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tip" id="rtip"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>同步度 · 60 日收益相关</h2><span class="hint" id="roll-hint">—</span></div>
+      <div class="chart-wrap">
+        <svg class="chart" id="roll" viewBox="0 0 1080 210" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>怎么读</h2><span class="hint">四行结论，按重要性排</span></div>
+    <div class="reads" id="reads"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>历史排名 · 谁最像这轮</h2><span class="hint" id="scan-hint">—</span></div>
+    <table class="tbl" id="scan">
+      <thead><tr><th>起点</th><th>时间拉伸 k</th><th>幅度 a</th><th>形态 R²</th><th>说明</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note" style="margin-top:10px;font-size:11.5px" id="scan-note"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="card-h"><h2>阶段节奏对照</h2><span class="hint">同一个"急涨—回踩—慢牛—见顶"</span></div>
+      <table class="tbl" id="stages">
+        <thead><tr><th>节点</th><th>模板 T+N</th><th>模板 r</th><th>当前 T+N</th><th>当前 r</th><th>节奏差</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>模板后续 · 情景外推</h2><span class="hint">不是预测，是"若照抄会发生什么"</span></div>
+      <table class="tbl" id="fwd">
+        <thead><tr><th>对齐方式</th><th>+20 日</th><th>+60 日</th><th>+120 日</th><th>+250 日</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="note" style="margin-top:10px;font-size:11.5px" id="fwd-note"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>方法与局限</h2><span class="hint">先看这段，再看图</span></div>
+    <div class="note">
+      <p><span class="pill">这张图在做什么</span>把两段行情各自换算成"从起点算起的累计对数收益" r = ln(P<sub>t</sub> / P<sub>0</sub>)，再把 2024-09-24 那段按<b>时间拉伸 k</b> 和<b>幅度缩放 a</b> 叠到 1999-05-19 的时间轴上：横轴是 1999 的交易日，当前腿的 t 画在 k·t 的位置、高度取 a·r。原图用的是 万得全A（881001.WI），标注的 1.14 / 0.75 就是这两个拟合参数。</p>
+      <p><span class="pill">为什么不是万得全A</span>万得全A 是 Wind 专有序列，公开接口取不到，日更的自动更新也就无从谈起。这里用两个可得代理：<b>1999 腿 = 上证综指</b>（对数峰值 +70.4% @T+496，原图 +71.72%，差 1.3pp）；<b>当前腿 = 中证全指</b>（峰值 +54.2%，原图 +57.76%；至今 +21.3%，原图 +25.6%，差 4.2pp 来自全股本加权与自由流通加权的差别）。两条腿在各自年代都是全A 的最佳可得代理，拼接后与原图的形状误差在 1–4pp 量级。</p>
+      <ul>
+        <li><b>参数必须冻结才看得见走样。</b>主图默认用 2025-10-09 前 250 个交易日定标、之后冻结的 k / a。如果每天重估参数，两条线永远会贴在一起——那不是相似，那是拟合。</li>
+        <li><b>样本外 R² 为负是正常的。</b>它说的是"拿前 250 日定标的形状去外推后面 270 日"，R² 为负意味着不如直接猜均值。这类类比可以描述，不能预测。</li>
+        <li><b>对齐位置决定前瞻读数。</b>定标参数把今天对到模板 T+561，最优参数对到 T+601，两者相差 40 个交易日，而 2001 年 9–11 月正好是一段急跌，于是 +20 日的模板读数从 −11.9pp 变成 +6.7pp。看区间，不看单点。</li>
+        <li><b>日频不同步。</b>60 日收益相关近一年均值在 0 附近，说明两段行情只在"月—季"尺度上像，在"日—周"尺度上无关。别用它做短线。</li>
+        <li><b>口径会改变结论方向。</b>全A 口径下当前比模板低 12pp（1.6σ），上证同源口径下反而高 1.2pp（0.2σ）。同一条历史，换个指数就换了个说法，这本身就是"类比不牢"的证据。</li>
+      </ul>
+    </div>
+    <details>
+      <summary>数据与复算</summary>
+      <div class="note">
+        上证综指全历史（1990-12-19 起）来自新浪日线底稿，中证全指（2004-12-31 起）来自中证指数官网；每日增量用腾讯 800 日 K 线窗口合并、去重、开盘前不采当日未收盘 bar。<br>
+        原始序列：<a href="/tools/cycle-mirror/data/sh000001.csv" download>sh000001.csv</a> ·
+        <a href="/tools/cycle-mirror/data/cn985.csv" download>cn985.csv</a> ·
+        页面数据：<a href="/tools/cycle-mirror/data/mirror.json" download>mirror.json</a><br>
+        更新：工作日收盘后由 GitHub Actions 跑 <code style="font-family:var(--mono);color:var(--mut)">tools/cycle-mirror/update.py</code>，白名单提交数据文件，Vercel 自动部署。
+      </div>
+    </details>
+  </section>
+
+  <div class="foot">
+    <span>周期镜像 · 自建研究页，不构成投资建议</span>
+    <span id="foot-params">—</span>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var fmt=function(v,d){ return v==null?"—":Number(v).toFixed(d==null?2:d) };
+var sgn=function(v,d){ if(v==null) return "—"; var x=Number(v).toFixed(d==null?2:d); return (v>=0?"+":"")+x };
+var S={mode:"alla",param:"base",d:null};
+
+function interp(arr,x){
+  if(x<=0) return arr[0];
+  if(x>=arr.length-1) return arr[arr.length-1];
+  var i=Math.floor(x),f=x-i;
+  return arr[i]*(1-f)+arr[i+1]*f;
+}
+function P(){
+  var m=S.d.modes[S.mode];
+  if(S.param==="orig") return {k:1.14,a:0.75,tag:"原图参数 ×1.14 / ×0.75（仅对全A口径成立）"};
+  if(S.param==="opt") return {k:m.fit.k,a:m.fit.a,tag:"每日最优拟合（参数会随新数据漂移，仅作参照）"};
+  return {k:m.base.k,a:m.base.a,tag:"定标 " + m.base.asof + " 前 250 日拟合，之后冻结"};
+}
+function tplR(pos){ // pos = 模板交易日序号（0 = 1999-05-19）
+  var t=S.d.template;
+  return interp(t.r, pos + t.t0);
+}
+function statusChip(z,r2,sync){
+  var st;
+  if(Math.abs(z)<=1) st={t:"贴合",c:"#1e9e74"};
+  else if(Math.abs(z)<=2) st={t:"偏离",c:"#f0b24a"};
+  else st={t:"走样",c:"#e5533d"};
+  return st;
+}
+
+/* ---------------- hero ---------------- */
+function renderHero(){
+  var m=S.d.modes[S.mode],p=P(),n=m.r.length-1,pos=n*p.k;
+  var tr=tplR(pos), tgt=p.a*tr, r=m.r[n], gap=tgt-r;
+  $("h-name").textContent=m.index_name+" · T+"+n+" · "+m.dates[n];
+  var num=$("h-num"); num.textContent=sgn(r,2)+"%";
+  num.className="num "+(r>=0?"up":"dn");
+  $("h-sub").innerHTML="模板同位置 T+"+Math.round(pos)+"（"+S.d.template.dates[S.d.template.t0+Math.min(S.d.template.dates.length-S.d.template.t0-1,Math.round(pos))]+"） r="+sgn(tr,2)+"% → 按 ×"+fmt(p.a,3)+" 折算 <b>"+sgn(tgt,2)+"%</b><br>当前比模板 <b class='"+(gap>=0?"up":"dn")+"'>"+(gap>=0?"低":"高")+" "+fmt(Math.abs(gap),2)+"pp</b>"+(S.param==="base"?"（"+sgn(gap/m.base.sigma,2)+"σ）":"");
+  var z=gap/m.base.sigma, r2=m.fit.r2, sync=m.roll_last==null?0:m.roll_last, st=statusChip(z,r2,sync);
+  var tag=$("h-tag");
+  tag.textContent="形态 R² "+fmt(r2,2)+(S.param==="base"?" · 偏差 "+sgn(z,1)+"σ":" · 参数非定标，σ 不适用")+" · 同步 "+(m.roll_last==null?"—":sgn(m.roll_last,2));
+  tag.style.color=st.c; tag.style.borderColor=st.c+"55"; tag.style.background=st.c+"14";
+  $("m-t").textContent="T+"+n;
+
+  var mini=$("mini"); mini.innerHTML="";
+  var items=[
+    {k:"时间拉伸 k",v:"×"+fmt(p.k,3),d:"定标 ×"+fmt(m.base.k,3)+" · 最优 ×"+fmt(m.fit.k,3),c:"blu"},
+    {k:"幅度缩放 a",v:"×"+fmt(p.a,3),d:"定标 ×"+fmt(m.base.a,3)+" · 最优 ×"+fmt(m.fit.a,3),c:"amb"},
+    {k:"形态贴合 R²",v:fmt(m.fit.r2,3),d:"相关系数 "+fmt(m.fit.corr,3)+" · RMSE "+fmt(m.fit.rmse,1)+"pp",c:"vio"},
+    {k:"样本外 R²",v:(m.oos.r2==null?"—":fmt(m.oos.r2,3)),d:"前 250 日定标 → 后 "+m.oos.n+" 日",c:(m.oos.r2!=null&&m.oos.r2<0?"dn":"mut")}
+  ];
+  items.forEach(function(it){
+    var el=document.createElement("div"); el.className="kpi";
+    el.innerHTML='<div class="k">'+it.k+'</div><div class="v '+it.c+'">'+it.v+'</div><div class="d">'+it.d+'</div>';
+    mini.appendChild(el);
+  });
+}
+
+/* ---------------- main chart ---------------- */
+function drawMain(){
+  var d=S.d,m=d.modes[S.mode],p=P(),t=d.template,t0=t.t0;
+  var W=1080,H=470,pad={l:60,r:64,t:38,b:48};
+  var pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  var n=m.r.length-1,pos=n*p.k;
+  var xmin=-200,xmax=Math.max(1000,Math.ceil(pos)+250);
+  var x=function(v){return pad.l+(v-xmin)/(xmax-xmin)*pw};
+
+  var curMax=p.a*Math.max.apply(null,m.r), curMin=p.a*Math.min.apply(null,m.r.slice(0,Math.min(m.r.length)));
+  var vmin=Math.min(-15,Math.min.apply(null,t.r)), vmax=Math.max(65,Math.max.apply(null,t.r),curMax);
+  vmin=Math.floor(vmin/10)*10; vmax=Math.ceil(vmax/10)*10;
+  var y=function(v){return pad.t+(1-(v-vmin)/(vmax-vmin))*ph};
+
+  var out="";
+  // 网格 + y 轴
+  var step=20,yt;
+  for(yt=vmin;yt<=vmax+1e-9;yt+=step){
+    var yy=y(yt);
+    out+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(W-pad.r)+'" y2="'+yy+'" stroke="#1d2532" stroke-width="1"/>';
+    out+='<text x="'+(pad.l-8)+'" y="'+(yy+4)+'" text-anchor="end" fill="#61707f" font-size="10" font-family="ui-monospace,monospace">'+yt+'</text>';
+  }
+  // 零轴
+  out+='<line x1="'+pad.l+'" y1="'+y(0)+'" x2="'+(W-pad.r)+'" y2="'+y(0)+'" stroke="#26303f" stroke-width="1.2" stroke-dasharray="6 4"/>';
+  // x 轴刻度（模板交易日）
+  var xt;
+  for(xt=-200;xt<=xmax;xt+=200){
+    if(xt>xmax) break;
+    var xx=x(xt);
+    out+='<line x1="'+xx+'" y1="'+pad.t+'" x2="'+xx+'" y2="'+(H-pad.b)+'" stroke="#131a24" stroke-width="1"/>';
+    out+='<text x="'+xx+'" y="'+(H-14)+'" text-anchor="middle" fill="#61707f" font-size="10" font-family="ui-monospace,monospace">'+xt+'</text>';
+  }
+  out+='<text x="'+((pad.l+W-pad.r)/2)+'" y="'+(H-2)+'" text-anchor="middle" fill="#61707f" font-size="10" font-family="ui-monospace,monospace">距 1999-05-19 交易日数（模板轴）</text>';
+
+  // 顶部当前腿刻度
+  var ct;
+  for(ct=0;ct<=1000;ct+=200){
+    var cx=x(ct*p.k);
+    if(cx>W-pad.r) break;
+    out+='<text x="'+cx+'" y="'+(pad.t-12)+'" text-anchor="middle" fill="#e5533d" opacity=".65" font-size="10" font-family="ui-monospace,monospace">'+ct+'</text>';
+  }
+  out+='<text x="'+(W-pad.r)+'" y="'+(pad.t-28)+'" text-anchor="end" fill="#e5533d" opacity=".65" font-size="10" font-family="ui-monospace,monospace">2024-09-24 起交易日数</text>';
+
+  // 模板曲线
+  var pd="";
+  for(var i=0;i<t.r.length;i++){
+    pd+=(i?"L":"M")+x(i-t0).toFixed(1)+" "+y(t.r[i]).toFixed(1);
+  }
+  out+='<path d="'+pd+'" fill="none" stroke="#4a8fd4" stroke-width="1.9" stroke-linejoin="round"/>';
+
+  // 当前曲线
+  var pc="";
+  for(var j=0;j<m.r.length;j++){
+    pc+=(j?"L":"M")+x(j*p.k).toFixed(1)+" "+y(p.a*m.r[j]).toFixed(1);
+  }
+  out+='<path d="'+pc+'" fill="none" stroke="#e5533d" stroke-width="1.9" stroke-linejoin="round"/>';
+
+  // 模板后续（虚线）
+  var pf="", started=false;
+  for(var q=Math.round(pos)+1;q<=Math.round(pos)+250;q++){
+    if(q+t0>=t.r.length) break;
+    pf+=(started?"L":"M")+x(q).toFixed(1)+" "+y(p.a*t.r[q+t0]).toFixed(1);
+    started=true;
+  }
+  if(pf) out+='<path d="'+pf+'" fill="none" stroke="#e5533d" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>';
+
+  // 现在竖线
+  out+='<line x1="'+x(pos)+'" y1="'+pad.t+'" x2="'+x(pos)+'" y2="'+(H-pad.b)+'" stroke="#e6ebf2" stroke-width="1" stroke-dasharray="4 4" opacity=".5"/>';
+  out+='<text x="'+(x(pos)+5)+'" y="'+(pad.t+12)+'" fill="#e6ebf2" font-size="10" font-family="ui-monospace,monospace" opacity=".75">现在 T+'+n+'</text>';
+
+  // 峰值标记
+  var tp=d.meta.template.peak;
+  out+='<circle cx="'+x(tp.t)+'" cy="'+y(tp.r)+'" r="3.2" fill="#4a8fd4"/>';
+  out+='<text x="'+(x(tp.t)-6)+'" y="'+(y(tp.r)-9)+'" text-anchor="end" fill="#4a8fd4" font-size="10" font-family="ui-monospace,monospace">5·19 峰 '+sgn(tp.r,1)+'% @T+'+tp.t+'</text>';
+  var cp=m.peak;
+  out+='<circle cx="'+x(cp.t*p.k)+'" cy="'+y(p.a*cp.r)+'" r="3.2" fill="#e5533d"/>';
+  out+='<text x="'+(x(cp.t*p.k)+6)+'" y="'+(y(p.a*cp.r)-9)+'" fill="#e5533d" font-size="10" font-family="ui-monospace,monospace">9·24 峰 '+sgn(cp.r,1)+'% @T+'+cp.t+'</text>';
+
+  // 端点
+  out+='<circle cx="'+x(pos)+'" cy="'+y(p.a*m.r[n])+'" r="3.6" fill="#fff" stroke="#e5533d" stroke-width="1.5"/>';
+
+  out+='<line id="cross" x1="0" y1="'+pad.t+'" x2="0" y2="'+(H-pad.b)+'" stroke="#8b97a8" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>';
+  out+='<rect id="hit" x="'+pad.l+'" y="'+pad.t+'" width="'+pw+'" height="'+ph+'" fill="transparent"/>';
+
+  var svg=$("chart"); svg.innerHTML=out;
+  var hit=svg.querySelector("#hit"),cross=svg.querySelector("#cross"),tip=$("tip"),wrap=$("cwrap");
+  hit.addEventListener("mousemove",function(ev){
+    var r0=svg.getBoundingClientRect();
+    var px=(ev.clientX-r0.left)/r0.width*W;
+    var day=Math.round((px-pad.l)/pw*(xmax-xmin)+xmin);
+    day=Math.max(-200,Math.min(Math.round(pos),day));
+    var xx=x(day); cross.setAttribute("x1",xx); cross.setAttribute("x2",xx); cross.setAttribute("opacity",".5");
+    var dT=t.dates[Math.min(t.dates.length-1,day+t0)], rT=tplR(day);
+    var dC=null,rC=null;
+    var cday=Math.round(day/p.k);
+    if(cday>=0&&cday<=n){ dC=m.dates[cday]; rC=m.r[cday]; }
+    var rows='<div class="t">模板 T'+(day>=0?"+":"")+day+' · '+dT+'</div>'+
+      '<div class="r"><span style="color:#4a8fd4">模板 r</span><b>'+sgn(rT,1)+'%</b></div>'+
+      '<div class="r"><span style="color:#4a8fd4">折算 ×'+fmt(p.a,2)+'</span><b>'+sgn(p.a*rT,1)+'%</b></div>';
+    if(rC!=null) rows+='<div class="r"><span style="color:#e5533d">当前 T+'+cday+'</span><b>'+sgn(rC,1)+'%</b></div>'; else rows+='<div class="r"><span style="color:#e5533d">当前</span><b>未至</b></div>';
+    tip.innerHTML=rows; tip.style.opacity="1";
+    var leftPx=(xx/W)*r0.width;
+    tip.style.left=Math.min(r0.width-160,Math.max(4,leftPx+12))+"px";
+    tip.style.top="8px";
+  });
+  hit.addEventListener("mouseleave",function(){ tip.style.opacity="0"; cross.setAttribute("opacity","0"); });
+
+  $("param-hint").textContent=p.tag;
+}
+
+/* ---------------- residual ---------------- */
+function drawResid(){
+  var m=S.d.modes[S.mode],b=m.base,res=m.resid;
+  var W=1080,H=210,pad={l:52,r:16,t:14,b:30};
+  var pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  var n=res.length-1;
+  var ymax=Math.max(b.sigma*3.2,Math.max.apply(null,res.map(Math.abs))*1.1);
+  var x=function(i){return pad.l+i/n*pw};
+  var y=function(v){return pad.t+(1-(v+ymax)/(2*ymax))*ph};
+  var out="";
+  [-2,-1,1,2].forEach(function(z){
+    out+='<line x1="'+pad.l+'" y1="'+y(z*b.sigma)+'" x2="'+(W-pad.r)+'" y2="'+y(z*b.sigma)+'" stroke="#26303f" stroke-width="1" stroke-dasharray="'+(Math.abs(z)===1?"5 4":"2 3")+'"/>';
+  });
+  out+='<rect x="'+pad.l+'" y="'+y(b.sigma)+'" width="'+pw+'" height="'+(y(-b.sigma)-y(b.sigma))+'" fill="rgba(74,143,212,.07)"/>';
+  out+='<line x1="'+pad.l+'" y1="'+y(0)+'" x2="'+(W-pad.r)+'" y2="'+y(0)+'" stroke="#8b97a8" stroke-width="1.1"/>';
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(0)+4)+'" text-anchor="end" fill="#61707f" font-size="10" font-family="ui-monospace,monospace">0</text>';
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(2*b.sigma)+4)+'" text-anchor="end" fill="#61707f" font-size="9" font-family="ui-monospace,monospace">+2σ</text>';
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(-2*b.sigma)+4)+'" text-anchor="end" fill="#61707f" font-size="9" font-family="ui-monospace,monospace">−2σ</text>';
+  var pd="";
+  for(var i=0;i<res.length;i++) pd+=(i?"L":"M")+x(i).toFixed(1)+" "+y(res[i]).toFixed(1);
+  out+='<path d="'+pd+'" fill="none" stroke="#f0b24a" stroke-width="1.6"/>';
+  out+='<circle cx="'+x(n)+'" cy="'+y(res[n])+'" r="3.4" fill="#fff" stroke="#f0b24a" stroke-width="1.5"/>';
+  var step=Math.max(1,Math.round(n/6));
+  for(var k=0;k<=n;k+=step){
+    out+='<text x="'+x(k)+'" y="'+(H-10)+'" text-anchor="middle" fill="#61707f" font-size="9.5" font-family="ui-monospace,monospace">'+m.dates[k].slice(2,7)+'</text>';
+  }
+  $("resid").innerHTML=out;
+  $("res-hint").textContent="偏差 = 折算模板 − 实际（pp），σ="+fmt(b.sigma,2)+"pp；正=当前落后于模板";
+}
+
+/* ---------------- rolling corr ---------------- */
+function drawRoll(){
+  var m=S.d.modes[S.mode],roll=m.roll,win=S.d.meta.params.roll_win;
+  var W=1080,H=210,pad={l:52,r:16,t:14,b:30};
+  var pw=W-pad.l-pad.r,ph=H-pad.t-pad.b,n=roll.length-1;
+  var x=function(i){return pad.l+i/n*pw};
+  var y=function(v){return pad.t+(1-(v+1)/2)*ph};
+  var out="";
+  [-0.5,0,0.5].forEach(function(v){ out+='<line x1="'+pad.l+'" y1="'+y(v)+'" x2="'+(W-pad.r)+'" y2="'+y(v)+'" stroke="'+(v===0?"#8b97a8":"#26303f")+'" stroke-width="1" '+(v?"stroke-dasharray='4 4'":"")+'/>'; });
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(0)+4)+'" text-anchor="end" fill="#61707f" font-size="10" font-family="ui-monospace,monospace">0</text>';
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(1)+4)+'" text-anchor="end" fill="#61707f" font-size="9" font-family="ui-monospace,monospace">+1</text>';
+  out+='<text x="'+(pad.l-8)+'" y="'+(y(-1)+4)+'" text-anchor="end" fill="#61707f" font-size="9" font-family="ui-monospace,monospace">−1</text>';
+  var pd="",started=false;
+  for(var i=0;i<roll.length;i++){
+    if(roll[i]==null) continue;
+    pd+=(started?"L":"M")+x(i).toFixed(1)+" "+y(roll[i]).toFixed(1); started=true;
+  }
+  out+='<path d="'+pd+'" fill="none" stroke="#8b7fd6" stroke-width="1.5"/>';
+  var last=null;
+  for(var j=roll.length-1;j>=0;j--){ if(roll[j]!=null){ last=j; break; } }
+  if(last!=null) out+='<circle cx="'+x(last)+'" cy="'+y(roll[last])+'" r="3.4" fill="#fff" stroke="#8b7fd6" stroke-width="1.5"/>';
+  var step=Math.max(1,Math.round(n/6));
+  for(var k=0;k<=n;k+=step){ out+='<text x="'+x(k)+'" y="'+(H-10)+'" text-anchor="middle" fill="#61707f" font-size="9.5" font-family="ui-monospace,monospace">'+m.dates[k].slice(2,7)+'</text>'; }
+  $("roll").innerHTML=out;
+  $("roll-hint").textContent=win+" 日收益相关 · 最新 "+(m.roll_last==null?"—":sgn(m.roll_last,2))+" · 近一年均值 "+(m.roll_mean_1y==null?"—":sgn(m.roll_mean_1y,2));
+}
+
+/* ---------------- reads ---------------- */
+function renderReads(){
+  var d=S.d,m=d.modes[S.mode],sc=d.scan,tp=d.meta.template.peak,st=m.stages,ts=d.template_stages;
+  var mk=(lb,txt)=>'<div class="row"><span class="lb">'+lb+'</span><span>'+txt+'</span></div>';
+  var rows=[];
+  rows.push(mk("形态","1999-05 起点在 "+sc.n+" 个历史候选里排第 "+sc.rank+"，R² "+fmt(m.fit.r2,3)+"、相关 "+fmt(m.fit.corr,3)+"；第二名是它自己前后两周的邻居。这不是随便挑的窗口。"));
+  rows.push(mk("节奏","见顶比模板早：当前 T+"+m.peak.t+"（"+m.peak.date+"），模板 T+"+tp.t+"（"+tp.date+"），差 "+(tp.t-m.peak.t)+" 个交易日；回踩底也提前 "+(ts.lo.t-st.lo.t)+" 日。"));
+  var gapNow=m.base.a*tplR((m.r.length-1)*m.base.k)-m.r[m.r.length-1];
+  rows.push(mk("幅度","峰值时当前比模板折算高 "+fmt(m.peak.r-m.base.a*m.peak.tpl_r_at_mapped,1)+"pp（超涨），现在反过来低 "+fmt(Math.abs(gapNow),1)+"pp（"+sgn(gapNow/m.base.sigma,1)+"σ）。幅度关系在 2026 年 5 月之后换了一次档。"));
+  rows.push(mk("同步","60 日收益相关最新 "+(m.roll_last==null?"—":sgn(m.roll_last,2))+"、近一年均值 "+(m.roll_mean_1y==null?"—":sgn(m.roll_mean_1y,2))+"。日—周尺度基本不同步，只有月—季的段落形状像。"));
+  $("reads").innerHTML=rows.join("");
+}
+
+/* ---------------- tables ---------------- */
+function renderScan(){
+  var sc=S.d.scan,tb=document.querySelector("#scan tbody"); tb.innerHTML="";
+  sc.top.forEach(function(r){
+    var tr=document.createElement("tr");
+    var isT=(r.start===S.d.meta.template.start);
+    if(isT) tr.className="hl";
+    var lab=isT?"模板本身":(r.start>="1999-04-01"&&r.start<="1999-06-30"?"模板邻居（起点前后两周）":(r.a<0?"反向拟合，不计":(r.k>=1.7||r.k<=0.7?"拉伸触边界，可信度低":"其他候选")));
+    tr.innerHTML="<td>"+r.start+"</td><td>"+fmt(r.k,3)+"</td><td>"+fmt(r.a,3)+"</td><td>"+fmt(r.r2,3)+"</td><td style='text-align:left;font-family:var(--sans);color:var(--mut)'>"+lab+"</td>";
+    tb.appendChild(tr);
+  });
+  $("scan-hint").textContent="候选 "+sc.n+" 个起点 · 步长 "+sc.step+" 日";
+  $("scan-note").innerHTML="R² 的分位：中位 "+fmt(sc.q50,3)+"，75% "+fmt(sc.q75,3)+"，90% "+fmt(sc.q90,3)+"，95% "+fmt(sc.q95,3)+"。模板起点 "+(sc.rank===1?"排第一":"排第 "+sc.rank)+"，百分位 "+fmt(sc.pct,1)+"%。换句话说：<b>历史上确实没有比 1999-05 更像的一段</b>；但"+"满分也只有 0.82，剩下的 18% 是这段类比永远说不清的部分。";
+}
+
+function renderStages(){
+  var m=S.d.modes[S.mode],st=m.stages,ts=S.d.template_stages;
+  var tb=document.querySelector("#stages tbody"); tb.innerHTML="";
+  var defs=[["起点",st.start,ts.start],["第一波顶",st.hi,ts.hi],["回踩底",st.lo,ts.lo],["主峰",st.pk,ts.pk]];
+  defs.forEach(function(a){
+    var cur=a[1],tpl=a[2],tr=document.createElement("tr");
+    var dt=cur.t-tpl.t;
+    tr.innerHTML="<td>"+a[0]+"</td><td>T+"+tpl.t+"</td><td>"+sgn(tpl.r,1)+"%</td><td>T+"+cur.t+"</td><td>"+sgn(cur.r,1)+"%</td><td class='"+(dt<0?"dn":"up")+"'>"+(dt>0?"+":"")+dt+" 日</td>";
+    tb.appendChild(tr);
+  });
+  var tr=document.createElement("tr");
+  var nowT=m.dates.length-1, tplNow=Math.round(nowT*S.d.modes[S.mode].base.k);
+  tr.innerHTML="<td>至今</td><td>T+"+tplNow+"</td><td>"+sgn(tplR(tplNow),1)+"%</td><td>T+"+nowT+"</td><td>"+sgn(m.r[nowT],1)+"%</td><td class='mut'>—</td>";
+  tb.appendChild(tr);
+}
+
+function renderFwd(){
+  var d=S.d,tb=document.querySelector("#fwd tbody"); tb.innerHTML="";
+  var b=d.modes.alla.base,f=d.modes.alla.fit,T=d.current_pos.t;
+  var r1=document.createElement("tr");
+  r1.innerHTML="<td>定标 ×"+fmt(b.k,2)+" → T+"+Math.round(T*b.k)+"</td>"+d.forward.map(function(x){return "<td class='"+(x.scaled<0?"dn":"up")+"'>"+sgn(x.scaled,1)+"pp</td>";}).join("");
+  tb.appendChild(r1);
+  var r2=document.createElement("tr");
+  r2.innerHTML="<td>最优 ×"+fmt(f.k,2)+" → T+"+Math.round(T*f.k)+"</td>"+d.forward_alt.map(function(x){return "<td class='"+(x.scaled<0?"dn":"up")+"'>"+sgn(x.scaled,1)+"pp</td>";}).join("");
+  tb.appendChild(r2);
+  var af=d.meta.template.after;
+  var tail="";
+  if(af["250"]) tail+=" 顶后 250 日（"+af["250"].date+"）"+sgn(af["250"].delta,1)+"pp；";
+  if(af["500"]) tail+=" 500 日（"+af["500"].date+"）"+sgn(af["500"].delta,1)+"pp。";
+  $("fwd-note").innerHTML="单位：对数收益 pp，按 ×"+fmt(b.a,2)+" 折算。两行的 250 日读数只差 "+fmt(Math.abs(d.forward[3].scaled-d.forward_alt[3].scaled),1)+"pp，但 <b>+20 日那格差了 "+fmt(Math.abs(d.forward[0].scaled-d.forward_alt[0].scaled),1)+"pp，方向都相反</b> —— 对齐位置挪 40 个交易日，短窗口的结论就翻了个方向。所以这张表只能当情景，不能当预测。<br>模板自己的结局："+tail+"上证 2001-06 的 2242 点到 2005-06 的 1034 点，四年 −54%。这条是史实，不是推断。";
+}
+
+/* ---------------- boot ---------------- */
+function redrawAll(){ renderHero(); drawMain(); drawResid(); drawRoll(); renderReads(); renderStages(); }
+
+function boot(d){
+  S.d=d;
+  $("m-date").textContent=d.meta.trade_date;
+  $("m-build").textContent=d.meta.build;
+  if(d.meta.stale){ var w=$("stale"); w.style.display="block"; w.textContent="数据可能未更新：最新交易日 "+d.meta.trade_date+"，抓取未成功，页面沿用上一批数据。"; }
+  $("foot-params").textContent="模板 "+d.meta.template.name+" ｜ 当前 "+d.modes.alla.index_name+" ｜ 定标 "+d.modes.alla.base.asof;
+  renderHero(); drawMain(); drawResid(); drawRoll(); renderReads(); renderScan(); renderStages(); renderFwd();
+  document.querySelectorAll(".chip[data-mode]").forEach(function(ch){
+    ch.onclick=function(){ S.mode=ch.dataset.mode;
+      document.querySelectorAll(".chip[data-mode]").forEach(function(x){x.classList.remove("on")}); ch.classList.add("on");
+      var origChip=document.querySelector('.chip[data-param="orig"]');
+      if(S.mode==="sh"&&S.param==="orig"){ S.param="base"; document.querySelectorAll('.chip[data-param]').forEach(function(x){x.classList.remove("on")}); document.querySelector('.chip[data-param="base"]').classList.add("on"); }
+      origChip.classList.toggle("dis",S.mode==="sh");
+      redrawAll();
+    };
+  });
+  document.querySelectorAll(".chip[data-param]").forEach(function(ch){
+    ch.onclick=function(){
+      if(ch.dataset.param==="orig"&&S.mode==="sh") return;
+      S.param=ch.dataset.param;
+      document.querySelectorAll(".chip[data-param]").forEach(function(x){x.classList.remove("on")}); ch.classList.add("on");
+      redrawAll();
+    };
+  });
+}
+
+fetch("/tools/cycle-mirror/data/mirror.json",{cache:"no-store"}).then(function(r){return r.json()}).then(boot).catch(function(err){
+  $("h-num").textContent="—"; $("h-sub").textContent="数据加载失败："+err;
+});
+})();
+</script>
+</body>
+</html>
