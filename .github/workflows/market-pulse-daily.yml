@@ -47,14 +47,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/market-pulse/index.html tools/market-pulse/app.js tools/market-pulse/echarts-fallback.js tools/market-pulse/data/latest.js tools/market-pulse/data/latest.json tools/market-pulse/data/archive
+          git add tools/market-pulse/index.html tools/market-pulse/app.js tools/market-pulse/echarts-fallback.js tools/market-pulse/data/latest.js tools/market-pulse/data/latest.json tools/market-pulse/data/archive tools/market-pulse/pipeline/run_status.json
           if git diff --cached --quiet; then
             echo "No data changes"
             exit 0
           fi
           git commit -m "pulse: update $(TZ=Asia/Shanghai date +%Y-%m-%d)"
           for i in 1 2 3; do
-            if git pull --rebase origin main && git push; then
+            if git -c rebase.autostash=true pull --rebase origin main && git push; then
               exit 0
             fi
             sleep 5
