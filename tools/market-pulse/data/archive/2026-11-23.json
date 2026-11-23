@@ -1,7 +1,7 @@
 {
   "date": "2026-11-23",
   "weekday": "周一",
-  "generated_at": "2026-11-23T21:29:52",
+  "generated_at": "2026-11-23T21:41:48",
   "headline": "深V反转：ETF 连续大额托底，大单回补光模块；杠杆仍在出清",
   "indices": [
     {
@@ -284,14 +284,14 @@
     },
     "em_sh": {
       "date": "2026-11-23",
-      "main_yi": 240.53,
-      "super_yi": 147.49,
-      "large_yi": 93.04,
-      "medium_yi": -94.31,
-      "small_yi": -146.22,
-      "stocks": 1200,
+      "main_yi": 239.17,
+      "super_yi": 147.25,
+      "large_yi": 91.92,
+      "medium_yi": -90.97,
+      "small_yi": -148.19,
+      "stocks": 700,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-23T21:20:14",
+      "fetched_at": "2026-11-23T21:33:11",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -3986,18 +3986,6 @@
       "tone": "warn"
     },
     {
-      "name": "医疗器械概念",
-      "chg": 3.04,
-      "net": 35.92,
-      "net5": -50.79,
-      "stocks": 419,
-      "leader": "莱美药业",
-      "prior4": -86.71,
-      "ratio": 41.43,
-      "label": "弱回补",
-      "tone": "warn"
-    },
-    {
       "name": "食品安全",
       "chg": 3.04,
       "net": 2.0,
@@ -4006,6 +3994,18 @@
       "leader": "东方海洋",
       "prior4": -5.22,
       "ratio": 38.31,
+      "label": "弱回补",
+      "tone": "warn"
+    },
+    {
+      "name": "医疗器械概念",
+      "chg": 3.04,
+      "net": 35.92,
+      "net5": -50.79,
+      "stocks": 419,
+      "leader": "莱美药业",
+      "prior4": -86.71,
+      "ratio": 41.43,
       "label": "弱回补",
       "tone": "warn"
     },
@@ -4238,18 +4238,6 @@
       "tone": "warn"
     },
     {
-      "name": "EDR概念",
-      "chg": 2.88,
-      "net": 5.26,
-      "net5": -6.91,
-      "stocks": 20,
-      "leader": "均胜电子",
-      "prior4": -12.17,
-      "ratio": 43.22,
-      "label": "弱回补",
-      "tone": "warn"
-    },
-    {
       "name": "华为昇腾",
       "chg": 2.88,
       "net": 8.09,
@@ -4258,6 +4246,18 @@
       "leader": "众诚科技",
       "prior4": -25.04,
       "ratio": 32.31,
+      "label": "弱回补",
+      "tone": "warn"
+    },
+    {
+      "name": "EDR概念",
+      "chg": 2.88,
+      "net": 5.26,
+      "net5": -6.91,
+      "stocks": 20,
+      "leader": "均胜电子",
+      "prior4": -12.17,
+      "ratio": 43.22,
       "label": "弱回补",
       "tone": "warn"
     },
@@ -4634,18 +4634,6 @@
       "tone": "warn"
     },
     {
-      "name": "小金属概念",
-      "chg": 2.63,
-      "net": 36.4,
-      "net5": -48.36,
-      "stocks": 172,
-      "leader": "华新科技",
-      "prior4": -84.76,
-      "ratio": 42.94,
-      "label": "弱回补",
-      "tone": "warn"
-    },
-    {
       "name": "创新药",
       "chg": 2.63,
       "net": 27.04,
@@ -4655,6 +4643,18 @@
       "prior4": -42.25,
       "ratio": 64.0,
       "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "小金属概念",
+      "chg": 2.63,
+      "net": 36.4,
+      "net5": -48.36,
+      "stocks": 172,
+      "leader": "华新科技",
+      "prior4": -84.76,
+      "ratio": 42.94,
+      "label": "弱回补",
       "tone": "warn"
     },
     {
@@ -8758,5 +8758,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-23 · 周一"
   },
-  "rendered_at": "2026-11-23T21:29:52"
+  "rendered_at": "2026-11-23T21:41:48"
 }
