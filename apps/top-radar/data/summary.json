@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-11-24 03:14",
+ "updated_at": "2026-11-24 04:09",
  "source": "remote+local",
  "escape_reference": {
   "id": "399006",
@@ -181,7 +181,7 @@
    "v2_R": 17.2,
    "v2_E": 3,
    "v2_vol20": 0.7488,
-   "v2_updated_at": "2026-11-24 03:11",
+   "v2_updated_at": "2026-11-24 04:07",
    "escape_state": "waiting",
    "escape_state_name": "深跌后等待反弹",
    "escape_action": "等待反弹成形，不操作",
@@ -189,7 +189,7 @@
    "escape_color": "#8A7A55",
    "escape_warn_date": null,
    "escape_confirm_date": null,
-   "updated_at": "2026-11-24 03:11"
+   "updated_at": "2026-11-24 04:07"
   },
   {
    "id": "semi_equip",
@@ -212,7 +212,7 @@
    "v2_R": 19.3,
    "v2_E": 3,
    "v2_vol20": 0.8753,
-   "v2_updated_at": "2026-11-24 03:12",
+   "v2_updated_at": "2026-11-24 04:08",
    "escape_state": "waiting",
    "escape_state_name": "深跌后等待反弹",
    "escape_action": "等待反弹成形，不操作",
@@ -220,7 +220,7 @@
    "escape_color": "#8A7A55",
    "escape_warn_date": null,
    "escape_confirm_date": null,
-   "updated_at": "2026-11-24 03:12"
+   "updated_at": "2026-11-24 04:08"
   },
   {
    "id": "litho_cn",
@@ -233,7 +233,7 @@
    "tier_name": "正常",
    "action": "正常持有",
    "R": 20.1,
-   "idx": 3.3768,
+   "idx": 3.3772,
    "dd250": -0.5158,
    "coverage": 1.0,
    "stale": false,
@@ -243,7 +243,7 @@
    "v2_R": 20.1,
    "v2_E": 3,
    "v2_vol20": 0.8354,
-   "v2_updated_at": "2026-11-24 03:12",
+   "v2_updated_at": "2026-11-24 04:08",
    "escape_state": "waiting",
    "escape_state_name": "深跌后等待反弹",
    "escape_action": "等待反弹成形，不操作",
@@ -251,7 +251,7 @@
    "escape_color": "#8A7A55",
    "escape_warn_date": null,
    "escape_confirm_date": null,
-   "updated_at": "2026-11-24 03:12"
+   "updated_at": "2026-11-24 04:08"
   },
   {
    "id": "storage",
@@ -264,25 +264,25 @@
    "tier_name": "正常",
    "action": "正常持有",
    "R": 17.4,
-   "idx": 3.0214,
-   "dd250": -0.5349,
-   "coverage": 1.0,
+   "idx": 3.4936,
+   "dd250": -0.5389,
+   "coverage": 0.984,
    "stale": false,
    "v2_tier": 1,
    "v2_tier_name": "观察",
    "v2_action": "正常持有；E 层转弱时不加仓，暂不减仓",
    "v2_R": 17.4,
    "v2_E": 3,
-   "v2_vol20": 0.754,
-   "v2_updated_at": "2026-11-24 03:14",
+   "v2_vol20": 0.7594,
+   "v2_updated_at": "2026-11-24 04:09",
    "escape_state": "waiting",
    "escape_state_name": "深跌后等待反弹",
    "escape_action": "等待反弹成形，不操作",
-   "escape_trigger": "深跌 -54.5% 已满足；当前仅自低点反弹 2.1%，等待反弹成形",
+   "escape_trigger": "深跌 -54.9% 已满足；当前仅自低点反弹 2.2%，等待反弹成形",
    "escape_color": "#8A7A55",
    "escape_warn_date": null,
    "escape_confirm_date": null,
-   "updated_at": "2026-11-24 03:14"
+   "updated_at": "2026-11-24 04:09"
   }
  ]
 }
