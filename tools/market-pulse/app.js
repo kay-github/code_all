@@ -10,6 +10,7 @@
   if (!window.echarts) {
     const noop = () => {};
     window.echarts = {
+      __shim: true,
       init: () => ({setOption: noop, resize: noop, on: noop, off: noop, dispose: noop,
         getOption: () => ({}), showLoading: noop, hideLoading: noop}),
       graphic: {LinearGradient: function(){}},
@@ -134,8 +135,36 @@
 
   // ---------- charts registry ----------
   const charts = [];
+  const pendingCharts = [];
   const inited = {};
-  function mk(id){ const c = echarts.init(el(id), null, {renderer:'canvas'}); charts.push(c); return c; }
+  const noop = () => {};
+  function mk(id){
+    const node = el(id);
+    if (window.echarts && !window.echarts.__shim) {
+      const c = window.echarts.init(node, null, {renderer:'canvas'});
+      charts.push(c);
+      return c;
+    }
+    // ECharts is loaded asynchronously. Queue the option now and replay it when
+    // the real library arrives; the page never blocks on the ~1MB script.
+    const lazy = {__lazy:{node, options:[]},
+      setOption(opt){ this.__lazy.options.push(opt); },
+      resize: noop, on: noop, off: noop, dispose: noop, getOption: () => ({}),
+      showLoading: noop, hideLoading: noop};
+    pendingCharts.push(lazy);
+    return lazy;
+  }
+  window.__pulseOnReady = function(){
+    if (!window.echarts || window.echarts.__shim) return;
+    pendingCharts.forEach(p => {
+      const c = window.echarts.init(p.__lazy.node, null, {renderer:'canvas'});
+      p.__lazy.options.forEach(o => c.setOption(o));
+      charts.push(c);
+    });
+    pendingCharts.length = 0;
+    charts.forEach(c => c.resize());
+  };
+  if (window.echarts && !window.echarts.__shim) window.__pulseOnReady();
 
   const C = {red:'#c33a32', red2:'#e06055', green:'#1f7a5c', green2:'#3a9b78', gold:'#b0832f', blue:'#39658c', ink:'#1b1e26', muted:'#6e707a'};
   const axis = {axisLine:{lineStyle:{color:'rgba(27,30,38,.18)'}}, axisTick:{show:false}, axisLabel:{color:C.muted, fontSize:11}, splitLine:{lineStyle:{color:'rgba(27,30,38,.07)'}}};

@@ -34,15 +34,11 @@ def main(date: str | None = None):
 
     online = os.environ.get("MP_ONLINE") == "1"
     if online:
-        # ECharts is served from CDN for the online build. Self-hosting the 1MB
-        # file on this Vercel project stalls when the page is opened inside the
-        # root-site iframe (the request gets a 200 but the body never finishes);
-        # the same file loads fine as a standalone page. The local vendor copy
-        # remains as an offline fallback via echarts-fallback.js.
-        echarts_tag = (
-            '<script src="https://fastly.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>\n'
-            '<script src="/tools/market-pulse/echarts-fallback.js"></script>'
-        )
+        # Load ECharts asynchronously from a small same-origin boot script. Do
+        # not put a blocking 1MB <script src> here: self-hosted ECharts can
+        # stall inside the root-site iframe, and a blocking CDN tag makes the
+        # whole report wait on a third-party request.
+        echarts_tag = '<script src="/tools/market-pulse/echarts-boot.js"></script>'
         data_script = '<script src="/tools/market-pulse/data/latest.js"></script>'
         app_script = '<script src="/tools/market-pulse/app.js"></script>'
     else:
@@ -81,10 +77,31 @@ def main(date: str | None = None):
         if online:
             (data_dir / "latest.js").write_text(f"window.DATA = {payload};\n", encoding="utf-8")
             (target / "app.js").write_text(app_js, encoding="utf-8")
-            (target / "echarts-fallback.js").write_text(
-                "if(!window.echarts){var s=document.createElement('script');"
-                "s.src='/tools/market-pulse/vendor/echarts.min.js';"
-                "s.async=true;document.head.appendChild(s);}\n",
+            (target / "echarts-boot.js").write_text(
+                """(function(){
+  var sources = [
+    'https://fastly.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js',
+    '/tools/market-pulse/vendor/echarts.min.js'
+  ];
+  var i = 0;
+  function ready(){
+    if (window.__pulseOnReady) { window.__pulseOnReady(); return; }
+    setTimeout(ready, 100);
+  }
+  function next(){
+    if (window.echarts && !window.echarts.__shim) { ready(); return; }
+    if (i >= sources.length) return;
+    var src = sources[i++], done = false;
+    var s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = function(){ if (!done) { done = true; setTimeout(next, 0); } };
+    s.onerror = function(){ if (!done) { done = true; setTimeout(next, 0); } };
+    document.head.appendChild(s);
+    setTimeout(function(){ if (!done) { done = true; setTimeout(next, 0); } }, 10000);
+  }
+  next();
+})();
+""",
                 encoding="utf-8",
             )
         vendor = ROOT / "vendor" / "echarts.min.js"

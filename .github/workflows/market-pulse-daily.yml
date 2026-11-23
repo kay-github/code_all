@@ -47,7 +47,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/market-pulse/index.html tools/market-pulse/app.js tools/market-pulse/echarts-fallback.js tools/market-pulse/data/latest.js tools/market-pulse/data/latest.json tools/market-pulse/data/archive tools/market-pulse/pipeline/run_status.json
+          git add tools/market-pulse/index.html tools/market-pulse/app.js tools/market-pulse/echarts-boot.js tools/market-pulse/data/latest.js tools/market-pulse/data/latest.json tools/market-pulse/data/archive tools/market-pulse/pipeline/run_status.json
           if git diff --cached --quiet; then
             echo "No data changes"
             exit 0
