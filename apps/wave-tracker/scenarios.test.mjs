@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluate, impulseChecks, parseCsv, confirmedPivots, validateBars } from '../../tools/wave-tracker/scenarios.mjs';
+import { evaluate, impulseChecks, parseCsv, confirmedPivots, validateBars, countSubwaves } from '../../tools/wave-tracker/scenarios.mjs';
 
 const day = n => new Date(Date.UTC(2025, 0, 1 + n)).toISOString().slice(0, 10);
 const row = (i, price) => [day(i), price, price + 0.2, price - 0.2, price];
@@ -56,4 +56,13 @@ test('an unfolding fifth survives a newer three-pivot subcount', () => {
   assert.equal(result.impulseStatus, 'five');
   assert.equal(result.impulse.at(-1).price, 69);
   assert.ok(result.alternatives.length);
+});
+
+
+test('fine-scale shape counts turns between anchors without using turns after the endpoint', () => {
+  const o = p(0, 100, 'high'), a = p(10, 68, 'low'), b = p(18, 86, 'high');
+  const fine = [p(2, 90, 'low'), p(3, 95, 'high'), p(5, 75, 'low'), p(7, 85, 'high'), p(9, 72, 'low'),
+    p(12, 78, 'high'), p(15, 73, 'low'), p(20, 75, 'low')];
+  assert.equal(countSubwaves(o, a, fine), 5);
+  assert.equal(countSubwaves(a, b, fine), 3);
 });

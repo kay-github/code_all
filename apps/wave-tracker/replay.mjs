@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { SWING_SCALE, VERSION, confirmedPivots, evaluate, validateBars } from '../../tools/wave-tracker/scenarios.mjs';
+import { SWING_SCALE, VERSION, confirmedPivots, evaluate, validateBars, reviewZigzag } from '../../tools/wave-tracker/scenarios.mjs';
 
 // Fixed before reviewing outcomes. Each symbol gets equal selection treatment.
 const development = ['sh600009', 'sz002304', 'sh600563', 'sz002142', 'sz000338', 'sh603195', 'sh000922', 'sh000906', 'sh000852', 'sh000905'];
@@ -38,10 +38,11 @@ async function replay(symbol) {
   const series = JSON.parse(raw);
   const bars = validateBars(series.bars);
   const full = confirmedPivots(bars, SWING_SCALE);
+  const fullFine = confirmedPivots(bars, SWING_SCALE / 2);
   const signals = { simple: [], wave: [] };
   const seen = { simple: new Set(), wave: new Set() };
   const statuses = {};
-  let replayDays = 0, candidates = 0, detected = 0;
+  let replayDays = 0, candidates = 0, detected = 0, zigzagShapes = 0;
   for (let i = 60; i < bars.length; i++) {
     const [date, , , , close] = bars[i];
     if (date < HOLDOUT_START) continue;
@@ -50,10 +51,13 @@ async function replay(symbol) {
     const livePivots = confirmedPivots(prefix, SWING_SCALE);
     const known = full.filter(p => p.confirmed <= date);
     if (JSON.stringify(livePivots) !== JSON.stringify(known)) throw new Error(`${symbol} ${date} pivot changed with future data`);
+    const fine = confirmedPivots(prefix, SWING_SCALE / 2);
+    if (JSON.stringify(fine) !== JSON.stringify(fullFine.filter(p => p.confirmed <= date))) throw new Error(`${symbol} ${date} fine-scale pivot changed with future data`);
     for (const direction of ['down', 'up']) {
       const result = evaluate(prefix, { direction, pivots: livePivots });
       if (!result.fixed) continue;
       ++candidates;
+      if (reviewZigzag(prefix, result, SWING_SCALE, fine)?.matches) ++zigzagShapes;
       const status = result.impulseStatus;
       statuses[status] = (statuses[status] || 0) + 1;
       if ((status === 'invalid') !== Boolean(result.invalid.length) ||
@@ -79,7 +83,7 @@ async function replay(symbol) {
     }
   }
   return { symbol, name: series.name, basis: series.basis, from: bars[0][0], through: bars.at(-1)[0],
-    sha256: createHash('sha256').update(raw).digest('hex'), replayDays, candidates, detected, statuses, signals,
+    sha256: createHash('sha256').update(raw).digest('hex'), replayDays, candidates, detected, zigzagShapes, statuses, signals,
     score: { simple: statList(signals.simple), wave: statList(signals.wave) } };
 }
 
@@ -87,8 +91,8 @@ const assets = await Promise.all(symbols.map(replay));
 const totals = { simple: statList(assets.flatMap(s => s.signals.simple)), wave: statList(assets.flatMap(s => s.signals.wave)) };
 const report = { version: VERSION, sample, scale: SWING_SCALE, holdoutStart: HOLDOUT_START, horizon: HORIZON,
   outcome: '20交易日内先达到整段38.2%回补/回撤或先失守当时末端极值；同时触及与已达目标单列',
-  verified: ['逐日前缀转折点与截至当日的全序列转折点一致', '候选锚点的可知时间不晚于评估日', '失效与已确认五段状态不互相重叠'],
+  verified: ['标准和细尺度的逐日前缀转折点均与截至当日的全序列转折点一致', '候选锚点的可知时间不晚于评估日', '失效与已确认五段状态不互相重叠'],
   totals, assets };
 await writeFile(output, JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify({ assets: assets.length, days: assets.reduce((sum, a) => sum + a.replayDays, 0),
-  candidates: assets.reduce((sum, a) => sum + a.candidates, 0), totals }, null, 2));
+  candidates: assets.reduce((sum, a) => sum + a.candidates, 0), zigzagShapes: assets.reduce((sum, a) => sum + a.zigzagShapes, 0), totals }, null, 2));

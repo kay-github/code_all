@@ -1,5 +1,5 @@
 // Bars are [YYYY-MM-DD, open, high, low, close] on one adjustment basis.
-export const VERSION = '2026-11-23.2';
+export const VERSION = '2026-11-23.4';
 export const SWING_SCALE = 3;
 const DATE = 0, HIGH = 2, LOW = 3, CLOSE = 4;
 export const ABC_LEVELS = [0.618, 0.809, 1, 1.236, 1.382, 1.618];
@@ -140,6 +140,29 @@ function evaluateFixed(bars, pivots, fixed, direction) {
   return { direction, fixed, pivots, c, cRatio, retest, bRetraction: bSize / aSize, bBeyond, impulse, impulseStatus, invalid, overlapWatch,
     impulseRatio: firstThree ? sign * (b.price - firstThree.price) / aSize : null,
     cLevels: ABC_LEVELS.map(ratio => ({ ratio, price: b.price - sign * ratio * aSize })).filter(level => level.price > 0) };
+}
+
+export function countSubwaves(start, end, pivots) {
+  let matching = oppositeKind(start.kind);
+  let count = 0;
+  for (const p of pivots) {
+    if (p.index >= end.index) break;
+    if (p.index <= start.index || p.kind !== matching) continue;
+    matching = oppositeKind(matching);
+    count++;
+  }
+  // The endpoint is the last swing. Discard an interior turn of the same kind
+  // at the very end, as it does not add a full reversal before the endpoint.
+  return count + Number(matching === end.kind);
+}
+
+export function reviewZigzag(bars, result, scale, pivots) {
+  if (!result.fixed || !result.c || result.cRatio == null || result.bBeyond) return null;
+  const fine = pivots ?? confirmedPivots(bars, scale / 2);
+  const points = [...result.fixed, result.c];
+  const counts = points.slice(1).map((point, i) => countSubwaves(points[i], point, fine));
+  return { counts, matches: counts.every((count, i) => count === [5, 3, 5][i]),
+    terminalConfirmed: fine.some(point => point.index === result.c.index && point.kind === result.c.kind) };
 }
 
 export function evaluate(bars, options = {}) {

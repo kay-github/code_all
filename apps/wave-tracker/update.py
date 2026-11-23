@@ -14,7 +14,7 @@ OUTPUT = APP.parents[1] / 'tools' / 'wave-tracker' / 'data' / 'latest.json'
 CHINA = timezone(timedelta(hours=8))
 RULES = json.loads((APP / 'rules.json').read_text(encoding='utf-8'))
 CASEBOOK = json.loads((APP / 'casebook.json').read_text(encoding='utf-8'))
-MODEL = '2026-11-23.3'
+MODEL = '2026-11-23.4'
 if CASEBOOK['revision'] != RULES['revision']:
     raise ValueError('规则与视频案例版本不一致')
 HISTORY_START = '2026-04-01'

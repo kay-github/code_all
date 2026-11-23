@@ -1,4 +1,4 @@
-import { evaluate, parseCsv, validateBars } from './scenarios.mjs?v=2';
+import { evaluate, parseCsv, validateBars, reviewZigzag } from './scenarios.mjs?v=4';
 
 const $ = id => document.getElementById(id);
 const canvas = $('lab-chart');
@@ -35,7 +35,8 @@ function render() {
   view = null;
   try {
     if (bars.length < 20) throw new Error('截至所选日期的行情不足 20 根');
-    const result = evaluate(bars, { direction: $('lab-direction').value, scale: Number($('lab-scale').value), dates: fixed });
+    const scale = Number($('lab-scale').value);
+    const result = evaluate(bars, { direction: $('lab-direction').value, scale, dates: fixed });
     const names = ['起点', 'A / 1', 'B / 2', '3', '4', '5'];
     message(`${series.name} · ${series.basis} · 截至 ${bars.at(-1)[0]} · ${fixed ? '手动锚点' : '自动锚点'}`);
     $('lab-anchors').textContent = result.fixed ? result.impulse.map((point, i) => describe(point, names[i])).join('　｜　') : result.reason;
@@ -49,6 +50,8 @@ function render() {
         `B 回撤 ${number(result.bRetraction * 100, 1)}%；C/A ${number(result.cRatio)}。整段 38.2% 回补/回撤线 ${result.retest == null ? '待观察' : fmt.format(result.retest)}。`;
       const cards = [panel('ABC 情景', abc), panel('普通五浪情景',
         `${status}。第3/第1浪 ${number(result.impulseRatio)}。${result.overlapWatch ? '第4浪还未确认，当前已触及第1浪区间。' : ''}`)];
+      const shape = reviewZigzag(bars, result, scale);
+      if (shape) cards.push(panel('ABC 内部形状', `更细尺度观察到 ${shape.counts.join('–')}，${shape.matches ? '外形与锯齿形5–3–5一致。' : '其他分段仍可保留。'}${shape.terminalConfirmed ? '该观察极值已有细尺度反向转折。' : '该观察极值的反向转折待确认。'}`));
       if (result.internal) {
         const inner = result.internal;
         const anchors = inner.points.slice(1).map((point, i) => `C${i + 1} ${point.date} ${fmt.format(point.price)}`).join('；');
