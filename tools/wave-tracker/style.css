@@ -85,3 +85,17 @@ footer { display: flex; gap: 10px 20px; flex-wrap: wrap; font-size: .82rem; }
   .ranges button { padding: 0 5px; }
   .section-head { flex-wrap: wrap; gap: 6px; }
 }
+
+.local-nav { display: flex; flex-wrap: wrap; gap: 7px 15px; padding-top: 7px; }
+#study-time { margin-top: 9px; }
+#study-intro { margin-top: 6px; }
+.lab h2 { margin-bottom: 4px; }
+.lab-load, .lab-controls { display: flex; gap: 8px 13px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0; }
+.lab-load small { align-self: center; }
+.lab label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.lab input, .lab select { font: inherit; font-size: 1rem; color: var(--text); background: var(--inset); border: 1px solid var(--control-line); border-radius: 6px; min-height: 44px; min-width: 0; max-width: min(380px, 100%); padding: 5px 8px; }
+.lab button { padding: 5px 12px; }
+.lab-result p, .lab-model { margin-top: 6px; }
+#lab-status { color: var(--group-text); }
+#lab-anchors { margin-bottom: 8px; }
+#lab-chart { margin-top: 9px; height: clamp(230px, 36vw, 330px); }

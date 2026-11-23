@@ -27,14 +27,52 @@
     }));
   }
 
+  function videoLink(id, label) {
+    const link = node('a', label);
+    link.href = `https://weibo.com/2/detail/${id}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    return link;
+  }
+
+  function renderStudy(index) {
+    const study = index.videoStudy;
+    $('author-study').hidden = !study;
+    if (!study) return;
+    $('study-intro').textContent = study.note;
+    levels('study-ratios', [['C5 区间端点的 C/A', multiple(study.endpointRatio)],
+      ['C1 点数', price(study.c1Length)], ['内部 C3 / C1', multiple(study.c3Ratio)],
+      ['内部 C5 / C1 候选', multiple(study.c5Ratio)], ['C5 区间低点', price(study.c5Low.price)],
+      ['C4 右端之后的交易日', `${study.c5Sessions} 日`]]);
+    $('study-lines').replaceChildren(...study.lines.map(line => {
+      const row = node('tr');
+      const link = node('td');
+      link.append(videoLink(line.video, `${line.video === '5368345092164598' ? '11-23' : '11-16'} · ${line.time}`));
+      row.append(node('td', line.of), node('td', multiple(line.ratio)),
+        node('td', line.drawn == null ? '约1100' : price(line.drawn)), node('td', price(line.computed)), link);
+      return row;
+    }));
+    $('study-time').textContent = study.timing;
+  }
+
+  function renderRulebook() {
+    const types = {structural: '结构', heuristic: '经验标尺', case: '案例', implementation: '工具口径'};
+    $('rulebook').replaceChildren(...(data.rulebook || []).map(rule => {
+      const block = node('div', undefined, 'source');
+      block.append(node('strong', `${types[rule.kind]} · ${rule.title}`), node('p', rule.definition));
+      for (const [i, source] of rule.sources.entries()) {
+        if (i) block.append(document.createTextNode(' · '));
+        block.append(videoLink(source.id, source.time || '查看原帖'));
+      }
+      return block;
+    }));
+  }
+
   function renderSources() {
     $('profile').href = data.profile;
     $('source-list').replaceChildren(...data.evidence.map(entry => {
       const block = node('div', undefined, 'source');
-      const link = node('a', entry.title);
-      link.href = `https://weibo.com/2/detail/${entry.id}`;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
+      const link = videoLink(entry.id, entry.title);
       const date = node('time', entry.date);
       date.dateTime = entry.date;
       block.append(date, link, node('p', entry.note));
@@ -45,9 +83,8 @@
   function renderCycle() {
     const c = data.cycle;
     const sh = c.shBreak ? `${c.shBreak} 已刷新此前低点` : `${c.shWindow}，此前低点 ${price(c.shReference)}`;
-    const star = c.starBreak ? `${c.starBreak} 周收盘确认破位` :
-      `前19周低点 ${price(c.starReference)}，${c.starIntraw ? '周内已触及线下，等待周收确认' : '当前周尚未跌破'}`;
-    $('cycle-checks').replaceChildren(...[['上证 · 12月创新低', sh], ['科创50 · 周线破19周低点', star]].map(([label, value]) => {
+    const star = `固定参照 ${price(c.starReference)}。${c.starBreak ? `${c.starBreak} 周收盘确认破位` : c.starPriceBreak ? `${c.starPriceBreak} 首次盘中跌破，等待周收确认` : '尚未跌破'}`;
+    $('cycle-checks').replaceChildren(...[['上证 · 12月创新低', sh], ['科创50 · 19周样本低点', star]].map(([label, value]) => {
       const item = node('div');
       item.append(node('strong', label), node('span', value));
       return item;
@@ -82,6 +119,7 @@
     const month = index.monthWatch;
     const timing = month ? ` 他同时观察创业板能否在11月走完C5。${month.breach ? `${month.breach.date} 跌破此前低点，触发其时间复核条件。` : `12月观察低点 ${price(month.priorLow)}。`}` : '';
     $('author-view').textContent = index.view + timing;
+    renderStudy(index);
     $('abc-status').textContent = a.stage;
     $('abc-note').textContent = `B浪回补了 A 浪跌幅的 ${percent(a.bRetraction)}。B 后最低为 ${price(a.cExtreme.price)}（${a.cExtreme.date}），用来量 C 浪的最大下行幅度。`;
     levels('abc-levels', [['C / A', multiple(a.cRatio)], ['A、C 等长位', price(a.equal)], ['末段低点', price(a.floor)], ['收复观察线', price(a.retest)], ['整段回补38.2%', price(a.retracement)]]);
@@ -160,7 +198,7 @@
     points.forEach((p, i) => i === 0 ? ctx.moveTo(x(p.at), y(p.price)) : ctx.lineTo(x(p.at), y(p.price)));
     ctx.stroke();
     ctx.setLineDash([]);
-    const short = { 'C3 候选': 'C3?', '末段前高': '前高', '末段低点': '低点' };
+    const short = { '末段前高': '前高', '末段低点': '低点', 'C5区间低点': 'C5?', 'C4 右端': 'C4' };
     for (const [i, p] of points.entries()) {
       const px = x(p.at), py = y(p.price);
       ctx.fillStyle = color('--surface');
@@ -210,6 +248,7 @@
       $('dashboard').hidden = false;
       renderButtons();
       renderSources();
+      renderRulebook();
       renderCycle();
       renderIndex();
     } catch (error) {
@@ -224,6 +263,7 @@
     }
   }
 
+  $('study-link').addEventListener('click', () => { if (data && $('author-study').hidden) $('indices').firstElementChild.click(); });
   $('ranges').addEventListener('click', event => {
     const button = event.target.closest('button[data-range]');
     if (!button) return;

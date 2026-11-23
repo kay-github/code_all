@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="wave-tracker-version" content="1">
+  <meta name="wave-tracker-version" content="2">
   <meta name="description" content="创业板指、科创50、上证指数日线的 ABC 与五浪情景跟踪，附观点出处和量化验证条件。">
   <title>指数波浪跟踪</title>
   <script src="/assets/site-theme.js"></script>
   <link rel="stylesheet" href="/assets/workspace-theme.css">
-  <link rel="stylesheet" href="/tools/wave-tracker/style.css?v=1">
-  <script defer src="/tools/wave-tracker/app.js?v=1"></script>
+  <link rel="stylesheet" href="/tools/wave-tracker/style.css?v=2">
+  <script defer src="/tools/wave-tracker/app.js?v=2"></script>
+  <script type="module" src="/tools/wave-tracker/lab.mjs?v=2"></script>
 </head>
 <body>
   <main>
@@ -17,7 +18,8 @@
       <div>
         <a class="home" href="/">大杂烩工具站</a>
         <h1>指数波浪跟踪</h1>
-        <p>参考上海波浪玩家公开博文，逐日用收盘行情检验 ABC 与五浪两种解释。</p>
+        <p>参考上海波浪玩家的公开视频与博文，逐日检验 ABC 与五浪两种解释。</p>
+        <p class="local-nav"><a id="study-link" href="#author-study">双创视频取证</a><a href="#wave-lab">分析其他标的</a></p>
       </div>
       <div class="stamp"><span>最近收盘数据</span><strong id="day">加载中</strong><small>北京时间 · 交易日盘后</small></div>
     </header>
@@ -57,6 +59,15 @@
           <dl id="five-levels" class="levels"></dl>
         </section>
       </div>
+      <section class="panel" id="author-study" aria-labelledby="study-head" hidden>
+        <h2 id="study-head">视频里的画线与当前复算</h2>
+        <p id="study-intro"></p>
+        <dl class="levels" id="study-ratios"></dl>
+        <div class="table-wrap" tabindex="0" aria-label="视频比例线对照"><table>
+          <thead><tr><th scope="col">量哪两段</th><th scope="col">比例</th><th scope="col">视频画线</th><th scope="col">日线复算</th><th scope="col">出处</th></tr></thead><tbody id="study-lines"></tbody>
+        </table></div>
+        <p id="study-time" class="muted"></p>
+      </section>
       <section class="panel" aria-labelledby="cycle-head">
         <h2 id="cycle-head">11月23日提出的两个时间条件</h2>
         <p class="muted">这组条件用于观察他提出的12月反弹情景。满足条件后，反弹仍需价格验证。</p>
@@ -78,11 +89,46 @@
           <li><strong>用后续走势区分。</strong>ABC 案以两日连续收在末段前高之上作为完成的支持；若再创新低，就更新末段低点。五浪案以11月20日当时可知的 B 后最低点作初始锚点，顺查其后的收盘是否回补候选第3浪跌幅的23.6%，再看是否出现弱反弹后破底。百分比和连续收盘规则是工具的量化约定。</li>
           <li><strong>分开看反弹的分母。</strong>整段下跌的38.2%回补＝末段低点＋（起点高点－末段低点）×0.382。该水平会随低点重算，属于观察线。试算用指数日线的盘中高低点，信号按收盘核对。</li>
         </ol>
-        <p class="muted">锚点以日线高低价对齐。上证的前三锚点来自博主公开点位。创业板大级别锚点结合原帖和公开讨论回查，科创50的 A/B 及末段前高、C3候选由工具选取。周线按此前19个已过去交易周的最低点滚动计算，周收低于该点才记录周期破位。</p>
+        <p class="muted">锚点以日线高低价对齐。上证的前三锚点来自博主公开点位。创业板大级别锚点结合原帖和公开讨论回查，双创 A/B 和 C1–C4 用视频画线和日线高低价对齐。科创50的19周参照取11月3日低点，周内穿越和周收盘确认分别记录。</p>
+        <details><summary>规则修订记录与证据</summary><div id="rulebook"></div></details>
         <details id="sources" open><summary>原帖与研究线索</summary><p><a id="profile" target="_blank" rel="noopener noreferrer">查看新浪公开主页</a></p><div id="source-list"></div></details>
       </section>
       <footer><span id="build"></span><span>观点依据与模型口径会标记版本</span></footer>
     </div>
+    <section class="panel lab" id="wave-lab" aria-labelledby="lab-head">
+      <h2 id="lab-head">分析其他标的</h2>
+      <p class="muted">输入沪深个股代码，或导入股票、指数的日线 CSV。可回到任意收盘日，比较自动锚点与手动画线。</p>
+      <form id="lab-symbol-form" class="lab-load">
+        <label>股票代码<input id="lab-symbol" placeholder="如 600009" inputmode="numeric" maxlength="12" required></label>
+        <button type="submit">读取日线</button>
+      </form>
+      <div class="lab-load">
+        <label>导入日线 CSV<input id="lab-file" type="file" accept=".csv,text/csv"></label>
+        <small>列顺序 date,open,high,low,close。日期从旧到新，价格保持同一复权口径。</small>
+      </div>
+      <p id="lab-status" role="status"></p>
+      <div id="lab-content" hidden>
+        <div class="lab-controls">
+          <label>截至收盘日<input id="lab-date" type="date"></label>
+          <label>推进方向<select id="lab-direction"><option value="down">下跌</option><option value="up">上涨</option></select></label>
+          <label>转折尺度<select id="lab-scale"><option value="2">细 · 2 ATR</option><option value="3" selected>标准 · 3 ATR</option><option value="4">粗 · 4 ATR</option></select></label>
+        </div>
+        <details id="lab-manual"><summary>手动指定起点、A/1、B/2</summary>
+          <form id="lab-anchor-form" class="lab-controls">
+            <label>起点<input id="lab-o" type="date" required></label>
+            <label>A / 1<input id="lab-a" type="date" required></label>
+            <label>B / 2<input id="lab-b" type="date" required></label>
+            <button type="submit">使用这三个交易日</button>
+            <button id="lab-auto" type="button">恢复自动</button>
+          </form>
+        </details>
+        <canvas id="lab-chart" role="img" aria-label="日线收盘、选定锚点和投影线"></canvas>
+        <p id="lab-anchors" class="muted"></p>
+        <div id="lab-alternatives" class="lab-controls"></div>
+        <div id="lab-result" class="cycle-checks"></div>
+        <p class="muted lab-model">自动转折需等收盘向反方向移动足够幅度，确认日期会晚于高低点。标准尺度固定为 3 倍14日平均真实波幅。普通五浪的失效条件只约束当前锚点，复杂调整和楔形需另外复核。</p>
+      </div>
+    </section>
   </main>
 </body>
 </html>

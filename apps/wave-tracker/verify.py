@@ -29,13 +29,13 @@ def verify():
     payload = (ROOT / name.lstrip('/')).read_bytes()
     expected = json.loads(payload)
     page = fetch('/waves')
-    if b'name="wave-tracker-version" content="1"' not in page or '/tools/wave-tracker/app.js?v=1'.encode() not in page:
+    if b'name="wave-tracker-version" content="2"' not in page or '/tools/wave-tracker/app.js?v=2'.encode() not in page:
         raise RuntimeError('功能页构建版本尚未上线')
     online = fetch(name)
     actual = json.loads(online)
     if (actual['date'], actual['build'], digest(online)) != (expected['date'], expected['build'], digest(payload)):
         raise RuntimeError(f"线上数据构建 {actual['build']}，预期 {expected['build']}")
-    for asset in ['app.js', 'style.css']:
+    for asset in ['app.js', 'style.css', 'lab.mjs', 'scenarios.mjs']:
         if digest(fetch(f'/tools/wave-tracker/{asset}')) != digest((WEB / asset).read_bytes()):
             raise RuntimeError(f'{asset} 哈希不一致')
     if b"id: 'waveTracker'" not in fetch('/assets/site-defaults.js') or b"waveTracker: '/waves'" not in fetch('/assets/site-home.js'):

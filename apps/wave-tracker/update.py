@@ -13,7 +13,10 @@ APP = Path(__file__).resolve().parent
 OUTPUT = APP.parents[1] / 'tools' / 'wave-tracker' / 'data' / 'latest.json'
 CHINA = timezone(timedelta(hours=8))
 RULES = json.loads((APP / 'rules.json').read_text(encoding='utf-8'))
-MODEL = '2026-11-23.1'
+CASEBOOK = json.loads((APP / 'casebook.json').read_text(encoding='utf-8'))
+MODEL = '2026-11-23.2'
+if CASEBOOK['revision'] != RULES['revision']:
+    raise ValueError('规则与视频案例版本不一致')
 HISTORY_START = '2026-04-01'
 DATE, OPEN, HIGH, LOW, CLOSE = range(5)
 
@@ -126,6 +129,35 @@ def retests(bars, first_low, origin, first_end):
     }
 
 
+def video_study(bars, item, by_day, a_size):
+    case = CASEBOOK['cases'].get(item['symbol'])
+    if not case:
+        return None
+    b = by_day[item['b']][HIGH]
+    c1 = by_day[item['c1']][LOW]
+    c2 = by_day[item['c2']][HIGH]
+    c3 = by_day[item['c3']][LOW]
+    c4 = by_day[item['c4']][HIGH]
+    first = b - c1
+    c5_bars = [bar for bar in bars if bar[DATE] > item['c5From']]
+    if first <= 0 or not c1 < c2 < b or not c3 < c4 < c2 or not c5_bars:
+        raise ValueError(f"{item['symbol']} 视频子浪锚点不满足方向或行情范围")
+    c5 = min(c5_bars, key=lambda bar: bar[LOW])
+    lines = []
+    for row in case['projections']:
+        source, distance = (b, a_size) if row['of'] == 'C/A' else (c4, first)
+        lines.append({**row, 'computed': round(source - row['ratio'] * distance, 2)})
+    return {
+        'note': case['note'], 'timing': case['timing'], 'lines': lines,
+        'c1Length': round(first, 2), 'c3Ratio': round((c2 - c3) / first, 4),
+        'c5Ratio': round((c4 - c5[LOW]) / first, 4), 'c5Sessions': len(c5_bars),
+        'c5From': item['c5From'], 'c5Low': point(c5, LOW, 'C5区间低点'),
+        'endpointRatio': round((b - c5[LOW]) / a_size, 4),
+        'anchors': [point(by_day[item['c1']], LOW, 'C1'), point(by_day[item['c2']], HIGH, 'C2'),
+                    point(by_day[item['c3']], LOW, 'C3'), point(by_day[item['c5From']], HIGH, 'C4 右端')],
+    }
+
+
 def analyze(bars, item, source, checks):
     by_day = {bar[DATE]: bar for bar in bars}
     start, a, b, c4 = (by_day[item[key]] for key in ('start', 'a', 'b', 'c4'))
@@ -156,17 +188,21 @@ def analyze(bars, item, source, checks):
         alternative['stage'] = '普通五浪候选失效：第3浪短于第1浪和第5浪'
     alternative['wave3Ratio'] = round(wave3 / size_a, 4)
     alternative['extension'] = round(b[HIGH] - 1.618 * size_a, 2)
+    study = video_study(bars, item, by_day, size_a)
     anchors = [point(start, HIGH, '起点'), point(a, LOW, 'A / 1'), point(b, HIGH, 'B / 2')]
-    if item.get('c3'):
-        anchors.append(point(by_day[item['c3']], LOW, 'C3 候选'))
-    anchors.extend([point(c4, HIGH, '末段前高'), point(terminal, LOW, '末段低点')])
+    if study:
+        anchors.extend(study['anchors'][:3])
+    anchors.append(point(c4, HIGH, '末段前高'))
+    if study and item['c5From'] != item['c4']:
+        anchors.append(study['anchors'][-1])
+    anchors.append(study['c5Low'] if study else point(terminal, LOW, '末段低点'))
     month_watch = None
     if item['symbol'] == 'sz399006':
         prior_low = min(bar[LOW] for bar in c_bars if bar[DATE] < '2026-12-01')
         breach = next((bar for bar in c_bars if '2026-12-01' <= bar[DATE] <= '2026-12-31' and bar[LOW] < prior_low), None)
         month_watch = {'priorLow': round(prior_low, 2), 'breach': point(breach, LOW, '12月新低') if breach else None}
     return {
-        **item, 'monthWatch': month_watch, 'source': source, 'checks': checks, 'bars': [bar for bar in bars if bar[DATE] >= HISTORY_START], 'anchors': anchors,
+        **item, 'monthWatch': month_watch, 'videoStudy': study, 'source': source, 'checks': checks, 'bars': [bar for bar in bars if bar[DATE] >= HISTORY_START], 'anchors': anchors,
         'change': round(latest[CLOSE] / bars[-2][CLOSE] - 1, 6),
         'abc': {
             'stage': state, 'aLength': round(size_a, 2),
@@ -182,30 +218,26 @@ def analyze(bars, item, source, checks):
 
 
 def cycle_check(sh, star):
-    # The post refers to December 2026 and a 19-week low. The exact weekly
-    # anchor is absent from the post, so use the preceding 19 ISO market weeks.
+    # Keep the dated reference from the video fixed after November.
+    case = CASEBOOK['cases']['sh000688']['week']
     old_low = min(bar[LOW] for bar in sh if '2026-05-14' <= bar[DATE] < '2026-12-01')
     dec = [bar for bar in sh if '2026-12-01' <= bar[DATE] <= '2026-12-31']
     through = date.fromisoformat(star[-1][DATE])
+    reference = next(bar[LOW] for bar in star if bar[DATE] == case['lowDay'])
     weeks = {}
-    cross = None
-    current_hit = False
     for bar in star:
+        if bar[DATE] <= case['lowDay']:
+            continue
         d = date.fromisoformat(bar[DATE])
         weeks.setdefault(d - timedelta(days=d.weekday()), []).append(bar)
-    entries = list(weeks.items())
-    for i in range(19, len(entries)):
-        week, group = entries[i]
-        threshold = min(bar[LOW] for _, bars in entries[i-19:i] for bar in bars)
-        touched = [bar for bar in group if bar[LOW] < threshold]
-        current_hit = bool(touched)
-        complete = i < len(entries) - 1 or through.weekday() == 4
-        if week + timedelta(days=4) >= date(2026, 11, 23) and complete and group[-1][CLOSE] < threshold and cross is None:
-            cross = group[-1][DATE]
+    entries = list(weeks.values())
+    completed = [group[-1] for i, group in enumerate(entries) if i < len(entries) - 1 or through.weekday() == 4]
+    first_low = next((bar[DATE] for bar in star if bar[DATE] > case['lowDay'] and bar[LOW] < reference), None)
     return {
         'shReference': round(old_low, 2), 'shBreak': next((bar[DATE] for bar in dec if bar[LOW] < old_low), None),
         'shWindow': '等待12月' if through.month < 12 and through.year == 2026 else ('窗口已结束' if through.year > 2026 else '12月观察中'),
-        'starReference': round(threshold, 2), 'starIntraw': current_hit, 'starBreak': cross,
+        'starReference': round(reference, 2), 'starPriceBreak': first_low,
+        'starBreak': next((row[DATE] for row in completed if row[CLOSE] < reference), None),
     }
 
 
@@ -252,7 +284,7 @@ def main():
     history = [r for r in previous.get('history', []) if r['date'] < latest][-89:] + [record]
     payload = {
         'schema': 1, 'model': MODEL, 'date': latest, 'revision': RULES['revision'],
-        'profile': RULES['profile'], 'evidence': RULES['evidence'], 'indices': results, 'cycle': cycle, 'history': history,
+        'profile': RULES['profile'], 'evidence': RULES['evidence'], 'rulebook': CASEBOOK['rules'], 'indices': results, 'cycle': cycle, 'history': history,
     }
     payload['build'] = f"{latest}-{hashlib.sha256(encode(payload)).hexdigest()[:12]}"
     content = encode(payload)
