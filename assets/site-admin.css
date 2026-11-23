@@ -40,6 +40,8 @@ input::placeholder, textarea::placeholder { color:#a4adbb; }
 .entry-header { display:flex; align-items:center; gap:10px; padding:14px 18px; background:#fafbfd; border-bottom:1px solid #edf0f5; }
 .entry-number { font-size:11px; color:#7d8ba1; font-variant-numeric:tabular-nums; }
 .entry-name { flex:1; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.entry-tag { flex:0 0 auto; padding:3px 8px; border-radius:20px; background:#eef2f7; color:#5c697b; font-size:11px; font-weight:600; }
+.entry-fields .is-locked input, .entry-fields .is-locked textarea, .entry-fields .is-locked select { background:#f7f9fc; color:#66748a; cursor:default; }
 .entry-header button { padding:4px 10px; min-height:34px; font-size:15px; }
 .entry-fields { padding:2px 18px 18px; }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
@@ -61,7 +63,7 @@ summary { cursor:pointer; color:#69788e; font-size:13px; }
 .preview-dot { width:6px; height:6px; background:#16a46f; border-radius:50%; }
 #preview-title { font-size:21px; margin:0; overflow-wrap:anywhere; }
 #preview-subtitle { font-size:12px; margin:8px 0 20px; overflow-wrap:anywhere; }
-.preview-panel .tool-grid { gap:10px; }
+.preview-panel .tool-grid { gap:10px; grid-template-columns:repeat(2, minmax(0, 1fr)); }
 .preview-panel .tool-card { padding:12px; min-height:144px; border-radius:8px; box-shadow:0 3px 10px #18202f04; }
 .preview-panel .tool-name { font-size:13px; }
 .preview-panel .tool-desc { font-size:11px; }

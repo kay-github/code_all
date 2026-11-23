@@ -2,6 +2,21 @@
   const $ = id => document.getElementById(id);
   let config = null, saved = '', csrf = '', busy = false, expiryTimer;
   const dirty = () => config && JSON.stringify(config) !== saved;
+  const urlKey = value => String(value || '').replace(/\/+$/, '');
+  const isManaged = item => (window.ToolSiteDefaults?.items || []).some(entry => urlKey(entry.url) === urlKey(item.url));
+  // 后台与首页共用一份目录：站内工具用代码默认值，后台只合并显隐和外部入口。
+  function mergeCatalog(remote) {
+    const base = window.ToolSiteDefaults || { title: '', subtitle: '', items: [] };
+    const incoming = Array.isArray(remote?.items) ? remote.items : [];
+    const byUrl = new Map(incoming.filter(item => item && item.url).map(item => [urlKey(item.url), item]));
+    const items = base.items.map(item => {
+      const stored = byUrl.get(urlKey(item.url));
+      return stored && typeof stored.visible === 'boolean' ? { ...item, visible: stored.visible } : { ...item };
+    });
+    const known = new Set(base.items.map(item => urlKey(item.url)));
+    for (const item of incoming) if (item?.url && !known.has(urlKey(item.url))) items.push(item);
+    return { ...(remote || {}), title: base.title, subtitle: base.subtitle, items };
+  }
   function message(text, type = '') {
     $('status').textContent = text;
     $('status').className = `status ${type}`;
@@ -41,7 +56,7 @@
   }
   function setBusy(value) {
     busy = value;
-    document.querySelectorAll('#editor input, #editor textarea, #editor select, #editor button, #login-form input, #login-form button, #logout').forEach(el => { el.disabled = value; });
+    document.querySelectorAll('#editor input, #editor textarea, #editor select, #editor button, #login-form input, #login-form button, #logout').forEach(el => { el.disabled = value || el.dataset.locked === '1'; });
     $('save').textContent = value ? '处理中…' : '保存更改';
     $('login-button').textContent = value ? '请稍候…' : '登录后台 →';
     if (!value && config) sync();
@@ -61,10 +76,10 @@
     window.ToolSiteCards.render($('preview'), config.items, true);
     document.querySelectorAll('[data-move]').forEach(button => {
       const index = config.items.findIndex(item => item.id === button.dataset.id);
-      button.disabled = busy || (button.dataset.move === 'up' ? index === 0 : index === config.items.length - 1);
+      button.disabled = busy || button.dataset.locked === '1' || (button.dataset.move === 'up' ? index === 0 : index === config.items.length - 1);
     });
     document.querySelectorAll('[data-clear-image]').forEach(button => {
-      button.disabled = busy || !config.items.find(item => item.id === button.dataset.clearImage)?.image;
+      button.disabled = busy || button.dataset.locked === '1' || !config.items.find(item => item.id === button.dataset.clearImage)?.image;
     });
   }
   function confirmAction(title, text, label = '确认') {
@@ -104,6 +119,11 @@
       input.placeholder = options.placeholder || '';
     }
     input.value = item[key] ?? '';
+    if (options.disabled) {
+      input.disabled = true;
+      input.dataset.locked = '1';
+      wrap.classList.add('is-locked');
+    }
     if (key === 'category') {
       input.setAttribute('list', 'category-options');
       input.addEventListener('change', refreshCategoryOptions);
@@ -116,12 +136,13 @@
     wrap.append(label, input);
     return wrap;
   }
-  function check(item, key, text, article) {
+  function check(item, key, text, article, locked = false) {
     const label = document.createElement('label');
     label.className = 'check';
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.checked = item[key];
+    if (locked) { input.disabled = true; input.dataset.locked = '1'; }
     input.addEventListener('change', () => {
       item[key] = input.checked;
       article.classList.toggle('is-hidden', !item.visible);
@@ -154,7 +175,7 @@
       reader.readAsDataURL(blob);
     });
   }
-  function imageUpload(item) {
+  function imageUpload(item, locked = false) {
     const block = document.createElement('div');
     block.className = 'image-upload';
     const thumb = document.createElement('span');
@@ -171,6 +192,14 @@
     clear.textContent = '移除图片';
     clear.dataset.clearImage = item.id;
     clear.setAttribute('aria-label', `移除${item.name || '入口'}的图片`);
+    if (locked) {
+      choose.disabled = true;
+      choose.dataset.locked = '1';
+      choose.title = '站内工具图标由代码目录维护';
+      clear.disabled = true;
+      clear.dataset.locked = '1';
+      clear.title = '站内工具图标由代码目录维护';
+    }
     const picker = document.createElement('input');
     picker.type = 'file';
     picker.accept = 'image/jpeg,image/png,image/webp,image/gif,image/avif';
@@ -231,6 +260,7 @@
   }
   function renderEntries() {
     $('entries').replaceChildren(...config.items.map((item, index) => {
+      const managed = isManaged(item);
       const article = document.createElement('article');
       article.className = `entry panel${item.visible ? '' : ' is-hidden'}`;
       const header = document.createElement('div');
@@ -243,6 +273,12 @@
       name.id = `name-${item.id}`;
       name.textContent = item.name || '未命名入口';
       header.append(number, name);
+      if (managed) {
+        const tag = document.createElement('span');
+        tag.className = 'entry-tag';
+        tag.textContent = '代码维护';
+        header.append(tag);
+      }
       for (const [direction, arrow, offset] of [['up', '↑', -1], ['down', '↓', 1]]) {
         const button = document.createElement('button');
         button.type = 'button';
@@ -251,6 +287,11 @@
         button.dataset.id = item.id;
         button.textContent = arrow;
         button.setAttribute('aria-label', `${direction === 'up' ? '上移' : '下移'}${item.name}`);
+        if (managed) {
+          button.disabled = true;
+          button.dataset.locked = '1';
+          button.title = '分类与顺序由代码目录维护';
+        }
         button.addEventListener('click', () => {
           const target = index + offset;
           if (target < 0 || target >= config.items.length) return;
@@ -265,6 +306,11 @@
       remove.className = 'quiet danger';
       remove.textContent = '删除';
       remove.setAttribute('aria-label', `删除${item.name}`);
+      if (managed) {
+        remove.disabled = true;
+        remove.dataset.locked = '1';
+        remove.title = '站内工具从代码目录增删';
+      }
       remove.addEventListener('click', async () => {
         if (await confirmAction('删除这个入口？', `「${item.name || '未命名入口'}」将在保存后从首页移除。`, '删除入口')) {
           config.items = config.items.filter(entry => entry.id !== item.id);
@@ -277,26 +323,32 @@
       const identity = document.createElement('div');
       identity.className = 'field-row';
       identity.append(
-        field(item, 'name', '入口名称', { required: true, max: 40 }),
-        field(item, 'category', '入口分类', { max: 24, placeholder: '其他工具' })
+        field(item, 'name', '入口名称', { required: true, max: 40, disabled: managed }),
+        field(item, 'category', '入口分类', { max: 24, placeholder: '其他工具', disabled: managed })
       );
-      fields.append(identity, field(item, 'url', '访问地址', { required: true, placeholder: '/tools/example/ 或 https://example.com' }), field(item, 'description', '描述', { max: 200, multiline: true, placeholder: '用一句话介绍这个工具' }));
-      const upload = imageUpload(item);
+      fields.append(identity, field(item, 'url', '访问地址', { required: true, placeholder: '/tools/example/ 或 https://example.com', disabled: managed }), field(item, 'description', '描述', { max: 200, multiline: true, placeholder: '用一句话介绍这个工具', disabled: managed }));
+      if (managed) {
+        const note = document.createElement('p');
+        note.className = 'field-help';
+        note.textContent = '名称、分类、文案与图标由 assets/site-defaults.js 维护；这里只控制「首页显示」。';
+        fields.append(note);
+      }
+      const upload = imageUpload(item, managed);
       fields.append(upload);
       const options = document.createElement('div');
       options.className = 'entry-options';
-      options.append(check(item, 'visible', '首页显示', article), check(item, 'newTab', '新窗口打开', article));
+      options.append(check(item, 'visible', '首页显示', article), check(item, 'newTab', '新窗口打开', article, managed));
       fields.append(options);
       const details = document.createElement('details');
       const summary = document.createElement('summary');
       summary.textContent = '图标与图片设置';
       const row = document.createElement('div');
       row.className = 'field-row';
-      row.append(field(item, 'icon', '文字图标', { required: true, max: 8 }), field(item, 'color', '图标配色', { choices: [['blue', '晴空蓝'], ['orange', '暖橙色'], ['green', '松叶绿'], ['purple', '浅紫色'], ['slate', '岩石灰']] }));
+      row.append(field(item, 'icon', '文字图标', { required: true, max: 8, disabled: managed }), field(item, 'color', '图标配色', { choices: [['blue', '晴空蓝'], ['orange', '暖橙色'], ['green', '松叶绿'], ['purple', '浅紫色'], ['slate', '岩石灰'], ['board', '看板橙'], ['flow', '资金青'], ['research', '研究紫'], ['tool', '工具灰']], disabled: managed }));
       const help = document.createElement('p');
       help.className = 'field-help';
       help.textContent = '留空使用文字图标；支持站内图片路径或 HTTPS 图片链接。图片加载失败时自动显示文字图标。';
-      details.append(summary, row, field(item, 'image', '图片地址（可选）', { placeholder: 'https://example.com/icon.png' }), help);
+      details.append(summary, row, field(item, 'image', '图片地址（可选）', { placeholder: 'https://example.com/icon.png', disabled: managed }), help);
       details.addEventListener('input', () => upload.refreshImage());
       fields.append(details);
       article.append(header, fields);
@@ -306,7 +358,7 @@
     sync();
   }
   async function enterEditor() {
-    if (!dirty()) { config = await api('config?admin=1'); saved = JSON.stringify(config); }
+    if (!dirty()) { config = mergeCatalog(await api('config?admin=1')); saved = JSON.stringify(config); }
     $('site-title').value = config.title;
     $('site-subtitle').value = config.subtitle;
     $('login-panel').hidden = true;
@@ -338,7 +390,7 @@
     if (busy || !dirty()) return;
     setBusy(true);
     try {
-      config = await api('config', 'PUT', config);
+      config = mergeCatalog(await api('config', 'PUT', config));
       saved = JSON.stringify(config);
       $('site-title').value = config.title;
       $('site-subtitle').value = config.subtitle;
@@ -351,7 +403,7 @@
     if (dirty() && !await confirmAction('重新加载配置？', '未保存的更改将被丢弃，加载最近一次保存的内容。', '重新加载')) return;
     setBusy(true);
     try {
-      const latest = await api('config?admin=1');
+      const latest = mergeCatalog(await api('config?admin=1'));
       config = latest;
       saved = JSON.stringify(config);
       await enterEditor();

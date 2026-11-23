@@ -7,6 +7,7 @@
   <title>入口管理 · 大杂烩工具站</title>
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/assets/site-admin.css">
+  <script src="/assets/site-defaults.js" defer></script>
   <script src="/assets/site-cards.js" defer></script>
   <script src="/assets/site-admin.js" defer></script>
 </head>
@@ -19,8 +20,8 @@
     <p id="status" class="status" role="status" aria-live="polite">正在检查登录状态…</p>
     <section id="login-panel" class="login-panel" hidden>
       <span class="eyebrow">站点后台</span>
-      <h1>管理你的工具入口</h1>
-      <p class="muted">调整首页内容与排列，让常用的工具更顺手。</p>
+      <h1>控制入口显示</h1>
+      <p class="muted">站内工具的分类与文案由代码目录统一维护；这里控制是否显示，也可以新增外部入口。</p>
       <form id="login-form">
         <label for="password">管理员密码</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="请输入密码">
@@ -28,17 +29,18 @@
       </form>
     </section>
     <form id="editor" hidden>
-      <div class="heading"><div><span class="eyebrow">首页设置</span><h1>每个入口，恰到好处。</h1><p class="muted">编辑后点击保存，首页刷新即可看到更新。</p></div><span id="save-state" class="badge">已保存</span></div>
+      <div class="heading"><div><span class="eyebrow">首页设置</span><h1>入口显示与外部链接</h1><p class="muted">站内工具跟随代码目录；保存后只影响显示设置。</p></div><span id="save-state" class="badge">已保存</span></div>
       <div class="workspace">
         <div class="editor-column">
           <section class="panel site-settings" aria-labelledby="settings-title">
             <h2 id="settings-title">网站信息</h2>
-            <label for="site-title">网站名称</label><input id="site-title" required maxlength="60">
-            <label for="site-subtitle">首页简介</label><input id="site-subtitle" maxlength="160">
+            <p class="field-help">网站名称与简介由 <code>assets/site-defaults.js</code> 维护，修改请改代码。</p>
+            <label for="site-title">网站名称</label><input id="site-title" required maxlength="60" disabled data-locked="1">
+            <label for="site-subtitle">首页简介</label><input id="site-subtitle" maxlength="160" disabled data-locked="1">
           </section>
           <section aria-labelledby="entries-title">
             <div class="section-heading"><h2 id="entries-title">功能入口 <span id="count" class="count"></span></h2><button id="add" type="button" class="secondary">＋ 新增入口</button></div>
-            <p class="hint">修改入口分类可移动到已有分类，输入新名称可创建分类。↑ ↓ 调整入口顺序，各分类按其中第一个可见入口的位置排列。</p>
+            <p class="hint">站内工具的名称、分类、文案与图标由 <code>assets/site-defaults.js</code> 维护，后台只控制显示；外部入口可自由编辑。「↑ ↓」排序只对外部入口生效。</p>
             <datalist id="category-options"></datalist>
             <div id="entries"></div>
             <p id="empty-editor" class="panel muted" hidden>还没有入口，点击「新增入口」添加第一个。</p>
