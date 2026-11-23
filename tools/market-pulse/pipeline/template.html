@@ -420,8 +420,8 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
   </div>
 
   <div class="card">
-    <h3>龙虎榜机构席位：最近披露日 <span id="lhb-date"></span></h3>
-    <p class="sub">今日龙虎榜 17:00 后披露；先看最近一日的机构净买/净卖</p>
+    <h3 id="lhb-title">龙虎榜机构席位</h3>
+    <p class="sub" id="lhb-sub"></p>
     <div class="scroll"><table class="data" id="table-lhb"></table></div>
     <p class="note" id="lhb-note"></p>
   </div>
@@ -555,6 +555,13 @@ const DATA = __DATA_JSON__;
     }
     if (el('etf-date')) el('etf-date').textContent = D.etf.date;
     if (el('lhb-date')) el('lhb-date').textContent = D.lhb.date || '待披露';
+    const lhbToday = D.lhb.date && D.lhb.date === D.date;
+    if (el('lhb-title')) el('lhb-title').textContent = D.lhb.date
+      ? `龙虎榜机构席位：${lhbToday ? '今日已披露' : '最近披露日 ' + D.lhb.date}`
+      : '龙虎榜机构席位：待披露';
+    if (el('lhb-sub')) el('lhb-sub').textContent = lhbToday
+      ? '今日龙虎榜已披露；看机构净买/净卖'
+      : '今日龙虎榜 17:00 后披露；先看最近一日的机构净买/净卖';
     if (el('caveat-etf-date')) el('caveat-etf-date').textContent = D.etf.date;
     if (el('caveat-margin-date')) el('caveat-margin-date').textContent = D.margin.date;
     if (el('footer-date')) el('footer-date').textContent = D.date + ' · ' + D.weekday;
