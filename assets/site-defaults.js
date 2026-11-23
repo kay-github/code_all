@@ -9,6 +9,7 @@
       { id: 'optical', category: '盯盘看板', name: '光通信跌幅榜', description: '产业链个股跌幅排行', badge: '盘中实时', url: '/tools/optical-decline-board/', icon: '光', color: 'board', visible: true, image: '', newTab: false },
       { id: 'volume', category: '盯盘看板', name: '量能观察台', description: '盘中量能与历史均量对比', badge: '盘中实时', url: '/tools/volume-lab/', icon: '量', color: 'board', visible: true, image: '', newTab: false },
       { id: 'cnvix', category: '盯盘看板', name: '中国波指', description: 'A 股 30 天隐含波动率', badge: '每日 16:50', url: '/cnvix', icon: '波', color: 'board', visible: true, image: '', newTab: false },
+      { id: 'marketPulse', category: '盯盘看板', name: '资金面盘面说明', description: '每日收盘后资金面复盘', badge: '每日 16:10', url: '/pulse', icon: '盘', color: 'board', visible: true, image: '', newTab: false },
       { id: 'gjd', category: '资金与持仓', name: '国家队ETF追踪', description: '汇金 ETF 申赎与托底进度', badge: '次日更新', url: '/tools/national-team-etf/', icon: '国', color: 'flow', visible: true, image: '', newTab: false },
       { id: 'fundRecovery', category: '资金与持仓', name: '光模块双龙仓位回补', description: '基金是否已买回新易盛/旭创', badge: '每日 08:43', url: '/tools/fund-dragon-recovery/', icon: '仓', color: 'flow', visible: true, image: '', newTab: false },
       { id: 'stocks', category: '研究与情景', name: '股票回撤研究室', description: '历史回撤与反弹测算', url: '/tools/stock-rebound-lab/', icon: '研', color: 'research', visible: true, image: '', newTab: false },

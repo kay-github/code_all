@@ -199,6 +199,17 @@
       }
     },
     {
+      "src": "^/pulse/?$",
+      "dest": "/tools/market-pulse/index.html"
+    },
+    {
+      "src": "^/tools/market-pulse/data/(.*)$",
+      "dest": "/tools/market-pulse/data/$1",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
+    },
+    {
       "src": "^/mirror/?$",
       "dest": "/tools/cycle-mirror/index.html"
     },

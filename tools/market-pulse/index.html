@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>盘面说明 · 资金面</title>
+<style>
+:root{
+  --paper:#f7f4ee;
+  --paper-2:#fbf9f4;
+  --ink:#1b1e26;
+  --muted:#6e707a;
+  --line:rgba(27,30,38,.10);
+  --red:#c33a32;
+  --red-2:#e06055;
+  --green:#1f7a5c;
+  --green-2:#3a9b78;
+  --gold:#b0832f;
+  --blue:#39658c;
+  --shadow:0 1px 2px rgba(24,28,36,.04), 0 8px 24px rgba(24,28,36,.05);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(195,58,50,.06), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(176,131,47,.08), transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:1240px;margin:0 auto;padding:26px 22px 48px}
+.hero{
+  position:relative;
+  padding:26px 28px 24px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.55));
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.hero:after{
+  content:"";position:absolute;right:-120px;top:-140px;width:420px;height:420px;
+  background:radial-gradient(circle, rgba(195,58,50,.13), transparent 62%);
+  pointer-events:none;
+}
+.hero-top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.16em;color:var(--muted);font-weight:600}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(195,58,50,.10)}
+.meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+h1{
+  margin:18px 0 10px;
+  font-family:"Songti SC","Noto Serif SC",serif;
+  font-size:clamp(26px,3.2vw,42px);
+  line-height:1.22;
+  letter-spacing:-.02em;
+  font-weight:700;
+}
+h1 em{font-style:normal;color:var(--red)}
+.dek{max-width:900px;margin:0;color:#41434c;font-size:15px;line-height:1.75}
+.hero-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.chip{
+  display:flex;align-items:baseline;gap:8px;
+  padding:9px 13px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(255,255,255,.7);
+  font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;
+}
+.chip strong{font-size:15px;color:var(--ink);font-weight:650}
+.chip .up{color:var(--red)}
+.chip .down{color:var(--green)}
+
+.tabs{
+  position:sticky;top:0;z-index:20;
+  display:flex;gap:4px;margin:18px 0 16px;padding:6px;
+  border:1px solid var(--line);border-radius:14px;
+  background:rgba(247,244,238,.86);backdrop-filter:blur(12px);
+}
+.tab-btn{
+  appearance:none;border:0;background:transparent;color:var(--muted);
+  font:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;
+  transition:.2s;
+}
+.tab-btn:hover{color:var(--ink);background:rgba(255,255,255,.55)}
+.tab-btn.active{background:var(--ink);color:#fff}
+.panel{display:none;animation:fade .25s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin:22px 2px 10px}
+.section-head h2{margin:0;font-family:"Songti SC","Noto Serif SC",serif;font-size:22px;letter-spacing:-.01em}
+.section-head p{margin:0;font-size:12px;color:var(--muted)}
+.kicker{font-size:11px;letter-spacing:.14em;color:var(--gold);font-weight:650;text-transform:uppercase}
+
+.lead-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lead-card{padding:18px 18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.66);box-shadow:var(--shadow);min-width:0}
+.lead-card h3{margin:8px 0 8px;font-size:17px;line-height:1.35}
+.lead-card p{margin:0;color:#50525b;font-size:13px;line-height:1.7}
+.lead-card .big{font-size:26px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.lead-card .big small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.62)}
+.kpi .label{font-size:11px;color:var(--muted);letter-spacing:.02em}
+.kpi .value{font-size:21px;font-weight:720;margin-top:3px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:11px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.up{color:var(--red)} .down{color:var(--green)}
+
+.card{padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.68);box-shadow:var(--shadow);margin-top:14px;min-width:0}
+.card h3{margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+.card .sub{margin:0 0 8px;font-size:12px;color:var(--muted)}
+.chart{width:100%;height:320px;min-width:0}
+.chart.tall{height:390px}
+.chart.short{height:260px}
+.two{display:grid;grid-template-columns:1.08fr .92fr;gap:14px}
+.two > .card{margin-top:0;min-width:0}
+.note{font-size:11px;color:var(--muted);line-height:1.6;margin:8px 0 0}
+
+.reversal{padding:6px 4px 2px}
+.rev-row{display:grid;grid-template-columns:94px 92px 1fr 214px;gap:12px;align-items:center;padding:10px 8px;border-bottom:1px dashed rgba(27,30,38,.08)}
+.rev-row:last-child{border-bottom:0}
+.rev-name{font-size:13px;font-weight:650}
+.rev-px{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.rev-px small{display:block;font-size:11px;font-weight:500}
+.rev-track{position:relative;height:14px;border-radius:999px;background:linear-gradient(90deg, rgba(31,122,92,.10), rgba(27,30,38,.06) 48%, rgba(195,58,50,.12));}
+.rev-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg, rgba(31,122,92,.30), rgba(195,58,50,.42));}
+.rev-dot{position:absolute;top:50%;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--ink);transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.rev-lohi{position:absolute;top:-15px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rev-lohi.lo{left:0}
+.rev-lohi.hi{right:0}
+.rev-note{font-size:11px;color:var(--muted);line-height:1.55;text-align:right;font-variant-numeric:tabular-nums}
+.rev-note strong{color:var(--ink);font-weight:650}
+
+.opponent{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.opp-card{padding:16px 16px 14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.66);position:relative;overflow:hidden}
+.opp-card .tag{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:650}
+.opp-card .num{font-size:28px;font-weight:760;margin:8px 0 2px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.opp-card .desc{font-size:12px;color:#555;line-height:1.65}
+.opp-card:after{content:"";position:absolute;right:-30px;bottom:-40px;width:120px;height:120px;border-radius:50%;background:rgba(195,58,50,.07)}
+.opp-card.green:after{background:rgba(31,122,92,.08)}
+.opp-card.gold:after{background:rgba(176,131,47,.09)}
+
+.signal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.signal{padding:12px 13px;border:1px solid var(--line);border-top:3px solid #aaa;border-radius:12px;background:rgba(255,255,255,.55)}
+.signal .st{font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:650}
+.signal b{display:block;font-size:14px;margin:5px 0 4px}
+.signal p{font-size:11px;color:#555;line-height:1.62;margin:0}
+.signal.ok{border-top-color:var(--red)}
+.signal.warn{border-top-color:var(--gold)}
+.signal.bad{border-top-color:var(--green)}
+.signal .badge{float:right;font-size:10px;padding:1px 6px;border-radius:999px;background:rgba(27,30,38,.06);color:#666;font-weight:600}
+.signal.ok .badge{background:rgba(195,58,50,.10);color:#a52d27}
+.signal.warn .badge{background:rgba(176,131,47,.13);color:#8a6420}
+.signal.bad .badge{background:rgba(31,122,92,.10);color:#1f6b51}
+
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+.toggle{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.6);color:var(--muted);font:inherit;font-size:12px;font-weight:600;padding:6px 11px;border-radius:9px;cursor:pointer}
+.toggle.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+table.data{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+table.data th{text-align:left;color:var(--muted);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.data td{padding:8px 8px;border-bottom:1px dashed rgba(27,30,38,.07);white-space:nowrap}
+table.data tr:last-child td{border-bottom:0}
+table.data td.num{text-align:right}
+table.data td.name strong{font-weight:650}
+table.data .tag{display:inline-block;padding:2px 7px;border-radius:999px;background:rgba(27,30,38,.06);color:#555;font-size:10px;margin-left:4px}
+table.data td.pos{color:var(--red);font-weight:650}
+table.data td.neg{color:var(--green);font-weight:650}
+#table-tools td:nth-child(2),#table-tools td:nth-child(6){white-space:normal;line-height:1.55}
+#table-tools td:nth-child(6){min-width:360px}
+.state{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;white-space:nowrap}
+.state.buy{background:rgba(195,58,50,.10);color:#a52d27}
+.state.refill{background:rgba(176,131,47,.13);color:#8a6420}
+.state.sell{background:rgba(31,122,92,.10);color:#1f6b51}
+.state.out{background:rgba(27,30,38,.06);color:#666}
+.state.new{background:rgba(195,58,50,.12);color:#a52d27}
+.state.strong{background:rgba(176,131,47,.14);color:#8a6420}
+.state.weak{background:rgba(176,131,47,.08);color:#7c612f}
+.state.steady{background:rgba(57,101,140,.10);color:#315a7d}
+.state.dist{background:rgba(31,122,92,.10);color:#1f6b51}
+.state.muted{background:rgba(27,30,38,.06);color:#666}
+.scroll{overflow-x:auto;max-width:100%;min-width:0}
+
+.flowline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--muted);line-height:1.8}
+.flowline b{color:var(--ink);font-weight:650}
+.flowline .arrow{color:var(--gold)}
+
+.callout{padding:14px 16px;border-left:3px solid var(--gold);background:rgba(176,131,47,.07);border-radius:0 12px 12px 0;font-size:13px;line-height:1.75;color:#47433a;margin-top:14px}
+.callout strong{color:var(--ink)}
+
+details.caveat{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55);padding:12px 14px}
+details.caveat summary{cursor:pointer;font-size:13px;font-weight:650;color:var(--ink)}
+details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;line-height:1.8}
+
+.footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.8}
+.footer b{color:var(--ink)}
+
+@media (max-width:980px){
+  .lead-grid,.opponent{grid-template-columns:1fr}
+  .signal-grid{grid-template-columns:1fr 1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+  .rev-row{grid-template-columns:86px 80px 1fr;row-gap:4px}
+  .rev-note{grid-column:1/-1;text-align:left;padding-left:4px}
+  .chart{height:300px}
+}
+@media (max-width:620px){
+  .page{padding:16px 12px 34px}
+  .hero{padding:20px 18px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .rev-row{grid-template-columns:80px 70px 1fr}
+  .rev-lohi{display:none}
+  .tabs{overflow-x:auto}
+  .signal-grid{grid-template-columns:1fr}
+  .section-head{flex-direction:column;align-items:flex-start;gap:3px}
+  .section-head h2{font-size:19px}
+  .section-head p{font-size:11px}
+}
+@media print{
+  body{background:#fff}
+  .tabs{display:none}
+  .panel{display:block!important;break-inside:avoid}
+  .card,.hero{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <div class="hero-top">
+    <div class="brand"><span class="dot"></span> MARKET PULSE · 资金面盘面说明</div>
+    <div class="meta" id="hero-meta">2026-11-23 · 周一 · 收盘后</div>
+  </div>
+  <h1 id="hero-title">盘面说明</h1>
+  <p class="dek" id="hero-dek"></p>
+  <div class="hero-chips" id="hero-chips"></div>
+</header>
+
+<nav class="tabs" aria-label="页面分区">
+  <button class="tab-btn active" data-tab="overview">总览</button>
+  <button class="tab-btn" data-tab="flow">行业与主题</button>
+  <button class="tab-btn" data-tab="stocks">主线与个股</button>
+  <button class="tab-btn" data-tab="method">工具与方法</button>
+</nav>
+
+<main>
+<!-- ================= OVERVIEW ================= -->
+<section class="panel active" id="panel-overview">
+  <div class="lead-grid" id="lead-grid"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="section-head">
+    <h2>日内反转：谁被从低点拉回</h2>
+    <p>收盘位置 = (收盘 - 最低) / (最高 - 最低)；从低点涨幅按最低价计算</p>
+  </div>
+  <div class="card" style="padding-top:10px">
+    <div class="reversal" id="reversal"></div>
+    <p class="note" id="reversal-note"></p>
+  </div>
+
+  <div class="two" style="margin-top:14px">
+    <div class="card">
+      <h3>资金四口径：方向一致，量级不同</h3>
+      <p class="sub">单位：亿元。口径不同，只看方向与量级，不能直接相加。</p>
+      <div class="chart" id="chart-flows"></div>
+      <p class="note" id="flows-note"></p>
+    </div>
+    <div class="card">
+      <h3>ETF 通道：连续 5 日净申购，末段加速</h3>
+      <p class="sub">15 只宽基 ETF 的申赎估算；最新正式披露 <span id="etf-date"></span></p>
+      <div class="chart" id="chart-etf"></div>
+      <p class="note" id="etf-note"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>ETF 5 日拆解：买的是大盘宽基，还是中小盘进攻？</h3>
+    <p class="sub">按 15 只宽基 ETF 跟踪指数归类；单位：亿元，括号内为 5 日占比</p>
+    <div class="chart" id="chart-etf-decomp"></div>
+    <p class="note" id="etf-decomp-note"></p>
+  </div>
+
+  <div class="opponent">
+    <article class="opp-card green">
+      <div class="tag">杠杆 · 在撤</div>
+      <div class="num" id="opp-margin">21,437.9 亿</div>
+      <p class="desc" id="margin-desc"></p>
+    </article>
+    <article class="opp-card">
+      <div class="tag">主动 · 在回补</div>
+      <div class="num up" id="opp-active">—</div>
+      <p class="desc" id="active-desc"></p>
+    </article>
+    <article class="opp-card gold">
+      <div class="tag">ETF · 在托底</div>
+      <div class="num up" id="opp-etf">—</div>
+      <p class="desc" id="etf-desc"></p>
+    </article>
+  </div>
+  <p class="note" style="margin:8px 2px 0">量级对照，三者口径不同（融资余额变化 / 股票主动买卖 / ETF 申赎），不做加减，只看谁在接、谁在撤。</p>
+
+  <div class="card">
+    <h3 id="signal-title">大资金建仓判断：四个信号，逐条看</h3>
+    <p class="sub">“持续建仓”看的是连续性，不是单日脉冲；这也是本页最核心的一张表</p>
+    <div class="signal-grid" id="signal-grid"></div>
+    <p class="note" id="signal-note"></p>
+  </div>
+
+  <div class="two" style="margin-top:14px">
+    <div class="card">
+      <h3>涨停 147 只，但连板梯队断层</h3>
+      <p class="sub">东财涨停池；首板 131、2 板 13、3 板 1、5 板 2；炸板 23（13.5%）</p>
+      <div class="chart short" id="chart-zt"></div>
+      <p class="note" id="zt-note"></p>
+    </div>
+    <div class="card">
+      <h3>融资余额：8 个交易日缩了 1,225 亿</h3>
+      <p class="sub">沪深两市融资余额合计；T+1 披露，最新 11-20</p>
+      <div class="chart short" id="chart-margin"></div>
+      <p class="note" id="margin-note"></p>
+    </div>
+  </div>
+
+  <div class="callout" id="conclusion"></div>
+</section>
+
+<!-- ================= FLOW ================= -->
+<section class="panel" id="panel-flow">
+  <div class="section-head">
+    <h2>行业与主题：钱在做什么切换</h2>
+    <p>同花顺资金流口径，单位：亿元</p>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <h3>行业净流入 / 流出 Top</h3>
+        <p class="sub">切换“今日 / 5日 / 10日”，看的是持续性，不是单日脉冲</p>
+      </div>
+      <div class="toolbar">
+        <button class="toggle active" data-ind="net">今日</button>
+        <button class="toggle" data-ind="net5">5日</button>
+        <button class="toggle" data-ind="net10">10日</button>
+      </div>
+    </div>
+    <div class="chart tall" id="chart-industry"></div>
+    <p class="note" id="industry-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>新钱 / 回补：今天买的是新钱，还是把前四天卖的接回来？</h3>
+    <p class="sub">回补比例 = 今日净额 / |前4日净额|；&gt;100% 新钱，50%–100% 强回补，0–50% 弱回补</p>
+    <div class="chart" id="chart-refill"></div>
+    <p class="note" id="refill-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>今日 vs 5日：谁在回补，谁在被抽血</h3>
+    <p class="sub">横轴 = 5 日净额，纵轴 = 今日净额，气泡 = 行业成交额；左上角是“5日流出、今日回补”</p>
+    <div class="chart tall" id="chart-scatter"></div>
+    <p class="note" id="scatter-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>主题资金 Top 12：机器人、CPO、芯片三线共振</h3>
+    <p class="sub">剔除“融资融券/深股通/中报预增”等宽基属性标签，只看产业主题</p>
+    <div class="chart tall" id="chart-concept"></div>
+    <p class="note" id="concept-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>关键行业：今日、5日、10日放在一张表里</h3>
+    <p class="sub">单位：亿元；阶段涨跌幅为同花顺行业指数口径</p>
+    <div class="scroll"><table class="data" id="table-sectors"></table></div>
+  </div>
+</section>
+
+<!-- ================= STOCKS ================= -->
+<section class="panel" id="panel-stocks">
+  <div class="section-head">
+    <h2>主线与个股：大单到底在买谁</h2>
+    <p>“超大单”= 新浪 r0 净额；“全单”= 同花顺主动买卖净额；两者口径不同，正负分歧本身就是信息</p>
+  </div>
+
+  <div class="card">
+    <h3>大单 vs 全单：谁在真买，谁在涨停板上出货</h3>
+    <p class="sub">按超大单净额排序；红色为超大单，金色为全单净额</p>
+    <div class="chart tall" id="chart-stocks"></div>
+    <p class="note" id="stock-note"></p>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h3>全单净流入 Top 12</h3>
+      <p class="sub">同花顺口径；5 日列为滚动 5 个交易日累计</p>
+      <div class="scroll"><table class="data" id="table-top-in"></table></div>
+      <p class="note" id="topin-note"></p>
+    </div>
+    <div class="card">
+      <h3>大单买 / 全单卖：涨停板上的分歧</h3>
+      <p class="sub">超大单 &gt; +1 亿，且全单 &lt; -1 亿</p>
+      <div class="scroll"><table class="data" id="table-divergence"></table></div>
+      <p class="note" id="divergence-note"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>个股资金质量：新钱、强回补、持续流入</h3>
+    <p class="sub">比例 = 今日净额 / |前4日净额|；新钱 &gt;100%，强回补 50%–100%，持续流入是前4日已在买、今天继续买</p>
+    <div class="toolbar">
+      <button class="toggle active" data-quality="new_money">新钱榜</button>
+      <button class="toggle" data-quality="strong_refill">强回补</button>
+      <button class="toggle" data-quality="steady_inflow">持续流入</button>
+    </div>
+    <div class="scroll"><table class="data" id="table-stock-quality"></table></div>
+    <p class="note" id="stock-quality-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>龙虎榜机构席位：最近披露日 <span id="lhb-date"></span></h3>
+    <p class="sub">今日龙虎榜 17:00 后披露；先看最近一日的机构净买/净卖</p>
+    <div class="scroll"><table class="data" id="table-lhb"></table></div>
+    <p class="note" id="lhb-note"></p>
+  </div>
+
+  <div class="card">
+    <h3>资金流出 Top 12：谁在被抽血</h3>
+    <div class="scroll"><table class="data" id="table-top-out"></table></div>
+    <p class="note" id="topout-note"></p>
+  </div>
+</section>
+
+<!-- ================= METHOD ================= -->
+<section class="panel" id="panel-method">
+  <div class="section-head">
+    <h2>工具与方法：我们为什么选它们</h2>
+    <p>2026-11 核验；Star 与创建时间取自 GitHub API</p>
+  </div>
+
+  <div class="card">
+    <h3>开源项目选型：只看“新、活、能覆盖资金面、license 可复用”</h3>
+    <p class="sub">老项目不是不能用，而是这轮需求要的是“贴合当前 A 股资金结构”的新工具；停更 6 个月以上的直接排除。</p>
+    <div class="scroll">
+      <table class="data" id="table-tools">
+        <thead><tr><th>项目</th><th>定位</th><th>Star</th><th>创建</th><th>License</th><th>我们怎么用 / 结论</th></tr></thead>
+        <tbody>
+          <tr><td class="name"><strong>a-stock-data</strong><span class="tag">已接入</span></td><td>零依赖 A 股数据工具箱，87 个端点</td><td class="num">11,983</td><td>2026-05</td><td>Apache-2.0</td><td>腾讯行情、东财资金流、涨停池、龙虎榜、ETF/两融都从它取；SKILL.md 抽取为可导入模块，保留 LICENSE 与出处。</td></tr>
+          <tr><td class="name"><strong>tick-stock-panel</strong><span class="tag">方法论</span></td><td>本地量化研究工作台，概念轮动/策略/回测/MCP</td><td class="num">8,198</td><td>2026-06</td><td>MIT</td><td>参考它的“概念轮动曲线 + 盘中监控”产品结构；不整套部署，太重。</td></tr>
+          <tr><td class="name"><strong>go-stock</strong><span class="tag">功能对标</span></td><td>桌面 AI 股票分析，资金流/龙虎榜/游资/涨停梯队/期指多空</td><td class="num">8,239</td><td>2024-12</td><td>GPL-3.0</td><td>功能最贴近“每日复盘”，但 GPL + Wails 桌面端，不适合无头每日生成；只做对标，不嵌入。</td></tr>
+          <tr><td class="name"><strong>CNEquity</strong><span class="tag">下一步</span></td><td>本地 A 股数据湖，86 个数据集，L4 含资金流/龙虎榜/两融/大宗</td><td class="num">1,075</td><td>2026-06</td><td>Apache-2.0</td><td>下一步用它沉淀历史资金流，做 5/20 日回测与“建仓持续性”评分；0.x 版本，先小规模试。</td></tr>
+          <tr><td class="name"><strong>market-thermo</strong><span class="tag">思路参考</span></td><td>每日市场温度计：指数/资金流/期指/ETF/两融</td><td class="num">1</td><td>2026-09</td><td>无</td><td>产品框架值得看；无 license、样本极小，不采用代码。</td></tr>
+          <tr><td class="name"><strong>a-share-review</strong><span class="tag">不接入</span></td><td>涨停/题材/梯队/情绪复盘</td><td class="num">1</td><td>2026-11-18</td><td>无</td><td>项目只有 5 天、单人维护、无 license，工程量大但可靠性未验证；只看结构，不接代码。</td></tr>
+          <tr><td class="name"><strong>InStock</strong><span class="tag">排除</span></td><td>量化选股/回测/资金流</td><td class="num">15,319</td><td>2023-03</td><td>Apache-2.0</td><td>2026-04 后停更 7 个月，不符合“新”；且功能偏选股，不做每日盘面。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">AKShare 作为兼容层保留：它不是新项目，但同花顺/交易所/东财 datacenter 的适配最全，且今天实际承担了行业/概念/两融/龙虎榜的抓取。核心数据层仍以 a-stock-data 为主。</p>
+  </div>
+
+  <div class="card">
+    <h3>每日数据流水线</h3>
+    <p class="sub">收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新；失败时保留上一版</p>
+    <div class="flowline">
+      <b>腾讯行情</b> 指数/成交额 <span class="arrow">→</span>
+      <b>东财 push2</b> 沪市主力/超大单 <span class="arrow">→</span>
+      <b>同花顺</b> 行业/概念/个股全单 <span class="arrow">→</span>
+      <b>新浪 MoneyFlow</b> 超大单/小单 <span class="arrow">→</span>
+      <b>东财 datacenter</b> 龙虎榜/两融 <span class="arrow">→</span>
+      <b>国家队 ETF</b> 申赎 <span class="arrow">→</span>
+      <b>analysis.json</b> <span class="arrow">→</span> <b>本页</b>
+    </div>
+    <p class="note">线上入口 <code>/pulse</code>；GitHub Actions 工作日 16:10 / 17:10（北京时间）自动跑，白名单提交后 Vercel 自动部署。本地脚本在 <code>market_pulse/scripts</code>，线上管线在 <code>tools/market-pulse/pipeline</code>。</p>
+  </div>
+
+  <div class="card">
+    <h3>口径与局限：先把丑话说在前面</h3>
+    <details class="caveat" open>
+      <summary>6 条必须知道的口径差异</summary>
+      <ul>
+        <li><b>同花顺“净额”</b>是主动买卖全单口径（流入资金 - 流出资金），不等于东财“主力”（超大单 + 大单）。本页同时给出两个口径，是互相验证，不是互相替代。</li>
+        <li><b>新浪 r0_net</b>是超大单净额，阈值与东财不同；新浪只覆盖部分有效 A 股，北交所部分标的不在表内。</li>
+        <li><b>东财沪市</b>为单点快照；深市同接口在收盘后常被限流，未取到的不做同口径展示。</li>
+        <li><b>ETF 申赎</b>是 15 只宽基 ETF 的估算（gjd_research 口径），不是实名仓位；最新正式披露为 <span id="caveat-etf-date"></span>。</li>
+        <li><b>融资余额</b> T+1 披露，最新 <span id="caveat-margin-date"></span>；当日杠杆变化要等下一交易日。</li>
+        <li><b>涨停家数</b>：乐咕口径与东财涨停池口径不同；真实涨停会剔除 ST/新股等，页面同时标注，避免拿一个数当唯一真相。</li>
+      </ul>
+    </details>
+    <p class="note" style="margin-top:10px">本页只做盘面与资金行为的解释，不构成投资建议。数据来源均为公开接口，可能存在延迟、缺失或口径差异；关键数字已做交叉核对，但请以交易所/基金公司正式披露为准。</p>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <b>盘面说明 · <span id="footer-date"></span></b> · 生成时间 <span id="gen-time"></span> · 数据截至 15:00 收盘<br>
+  数据源：腾讯行情 / 东方财富 / 同花顺 / 新浪财经 / 上交所 / 深交所 / 国家队 ETF。开源工具：a-stock-data（Apache-2.0）、AKShare（MIT）。
+</footer>
+</div>
+
+<script src="vendor/echarts.min.js"></script>
+<script>
+const DATA = {"date":"2026-11-23","weekday":"周一","generated_at":"2026-11-23T20:07:57","headline":"深V反转：ETF 连续大额托底，大单回补光模块；杠杆仍在出清","indices":[{"code":"sh000001","name":"上证指数","price":3538.95,"change_pct":0.15,"amount_wan":73850042.0,"high":3544.6,"low":3476.65,"is_stale":false,"prev_close":3533.65,"reversal_from_low":1.79,"close_pos":91.69,"amplitude":1.92,"amount_yi":7385.0},{"code":"sz399001","name":"深证成指","price":10454.37,"change_pct":1.93,"amount_wan":81437975.0,"high":10510.18,"low":10118.02,"is_stale":false,"prev_close":10256.42,"reversal_from_low":3.32,"close_pos":85.77,"amplitude":3.82,"amount_yi":8143.8},{"code":"sz399006","name":"创业板指","price":2280.2,"change_pct":3.08,"amount_wan":40062830.0,"high":2297.73,"low":2188.45,"is_stale":false,"prev_close":2212.07,"reversal_from_low":4.19,"close_pos":83.96,"amplitude":4.94,"amount_yi":4006.28},{"code":"sh000688","name":"科创50","price":1227.89,"change_pct":-0.26,"amount_wan":8955502.0,"high":1243.16,"low":1177.56,"is_stale":false,"prev_close":1231.09,"reversal_from_low":4.27,"close_pos":76.72,"amplitude":5.33,"amount_yi":895.55},{"code":"sh000300","name":"沪深300","price":3958.29,"change_pct":0.09,"amount_wan":45827926.0,"high":3968.45,"low":3901.49,"is_stale":false,"prev_close":3954.73,"reversal_from_low":1.46,"close_pos":84.83,"amplitude":1.69,"amount_yi":4582.79},{"code":"sh000905","name":"中证500","price":6128.99,"change_pct":2.05,"amount_wan":25776010.0,"high":6161.46,"low":5899.96,"is_stale":false,"prev_close":6005.87,"reversal_from_low":3.88,"close_pos":87.58,"amplitude":4.35,"amount_yi":2577.6},{"code":"sh000852","name":"中证1000","price":5812.32,"change_pct":2.9,"amount_wan":29043333.0,"high":5841.18,"low":5541.97,"is_stale":false,"prev_close":5648.51,"reversal_from_low":4.88,"close_pos":90.35,"amplitude":5.3,"amount_yi":2904.33},{"code":"bj899050","name":"北证50","price":795.38,"change_pct":4.67,"amount_wan":1129899.48,"high":798.4,"low":751.31,"is_stale":false,"prev_close":759.89,"reversal_from_low":5.87,"close_pos":93.59,"amplitude":6.2,"amount_yi":112.99}],"turnover":{"total":15641.79,"hs":15528.8,"sh":7385.0,"sz":8143.8,"bj":112.99,"ths":15515.85},"breadth":{"up":4306,"down":780,"flat":127,"suspended":11,"limit_up":151,"real_limit_up":144,"limit_down":7,"real_limit_down":2,"active":82.43},"zt":{"count":147,"broken":23,"break_rate":13.5,"max_height":5,"ladder":{"1":131,"2":13,"3":1,"5":2},"first":131,"second":13,"third":1,"fourth":0,"fifth_plus":2,"breadth_limit_up":151,"breadth_real_limit_up":144},"flows":{"ths":{"total":694.5,"up":4308,"down":780,"amount":15515.85},"sina":{"super_total":571.24,"sh":128.71,"sz":442.53,"bj":0,"small_total":71.64,"stocks":5212},"em_sh":{"date":"2026-11-23","main_yi":111.23,"super_yi":96.32,"large_yi":14.91,"medium_yi":-84.81,"small_yi":-26.41,"close":3538.95,"chg":0.15,"note":"东财 push2 资金流单点快照（15:14 抓取）；深市同接口随后被限流，未取到，勿用同口径比较深市。"},"prior4":{"ths":-848.85,"margin":-845.84,"etf5":1887.53},"d5_total":-154.35},"etf":{"date":"2026-11-20","net":920.08,"sse":627.0,"szse":293.08,"d5":1887.53,"seq":[{"date":"2026-11-11","net":-34.46},{"date":"2026-11-12","net":-165.98},{"date":"2026-11-13","net":-103.42},{"date":"2026-11-16","net":167.01},{"date":"2026-11-17","net":154.56},{"date":"2026-11-18","net":144.76},{"date":"2026-11-19","net":501.12},{"date":"2026-11-20","net":920.08}],"codes":15,"decomp":{"start":"2026-11-16","end":"2026-11-20","total":1887.53,"buckets":[{"name":"沪深300","style":"大盘宽基","tone":"red","net":1017.72,"share":53.92},{"name":"上证50","style":"大盘价值","tone":"red2","net":229.11,"share":12.14},{"name":"中证500","style":"中盘","tone":"blue","net":198.39,"share":10.51},{"name":"创业板","style":"成长","tone":"gold","net":188.0,"share":9.96},{"name":"科创50","style":"科技成长","tone":"gold","net":160.54,"share":8.51},{"name":"中证1000","style":"小盘","tone":"green","net":144.52,"share":7.66},{"name":"中证A500","style":"大盘宽基","tone":"muted","net":-50.74,"share":-2.69}],"funds":[{"code":"510300","name":"沪深300ETF（华泰柏瑞）","index":"沪深300","style":"大盘宽基","net":385.41,"share":20.42},{"code":"159919","name":"沪深300ETF（嘉实）","index":"沪深300","style":"大盘宽基","net":337.58,"share":17.88},{"code":"510050","name":"上证50ETF（华夏）","index":"上证50","style":"大盘价值","net":229.11,"share":12.14},{"code":"510500","name":"中证500ETF（南方）","index":"中证500","style":"中盘","net":198.39,"share":10.51},{"code":"510330","name":"沪深300ETF（华夏）","index":"沪深300","style":"大盘宽基","net":192.69,"share":10.21},{"code":"159915","name":"创业板ETF（易方达）","index":"创业板","style":"成长","net":183.09,"share":9.7},{"code":"512100","name":"中证1000ETF（南方）","index":"中证1000","style":"小盘","net":164.32,"share":8.71},{"code":"588080","name":"科创板50ETF（易方达）","index":"科创50","style":"科技成长","net":157.54,"share":8.35},{"code":"510310","name":"沪深300ETF（易方达）","index":"沪深300","style":"大盘宽基","net":102.03,"share":5.41},{"code":"159949","name":"创业板50ETF（华安）","index":"创业板","style":"成长","net":4.92,"share":0.26},{"code":"588000","name":"科创50ETF（华夏）","index":"科创50","style":"科技成长","net":3.0,"share":0.16},{"code":"512050","name":"中证A500ETF（华夏）","index":"中证A500","style":"大盘宽基","net":-4.86,"share":-0.26},{"code":"159845","name":"中证1000ETF（华夏）","index":"中证1000","style":"小盘","net":-19.8,"share":-1.05},{"code":"159338","name":"中证A500ETF（国泰）","index":"中证A500","style":"大盘宽基","net":-22.49,"share":-1.19},{"code":"563360","name":"中证A500ETF（华泰柏瑞）","index":"中证A500","style":"大盘宽基","net":-23.39,"share":-1.24}]}},"margin":{"date":"2026-11-20","total_fin":21437.91,"total_all":21727.26,"sse_fin":11207.68,"szse_fin":10230.23,"chg4":-845.84,"chg5":-1059.94,"series":[{"date":"2026-11-09","total":22595.36},{"date":"2026-11-10","total":22581.52},{"date":"2026-11-11","total":22656.44},{"date":"2026-11-12","total":22663.29},{"date":"2026-11-13","total":22497.85},{"date":"2026-11-16","total":22283.75},{"date":"2026-11-17","total":22097.71},{"date":"2026-11-18","total":22010.03},{"date":"2026-11-19","total":21855.14},{"date":"2026-11-20","total":21437.91}]},"industries":[{"name":"影视院线","chg":7.41,"net":9.23,"net5":-4.93,"net10":-5.48,"amount":134.23,"up":19,"down":0,"leader":"幸福蓝海","prior4":-14.16,"ratio":65.18,"label":"强回补","tone":"warn"},{"name":"自动化设备","chg":6.65,"net":18.94,"net5":-17.41,"net10":3.24,"amount":388.59,"up":101,"down":0,"leader":"华晟智能","prior4":-36.35,"ratio":52.1,"label":"强回补","tone":"warn"},{"name":"电机","chg":6.22,"net":4.84,"net5":-2.8,"net10":-0.23,"amount":56.9,"up":26,"down":0,"leader":"华阳智能","prior4":-7.64,"ratio":63.35,"label":"强回补","tone":"warn"},{"name":"医疗服务","chg":5.9,"net":15.0,"net5":-4.62,"net10":-7.67,"amount":224.23,"up":54,"down":1,"leader":"博腾股份","prior4":-19.62,"ratio":76.45,"label":"强回补","tone":"warn"},{"name":"元件","chg":5.22,"net":27.66,"net5":-33.18,"net10":46.78,"amount":897.53,"up":61,"down":2,"leader":"逸豪新材","prior4":-60.84,"ratio":45.46,"label":"弱回补","tone":"warn"},{"name":"通用设备","chg":4.96,"net":16.69,"net5":-26.71,"net10":-3.74,"amount":480.08,"up":247,"down":8,"leader":"汉威科技","prior4":-43.4,"ratio":38.46,"label":"弱回补","tone":"warn"},{"name":"游戏","chg":4.88,"net":5.3,"net5":-10.21,"net10":-8.35,"amount":91.78,"up":23,"down":0,"leader":"盛天网络","prior4":-15.51,"ratio":34.17,"label":"弱回补","tone":"warn"},{"name":"贵金属","chg":4.83,"net":9.93,"net5":1.87,"net10":-1.78,"amount":194.6,"up":14,"down":0,"leader":"晓程科技","prior4":-8.06,"ratio":123.2,"label":"新钱","tone":"pos"},{"name":"文化传媒","chg":4.77,"net":19.19,"net5":-10.83,"net10":-8.09,"amount":369.88,"up":77,"down":8,"leader":"果麦文化","prior4":-30.02,"ratio":63.92,"label":"强回补","tone":"warn"},{"name":"塑料制品","chg":4.71,"net":6.53,"net5":-9.69,"net10":-1.38,"amount":167.46,"up":75,"down":2,"leader":"瑞丰高材","prior4":-16.22,"ratio":40.26,"label":"弱回补","tone":"warn"},{"name":"汽车零部件","chg":4.6,"net":24.31,"net5":-26.23,"net10":-3.07,"amount":491.43,"up":263,"down":13,"leader":"捷众科技","prior4":-50.54,"ratio":48.1,"label":"弱回补","tone":"warn"},{"name":"消费电子","chg":4.18,"net":23.0,"net5":-21.98,"net10":13.31,"amount":374.85,"up":93,"down":3,"leader":"信濠光电","prior4":-44.98,"ratio":51.13,"label":"强回补","tone":"warn"},{"name":"通信设备","chg":4.16,"net":83.76,"net5":-40.9,"net10":24.86,"amount":1038.48,"up":86,"down":7,"leader":"宇特光电","prior4":-124.66,"ratio":67.19,"label":"强回补","tone":"warn"},{"name":"电子化学品","chg":4.16,"net":9.39,"net5":-8.8,"net10":-0.31,"amount":263.32,"up":43,"down":1,"leader":"天承科技","prior4":-18.19,"ratio":51.62,"label":"强回补","tone":"warn"},{"name":"金属新材料","chg":4.14,"net":4.22,"net5":-4.92,"net10":0.43,"amount":52.03,"up":34,"down":0,"leader":"正海磁材","prior4":-9.14,"ratio":46.17,"label":"弱回补","tone":"warn"},{"name":"其他电子","chg":4.04,"net":6.32,"net5":-7.3,"net10":-5.34,"amount":101.56,"up":32,"down":1,"leader":"富信科技","prior4":-13.62,"ratio":46.4,"label":"弱回补","tone":"warn"},{"name":"计算机设备","chg":3.97,"net":4.03,"net5":-9.84,"net10":-8.93,"amount":215.99,"up":75,"down":7,"leader":"维海德","prior4":-13.87,"ratio":29.06,"label":"弱回补","tone":"warn"},{"name":"环保设备","chg":3.95,"net":-0.21,"net5":-0.7,"net10":-0.8,"amount":41.44,"up":30,"down":0,"leader":"*ST仕净","prior4":-0.49,"ratio":-42.86,"label":"继续流出","tone":"neg"},{"name":"电池","chg":3.71,"net":18.02,"net5":-4.07,"net10":-42.23,"amount":359.63,"up":101,"down":4,"leader":"震裕科技","prior4":-22.09,"ratio":81.58,"label":"强回补","tone":"warn"},{"name":"非金属材料","chg":3.52,"net":1.67,"net5":-2.22,"net10":-2.15,"amount":29.49,"up":16,"down":1,"leader":"力量钻石","prior4":-3.89,"ratio":42.93,"label":"弱回补","tone":"warn"},{"name":"专用设备","chg":3.5,"net":11.66,"net5":-16.51,"net10":-4.01,"amount":289.86,"up":188,"down":13,"leader":"华依科技","prior4":-28.17,"ratio":41.39,"label":"弱回补","tone":"warn"},{"name":"光学光电子","chg":3.47,"net":14.07,"net5":-18.16,"net10":-5.89,"amount":326.65,"up":90,"down":14,"leader":"奥比中光","prior4":-32.23,"ratio":43.65,"label":"弱回补","tone":"warn"},{"name":"工程机械","chg":3.38,"net":-5.96,"net5":-1.47,"net10":-9.53,"amount":72.69,"up":30,"down":6,"leader":"万达轴承","prior4":4.49,"ratio":-132.74,"label":"转出","tone":"neg"},{"name":"软件开发","chg":3.37,"net":11.83,"net5":-11.47,"net10":-22.38,"amount":329.79,"up":132,"down":5,"leader":"索辰科技","prior4":-23.3,"ratio":50.77,"label":"强回补","tone":"warn"},{"name":"半导体","chg":3.19,"net":30.88,"net5":-118.6,"net10":-26.85,"amount":2067.07,"up":166,"down":23,"leader":"敏芯股份","prior4":-149.48,"ratio":20.66,"label":"弱回补","tone":"warn"},{"name":"军工电子","chg":3.16,"net":4.18,"net5":-11.31,"net10":-0.69,"amount":131.96,"up":57,"down":4,"leader":"高德红外","prior4":-15.49,"ratio":26.99,"label":"弱回补","tone":"warn"},{"name":"小金属","chg":3.11,"net":11.72,"net5":-28.52,"net10":-9.14,"amount":170.39,"up":29,"down":1,"leader":"中钨高新","prior4":-40.24,"ratio":29.13,"label":"弱回补","tone":"warn"},{"name":"互联网电商","chg":3.1,"net":1.81,"net5":-1.79,"net10":-1.06,"amount":36.56,"up":18,"down":2,"leader":"星徽股份","prior4":-3.6,"ratio":50.28,"label":"强回补","tone":"warn"},{"name":"生物制品","chg":3.05,"net":3.57,"net5":-6.56,"net10":-5.1,"amount":90.69,"up":50,"down":5,"leader":"近岸蛋白","prior4":-10.13,"ratio":35.24,"label":"弱回补","tone":"warn"},{"name":"IT服务","chg":3.04,"net":1.55,"net5":-23.35,"net10":-19.42,"amount":401.93,"up":113,"down":15,"leader":"华是科技","prior4":-24.9,"ratio":6.22,"label":"弱回补","tone":"warn"},{"name":"教育","chg":2.97,"net":1.28,"net5":0.32,"net10":-2.23,"amount":20.96,"up":13,"down":2,"leader":"传智教育","prior4":-0.96,"ratio":133.33,"label":"新钱","tone":"pos"},{"name":"农产品加工","chg":2.97,"net":1.91,"net5":-5.34,"net10":-4.05,"amount":74.56,"up":36,"down":5,"leader":"东方海洋","prior4":-7.25,"ratio":26.34,"label":"弱回补","tone":"warn"},{"name":"能源金属","chg":2.86,"net":4.63,"net5":-3.95,"net10":-11.83,"amount":61.37,"up":14,"down":0,"leader":"博迁新材","prior4":-8.58,"ratio":53.96,"label":"强回补","tone":"warn"},{"name":"服装家纺","chg":2.76,"net":4.13,"net5":0.28,"net10":-0.2,"amount":81.3,"up":60,"down":13,"leader":"曼卡龙","prior4":-3.85,"ratio":107.27,"label":"新钱","tone":"pos"},{"name":"其他电源设备","chg":2.7,"net":4.35,"net5":-5.79,"net10":-3.74,"amount":82.61,"up":31,"down":4,"leader":"盛弘股份","prior4":-10.14,"ratio":42.9,"label":"弱回补","tone":"warn"},{"name":"纺织制造","chg":2.68,"net":0.28,"net5":-1.46,"net10":-2.4,"amount":41.25,"up":29,"down":3,"leader":"万事利","prior4":-1.74,"ratio":16.09,"label":"弱回补","tone":"warn"},{"name":"化学制品","chg":2.65,"net":2.06,"net5":-8.37,"net10":-17.32,"amount":262.88,"up":163,"down":20,"leader":"怡达股份","prior4":-10.43,"ratio":19.75,"label":"弱回补","tone":"warn"},{"name":"医疗器械","chg":2.64,"net":5.62,"net5":-0.22,"net10":-5.63,"amount":159.59,"up":128,"down":12,"leader":"华兰股份","prior4":-5.84,"ratio":96.23,"label":"强回补","tone":"warn"},{"name":"光伏设备","chg":2.62,"net":3.77,"net5":-15.8,"net10":-33.9,"amount":184.1,"up":63,"down":9,"leader":"*ST天宜","prior4":-19.57,"ratio":19.26,"label":"弱回补","tone":"warn"},{"name":"家居用品","chg":2.61,"net":-0.83,"net5":1.46,"net10":-1.53,"amount":77.59,"up":81,"down":15,"leader":"创源股份","prior4":2.29,"ratio":-36.24,"label":"转出","tone":"neg"},{"name":"其他社会服务","chg":2.56,"net":1.13,"net5":0.66,"net10":-1.81,"amount":45.3,"up":38,"down":3,"leader":"锋尚文化","prior4":-0.47,"ratio":240.43,"label":"新钱","tone":"pos"},{"name":"种植业与林业","chg":2.54,"net":2.32,"net5":-4.64,"net10":-2.65,"amount":50.82,"up":25,"down":3,"leader":"万向德农","prior4":-6.96,"ratio":33.33,"label":"弱回补","tone":"warn"},{"name":"化学制药","chg":2.52,"net":13.04,"net5":-11.17,"net10":-16.94,"amount":239.21,"up":147,"down":11,"leader":"莱美药业","prior4":-24.21,"ratio":53.86,"label":"强回补","tone":"warn"},{"name":"通信服务","chg":2.47,"net":0.34,"net5":-6.77,"net10":-9.99,"amount":160.34,"up":33,"down":10,"leader":"北纬科技","prior4":-7.11,"ratio":4.78,"label":"弱回补","tone":"warn"},{"name":"军工装备","chg":2.41,"net":4.48,"net5":-24.78,"net10":-9.44,"amount":204.52,"up":76,"down":6,"leader":"立航科技","prior4":-29.26,"ratio":15.31,"label":"弱回补","tone":"warn"},{"name":"电网设备","chg":2.4,"net":9.27,"net5":8.26,"net10":-18.66,"amount":208.98,"up":127,"down":11,"leader":"杭州柯林","prior4":-1.01,"ratio":917.82,"label":"新钱","tone":"pos"},{"name":"黑色家电","chg":2.38,"net":0.12,"net5":-0.9,"net10":-0.83,"amount":29.11,"up":7,"down":2,"leader":"极米科技","prior4":-1.02,"ratio":11.76,"label":"弱回补","tone":"warn"},{"name":"工业金属","chg":2.37,"net":6.77,"net5":-7.01,"net10":-6.87,"amount":183.51,"up":51,"down":1,"leader":"盛达资源","prior4":-13.78,"ratio":49.13,"label":"弱回补","tone":"warn"},{"name":"风电设备","chg":2.3,"net":2.99,"net5":-5.04,"net10":-5.2,"amount":55.59,"up":30,"down":2,"leader":"飞沃科技","prior4":-8.03,"ratio":37.24,"label":"弱回补","tone":"warn"},{"name":"养殖业","chg":2.29,"net":3.09,"net5":1.64,"net10":-0.88,"amount":77.53,"up":29,"down":7,"leader":"好当家","prior4":-1.45,"ratio":213.1,"label":"新钱","tone":"pos"},{"name":"橡胶制品","chg":2.2,"net":0.56,"net5":-0.55,"net10":-0.84,"amount":20.98,"up":19,"down":3,"leader":"利通科技","prior4":-1.11,"ratio":50.45,"label":"强回补","tone":"warn"},{"name":"白色家电","chg":2.19,"net":7.89,"net5":6.52,"net10":2.41,"amount":153.73,"up":31,"down":13,"leader":"汉宇集团","prior4":-1.37,"ratio":575.91,"label":"新钱","tone":"pos"},{"name":"汽车服务及其他","chg":2.18,"net":0.6,"net5":-1.24,"net10":-0.13,"amount":30.73,"up":20,"down":5,"leader":"征和工业","prior4":-1.84,"ratio":32.61,"label":"弱回补","tone":"warn"},{"name":"小家电","chg":2.17,"net":-0.98,"net5":-11.31,"net10":-1.26,"amount":61.47,"up":20,"down":6,"leader":"九阳股份","prior4":-10.33,"ratio":-9.49,"label":"继续流出","tone":"neg"},{"name":"环境治理","chg":2.12,"net":1.27,"net5":-0.99,"net10":-5.53,"amount":113.96,"up":78,"down":29,"leader":"德林海","prior4":-2.26,"ratio":56.19,"label":"强回补","tone":"warn"},{"name":"包装印刷","chg":2.07,"net":2.06,"net5":-3.44,"net10":-2.0,"amount":50.62,"up":35,"down":8,"leader":"顺灏股份","prior4":-5.5,"ratio":37.45,"label":"弱回补","tone":"warn"},{"name":"医药商业","chg":2.06,"net":0.73,"net5":0.65,"net10":-2.17,"amount":35.17,"up":22,"down":8,"leader":"漱玉平民","prior4":-0.08,"ratio":912.5,"label":"新钱","tone":"pos"},{"name":"零售","chg":2.02,"net":4.39,"net5":-4.61,"net10":2.46,"amount":98.4,"up":52,"down":16,"leader":"杭州解百","prior4":-9.0,"ratio":48.78,"label":"弱回补","tone":"warn"},{"name":"美容护理","chg":1.9,"net":1.87,"net5":-0.6,"net10":-2.21,"amount":35.49,"up":26,"down":8,"leader":"百亚股份","prior4":-2.47,"ratio":75.71,"label":"强回补","tone":"warn"},{"name":"化学纤维","chg":1.85,"net":1.23,"net5":-1.28,"net10":-2.92,"amount":37.22,"up":25,"down":4,"leader":"宝丽迪","prior4":-2.51,"ratio":49.0,"label":"弱回补","tone":"warn"},{"name":"饮料制造","chg":1.63,"net":2.2,"net5":4.21,"net10":0.31,"amount":82.63,"up":36,"down":9,"leader":"泉阳泉","prior4":2.01,"ratio":109.45,"label":"加速流入","tone":"pos"},{"name":"建筑材料","chg":1.59,"net":7.5,"net5":-11.09,"net10":-4.85,"amount":154.27,"up":49,"down":20,"leader":"晶雪节能","prior4":-18.59,"ratio":40.34,"label":"弱回补","tone":"warn"},{"name":"燃气","chg":1.57,"net":0.02,"net5":-2.63,"net10":1.36,"amount":26.78,"up":16,"down":8,"leader":"胜通能源","prior4":-2.65,"ratio":0.75,"label":"弱回补","tone":"warn"},{"name":"农化制品","chg":1.46,"net":2.92,"net5":-2.51,"net10":-12.2,"amount":82.1,"up":50,"down":8,"leader":"东方铁塔","prior4":-5.43,"ratio":53.78,"label":"强回补","tone":"warn"},{"name":"食品加工制造","chg":1.44,"net":-0.4,"net5":2.08,"net10":-2.48,"amount":92.11,"up":49,"down":16,"leader":"ST龙大","prior4":2.48,"ratio":-16.13,"label":"转出","tone":"neg"},{"name":"旅游及酒店","chg":1.41,"net":0.98,"net5":-0.52,"net10":-0.09,"amount":29.59,"up":31,"down":4,"leader":"峨眉山A","prior4":-1.5,"ratio":65.33,"label":"强回补","tone":"warn"},{"name":"厨卫电器","chg":1.41,"net":0.58,"net5":-1.12,"net10":0.12,"amount":21.41,"up":5,"down":3,"leader":"日出东方","prior4":-1.7,"ratio":34.12,"label":"弱回补","tone":"warn"},{"name":"造纸","chg":1.39,"net":-0.03,"net5":-1.12,"net10":-1.61,"amount":28.16,"up":16,"down":7,"leader":"青山纸业","prior4":-1.09,"ratio":-2.75,"label":"继续流出","tone":"neg"},{"name":"多元金融","chg":1.32,"net":1.16,"net5":-1.98,"net10":-2.62,"amount":34.6,"up":23,"down":2,"leader":"四川双马","prior4":-3.14,"ratio":36.94,"label":"弱回补","tone":"warn"},{"name":"化学原料","chg":1.24,"net":0.8,"net5":-1.23,"net10":-5.57,"amount":84.13,"up":38,"down":14,"leader":"佳先股份","prior4":-2.03,"ratio":39.41,"label":"弱回补","tone":"warn"},{"name":"白酒","chg":1.23,"net":-4.21,"net5":9.84,"net10":-1.49,"amount":139.41,"up":15,"down":4,"leader":"皇台酒业","prior4":14.05,"ratio":-29.96,"label":"转出","tone":"neg"},{"name":"中药","chg":1.23,"net":1.01,"net5":1.09,"net10":-2.43,"amount":91.23,"up":46,"down":18,"leader":"恩威医药","prior4":0.08,"ratio":1262.5,"label":"加速流入","tone":"pos"},{"name":"建筑装饰","chg":1.14,"net":-0.51,"net5":-0.98,"net10":-7.04,"amount":188.68,"up":97,"down":41,"leader":"奥雅股份","prior4":-0.47,"ratio":-108.51,"label":"继续流出","tone":"neg"},{"name":"石油加工贸易","chg":1.05,"net":0.28,"net5":-5.09,"net10":-1.06,"amount":76.79,"up":18,"down":7,"leader":"岳阳兴长","prior4":-5.37,"ratio":5.21,"label":"弱回补","tone":"warn"},{"name":"轨交设备","chg":0.98,"net":-0.18,"net5":3.57,"net10":-0.19,"amount":31.59,"up":23,"down":7,"leader":"必得科技","prior4":3.75,"ratio":-4.8,"label":"转出","tone":"neg"},{"name":"贸易","chg":0.93,"net":0.25,"net5":-0.23,"net10":-0.29,"amount":11.22,"up":12,"down":2,"leader":"厦门信达","prior4":-0.48,"ratio":52.08,"label":"强回补","tone":"warn"},{"name":"证券","chg":0.67,"net":3.64,"net5":4.91,"net10":-15.15,"amount":198.41,"up":35,"down":8,"leader":"首创证券","prior4":1.27,"ratio":286.61,"label":"加速流入","tone":"pos"},{"name":"港口航运","chg":0.62,"net":5.09,"net5":4.69,"net10":1.69,"amount":78.58,"up":24,"down":10,"leader":"海航科技","prior4":-0.4,"ratio":1272.5,"label":"新钱","tone":"pos"},{"name":"房地产","chg":0.53,"net":0.55,"net5":-6.57,"net10":-10.86,"amount":97.78,"up":44,"down":37,"leader":"*ST华幸","prior4":-7.12,"ratio":7.72,"label":"弱回补","tone":"warn"},{"name":"综合","chg":0.52,"net":1.48,"net5":-1.07,"net10":-3.13,"amount":31.84,"up":14,"down":3,"leader":"东阳光","prior4":-2.55,"ratio":58.04,"label":"强回补","tone":"warn"},{"name":"机场航运","chg":0.47,"net":1.23,"net5":1.46,"net10":-2.96,"amount":25.03,"up":10,"down":3,"leader":"中信海直","prior4":0.23,"ratio":534.78,"label":"加速流入","tone":"pos"},{"name":"物流","chg":0.42,"net":0.05,"net5":2.18,"net10":-1.64,"amount":54.39,"up":27,"down":22,"leader":"三羊马","prior4":2.13,"ratio":2.35,"label":"流入衰减","tone":"warn"},{"name":"公路铁路运输","chg":0.2,"net":0.76,"net5":4.82,"net10":1.06,"amount":61.94,"up":13,"down":17,"leader":"龙江交通","prior4":4.06,"ratio":18.72,"label":"流入衰减","tone":"warn"},{"name":"电力","chg":0.17,"net":-4.39,"net5":9.46,"net10":-13.3,"amount":273.52,"up":55,"down":43,"leader":"艾能聚","prior4":13.85,"ratio":-31.7,"label":"转出","tone":"neg"},{"name":"钢铁","chg":0.02,"net":-2.33,"net5":0.01,"net10":-2.89,"amount":52.3,"up":16,"down":17,"leader":"河钢资源","prior4":2.34,"ratio":-99.57,"label":"转出","tone":"neg"},{"name":"煤炭开采加工","chg":-0.13,"net":-1.59,"net5":3.69,"net10":16.91,"amount":95.11,"up":11,"down":22,"leader":"安泰集团","prior4":5.28,"ratio":-30.11,"label":"转出","tone":"neg"},{"name":"银行","chg":-0.21,"net":16.43,"net5":44.26,"net10":33.36,"amount":470.11,"up":15,"down":23,"leader":"浙商银行","prior4":27.83,"ratio":59.04,"label":"持续流入","tone":"pos"},{"name":"汽车整车","chg":-0.24,"net":-3.1,"net5":-2.68,"net10":-9.04,"amount":77.64,"up":8,"down":10,"leader":"北汽蓝谷","prior4":0.42,"ratio":-738.1,"label":"转出","tone":"neg"},{"name":"油气开采及服务","chg":-0.38,"net":-0.96,"net5":-1.99,"net10":-2.77,"amount":34.64,"up":9,"down":9,"leader":"*ST准油","prior4":-1.03,"ratio":-93.2,"label":"继续流出","tone":"neg"},{"name":"保险","chg":-1.72,"net":-4.81,"net5":13.83,"net10":-0.27,"amount":83.64,"up":1,"down":4,"leader":"新华保险","prior4":18.64,"ratio":-25.8,"label":"转出","tone":"neg"}],"concepts":[{"name":"减速器","chg":6.26,"net":18.6,"net5":-20.3,"stocks":143,"leader":"恒工精密","prior4":-38.9,"ratio":47.81,"label":"弱回补","tone":"warn"},{"name":"人形机器人","chg":5.91,"net":112.92,"net5":-119.34,"stocks":499,"leader":"捷众科技","prior4":-232.26,"ratio":48.62,"label":"弱回补","tone":"warn"},{"name":"AI视频","chg":5.68,"net":26.58,"net5":-26.63,"stocks":75,"leader":"芒果超媒","prior4":-53.21,"ratio":49.95,"label":"弱回补","tone":"warn"},{"name":"短剧游戏","chg":5.44,"net":27.68,"net5":-18.14,"stocks":100,"leader":"华是科技","prior4":-45.82,"ratio":60.41,"label":"强回补","tone":"warn"},{"name":"工业母机","chg":5.33,"net":18.77,"net5":-18.6,"stocks":120,"leader":"维宏股份","prior4":-37.37,"ratio":50.23,"label":"强回补","tone":"warn"},{"name":"机器视觉","chg":5.28,"net":38.38,"net5":-35.81,"stocks":253,"leader":"维海德","prior4":-74.19,"ratio":51.73,"label":"强回补","tone":"warn"},{"name":"新型烟草(电子烟)","chg":5.11,"net":2.7,"net5":-8.98,"stocks":53,"leader":"敏芯股份","prior4":-11.68,"ratio":23.12,"label":"弱回补","tone":"warn"},{"name":"富士康概念","chg":5.09,"net":36.77,"net5":-38.58,"stocks":111,"leader":"荣亿精密","prior4":-75.35,"ratio":48.8,"label":"弱回补","tone":"warn"},{"name":"新型工业化","chg":5.07,"net":35.67,"net5":-44.61,"stocks":292,"leader":"维宏股份","prior4":-80.28,"ratio":44.43,"label":"弱回补","tone":"warn"},{"name":"CRO概念","chg":5.05,"net":14.15,"net5":-10.91,"stocks":77,"leader":"博腾股份","prior4":-25.06,"ratio":56.46,"label":"强回补","tone":"warn"},{"name":"智能音箱","chg":5.01,"net":11.85,"net5":-16.38,"stocks":62,"leader":"炬芯科技","prior4":-28.23,"ratio":41.98,"label":"弱回补","tone":"warn"},{"name":"AI语料","chg":4.87,"net":16.69,"net5":-11.34,"stocks":53,"leader":"海天瑞声","prior4":-28.03,"ratio":59.54,"label":"强回补","tone":"warn"},{"name":"PEEK材料","chg":4.8,"net":9.16,"net5":-9.81,"stocks":54,"leader":"双林股份","prior4":-18.97,"ratio":48.29,"label":"弱回补","tone":"warn"},{"name":"汽车热管理","chg":4.78,"net":27.51,"net5":-11.42,"stocks":144,"leader":"捷众科技","prior4":-38.93,"ratio":70.67,"label":"强回补","tone":"warn"},{"name":"传感器","chg":4.68,"net":46.25,"net5":-64.93,"stocks":272,"leader":"汉威科技","prior4":-111.18,"ratio":41.6,"label":"弱回补","tone":"warn"},{"name":"手机游戏","chg":4.67,"net":16.85,"net5":-21.49,"stocks":55,"leader":"芒果超媒","prior4":-38.34,"ratio":43.95,"label":"弱回补","tone":"warn"},{"name":"PCB概念","chg":4.61,"net":55.45,"net5":-73.63,"stocks":241,"leader":"瑞丰高材","prior4":-129.08,"ratio":42.96,"label":"弱回补","tone":"warn"},{"name":"英伟达概念","chg":4.61,"net":45.82,"net5":-47.93,"stocks":81,"leader":"奥比中光","prior4":-93.75,"ratio":48.87,"label":"弱回补","tone":"warn"},{"name":"AI眼镜","chg":4.59,"net":40.09,"net5":-48.07,"stocks":196,"leader":"敏芯股份","prior4":-88.16,"ratio":45.47,"label":"弱回补","tone":"warn"},{"name":"苹果概念","chg":4.58,"net":39.52,"net5":-56.41,"stocks":136,"leader":"田中精机","prior4":-95.93,"ratio":41.2,"label":"弱回补","tone":"warn"},{"name":"MR(混合现实)","chg":4.55,"net":20.76,"net5":-16.01,"stocks":72,"leader":"芒果超媒","prior4":-36.77,"ratio":56.46,"label":"强回补","tone":"warn"},{"name":"元宇宙","chg":4.55,"net":36.44,"net5":-41.34,"stocks":181,"leader":"汉威科技","prior4":-77.78,"ratio":46.85,"label":"弱回补","tone":"warn"},{"name":"共封装光学(CPO)","chg":4.54,"net":145.27,"net5":-144.16,"stocks":236,"leader":"宇特光电","prior4":-289.43,"ratio":50.19,"label":"强回补","tone":"warn"},{"name":"特斯拉概念","chg":4.54,"net":75.9,"net5":-49.5,"stocks":247,"leader":"捷众科技","prior4":-125.4,"ratio":60.53,"label":"强回补","tone":"warn"},{"name":"无线耳机","chg":4.53,"net":24.88,"net5":-34.58,"stocks":99,"leader":"汉威科技","prior4":-59.46,"ratio":41.84,"label":"弱回补","tone":"warn"},{"name":"3D打印","chg":4.51,"net":26.85,"net5":-30.06,"stocks":141,"leader":"海正生材","prior4":-56.91,"ratio":47.18,"label":"弱回补","tone":"warn"},{"name":"拼多多概念","chg":4.51,"net":4.69,"net5":-3.65,"stocks":40,"leader":"中邮科技","prior4":-8.34,"ratio":56.24,"label":"强回补","tone":"warn"},{"name":"科创次新股","chg":4.49,"net":6.7,"net5":-41.04,"stocks":27,"leader":"宇树科技","prior4":-47.74,"ratio":14.03,"label":"弱回补","tone":"warn"},{"name":"语音技术","chg":4.45,"net":11.39,"net5":-3.82,"stocks":62,"leader":"汉威科技","prior4":-15.21,"ratio":74.88,"label":"强回补","tone":"warn"},{"name":"智能穿戴","chg":4.45,"net":49.54,"net5":-66.49,"stocks":243,"leader":"汉威科技","prior4":-116.03,"ratio":42.7,"label":"弱回补","tone":"warn"},{"name":"机器人概念","chg":4.4,"net":157.95,"net5":-178.42,"stocks":1238,"leader":"捷众科技","prior4":-336.37,"ratio":46.96,"label":"弱回补","tone":"warn"},{"name":"光刻机","chg":4.39,"net":11.03,"net5":-10.41,"stocks":52,"leader":"捷众科技","prior4":-21.44,"ratio":51.45,"label":"强回补","tone":"warn"},{"name":"空间计算","chg":4.39,"net":9.07,"net5":-7.94,"stocks":63,"leader":"华是科技","prior4":-17.01,"ratio":53.32,"label":"强回补","tone":"warn"},{"name":"脑机接口","chg":4.38,"net":7.44,"net5":-9.12,"stocks":75,"leader":"汉威科技","prior4":-16.56,"ratio":44.93,"label":"弱回补","tone":"warn"},{"name":"智谱AI","chg":4.38,"net":13.04,"net5":-19.07,"stocks":71,"leader":"海天瑞声","prior4":-32.11,"ratio":40.61,"label":"弱回补","tone":"warn"},{"name":"消费电子概念","chg":4.37,"net":76.69,"net5":-141.14,"stocks":518,"leader":"汉威科技","prior4":-217.83,"ratio":35.21,"label":"弱回补","tone":"warn"},{"name":"同花顺果指数","chg":4.35,"net":28.73,"net5":-33.31,"stocks":20,"leader":"长盈精密","prior4":-62.04,"ratio":46.31,"label":"弱回补","tone":"warn"},{"name":"专精特新","chg":4.35,"net":89.68,"net5":-117.92,"stocks":1262,"leader":"捷众科技","prior4":-207.6,"ratio":43.2,"label":"弱回补","tone":"warn"},{"name":"汽车电子","chg":4.34,"net":119.86,"net5":-114.09,"stocks":399,"leader":"捷众科技","prior4":-233.95,"ratio":51.23,"label":"强回补","tone":"warn"},{"name":"毫米波雷达","chg":4.34,"net":17.55,"net5":-36.14,"stocks":127,"leader":"豪恩汽电","prior4":-53.69,"ratio":32.69,"label":"弱回补","tone":"warn"},{"name":"长安汽车概念","chg":4.34,"net":38.04,"net5":-20.39,"stocks":462,"leader":"同星科技","prior4":-58.43,"ratio":65.1,"label":"强回补","tone":"warn"},{"name":"虚拟现实","chg":4.33,"net":65.83,"net5":-77.3,"stocks":287,"leader":"凡拓数创","prior4":-143.13,"ratio":45.99,"label":"弱回补","tone":"warn"},{"name":"光纤概念","chg":4.31,"net":54.86,"net5":-69.19,"stocks":115,"leader":"宇特光电","prior4":-124.05,"ratio":44.22,"label":"弱回补","tone":"warn"},{"name":"比亚迪概念","chg":4.3,"net":80.39,"net5":-97.42,"stocks":698,"leader":"汉威科技","prior4":-177.81,"ratio":45.21,"label":"弱回补","tone":"warn"},{"name":"小红书概念","chg":4.3,"net":11.49,"net5":-11.12,"stocks":55,"leader":"汇洲智能","prior4":-22.61,"ratio":50.82,"label":"强回补","tone":"warn"},{"name":"文化传媒概念","chg":4.29,"net":33.3,"net5":-27.3,"stocks":194,"leader":"创源股份","prior4":-60.6,"ratio":54.95,"label":"强回补","tone":"warn"},{"name":"细胞免疫治疗","chg":4.26,"net":11.46,"net5":-8.6,"stocks":66,"leader":"莱美药业","prior4":-20.06,"ratio":57.13,"label":"强回补","tone":"warn"},{"name":"网络游戏","chg":4.24,"net":17.87,"net5":-28.23,"stocks":58,"leader":"芒果超媒","prior4":-46.1,"ratio":38.76,"label":"弱回补","tone":"warn"},{"name":"快手概念","chg":4.22,"net":13.47,"net5":-17.13,"stocks":52,"leader":"盛天网络","prior4":-30.6,"ratio":44.02,"label":"弱回补","tone":"warn"},{"name":"智能座舱","chg":4.21,"net":32.84,"net5":-42.78,"stocks":175,"leader":"奥比中光","prior4":-75.62,"ratio":43.43,"label":"弱回补","tone":"warn"},{"name":"AIGC概念","chg":4.21,"net":46.46,"net5":-60.38,"stocks":298,"leader":"创源股份","prior4":-106.84,"ratio":43.49,"label":"弱回补","tone":"warn"},{"name":"抖音概念(字节概念)","chg":4.19,"net":40.57,"net5":-99.36,"stocks":219,"leader":"汉威科技","prior4":-139.93,"ratio":28.99,"label":"弱回补","tone":"warn"},{"name":"航空发动机","chg":4.16,"net":14.0,"net5":-23.74,"stocks":101,"leader":"荣亿精密","prior4":-37.74,"ratio":37.1,"label":"弱回补","tone":"warn"},{"name":"光刻胶","chg":4.16,"net":8.18,"net5":-10.83,"stocks":82,"leader":"怡达股份","prior4":-19.01,"ratio":43.03,"label":"弱回补","tone":"warn"},{"name":"柔性屏(折叠屏)","chg":4.15,"net":19.53,"net5":-27.78,"stocks":108,"leader":"汉威科技","prior4":-47.31,"ratio":41.28,"label":"弱回补","tone":"warn"},{"name":"飞行汽车(eVTOL)","chg":4.15,"net":15.42,"net5":-25.62,"stocks":280,"leader":"捷众科技","prior4":-41.04,"ratio":37.57,"label":"弱回补","tone":"warn"},{"name":"MLCC概念","chg":4.15,"net":13.55,"net5":-19.76,"stocks":39,"leader":"昊志机电","prior4":-33.31,"ratio":40.68,"label":"弱回补","tone":"warn"},{"name":"无线充电","chg":4.14,"net":10.81,"net5":-6.44,"stocks":58,"leader":"田中精机","prior4":-17.25,"ratio":62.67,"label":"强回补","tone":"warn"},{"name":"成飞概念","chg":4.12,"net":2.63,"net5":-7.48,"stocks":43,"leader":"*ST天宜","prior4":-10.11,"ratio":26.01,"label":"弱回补","tone":"warn"},{"name":"注册制次新股","chg":4.12,"net":12.44,"net5":-47.03,"stocks":82,"leader":"宇树科技","prior4":-59.47,"ratio":20.92,"label":"弱回补","tone":"warn"},{"name":"小米概念","chg":4.1,"net":86.31,"net5":-126.55,"stocks":376,"leader":"汉威科技","prior4":-212.86,"ratio":40.55,"label":"弱回补","tone":"warn"},{"name":"MLOps概念","chg":4.1,"net":3.87,"net5":-2.57,"stocks":18,"leader":"奥比中光","prior4":-6.44,"ratio":60.09,"label":"强回补","tone":"warn"},{"name":"培育钻石","chg":4.09,"net":1.39,"net5":-4.98,"stocks":19,"leader":"国机精工","prior4":-6.37,"ratio":21.82,"label":"弱回补","tone":"warn"},{"name":"同花顺新质50","chg":4.04,"net":81.22,"net5":-31.48,"stocks":50,"leader":"奥比中光","prior4":-112.7,"ratio":72.07,"label":"强回补","tone":"warn"},{"name":"玻璃基板","chg":4.03,"net":15.63,"net5":-30.54,"stocks":66,"leader":"维宏股份","prior4":-46.17,"ratio":33.85,"label":"弱回补","tone":"warn"},{"name":"云游戏","chg":4.02,"net":5.09,"net5":-12.01,"stocks":27,"leader":"盛天网络","prior4":-17.1,"ratio":29.77,"label":"弱回补","tone":"warn"},{"name":"华为汽车","chg":4.01,"net":37.95,"net5":-18.66,"stocks":174,"leader":"华依科技","prior4":-56.61,"ratio":67.04,"label":"强回补","tone":"warn"},{"name":"新能源汽车","chg":3.97,"net":153.39,"net5":-159.91,"stocks":1069,"leader":"捷众科技","prior4":-313.3,"ratio":48.96,"label":"弱回补","tone":"warn"},{"name":"高压氧舱","chg":3.94,"net":1.27,"net5":-1.25,"stocks":11,"leader":"澳洋健康","prior4":-2.52,"ratio":50.4,"label":"强回补","tone":"warn"},{"name":"农机","chg":3.94,"net":8.13,"net5":-10.51,"stocks":101,"leader":"斯菱智驱","prior4":-18.64,"ratio":43.62,"label":"弱回补","tone":"warn"},{"name":"IP经济(谷子经济)","chg":3.9,"net":25.42,"net5":-20.31,"stocks":199,"leader":"创源股份","prior4":-45.73,"ratio":55.59,"label":"强回补","tone":"warn"},{"name":"虚拟数字人","chg":3.9,"net":29.06,"net5":-33.57,"stocks":177,"leader":"海天瑞声","prior4":-62.63,"ratio":46.4,"label":"弱回补","tone":"warn"},{"name":"NFT概念","chg":3.88,"net":13.03,"net5":-16.04,"stocks":70,"leader":"曼卡龙","prior4":-29.07,"ratio":44.82,"label":"弱回补","tone":"warn"},{"name":"液冷服务器","chg":3.88,"net":97.11,"net5":-70.87,"stocks":242,"leader":"同星科技","prior4":-167.98,"ratio":57.81,"label":"强回补","tone":"warn"},{"name":"重组蛋白","chg":3.87,"net":4.39,"net5":-7.33,"stocks":128,"leader":"近岸蛋白","prior4":-11.72,"ratio":37.46,"label":"弱回补","tone":"warn"},{"name":"知识产权保护","chg":3.85,"net":7.06,"net5":-6.33,"stocks":51,"leader":"莱美药业","prior4":-13.39,"ratio":52.73,"label":"强回补","tone":"warn"},{"name":"减肥药","chg":3.84,"net":9.25,"net5":-8.84,"stocks":67,"leader":"博腾股份","prior4":-18.09,"ratio":51.13,"label":"强回补","tone":"warn"},{"name":"AI手机","chg":3.83,"net":24.09,"net5":-22.98,"stocks":42,"leader":"长盈精密","prior4":-47.07,"ratio":51.18,"label":"强回补","tone":"warn"},{"name":"多模态AI","chg":3.83,"net":27.94,"net5":-29.66,"stocks":158,"leader":"博汇科技","prior4":-57.6,"ratio":48.51,"label":"弱回补","tone":"warn"},{"name":"PET铜箔","chg":3.82,"net":9.24,"net5":-14.21,"stocks":49,"leader":"泰金新能","prior4":-23.45,"ratio":39.4,"label":"弱回补","tone":"warn"},{"name":"华为手机","chg":3.81,"net":10.64,"net5":-9.85,"stocks":45,"leader":"博众精工","prior4":-20.49,"ratio":51.93,"label":"强回补","tone":"warn"},{"name":"星闪概念","chg":3.8,"net":7.59,"net5":-6.96,"stocks":73,"leader":"炬芯科技","prior4":-14.55,"ratio":52.16,"label":"强回补","tone":"warn"},{"name":"无人零售","chg":3.79,"net":1.36,"net5":-2.03,"stocks":26,"leader":"天奇股份","prior4":-3.39,"ratio":40.12,"label":"弱回补","tone":"warn"},{"name":"稀土永磁","chg":3.79,"net":12.46,"net5":-21.87,"stocks":64,"leader":"华新科技","prior4":-34.33,"ratio":36.29,"label":"弱回补","tone":"warn"},{"name":"6G概念","chg":3.78,"net":20.13,"net5":-37.63,"stocks":100,"leader":"慈星股份","prior4":-57.76,"ratio":34.85,"label":"弱回补","tone":"warn"},{"name":"无人驾驶","chg":3.77,"net":94.45,"net5":-74.9,"stocks":408,"leader":"安培龙","prior4":-169.35,"ratio":55.77,"label":"强回补","tone":"warn"},{"name":"芯片概念","chg":3.77,"net":207.31,"net5":-318.54,"stocks":941,"leader":"捷众科技","prior4":-525.85,"ratio":39.42,"label":"弱回补","tone":"warn"},{"name":"新股与次新股","chg":3.77,"net":10.05,"net5":-54.82,"stocks":157,"leader":"华晟智能","prior4":-64.87,"ratio":15.49,"label":"弱回补","tone":"warn"},{"name":"小米汽车","chg":3.75,"net":30.75,"net5":-15.56,"stocks":125,"leader":"泛亚微透","prior4":-46.31,"ratio":66.4,"label":"强回补","tone":"warn"},{"name":"5G","chg":3.73,"net":154.26,"net5":-148.32,"stocks":454,"leader":"福赛科技","prior4":-302.58,"ratio":50.98,"label":"强回补","tone":"warn"},{"name":"宁德时代概念","chg":3.73,"net":59.03,"net5":-42.39,"stocks":305,"leader":"华依科技","prior4":-101.42,"ratio":58.2,"label":"强回补","tone":"warn"},{"name":"数字孪生","chg":3.73,"net":21.92,"net5":-25.74,"stocks":215,"leader":"汉威科技","prior4":-47.66,"ratio":45.99,"label":"弱回补","tone":"warn"},{"name":"高端装备","chg":3.72,"net":38.08,"net5":-61.26,"stocks":407,"leader":"华晟智能","prior4":-99.34,"ratio":38.33,"label":"弱回补","tone":"warn"},{"name":"无人机","chg":3.71,"net":58.68,"net5":-94.5,"stocks":475,"leader":"华是科技","prior4":-153.18,"ratio":38.31,"label":"弱回补","tone":"warn"},{"name":"ChatGPT概念","chg":3.69,"net":27.32,"net5":-32.93,"stocks":140,"leader":"海天瑞声","prior4":-60.25,"ratio":45.34,"label":"弱回补","tone":"warn"},{"name":"商业航天","chg":3.68,"net":76.4,"net5":-122.24,"stocks":505,"leader":"*ST天宜","prior4":-198.64,"ratio":38.46,"label":"弱回补","tone":"warn"},{"name":"铜缆高速连接","chg":3.65,"net":13.34,"net5":-17.02,"stocks":49,"leader":"蘅东光","prior4":-30.36,"ratio":43.94,"label":"弱回补","tone":"warn"},{"name":"独角兽概念","chg":3.65,"net":19.88,"net5":-16.23,"stocks":108,"leader":"汉威科技","prior4":-36.11,"ratio":55.05,"label":"强回补","tone":"warn"},{"name":"卫星导航","chg":3.65,"net":37.27,"net5":-60.01,"stocks":283,"leader":"华是科技","prior4":-97.28,"ratio":38.31,"label":"弱回补","tone":"warn"},{"name":"百度概念","chg":3.63,"net":20.55,"net5":-51.51,"stocks":229,"leader":"海天瑞声","prior4":-72.06,"ratio":28.52,"label":"弱回补","tone":"warn"},{"name":"金属镍","chg":3.62,"net":7.49,"net5":-7.62,"stocks":39,"leader":"华新科技","prior4":-15.11,"ratio":49.57,"label":"弱回补","tone":"warn"},{"name":"染料","chg":3.61,"net":1.42,"net5":-2.05,"stocks":40,"leader":"怡达股份","prior4":-3.47,"ratio":40.92,"label":"弱回补","tone":"warn"},{"name":"牙科医疗","chg":3.58,"net":3.99,"net5":-5.35,"stocks":30,"leader":"维宏股份","prior4":-9.34,"ratio":42.72,"label":"弱回补","tone":"warn"},{"name":"金属钴","chg":3.57,"net":11.95,"net5":-6.58,"stocks":32,"leader":"华新科技","prior4":-18.53,"ratio":64.49,"label":"强回补","tone":"warn"},{"name":"在线教育","chg":3.56,"net":10.96,"net5":-19.78,"stocks":123,"leader":"维海德","prior4":-30.74,"ratio":35.65,"label":"弱回补","tone":"warn"},{"name":"固态电池","chg":3.56,"net":49.85,"net5":-46.18,"stocks":300,"leader":"汉威科技","prior4":-96.03,"ratio":51.91,"label":"强回补","tone":"warn"},{"name":"华为盘古","chg":3.55,"net":2.68,"net5":-5.87,"stocks":30,"leader":"汉鑫科技","prior4":-8.55,"ratio":31.35,"label":"弱回补","tone":"warn"},{"name":"人脸识别","chg":3.51,"net":9.1,"net5":-11.32,"stocks":107,"leader":"维海德","prior4":-20.42,"ratio":44.56,"label":"弱回补","tone":"warn"},{"name":"AI应用","chg":3.51,"net":64.21,"net5":-70.85,"stocks":554,"leader":"维海德","prior4":-135.06,"ratio":47.54,"label":"弱回补","tone":"warn"},{"name":"阿里巴巴概念","chg":3.51,"net":51.32,"net5":-110.42,"stocks":700,"leader":"华是科技","prior4":-161.74,"ratio":31.73,"label":"弱回补","tone":"warn"},{"name":"电子竞技","chg":3.5,"net":4.03,"net5":-8.9,"stocks":38,"leader":"盛天网络","prior4":-12.93,"ratio":31.17,"label":"弱回补","tone":"warn"},{"name":"MiniLED","chg":3.49,"net":21.22,"net5":-39.11,"stocks":108,"leader":"逸豪新材","prior4":-60.33,"ratio":35.17,"label":"弱回补","tone":"warn"},{"name":"血氧仪","chg":3.45,"net":0.36,"net5":-2.37,"stocks":24,"leader":"戴维医疗","prior4":-2.73,"ratio":13.19,"label":"弱回补","tone":"warn"},{"name":"物联网","chg":3.45,"net":59.49,"net5":-92.38,"stocks":472,"leader":"汉威科技","prior4":-151.87,"ratio":39.17,"label":"弱回补","tone":"warn"},{"name":"华为概念","chg":3.45,"net":152.19,"net5":-194.91,"stocks":1008,"leader":"汉威科技","prior4":-347.1,"ratio":43.85,"label":"弱回补","tone":"warn"},{"name":"2026三季报预增","chg":3.44,"net":32.4,"net5":-68.26,"stocks":105,"leader":"震裕科技","prior4":-100.66,"ratio":32.19,"label":"弱回补","tone":"warn"},{"name":"家用电器","chg":3.44,"net":21.91,"net5":-25.02,"stocks":186,"leader":"肇民科技","prior4":-46.93,"ratio":46.69,"label":"弱回补","tone":"warn"},{"name":"汽车拆解概念","chg":3.43,"net":-0.61,"net5":-2.7,"stocks":46,"leader":"华新科技","prior4":-2.09,"ratio":-29.19,"label":"继续流出","tone":"neg"},{"name":"低空经济","chg":3.43,"net":57.99,"net5":-85.71,"stocks":509,"leader":"捷众科技","prior4":-143.7,"ratio":40.35,"label":"弱回补","tone":"warn"},{"name":"MicroLED概念","chg":3.42,"net":10.92,"net5":-21.48,"stocks":81,"leader":"卡莱特","prior4":-32.4,"ratio":33.7,"label":"弱回补","tone":"warn"},{"name":"智能医疗","chg":3.42,"net":31.34,"net5":-31.45,"stocks":346,"leader":"华是科技","prior4":-62.79,"ratio":49.91,"label":"弱回补","tone":"warn"},{"name":"军工","chg":3.42,"net":49.94,"net5":-121.18,"stocks":554,"leader":"捷众科技","prior4":-171.12,"ratio":29.18,"label":"弱回补","tone":"warn"},{"name":"碳纤维","chg":3.42,"net":5.3,"net5":-7.95,"stocks":80,"leader":"*ST天宜","prior4":-13.25,"ratio":40.0,"label":"弱回补","tone":"warn"},{"name":"大飞机","chg":3.41,"net":13.75,"net5":-32.73,"stocks":143,"leader":"捷安高科","prior4":-46.48,"ratio":29.58,"label":"弱回补","tone":"warn"},{"name":"汽车芯片","chg":3.41,"net":22.77,"net5":-61.5,"stocks":147,"leader":"安培龙","prior4":-84.27,"ratio":27.02,"label":"弱回补","tone":"warn"},{"name":"人工智能","chg":3.39,"net":112.6,"net5":-146.96,"stocks":1086,"leader":"维海德","prior4":-259.56,"ratio":43.38,"label":"弱回补","tone":"warn"},{"name":"F5G概念","chg":3.38,"net":53.71,"net5":-22.24,"stocks":36,"leader":"东田微","prior4":-75.95,"ratio":70.72,"label":"强回补","tone":"warn"},{"name":"钙钛矿电池","chg":3.38,"net":13.32,"net5":-26.82,"stocks":92,"leader":"杭州柯林","prior4":-40.14,"ratio":33.18,"label":"弱回补","tone":"warn"},{"name":"POE胶膜","chg":3.37,"net":2.71,"net5":-3.27,"stocks":29,"leader":"亚玛顿","prior4":-5.98,"ratio":45.32,"label":"弱回补","tone":"warn"},{"name":"先进封装","chg":3.36,"net":37.98,"net5":-87.43,"stocks":217,"leader":"天孚通信","prior4":-125.41,"ratio":30.28,"label":"弱回补","tone":"warn"},{"name":"Web3.0","chg":3.36,"net":9.88,"net5":-14.93,"stocks":63,"leader":"德马科技","prior4":-24.81,"ratio":39.82,"label":"弱回补","tone":"warn"},{"name":"人民币贬值受益","chg":3.35,"net":163.95,"net5":-126.21,"stocks":613,"leader":"创源股份","prior4":-290.16,"ratio":56.5,"label":"强回补","tone":"warn"},{"name":"OLED","chg":3.33,"net":14.83,"net5":-51.33,"stocks":156,"leader":"怡达股份","prior4":-66.16,"ratio":22.42,"label":"弱回补","tone":"warn"},{"name":"锂电池概念","chg":3.3,"net":81.86,"net5":-84.3,"stocks":613,"leader":"汉威科技","prior4":-166.16,"ratio":49.27,"label":"弱回补","tone":"warn"},{"name":"数据安全","chg":3.29,"net":23.88,"net5":-30.15,"stocks":175,"leader":"汉威科技","prior4":-54.03,"ratio":44.2,"label":"弱回补","tone":"warn"},{"name":"军民融合","chg":3.28,"net":9.18,"net5":-49.38,"stocks":244,"leader":"捷安高科","prior4":-58.56,"ratio":15.68,"label":"弱回补","tone":"warn"},{"name":"腾讯概念","chg":3.28,"net":37.4,"net5":-91.96,"stocks":299,"leader":"维海德","prior4":-129.36,"ratio":28.91,"label":"弱回补","tone":"warn"},{"name":"MCU芯片","chg":3.27,"net":19.5,"net5":-27.28,"stocks":96,"leader":"炬芯科技","prior4":-46.78,"ratio":41.68,"label":"弱回补","tone":"warn"},{"name":"基因测序","chg":3.26,"net":4.69,"net5":-3.68,"stocks":70,"leader":"诺禾致源","prior4":-8.37,"ratio":56.03,"label":"强回补","tone":"warn"},{"name":"军工信息化","chg":3.25,"net":8.43,"net5":-20.73,"stocks":114,"leader":"凡拓数创","prior4":-29.16,"ratio":28.91,"label":"弱回补","tone":"warn"},{"name":"安防","chg":3.23,"net":13.24,"net5":-20.1,"stocks":179,"leader":"华是科技","prior4":-33.34,"ratio":39.71,"label":"弱回补","tone":"warn"},{"name":"HJT电池","chg":3.23,"net":8.07,"net5":-18.59,"stocks":70,"leader":"慈星股份","prior4":-26.66,"ratio":30.27,"label":"弱回补","tone":"warn"},{"name":"数据中心(AIDC)","chg":3.22,"net":166.81,"net5":-158.77,"stocks":665,"leader":"华是科技","prior4":-325.58,"ratio":51.23,"label":"强回补","tone":"warn"},{"name":"共同富裕示范区","chg":3.2,"net":14.39,"net5":-14.53,"stocks":192,"leader":"创源股份","prior4":-28.92,"ratio":49.76,"label":"弱回补","tone":"warn"},{"name":"太赫兹","chg":3.19,"net":6.72,"net5":-16.59,"stocks":24,"leader":"天银机电","prior4":-23.31,"ratio":28.83,"label":"弱回补","tone":"warn"},{"name":"智能家居","chg":3.19,"net":22.35,"net5":-29.69,"stocks":295,"leader":"汉威科技","prior4":-52.04,"ratio":42.95,"label":"弱回补","tone":"warn"},{"name":"核污染防治","chg":3.18,"net":5.56,"net5":-3.76,"stocks":59,"leader":"汉威科技","prior4":-9.32,"ratio":59.66,"label":"强回补","tone":"warn"},{"name":"工业互联网","chg":3.18,"net":48.2,"net5":-67.48,"stocks":443,"leader":"汉威科技","prior4":-115.68,"ratio":41.67,"label":"弱回补","tone":"warn"},{"name":"深股通","chg":3.18,"net":330.56,"net5":-293.99,"stocks":1899,"leader":"莱美药业","prior4":-624.55,"ratio":52.93,"label":"强回补","tone":"warn"},{"name":"车联网(车路协同)","chg":3.17,"net":22.38,"net5":-52.18,"stocks":292,"leader":"菱电电控","prior4":-74.56,"ratio":30.02,"label":"弱回补","tone":"warn"},{"name":"华为海思概念股","chg":3.17,"net":1.36,"net5":-13.6,"stocks":52,"leader":"优博讯","prior4":-14.96,"ratio":9.09,"label":"弱回补","tone":"warn"},{"name":"第三代半导体","chg":3.17,"net":24.86,"net5":-54.05,"stocks":184,"leader":"正帆科技","prior4":-78.91,"ratio":31.5,"label":"弱回补","tone":"warn"},{"name":"AI智能体","chg":3.17,"net":60.31,"net5":-50.57,"stocks":475,"leader":"华是科技","prior4":-110.88,"ratio":54.39,"label":"强回补","tone":"warn"},{"name":"超级电容","chg":3.16,"net":12.79,"net5":-14.54,"stocks":45,"leader":"东华测试","prior4":-27.33,"ratio":46.8,"label":"弱回补","tone":"warn"},{"name":"职业教育","chg":3.16,"net":12.24,"net5":-16.43,"stocks":137,"leader":"众诚科技","prior4":-28.67,"ratio":42.69,"label":"弱回补","tone":"warn"},{"name":"云办公","chg":3.15,"net":5.37,"net5":-4.73,"stocks":49,"leader":"维海德","prior4":-10.1,"ratio":53.17,"label":"强回补","tone":"warn"},{"name":"粤港澳大湾区","chg":3.15,"net":48.25,"net5":-66.87,"stocks":506,"leader":"维海德","prior4":-115.12,"ratio":41.91,"label":"弱回补","tone":"warn"},{"name":"智能物流","chg":3.15,"net":25.33,"net5":-17.18,"stocks":260,"leader":"华晟智能","prior4":-42.51,"ratio":59.59,"label":"强回补","tone":"warn"},{"name":"鸿蒙概念","chg":3.15,"net":25.3,"net5":-29.02,"stocks":262,"leader":"众诚科技","prior4":-54.32,"ratio":46.58,"label":"弱回补","tone":"warn"},{"name":"黄金概念","chg":3.13,"net":16.95,"net5":-6.5,"stocks":82,"leader":"华新科技","prior4":-23.45,"ratio":72.28,"label":"强回补","tone":"warn"},{"name":"TOPCON电池","chg":3.12,"net":9.73,"net5":-27.61,"stocks":82,"leader":"*ST仕净","prior4":-37.34,"ratio":26.06,"label":"弱回补","tone":"warn"},{"name":"石墨烯","chg":3.1,"net":6.7,"net5":-12.37,"stocks":79,"leader":"艾芬达","prior4":-19.07,"ratio":35.13,"label":"弱回补","tone":"warn"},{"name":"股权转让(并购重组)","chg":3.1,"net":23.15,"net5":-17.78,"stocks":598,"leader":"华是科技","prior4":-40.93,"ratio":56.56,"label":"强回补","tone":"warn"},{"name":"信创","chg":3.08,"net":9.9,"net5":-53.74,"stocks":303,"leader":"维海德","prior4":-63.64,"ratio":15.56,"label":"弱回补","tone":"warn"},{"name":"阿尔茨海默概念","chg":3.08,"net":5.03,"net5":-0.31,"stocks":92,"leader":"药康生物","prior4":-5.34,"ratio":94.19,"label":"强回补","tone":"warn"},{"name":"C2M概念","chg":3.08,"net":2.86,"net5":-3.0,"stocks":39,"leader":"慈星股份","prior4":-5.86,"ratio":48.81,"label":"弱回补","tone":"warn"},{"name":"高压快充","chg":3.08,"net":10.51,"net5":-15.36,"stocks":125,"leader":"领湃科技","prior4":-25.87,"ratio":40.63,"label":"弱回补","tone":"warn"},{"name":"东数西算(算力)","chg":3.08,"net":51.64,"net5":-109.39,"stocks":419,"leader":"奥比中光","prior4":-161.03,"ratio":32.07,"label":"弱回补","tone":"warn"},{"name":"金属回收","chg":3.05,"net":14.82,"net5":-23.25,"stocks":90,"leader":"华新科技","prior4":-38.07,"ratio":38.93,"label":"弱回补","tone":"warn"},{"name":"移动支付","chg":3.05,"net":5.84,"net5":-2.24,"stocks":78,"leader":"奥比中光","prior4":-8.08,"ratio":72.28,"label":"强回补","tone":"warn"},{"name":"海峡两岸","chg":3.04,"net":41.13,"net5":-51.56,"stocks":320,"leader":"荣亿精密","prior4":-92.69,"ratio":44.37,"label":"弱回补","tone":"warn"},{"name":"食品安全","chg":3.04,"net":2.0,"net5":-3.22,"stocks":74,"leader":"东方海洋","prior4":-5.22,"ratio":38.31,"label":"弱回补","tone":"warn"},{"name":"医疗器械概念","chg":3.04,"net":35.92,"net5":-50.79,"stocks":419,"leader":"莱美药业","prior4":-86.71,"ratio":41.43,"label":"弱回补","tone":"warn"},{"name":"电子纸","chg":3.04,"net":7.98,"net5":-6.54,"stocks":27,"leader":"掌阅科技","prior4":-14.52,"ratio":54.96,"label":"强回补","tone":"warn"},{"name":"空气能热泵","chg":3.03,"net":9.51,"net5":3.03,"stocks":56,"leader":"同星科技","prior4":-6.48,"ratio":146.76,"label":"新钱","tone":"pos"},{"name":"数字水印","chg":3.02,"net":2.08,"net5":-6.48,"stocks":29,"leader":"海天瑞声","prior4":-8.56,"ratio":24.3,"label":"弱回补","tone":"warn"},{"name":"海工装备","chg":3.01,"net":32.73,"net5":-45.17,"stocks":271,"leader":"索辰科技","prior4":-77.9,"ratio":42.02,"label":"弱回补","tone":"warn"},{"name":"辅助生殖","chg":3.01,"net":6.31,"net5":-4.71,"stocks":74,"leader":"莱美药业","prior4":-11.02,"ratio":57.26,"label":"强回补","tone":"warn"},{"name":"钠离子电池","chg":3.0,"net":14.0,"net5":-9.89,"stocks":144,"leader":"紫建电子","prior4":-23.89,"ratio":58.6,"label":"强回补","tone":"warn"},{"name":"冰雪产业","chg":3.0,"net":6.1,"net5":-3.91,"stocks":62,"leader":"晶雪节能","prior4":-10.01,"ratio":60.94,"label":"强回补","tone":"warn"},{"name":"存储芯片","chg":2.98,"net":44.31,"net5":-125.16,"stocks":205,"leader":"杭州柯林","prior4":-169.47,"ratio":26.15,"label":"弱回补","tone":"warn"},{"name":"数据要素","chg":2.98,"net":36.75,"net5":-36.71,"stocks":403,"leader":"果麦文化","prior4":-73.46,"ratio":50.03,"label":"强回补","tone":"warn"},{"name":"燃料电池","chg":2.97,"net":24.64,"net5":-24.01,"stocks":212,"leader":"肇民科技","prior4":-48.65,"ratio":50.65,"label":"强回补","tone":"warn"},{"name":"融资融券","chg":2.97,"net":459.82,"net5":-443.05,"stocks":3895,"leader":"华晟智能","prior4":-902.87,"ratio":50.93,"label":"强回补","tone":"warn"},{"name":"光伏概念","chg":2.96,"net":75.37,"net5":-116.89,"stocks":607,"leader":"*ST仕净","prior4":-192.26,"ratio":39.2,"label":"弱回补","tone":"warn"},{"name":"网红经济","chg":2.96,"net":16.66,"net5":-10.62,"stocks":119,"leader":"果麦文化","prior4":-27.28,"ratio":61.07,"label":"强回补","tone":"warn"},{"name":"一体化压铸","chg":2.96,"net":8.72,"net5":-4.28,"stocks":54,"leader":"长华集团","prior4":-13.0,"ratio":67.08,"label":"强回补","tone":"warn"},{"name":"智慧政务","chg":2.95,"net":11.89,"net5":-24.62,"stocks":222,"leader":"华是科技","prior4":-36.51,"ratio":32.57,"label":"弱回补","tone":"warn"},{"name":"网络安全","chg":2.94,"net":11.68,"net5":-40.68,"stocks":195,"leader":"华是科技","prior4":-52.36,"ratio":22.31,"label":"弱回补","tone":"warn"},{"name":"储能","chg":2.91,"net":98.03,"net5":-73.34,"stocks":914,"leader":"汉威科技","prior4":-171.37,"ratio":57.2,"label":"强回补","tone":"warn"},{"name":"可控核聚变","chg":2.89,"net":18.09,"net5":-26.21,"stocks":116,"leader":"泛亚微透","prior4":-44.3,"ratio":40.84,"label":"弱回补","tone":"warn"},{"name":"可降解塑料","chg":2.89,"net":0.48,"net5":-1.58,"stocks":174,"leader":"金丹科技","prior4":-2.06,"ratio":23.3,"label":"弱回补","tone":"warn"},{"name":"EDR概念","chg":2.88,"net":5.26,"net5":-6.91,"stocks":20,"leader":"均胜电子","prior4":-12.17,"ratio":43.22,"label":"弱回补","tone":"warn"},{"name":"华为昇腾","chg":2.88,"net":8.09,"net5":-16.95,"stocks":106,"leader":"众诚科技","prior4":-25.04,"ratio":32.31,"label":"弱回补","tone":"warn"},{"name":"体育产业","chg":2.88,"net":7.68,"net5":-4.02,"stocks":136,"leader":"创源股份","prior4":-11.7,"ratio":65.64,"label":"强回补","tone":"warn"},{"name":"黑龙江自贸区","chg":2.87,"net":5.64,"net5":-4.66,"stocks":36,"leader":"京蓝科技","prior4":-10.3,"ratio":54.76,"label":"强回补","tone":"warn"},{"name":"BC电池","chg":2.87,"net":5.99,"net5":-20.92,"stocks":52,"leader":"鹿山新材","prior4":-26.91,"ratio":22.26,"label":"弱回补","tone":"warn"},{"name":"华为鲲鹏","chg":2.87,"net":8.25,"net5":-32.1,"stocks":178,"leader":"博汇科技","prior4":-40.35,"ratio":20.45,"label":"弱回补","tone":"warn"},{"name":"数据确权","chg":2.85,"net":7.01,"net5":-5.67,"stocks":69,"leader":"优博讯","prior4":-12.68,"ratio":55.28,"label":"强回补","tone":"warn"},{"name":"眼科医疗","chg":2.85,"net":8.07,"net5":-6.73,"stocks":65,"leader":"莱美药业","prior4":-14.8,"ratio":54.53,"label":"强回补","tone":"warn"},{"name":"转基因","chg":2.84,"net":0.81,"net5":-2.62,"stocks":21,"leader":"万向德农","prior4":-3.43,"ratio":23.62,"label":"弱回补","tone":"warn"},{"name":"广东自贸区","chg":2.81,"net":-1.46,"net5":-1.68,"stocks":29,"leader":"中京电子","prior4":-0.22,"ratio":-663.64,"label":"继续流出","tone":"neg"},{"name":"猪肉","chg":2.81,"net":3.94,"net5":2.54,"stocks":32,"leader":"金新农","prior4":-1.4,"ratio":281.43,"label":"新钱","tone":"pos"},{"name":"两轮车","chg":2.81,"net":0.29,"net5":-6.57,"stocks":81,"leader":"移远通信","prior4":-6.86,"ratio":4.23,"label":"弱回补","tone":"warn"},{"name":"特高压","chg":2.78,"net":19.05,"net5":-8.26,"stocks":132,"leader":"杭州柯林","prior4":-27.31,"ratio":69.75,"label":"强回补","tone":"warn"},{"name":"2026中报预增","chg":2.78,"net":125.84,"net5":-190.4,"stocks":514,"leader":"华曙高科","prior4":-316.24,"ratio":39.79,"label":"弱回补","tone":"warn"},{"name":"玉米","chg":2.77,"net":-2.21,"net5":-2.87,"stocks":34,"leader":"金丹科技","prior4":-0.66,"ratio":-334.85,"label":"继续流出","tone":"neg"},{"name":"有机硅概念","chg":2.77,"net":1.37,"net5":-5.26,"stocks":57,"leader":"华密新材","prior4":-6.63,"ratio":20.66,"label":"弱回补","tone":"warn"},{"name":"时空大数据","chg":2.77,"net":-1.48,"net5":-10.07,"stocks":71,"leader":"华是科技","prior4":-8.59,"ratio":-17.23,"label":"继续流出","tone":"neg"},{"name":"电力物联网","chg":2.77,"net":-4.08,"net5":5.56,"stocks":85,"leader":"杭州柯林","prior4":9.64,"ratio":-42.32,"label":"转出","tone":"neg"},{"name":"财税数字化","chg":2.75,"net":3.37,"net5":-7.6,"stocks":66,"leader":"汉鑫科技","prior4":-10.97,"ratio":30.72,"label":"弱回补","tone":"warn"},{"name":"跨境电商","chg":2.75,"net":22.15,"net5":-21.89,"stocks":349,"leader":"维海德","prior4":-44.04,"ratio":50.3,"label":"强回补","tone":"warn"},{"name":"三胎概念","chg":2.74,"net":12.24,"net5":-2.81,"stocks":212,"leader":"创源股份","prior4":-15.05,"ratio":81.33,"label":"强回补","tone":"warn"},{"name":"DeepSeek概念","chg":2.73,"net":65.54,"net5":-103.78,"stocks":770,"leader":"华是科技","prior4":-169.32,"ratio":38.71,"label":"弱回补","tone":"warn"},{"name":"智能电网","chg":2.72,"net":32.82,"net5":-24.67,"stocks":281,"leader":"华是科技","prior4":-57.49,"ratio":57.09,"label":"强回补","tone":"warn"},{"name":"足球概念","chg":2.71,"net":1.42,"net5":5.09,"stocks":40,"leader":"祥源新材","prior4":3.67,"ratio":38.69,"label":"流入衰减","tone":"warn"},{"name":"旅游概念","chg":2.71,"net":18.77,"net5":-11.55,"stocks":151,"leader":"海天瑞声","prior4":-30.32,"ratio":61.91,"label":"强回补","tone":"warn"},{"name":"横琴新区","chg":2.7,"net":2.66,"net5":-4.02,"stocks":38,"leader":"宝莱特","prior4":-6.68,"ratio":39.82,"label":"弱回补","tone":"warn"},{"name":"高铁","chg":2.7,"net":4.1,"net5":-7.34,"stocks":181,"leader":"*ST天宜","prior4":-11.44,"ratio":35.84,"label":"弱回补","tone":"warn"},{"name":"PM2.5","chg":2.68,"net":1.41,"net5":-1.81,"stocks":35,"leader":"日盈电子","prior4":-3.22,"ratio":43.79,"label":"弱回补","tone":"warn"},{"name":"合成生物","chg":2.68,"net":13.16,"net5":-9.19,"stocks":170,"leader":"瑞丰高材","prior4":-22.35,"ratio":58.88,"label":"强回补","tone":"warn"},{"name":"云计算","chg":2.67,"net":16.83,"net5":-39.88,"stocks":225,"leader":"众诚科技","prior4":-56.71,"ratio":29.68,"label":"弱回补","tone":"warn"},{"name":"数字经济","chg":2.67,"net":34.0,"net5":-64.28,"stocks":513,"leader":"果麦文化","prior4":-98.28,"ratio":34.6,"label":"弱回补","tone":"warn"},{"name":"换电概念","chg":2.66,"net":17.31,"net5":7.81,"stocks":94,"leader":"能辉科技","prior4":-9.5,"ratio":182.21,"label":"新钱","tone":"pos"},{"name":"蚂蚁集团概念","chg":2.65,"net":8.51,"net5":-5.81,"stocks":80,"leader":"奥比中光","prior4":-14.32,"ratio":59.43,"label":"强回补","tone":"warn"},{"name":"小金属概念","chg":2.63,"net":36.4,"net5":-48.36,"stocks":172,"leader":"华新科技","prior4":-84.76,"ratio":42.94,"label":"弱回补","tone":"warn"},{"name":"创新药","chg":2.63,"net":27.04,"net5":-15.21,"stocks":276,"leader":"莱美药业","prior4":-42.25,"ratio":64.0,"label":"强回补","tone":"warn"},{"name":"智慧灯杆","chg":2.62,"net":7.68,"net5":-12.11,"stocks":62,"leader":"海洋王","prior4":-19.79,"ratio":38.81,"label":"弱回补","tone":"warn"},{"name":"丙烯酸","chg":2.6,"net":2.45,"net5":0.91,"stocks":20,"leader":"天龙集团","prior4":-1.54,"ratio":159.09,"label":"新钱","tone":"pos"},{"name":"猴痘概念","chg":2.6,"net":2.37,"net5":-7.83,"stocks":75,"leader":"百普赛斯","prior4":-10.2,"ratio":23.24,"label":"弱回补","tone":"warn"},{"name":"长三角一体化","chg":2.59,"net":14.47,"net5":-22.91,"stocks":234,"leader":"田中精机","prior4":-37.38,"ratio":38.71,"label":"弱回补","tone":"warn"},{"name":"金属铅","chg":2.56,"net":6.68,"net5":-3.37,"stocks":38,"leader":"山金国际","prior4":-10.05,"ratio":66.47,"label":"强回补","tone":"warn"},{"name":"电子身份证","chg":2.54,"net":1.37,"net5":-4.57,"stocks":39,"leader":"优博讯","prior4":-5.94,"ratio":23.06,"label":"弱回补","tone":"warn"},{"name":"幽门螺杆菌概念","chg":2.54,"net":2.74,"net5":-7.18,"stocks":74,"leader":"莱美药业","prior4":-9.92,"ratio":27.62,"label":"弱回补","tone":"warn"},{"name":"福建自贸区","chg":2.53,"net":10.14,"net5":-6.98,"stocks":127,"leader":"腾景科技","prior4":-17.12,"ratio":59.23,"label":"强回补","tone":"warn"},{"name":"充电桩","chg":2.52,"net":31.12,"net5":-34.12,"stocks":387,"leader":"豪恩汽电","prior4":-65.24,"ratio":47.7,"label":"弱回补","tone":"warn"},{"name":"供销社","chg":2.52,"net":1.19,"net5":-0.75,"stocks":15,"leader":"敦煌种业","prior4":-1.94,"ratio":61.34,"label":"强回补","tone":"warn"},{"name":"医美概念","chg":2.52,"net":8.14,"net5":-2.76,"stocks":96,"leader":"汉威科技","prior4":-10.9,"ratio":74.68,"label":"强回补","tone":"warn"},{"name":"华为数字能源","chg":2.52,"net":3.31,"net5":-6.45,"stocks":46,"leader":"荣联科技","prior4":-9.76,"ratio":33.91,"label":"弱回补","tone":"warn"},{"name":"智慧城市","chg":2.52,"net":24.52,"net5":-65.76,"stocks":416,"leader":"汉威科技","prior4":-90.28,"ratio":27.16,"label":"弱回补","tone":"warn"},{"name":"创投","chg":2.52,"net":97.3,"net5":-97.95,"stocks":460,"leader":"汉威科技","prior4":-195.25,"ratio":49.83,"label":"弱回补","tone":"warn"},{"name":"华为欧拉","chg":2.51,"net":4.08,"net5":-9.79,"stocks":47,"leader":"埃夫特","prior4":-13.87,"ratio":29.42,"label":"弱回补","tone":"warn"},{"name":"兵装重组概念","chg":2.5,"net":0.07,"net5":-1.48,"stocks":14,"leader":"建设工业","prior4":-1.55,"ratio":4.52,"label":"弱回补","tone":"warn"},{"name":"ERP概念","chg":2.5,"net":0.89,"net5":-6.24,"stocks":35,"leader":"威士顿","prior4":-7.13,"ratio":12.48,"label":"弱回补","tone":"warn"},{"name":"算力租赁","chg":2.48,"net":21.22,"net5":-45.55,"stocks":189,"leader":"奥雅股份","prior4":-66.77,"ratio":31.78,"label":"弱回补","tone":"warn"},{"name":"柔性直流输电","chg":2.48,"net":9.93,"net5":-1.32,"stocks":67,"leader":"金百泽","prior4":-11.25,"ratio":88.27,"label":"强回补","tone":"warn"},{"name":"乳业","chg":2.46,"net":2.98,"net5":1.47,"stocks":37,"leader":"阳光乳业","prior4":-1.51,"ratio":197.35,"label":"新钱","tone":"pos"},{"name":"量子科技","chg":2.46,"net":15.37,"net5":-19.9,"stocks":113,"leader":"腾景科技","prior4":-35.27,"ratio":43.58,"label":"弱回补","tone":"warn"},{"name":"磷化工","chg":2.45,"net":5.85,"net5":-4.63,"stocks":67,"leader":"瑞丰高材","prior4":-10.48,"ratio":55.82,"label":"强回补","tone":"warn"},{"name":"民营医院","chg":2.43,"net":10.57,"net5":-11.39,"stocks":74,"leader":"澳洋健康","prior4":-21.96,"ratio":48.13,"label":"弱回补","tone":"warn"},{"name":"数字乡村","chg":2.43,"net":6.26,"net5":-7.29,"stocks":100,"leader":"众诚科技","prior4":-13.55,"ratio":46.2,"label":"弱回补","tone":"warn"},{"name":"宠物经济","chg":2.42,"net":9.15,"net5":3.96,"stocks":127,"leader":"创源股份","prior4":-5.19,"ratio":176.3,"label":"新钱","tone":"pos"},{"name":"石墨电极","chg":2.42,"net":1.99,"net5":-2.7,"stocks":26,"leader":"龙江交通","prior4":-4.69,"ratio":42.43,"label":"弱回补","tone":"warn"},{"name":"风电","chg":2.42,"net":23.62,"net5":-51.92,"stocks":445,"leader":"瑞丰高材","prior4":-75.54,"ratio":31.27,"label":"弱回补","tone":"warn"},{"name":"网约车","chg":2.4,"net":-0.1,"net5":-1.01,"stocks":28,"leader":"世纪恒通","prior4":-0.91,"ratio":-10.99,"label":"继续流出","tone":"neg"},{"name":"氢能源","chg":2.4,"net":38.59,"net5":-21.14,"stocks":409,"leader":"汉威科技","prior4":-59.73,"ratio":64.61,"label":"强回补","tone":"warn"},{"name":"养老概念","chg":2.4,"net":15.49,"net5":-8.79,"stocks":225,"leader":"汉威科技","prior4":-24.28,"ratio":63.8,"label":"强回补","tone":"warn"},{"name":"家庭医生","chg":2.39,"net":-0.67,"net5":6.56,"stocks":26,"leader":"漱玉平民","prior4":7.23,"ratio":-9.27,"label":"转出","tone":"neg"},{"name":"冷链物流","chg":2.39,"net":10.43,"net5":-8.44,"stocks":154,"leader":"同星科技","prior4":-18.87,"ratio":55.27,"label":"强回补","tone":"warn"},{"name":"核电","chg":2.39,"net":25.34,"net5":-18.38,"stocks":352,"leader":"瑞迪智驱","prior4":-43.72,"ratio":57.96,"label":"强回补","tone":"warn"},{"name":"京津冀一体化","chg":2.37,"net":12.91,"net5":-45.91,"stocks":291,"leader":"恒工精密","prior4":-58.82,"ratio":21.95,"label":"弱回补","tone":"warn"},{"name":"摘帽","chg":2.37,"net":1.62,"net5":-11.03,"stocks":84,"leader":"逸飞激光","prior4":-12.65,"ratio":12.81,"label":"弱回补","tone":"warn"},{"name":"DRG/DIP","chg":2.35,"net":0.73,"net5":-1.7,"stocks":22,"leader":"塞力医疗","prior4":-2.43,"ratio":30.04,"label":"弱回补","tone":"warn"},{"name":"数字货币","chg":2.35,"net":6.12,"net5":-9.34,"stocks":91,"leader":"优博讯","prior4":-15.46,"ratio":39.59,"label":"弱回补","tone":"warn"},{"name":"环氧丙烷","chg":2.32,"net":2.09,"net5":1.06,"stocks":26,"leader":"怡达股份","prior4":-1.03,"ratio":202.91,"label":"新钱","tone":"pos"},{"name":"烟草","chg":2.32,"net":0.89,"net5":-3.87,"stocks":42,"leader":"威士顿","prior4":-4.76,"ratio":18.7,"label":"弱回补","tone":"warn"},{"name":"超导概念","chg":2.31,"net":6.52,"net5":-12.76,"stocks":33,"leader":"东方钽业","prior4":-19.28,"ratio":33.82,"label":"弱回补","tone":"warn"},{"name":"一带一路","chg":2.31,"net":57.14,"net5":-62.66,"stocks":801,"leader":"维海德","prior4":-119.8,"ratio":47.7,"label":"弱回补","tone":"warn"},{"name":"净水概念","chg":2.31,"net":2.26,"net5":-8.1,"stocks":81,"leader":"*ST仕净","prior4":-10.36,"ratio":21.81,"label":"弱回补","tone":"warn"},{"name":"中芯国际概念","chg":2.28,"net":11.48,"net5":-32.62,"stocks":91,"leader":"敏芯股份","prior4":-44.1,"ratio":26.03,"label":"弱回补","tone":"warn"},{"name":"区块链","chg":2.28,"net":23.02,"net5":-37.08,"stocks":261,"leader":"汉威科技","prior4":-60.1,"ratio":38.3,"label":"弱回补","tone":"warn"},{"name":"露营经济","chg":2.28,"net":0.54,"net5":-0.91,"stocks":55,"leader":"奥雅股份","prior4":-1.45,"ratio":37.24,"label":"弱回补","tone":"warn"},{"name":"中俄贸易概念","chg":2.27,"net":5.74,"net5":-7.4,"stocks":181,"leader":"福赛科技","prior4":-13.14,"ratio":43.68,"label":"弱回补","tone":"warn"},{"name":"沪股通","chg":2.27,"net":150.13,"net5":-108.21,"stocks":1652,"leader":"菱电电控","prior4":-258.34,"ratio":58.11,"label":"强回补","tone":"warn"},{"name":"金属铜","chg":2.26,"net":18.12,"net5":-14.2,"stocks":93,"leader":"华新科技","prior4":-32.32,"ratio":56.06,"label":"强回补","tone":"warn"},{"name":"青蒿素","chg":2.25,"net":0.25,"net5":1.3,"stocks":11,"leader":"德龙汇能","prior4":1.05,"ratio":23.81,"label":"流入衰减","tone":"warn"},{"name":"氟化工概念","chg":2.24,"net":7.28,"net5":-13.63,"stocks":71,"leader":"正帆科技","prior4":-20.91,"ratio":34.82,"label":"弱回补","tone":"warn"},{"name":"动力电池回收","chg":2.23,"net":15.56,"net5":-6.09,"stocks":95,"leader":"逸飞激光","prior4":-21.65,"ratio":71.87,"label":"强回补","tone":"warn"},{"name":"金属锌","chg":2.21,"net":6.83,"net5":-4.51,"stocks":43,"leader":"京蓝科技","prior4":-11.34,"ratio":60.23,"label":"强回补","tone":"warn"},{"name":"肝炎概念","chg":2.21,"net":7.05,"net5":-8.88,"stocks":140,"leader":"莱美药业","prior4":-15.93,"ratio":44.26,"label":"弱回补","tone":"warn"},{"name":"乡村振兴","chg":2.2,"net":28.73,"net5":-23.41,"stocks":438,"leader":"金丹科技","prior4":-52.14,"ratio":55.1,"label":"强回补","tone":"warn"},{"name":"互联网金融","chg":2.2,"net":15.41,"net5":-12.45,"stocks":212,"leader":"汉威科技","prior4":-27.86,"ratio":55.31,"label":"强回补","tone":"warn"},{"name":"西部大开发","chg":2.19,"net":45.08,"net5":-67.97,"stocks":634,"leader":"莱美药业","prior4":-113.05,"ratio":39.88,"label":"弱回补","tone":"warn"},{"name":"碳中和","chg":2.16,"net":13.62,"net5":-18.29,"stocks":280,"leader":"*ST仕净","prior4":-31.91,"ratio":42.68,"label":"弱回补","tone":"warn"},{"name":"举牌","chg":2.16,"net":0.92,"net5":0.87,"stocks":23,"leader":"亚玛顿","prior4":-0.05,"ratio":1840.0,"label":"新钱","tone":"pos"},{"name":"农村电商","chg":2.13,"net":4.05,"net5":-1.36,"stocks":37,"leader":"芒果超媒","prior4":-5.41,"ratio":74.86,"label":"强回补","tone":"warn"},{"name":"预制菜","chg":2.13,"net":3.26,"net5":-2.58,"stocks":101,"leader":"好当家","prior4":-5.84,"ratio":55.82,"label":"强回补","tone":"warn"},{"name":"仿制药一致性评价","chg":2.12,"net":10.76,"net5":-10.02,"stocks":145,"leader":"莱美药业","prior4":-20.78,"ratio":51.78,"label":"强回补","tone":"warn"},{"name":"生物疫苗","chg":2.09,"net":4.04,"net5":-1.93,"stocks":61,"leader":"莱美药业","prior4":-5.97,"ratio":67.67,"label":"强回补","tone":"warn"},{"name":"中船系","chg":2.08,"net":1.15,"net5":-0.42,"stocks":20,"leader":"久之洋","prior4":-1.57,"ratio":73.25,"label":"强回补","tone":"warn"},{"name":"硅能源","chg":2.07,"net":6.55,"net5":-12.12,"stocks":73,"leader":"宇晶股份","prior4":-18.67,"ratio":35.08,"label":"弱回补","tone":"warn"},{"name":"人造肉","chg":2.06,"net":0.98,"net5":-0.43,"stocks":20,"leader":"海欣食品","prior4":-1.41,"ratio":69.5,"label":"强回补","tone":"warn"},{"name":"建筑节能","chg":2.03,"net":5.29,"net5":-5.98,"stocks":104,"leader":"晶雪节能","prior4":-11.27,"ratio":46.94,"label":"弱回补","tone":"warn"},{"name":"国产操作系统","chg":2.02,"net":-0.04,"net5":-26.44,"stocks":134,"leader":"东土科技","prior4":-26.4,"ratio":-0.15,"label":"继续流出","tone":"neg"},{"name":"生态农业","chg":2.02,"net":5.42,"net5":-1.4,"stocks":66,"leader":"金新农","prior4":-6.82,"ratio":79.47,"label":"强回补","tone":"warn"},{"name":"水利","chg":2.0,"net":12.25,"net5":-4.27,"stocks":263,"leader":"汉威科技","prior4":-16.52,"ratio":74.15,"label":"强回补","tone":"warn"},{"name":"PVDF概念","chg":2.0,"net":2.29,"net5":-4.23,"stocks":17,"leader":"深圳新星","prior4":-6.52,"ratio":35.12,"label":"弱回补","tone":"warn"},{"name":"粮食概念","chg":1.98,"net":1.82,"net5":-5.73,"stocks":49,"leader":"万向德农","prior4":-7.55,"ratio":24.11,"label":"弱回补","tone":"warn"},{"name":"民爆概念","chg":1.97,"net":1.38,"net5":-1.04,"stocks":25,"leader":"晓程科技","prior4":-2.42,"ratio":57.02,"label":"强回补","tone":"warn"},{"name":"固废处理","chg":1.96,"net":4.76,"net5":-9.8,"stocks":156,"leader":"*ST仕净","prior4":-14.56,"ratio":32.69,"label":"弱回补","tone":"warn"},{"name":"消毒剂","chg":1.96,"net":0.65,"net5":-7.0,"stocks":61,"leader":"岳阳兴长","prior4":-7.65,"ratio":8.5,"label":"弱回补","tone":"warn"},{"name":"动物疫苗","chg":1.96,"net":1.46,"net5":-0.2,"stocks":20,"leader":"罗牛山","prior4":-1.66,"ratio":87.95,"label":"强回补","tone":"warn"},{"name":"毛发医疗","chg":1.95,"net":1.69,"net5":-1.01,"stocks":27,"leader":"澳洋健康","prior4":-2.7,"ratio":62.59,"label":"强回补","tone":"warn"},{"name":"污水处理","chg":1.94,"net":7.96,"net5":-10.73,"stocks":225,"leader":"*ST仕净","prior4":-18.69,"ratio":42.59,"label":"弱回补","tone":"warn"},{"name":"农业种植","chg":1.93,"net":-0.79,"net5":-6.33,"stocks":97,"leader":"金丹科技","prior4":-5.54,"ratio":-14.26,"label":"继续流出","tone":"neg"},{"name":"国家大基金持股","chg":1.92,"net":5.43,"net5":-60.66,"stocks":52,"leader":"瑞芯微","prior4":-66.09,"ratio":8.22,"label":"弱回补","tone":"warn"},{"name":"流感","chg":1.9,"net":5.54,"net5":-6.37,"stocks":165,"leader":"近岸蛋白","prior4":-11.91,"ratio":46.52,"label":"弱回补","tone":"warn"},{"name":"草甘膦","chg":1.83,"net":-0.52,"net5":-1.44,"stocks":19,"leader":"国光股份","prior4":-0.92,"ratio":-56.52,"label":"继续流出","tone":"neg"},{"name":"医药电商","chg":1.82,"net":9.01,"net5":-4.51,"stocks":187,"leader":"莱美药业","prior4":-13.52,"ratio":66.64,"label":"强回补","tone":"warn"},{"name":"国产航母","chg":1.81,"net":3.37,"net5":-11.93,"stocks":36,"leader":"航发科技","prior4":-15.3,"ratio":22.03,"label":"弱回补","tone":"warn"},{"name":"海南自贸区","chg":1.8,"net":5.1,"net5":-3.94,"stocks":30,"leader":"罗牛山","prior4":-9.04,"ratio":56.42,"label":"强回补","tone":"warn"},{"name":"工业大麻","chg":1.8,"net":1.52,"net5":-1.71,"stocks":31,"leader":"顺灏股份","prior4":-3.23,"ratio":47.06,"label":"弱回补","tone":"warn"},{"name":"ETC","chg":1.79,"net":2.65,"net5":-3.19,"stocks":42,"leader":"世纪恒通","prior4":-5.84,"ratio":45.38,"label":"弱回补","tone":"warn"},{"name":"上海自贸区","chg":1.79,"net":1.72,"net5":-3.51,"stocks":58,"leader":"乐鑫科技","prior4":-5.23,"ratio":32.89,"label":"弱回补","tone":"warn"},{"name":"虚拟电厂","chg":1.78,"net":12.69,"net5":-4.58,"stocks":158,"leader":"杭州柯林","prior4":-17.27,"ratio":73.48,"label":"强回补","tone":"warn"},{"name":"白酒概念","chg":1.77,"net":-2.8,"net5":7.28,"stocks":48,"leader":"好当家","prior4":10.08,"ratio":-27.78,"label":"转出","tone":"neg"},{"name":"NMN概念","chg":1.71,"net":0.6,"net5":-1.24,"stocks":25,"leader":"银禧科技","prior4":-1.84,"ratio":32.61,"label":"弱回补","tone":"warn"},{"name":"互联网保险","chg":1.7,"net":1.89,"net5":12.02,"stocks":22,"leader":"七匹狼","prior4":10.13,"ratio":18.66,"label":"流入衰减","tone":"warn"},{"name":"代糖概念","chg":1.69,"net":0.91,"net5":-0.79,"stocks":25,"leader":"保龄宝","prior4":-1.7,"ratio":53.53,"label":"强回补","tone":"warn"},{"name":"参股银行","chg":1.68,"net":7.68,"net5":5.03,"stocks":768,"leader":"金丹科技","prior4":-2.65,"ratio":289.81,"label":"新钱","tone":"pos"},{"name":"光伏建筑一体化","chg":1.65,"net":12.47,"net5":-18.18,"stocks":135,"leader":"能辉科技","prior4":-30.65,"ratio":40.69,"label":"弱回补","tone":"warn"},{"name":"同花顺出海50","chg":1.65,"net":53.23,"net5":-0.85,"stocks":50,"leader":"拓普集团","prior4":-54.08,"ratio":98.43,"label":"强回补","tone":"warn"},{"name":"托育服务","chg":1.64,"net":-0.22,"net5":-0.76,"stocks":15,"leader":"创源股份","prior4":-0.54,"ratio":-40.74,"label":"继续流出","tone":"neg"},{"name":"雅下水电概念","chg":1.64,"net":5.57,"net5":4.08,"stocks":90,"leader":"东华测试","prior4":-1.49,"ratio":373.83,"label":"新钱","tone":"pos"},{"name":"天津自贸区","chg":1.62,"net":1.14,"net5":-1.79,"stocks":17,"leader":"海航科技","prior4":-2.93,"ratio":38.91,"label":"弱回补","tone":"warn"},{"name":"盐湖提锂","chg":1.62,"net":8.33,"net5":-0.76,"stocks":46,"leader":"富临精工","prior4":-9.09,"ratio":91.64,"label":"强回补","tone":"warn"},{"name":"维生素","chg":1.62,"net":3.08,"net5":-1.97,"stocks":77,"leader":"科源制药","prior4":-5.05,"ratio":60.99,"label":"强回补","tone":"warn"},{"name":"土壤修复","chg":1.6,"net":3.33,"net5":-2.3,"stocks":91,"leader":"京蓝科技","prior4":-5.63,"ratio":59.15,"label":"强回补","tone":"warn"},{"name":"光热发电","chg":1.6,"net":0.66,"net5":4.0,"stocks":51,"leader":"能辉科技","prior4":3.34,"ratio":19.76,"label":"流入衰减","tone":"warn"},{"name":"房屋检测","chg":1.59,"net":0.41,"net5":-0.82,"stocks":45,"leader":"盈建科","prior4":-1.23,"ratio":33.33,"label":"弱回补","tone":"warn"},{"name":"垃圾分类","chg":1.57,"net":0.55,"net5":-2.53,"stocks":98,"leader":"百洋股份","prior4":-3.08,"ratio":17.86,"label":"弱回补","tone":"warn"},{"name":"国资云","chg":1.57,"net":0.09,"net5":1.58,"stocks":54,"leader":"荣联科技","prior4":1.49,"ratio":6.04,"label":"流入衰减","tone":"warn"},{"name":"中韩自贸区","chg":1.56,"net":0.32,"net5":-1.48,"stocks":17,"leader":"好当家","prior4":-1.8,"ratio":17.78,"label":"弱回补","tone":"warn"},{"name":"新疆振兴","chg":1.54,"net":4.55,"net5":-6.17,"stocks":156,"leader":"东方环宇","prior4":-10.72,"ratio":42.44,"label":"弱回补","tone":"warn"},{"name":"新型城镇化","chg":1.53,"net":3.29,"net5":-8.03,"stocks":221,"leader":"奥雅股份","prior4":-11.32,"ratio":29.06,"label":"弱回补","tone":"warn"},{"name":"土地流转","chg":1.52,"net":-2.05,"net5":-1.86,"stocks":44,"leader":"金丹科技","prior4":0.19,"ratio":-1078.95,"label":"转出","tone":"neg"},{"name":"信托概念","chg":1.51,"net":-0.77,"net5":1.1,"stocks":23,"leader":"德龙汇能","prior4":1.87,"ratio":-41.18,"label":"转出","tone":"neg"},{"name":"国企改革","chg":1.5,"net":72.43,"net5":-55.05,"stocks":2944,"leader":"莱美药业","prior4":-127.48,"ratio":56.82,"label":"强回补","tone":"warn"},{"name":"共享单车","chg":1.47,"net":-0.17,"net5":-0.94,"stocks":14,"leader":"博实结","prior4":-0.77,"ratio":-22.08,"label":"继续流出","tone":"neg"},{"name":"化肥","chg":1.44,"net":4.22,"net5":-5.15,"stocks":75,"leader":"万向德农","prior4":-9.37,"ratio":45.04,"label":"弱回补","tone":"warn"},{"name":"钛白粉概念","chg":1.43,"net":0.55,"net5":-1.05,"stocks":15,"leader":"道恩股份","prior4":-1.6,"ratio":34.38,"label":"弱回补","tone":"warn"},{"name":"页岩气","chg":1.43,"net":-0.01,"net5":-6.34,"stocks":48,"leader":"东土科技","prior4":-6.33,"ratio":-0.16,"label":"继续流出","tone":"neg"},{"name":"养鸡","chg":1.42,"net":1.9,"net5":1.31,"stocks":22,"leader":"罗牛山","prior4":-0.59,"ratio":322.03,"label":"新钱","tone":"pos"},{"name":"地下管网","chg":1.41,"net":2.11,"net5":-4.12,"stocks":113,"leader":"汉威科技","prior4":-6.23,"ratio":33.87,"label":"弱回补","tone":"warn"},{"name":"跨境支付(CIPS)","chg":1.38,"net":9.85,"net5":25.95,"stocks":73,"leader":"优博讯","prior4":16.1,"ratio":61.18,"label":"持续流入","tone":"pos"},{"name":"绿色电力","chg":1.36,"net":12.44,"net5":-36.47,"stocks":437,"leader":"创源股份","prior4":-48.91,"ratio":25.43,"label":"弱回补","tone":"warn"},{"name":"统一大市场","chg":1.36,"net":5.27,"net5":0.71,"stocks":120,"leader":"中邮科技","prior4":-4.56,"ratio":115.57,"label":"新钱","tone":"pos"},{"name":"啤酒概念","chg":1.33,"net":0.26,"net5":-0.56,"stocks":29,"leader":"峨眉山A","prior4":-0.82,"ratio":31.71,"label":"弱回补","tone":"warn"},{"name":"雄安新区","chg":1.33,"net":7.35,"net5":-8.85,"stocks":196,"leader":"*ST华幸","prior4":-16.2,"ratio":45.37,"label":"弱回补","tone":"warn"},{"name":"装配式建筑","chg":1.32,"net":1.6,"net5":-1.08,"stocks":109,"leader":"逸飞激光","prior4":-2.68,"ratio":59.7,"label":"强回补","tone":"warn"},{"name":"俄乌冲突概念","chg":1.25,"net":9.06,"net5":-6.55,"stocks":76,"leader":"金健米业","prior4":-15.61,"ratio":58.04,"label":"强回补","tone":"warn"},{"name":"钒电池","chg":1.21,"net":-0.27,"net5":-1.61,"stocks":38,"leader":"惠城环保","prior4":-1.34,"ratio":-20.15,"label":"继续流出","tone":"neg"},{"name":"天然气","chg":1.19,"net":3.48,"net5":-10.0,"stocks":167,"leader":"东华测试","prior4":-13.48,"ratio":25.82,"label":"弱回补","tone":"warn"},{"name":"上海国企改革","chg":1.12,"net":-0.21,"net5":-1.2,"stocks":110,"leader":"上海电影","prior4":-0.99,"ratio":-21.21,"label":"继续流出","tone":"neg"},{"name":"禽流感","chg":1.11,"net":1.41,"net5":0.81,"stocks":23,"leader":"众生药业","prior4":-0.6,"ratio":235.0,"label":"新钱","tone":"pos"},{"name":"大豆","chg":1.09,"net":0.42,"net5":-0.38,"stocks":15,"leader":"秋乐种业","prior4":-0.8,"ratio":52.5,"label":"强回补","tone":"warn"},{"name":"央企国企改革","chg":1.07,"net":12.54,"net5":-10.9,"stocks":780,"leader":"飞亚达","prior4":-23.44,"ratio":53.5,"label":"强回补","tone":"warn"},{"name":"物业管理","chg":1.05,"net":3.73,"net5":-12.81,"stocks":183,"leader":"上海九百","prior4":-16.54,"ratio":22.55,"label":"弱回补","tone":"warn"},{"name":"特色小镇","chg":1.05,"net":0.49,"net5":-3.3,"stocks":40,"leader":"*ST华幸","prior4":-3.79,"ratio":12.93,"label":"弱回补","tone":"warn"},{"name":"水泥概念","chg":1.04,"net":1.93,"net5":0.43,"stocks":47,"leader":"红宝丽","prior4":-1.5,"ratio":128.67,"label":"新钱","tone":"pos"},{"name":"化债概念(AMC概念)","chg":1.02,"net":0.45,"net5":-0.66,"stocks":40,"leader":"通达海","prior4":-1.11,"ratio":40.54,"label":"弱回补","tone":"warn"},{"name":"深圳国企改革","chg":1.02,"net":1.13,"net5":-1.77,"stocks":58,"leader":"麦捷科技","prior4":-2.9,"ratio":38.97,"label":"弱回补","tone":"warn"},{"name":"参股券商","chg":0.97,"net":-0.15,"net5":6.68,"stocks":226,"leader":"上海九百","prior4":6.83,"ratio":-2.2,"label":"转出","tone":"neg"},{"name":"碳交易","chg":0.96,"net":-1.75,"net5":-9.86,"stocks":122,"leader":"德林海","prior4":-8.11,"ratio":-21.58,"label":"继续流出","tone":"neg"},{"name":"参股保险","chg":0.95,"net":3.82,"net5":1.79,"stocks":96,"leader":"机器人","prior4":-2.03,"ratio":188.18,"label":"新钱","tone":"pos"},{"name":"生物质能发电","chg":0.95,"net":0.95,"net5":-1.33,"stocks":64,"leader":"大业股份","prior4":-2.28,"ratio":41.67,"label":"弱回补","tone":"warn"},{"name":"抽水蓄能","chg":0.92,"net":3.64,"net5":15.66,"stocks":82,"leader":"邵阳液压","prior4":12.02,"ratio":30.28,"label":"流入衰减","tone":"warn"},{"name":"PPP概念","chg":0.89,"net":1.77,"net5":5.46,"stocks":199,"leader":"*ST华幸","prior4":3.69,"ratio":47.97,"label":"流入衰减","tone":"warn"},{"name":"自由贸易港","chg":0.86,"net":1.32,"net5":1.73,"stocks":47,"leader":"罗牛山","prior4":0.41,"ratio":321.95,"label":"加速流入","tone":"pos"},{"name":"特钢概念","chg":0.79,"net":-1.33,"net5":-0.84,"stocks":43,"leader":"五洲新春","prior4":0.49,"ratio":-271.43,"label":"转出","tone":"neg"},{"name":"中字头股票","chg":0.79,"net":3.9,"net5":-8.71,"stocks":134,"leader":"中邮科技","prior4":-12.61,"ratio":30.93,"label":"弱回补","tone":"warn"},{"name":"免税店","chg":0.79,"net":0.29,"net5":-1.08,"stocks":26,"leader":"东百集团","prior4":-1.37,"ratio":21.17,"label":"弱回补","tone":"warn"},{"name":"航运概念","chg":0.78,"net":0.42,"net5":2.81,"stocks":87,"leader":"华东重机","prior4":2.39,"ratio":17.57,"label":"流入衰减","tone":"warn"},{"name":"期货概念","chg":0.74,"net":3.76,"net5":2.82,"stocks":68,"leader":"首创证券","prior4":-0.94,"ratio":400.0,"label":"新钱","tone":"pos"},{"name":"超超临界发电","chg":0.63,"net":-2.3,"net5":0.39,"stocks":87,"leader":"哈空调","prior4":2.69,"ratio":-85.5,"label":"转出","tone":"neg"},{"name":"煤化工概念","chg":0.5,"net":1.32,"net5":3.66,"stocks":110,"leader":"西陇科学","prior4":2.34,"ratio":56.41,"label":"持续流入","tone":"pos"},{"name":"可燃冰","chg":0.33,"net":-0.02,"net5":1.46,"stocks":14,"leader":"鲁阳节能","prior4":1.48,"ratio":-1.35,"label":"转出","tone":"neg"},{"name":"芬太尼","chg":0.32,"net":-0.57,"net5":0.49,"stocks":8,"leader":"万孚生物","prior4":1.06,"ratio":-53.77,"label":"转出","tone":"neg"},{"name":"租售同权","chg":0.29,"net":-0.1,"net5":-3.01,"stocks":29,"leader":"*ST皇庭","prior4":-2.91,"ratio":-3.44,"label":"继续流出","tone":"neg"},{"name":"同花顺漂亮100","chg":0.13,"net":35.39,"net5":39.11,"stocks":100,"leader":"恒立液压","prior4":3.72,"ratio":951.34,"label":"加速流入","tone":"pos"},{"name":"ST板块","chg":0.13,"net":-1.78,"net5":-8.1,"stocks":195,"leader":"*ST仕净","prior4":-6.32,"ratio":-28.16,"label":"继续流出","tone":"neg"},{"name":"超级品牌","chg":0.12,"net":-7.1,"net5":30.4,"stocks":49,"leader":"朱老六","prior4":37.5,"ratio":-18.93,"label":"转出","tone":"neg"},{"name":"煤炭概念","chg":-0.0,"net":1.3,"net5":1.86,"stocks":89,"leader":"合锻智能","prior4":0.56,"ratio":232.14,"label":"加速流入","tone":"pos"},{"name":"高股息精选","chg":-0.15,"net":11.11,"net5":98.49,"stocks":285,"leader":"东方环宇","prior4":87.38,"ratio":12.71,"label":"流入衰减","tone":"warn"},{"name":"同花顺中特估100","chg":-0.59,"net":-14.37,"net5":60.78,"stocks":100,"leader":"中国稀土","prior4":75.15,"ratio":-19.12,"label":"转出","tone":"neg"},{"name":"赛马概念","chg":-1.2,"net":-0.03,"net5":-0.19,"stocks":4,"leader":"新华都","prior4":-0.16,"ratio":-18.75,"label":"继续流出","tone":"neg"},{"name":"证金持股","chg":-1.25,"net":-6.22,"net5":42.06,"stocks":33,"leader":"人民网","prior4":48.28,"ratio":-12.88,"label":"转出","tone":"neg"}],"flow_quality":{"industries":[{"name":"贵金属","chg":4.83,"net":9.93,"net5":1.87,"net10":-1.78,"amount":194.6,"up":14,"down":0,"leader":"晓程科技","prior4":-8.06,"ratio":123.2,"label":"新钱","tone":"pos"},{"name":"服装家纺","chg":2.76,"net":4.13,"net5":0.28,"net10":-0.2,"amount":81.3,"up":60,"down":13,"leader":"曼卡龙","prior4":-3.85,"ratio":107.27,"label":"新钱","tone":"pos"},{"name":"医疗器械","chg":2.64,"net":5.62,"net5":-0.22,"net10":-5.63,"amount":159.59,"up":128,"down":12,"leader":"华兰股份","prior4":-5.84,"ratio":96.23,"label":"强回补","tone":"warn"},{"name":"电池","chg":3.71,"net":18.02,"net5":-4.07,"net10":-42.23,"amount":359.63,"up":101,"down":4,"leader":"震裕科技","prior4":-22.09,"ratio":81.58,"label":"强回补","tone":"warn"},{"name":"医疗服务","chg":5.9,"net":15.0,"net5":-4.62,"net10":-7.67,"amount":224.23,"up":54,"down":1,"leader":"博腾股份","prior4":-19.62,"ratio":76.45,"label":"强回补","tone":"warn"},{"name":"通信设备","chg":4.16,"net":83.76,"net5":-40.9,"net10":24.86,"amount":1038.48,"up":86,"down":7,"leader":"宇特光电","prior4":-124.66,"ratio":67.19,"label":"强回补","tone":"warn"},{"name":"影视院线","chg":7.41,"net":9.23,"net5":-4.93,"net10":-5.48,"amount":134.23,"up":19,"down":0,"leader":"幸福蓝海","prior4":-14.16,"ratio":65.18,"label":"强回补","tone":"warn"},{"name":"文化传媒","chg":4.77,"net":19.19,"net5":-10.83,"net10":-8.09,"amount":369.88,"up":77,"down":8,"leader":"果麦文化","prior4":-30.02,"ratio":63.92,"label":"强回补","tone":"warn"},{"name":"电机","chg":6.22,"net":4.84,"net5":-2.8,"net10":-0.23,"amount":56.9,"up":26,"down":0,"leader":"华阳智能","prior4":-7.64,"ratio":63.35,"label":"强回补","tone":"warn"},{"name":"能源金属","chg":2.86,"net":4.63,"net5":-3.95,"net10":-11.83,"amount":61.37,"up":14,"down":0,"leader":"博迁新材","prior4":-8.58,"ratio":53.96,"label":"强回补","tone":"warn"},{"name":"化学制药","chg":2.52,"net":13.04,"net5":-11.17,"net10":-16.94,"amount":239.21,"up":147,"down":11,"leader":"莱美药业","prior4":-24.21,"ratio":53.86,"label":"强回补","tone":"warn"},{"name":"农化制品","chg":1.46,"net":2.92,"net5":-2.51,"net10":-12.2,"amount":82.1,"up":50,"down":8,"leader":"东方铁塔","prior4":-5.43,"ratio":53.78,"label":"强回补","tone":"warn"},{"name":"自动化设备","chg":6.65,"net":18.94,"net5":-17.41,"net10":3.24,"amount":388.59,"up":101,"down":0,"leader":"华晟智能","prior4":-36.35,"ratio":52.1,"label":"强回补","tone":"warn"},{"name":"电子化学品","chg":4.16,"net":9.39,"net5":-8.8,"net10":-0.31,"amount":263.32,"up":43,"down":1,"leader":"天承科技","prior4":-18.19,"ratio":51.62,"label":"强回补","tone":"warn"}],"distribution":[{"name":"工程机械","chg":3.38,"net":-5.96,"net5":-1.47,"net10":-9.53,"amount":72.69,"up":30,"down":6,"leader":"万达轴承","prior4":4.49,"ratio":-132.74,"label":"转出","tone":"neg"},{"name":"钢铁","chg":0.02,"net":-2.33,"net5":0.01,"net10":-2.89,"amount":52.3,"up":16,"down":17,"leader":"河钢资源","prior4":2.34,"ratio":-99.57,"label":"转出","tone":"neg"},{"name":"家居用品","chg":2.61,"net":-0.83,"net5":1.46,"net10":-1.53,"amount":77.59,"up":81,"down":15,"leader":"创源股份","prior4":2.29,"ratio":-36.24,"label":"转出","tone":"neg"},{"name":"电力","chg":0.17,"net":-4.39,"net5":9.46,"net10":-13.3,"amount":273.52,"up":55,"down":43,"leader":"艾能聚","prior4":13.85,"ratio":-31.7,"label":"转出","tone":"neg"},{"name":"煤炭开采加工","chg":-0.13,"net":-1.59,"net5":3.69,"net10":16.91,"amount":95.11,"up":11,"down":22,"leader":"安泰集团","prior4":5.28,"ratio":-30.11,"label":"转出","tone":"neg"},{"name":"白酒","chg":1.23,"net":-4.21,"net5":9.84,"net10":-1.49,"amount":139.41,"up":15,"down":4,"leader":"皇台酒业","prior4":14.05,"ratio":-29.96,"label":"转出","tone":"neg"},{"name":"保险","chg":-1.72,"net":-4.81,"net5":13.83,"net10":-0.27,"amount":83.64,"up":1,"down":4,"leader":"新华保险","prior4":18.64,"ratio":-25.8,"label":"转出","tone":"neg"},{"name":"食品加工制造","chg":1.44,"net":-0.4,"net5":2.08,"net10":-2.48,"amount":92.11,"up":49,"down":16,"leader":"ST龙大","prior4":2.48,"ratio":-16.13,"label":"转出","tone":"neg"}]},"stocks":{"top_in":[{"code":"300308","name":"中际旭创","price":417.2,"chg":6.1,"amount":227.67,"net":11.28,"super":9.18,"small":0.0,"d5":46.3,"turnover":"5.04%","prior4":35.02,"ratio":32.21,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"603986","name":"兆易创新","price":214.61,"chg":4.24,"amount":71.83,"net":10.66,"super":10.84,"small":-0.0,"d5":12.05,"turnover":"5.15%","prior4":1.39,"ratio":766.91,"label":"加速流入","tone":"pos","sector":"存储/芯片"},{"code":"300750","name":"宁德时代","price":227.39,"chg":-0.17,"amount":86.11,"net":10.29,"super":7.39,"small":0.0,"d5":51.55,"turnover":"0.89%","prior4":41.26,"ratio":24.94,"label":"流入衰减","tone":"warn","sector":"动力电池"},{"code":"300394","name":"天孚通信","price":116.3,"chg":13.82,"amount":84.75,"net":8.5,"super":9.45,"small":0.0,"d5":14.79,"turnover":"7.13%","prior4":6.29,"ratio":135.14,"label":"加速流入","tone":"pos","sector":"光模块"},{"code":"603259","name":"药明康德","price":146.55,"chg":4.08,"amount":53.49,"net":6.48,"super":5.41,"small":-0.0,"d5":3.94,"turnover":"1.50%","prior4":-2.54,"ratio":255.12,"label":"新钱","tone":"pos","sector":"CXO"},{"code":"000725","name":"京东方A","price":4.46,"chg":1.59,"amount":41.9,"net":6.44,"super":5.91,"small":-0.0,"d5":23.7,"turnover":"2.70%","prior4":17.26,"ratio":37.31,"label":"流入衰减","tone":"warn","sector":"面板"},{"code":"300502","name":"新易盛","price":181.36,"chg":9.92,"amount":205.61,"net":5.67,"super":25.07,"small":0.0,"d5":23.18,"turnover":"9.36%","prior4":17.51,"ratio":32.38,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"002384","name":"东山精密","price":71.47,"chg":5.72,"amount":107.26,"net":5.39,"super":4.6,"small":0.0,"d5":10.1,"turnover":"11.14%","prior4":4.71,"ratio":114.44,"label":"加速流入","tone":"pos","sector":"PCB"},{"code":"002050","name":"三花智控","price":33.88,"chg":7.9,"amount":29.07,"net":5.32,"super":6.48,"small":-0.0,"d5":5.47,"turnover":"2.40%","prior4":0.15,"ratio":3546.67,"label":"加速流入","tone":"pos","sector":"机器人/热管理"},{"code":"601138","name":"工业富联","price":38.29,"chg":3.01,"amount":47.9,"net":5.19,"super":1.99,"small":-0.0,"d5":16.94,"turnover":"0.65%","prior4":11.75,"ratio":44.17,"label":"流入衰减","tone":"warn","sector":"AI服务器"},{"code":"601916","name":"浙商银行","price":3.06,"chg":3.38,"amount":11.7,"net":4.75,"super":3.04,"small":0.08,"d5":3.98,"turnover":"1.80%","prior4":-0.77,"ratio":616.88,"label":"新钱","tone":"pos","sector":"银行"},{"code":"688008","name":"澜起科技","price":132.2,"chg":2.95,"amount":40.93,"net":4.47,"super":1.16,"small":0.0,"d5":18.6,"turnover":"2.78%","prior4":14.13,"ratio":31.63,"label":"流入衰减","tone":"warn","sector":"芯片"},{"code":"000001","name":"平安银行","price":12.34,"chg":0.98,"amount":29.99,"net":4.38,"super":1.47,"small":-0.08,"d5":0.41,"turnover":"1.25%","prior4":-3.97,"ratio":110.33,"label":"新钱","tone":"pos","sector":"银行"},{"code":"300059","name":"东方财富","price":18.62,"chg":1.14,"amount":40.49,"net":4.01,"super":1.97,"small":-0.0,"d5":18.76,"turnover":"1.62%","prior4":14.75,"ratio":27.19,"label":"流入衰减","tone":"warn","sector":"券商"},{"code":"300476","name":"胜宏科技","price":115.1,"chg":6.36,"amount":51.13,"net":3.86,"super":4.67,"small":0.0,"d5":11.37,"turnover":"5.29%","prior4":7.51,"ratio":51.4,"label":"持续流入","tone":"pos","sector":"PCB"},{"code":"688825","name":"长鑫科技","price":35.9,"chg":2.1,"amount":109.65,"net":3.6,"super":-1.93,"small":0.0,"d5":-31.91,"turnover":"7.00%","prior4":-35.51,"ratio":10.14,"label":"弱回补","tone":"warn","sector":""},{"code":"601899","name":"紫金矿业","price":24.26,"chg":2.23,"amount":68.03,"net":3.33,"super":-2.53,"small":-0.0,"d5":-7.27,"turnover":"1.37%","prior4":-10.6,"ratio":31.42,"label":"弱回补","tone":"warn","sector":"有色"},{"code":"603993","name":"洛阳钼业","price":12.14,"chg":3.67,"amount":21.85,"net":3.3,"super":1.29,"small":-0.03,"d5":-0.5,"turnover":"1.05%","prior4":-3.8,"ratio":86.84,"label":"强回补","tone":"warn","sector":"有色"},{"code":"600183","name":"生益科技","price":60.75,"chg":4.08,"amount":59.78,"net":3.26,"super":0.96,"small":0.0,"d5":12.02,"turnover":"4.18%","prior4":8.76,"ratio":37.21,"label":"流入衰减","tone":"warn","sector":"覆铜板"},{"code":"600715","name":"文投控股","price":2.85,"chg":4.01,"amount":23.89,"net":3.06,"super":-2.41,"small":0.0,"d5":23.07,"turnover":"31.01%","prior4":20.01,"ratio":15.29,"label":"流入衰减","tone":"warn","sector":"传媒"}],"top_out":[{"code":"002685","name":"华东重机","price":8.14,"chg":10.0,"amount":16.37,"net":-8.0,"super":14.8,"small":0.32,"d5":-17.9,"turnover":"20.15%","prior4":-9.9,"ratio":-80.81,"label":"继续流出","tone":"neg","sector":"题材/机械"},{"code":"601318","name":"中国平安","price":53.7,"chg":-3.17,"amount":51.42,"net":-6.89,"super":-5.73,"small":0.0,"d5":1.63,"turnover":"0.89%","prior4":8.52,"ratio":-80.87,"label":"转出","tone":"neg","sector":"保险"},{"code":"600519","name":"贵州茅台","price":1439.0,"chg":-3.15,"amount":82.24,"net":-6.05,"super":-8.32,"small":0.0,"d5":15.44,"turnover":"0.46%","prior4":21.49,"ratio":-28.15,"label":"转出","tone":"neg","sector":"白酒"},{"code":"603893","name":"瑞芯微","price":202.88,"chg":10.0,"amount":36.55,"net":-6.0,"super":9.7,"small":0.21,"d5":-7.77,"turnover":"4.42%","prior4":-1.77,"ratio":-338.98,"label":"继续流出","tone":"neg","sector":"芯片"},{"code":"002579","name":"中京电子","price":14.73,"chg":10.01,"amount":25.87,"net":-5.24,"super":6.44,"small":0.23,"d5":-5.17,"turnover":"30.34%","prior4":0.07,"ratio":-7485.71,"label":"转出","tone":"neg","sector":"PCB"},{"code":"688981","name":"中芯国际","price":121.6,"chg":-3.08,"amount":73.63,"net":-5.05,"super":-10.17,"small":-0.0,"d5":37.6,"turnover":"3.06%","prior4":42.65,"ratio":-11.84,"label":"转出","tone":"neg","sector":"晶圆制造"},{"code":"300829","name":"金丹科技","price":31.44,"chg":20.0,"amount":13.56,"net":-4.92,"super":7.07,"small":0.1,"d5":-5.51,"turnover":"25.70%","prior4":-0.59,"ratio":-833.9,"label":"继续流出","tone":"neg","sector":"化工"},{"code":"002242","name":"九阳股份","price":31.86,"chg":10.01,"amount":25.19,"net":-4.86,"super":8.57,"small":0.43,"d5":-0.94,"turnover":"10.62%","prior4":3.92,"ratio":-123.98,"label":"转出","tone":"neg","sector":"小家电"},{"code":"688256","name":"寒武纪","price":914.8,"chg":-0.57,"amount":97.3,"net":-4.31,"super":-4.47,"small":-0.0,"d5":4.93,"turnover":"1.71%","prior4":9.24,"ratio":-46.65,"label":"转出","tone":"neg","sector":""},{"code":"600036","name":"招商银行","price":43.26,"chg":-1.68,"amount":54.99,"net":-4.02,"super":-5.01,"small":-0.0,"d5":0.75,"turnover":"0.61%","prior4":4.77,"ratio":-84.28,"label":"转出","tone":"neg","sector":"银行"},{"code":"002771","name":"真视通","price":17.4,"chg":9.99,"amount":18.52,"net":-3.87,"super":3.99,"small":0.13,"d5":-8.38,"turnover":"60.41%","prior4":-4.51,"ratio":-85.81,"label":"继续流出","tone":"neg","sector":"通信"},{"code":"002708","name":"光洋股份","price":20.99,"chg":10.01,"amount":6.96,"net":-2.96,"super":4.39,"small":0.17,"d5":-2.81,"turnover":"6.61%","prior4":0.15,"ratio":-1973.33,"label":"转出","tone":"neg","sector":""}],"featured":[{"code":"300502","name":"新易盛","price":181.36,"chg":9.92,"amount":205.61,"net":5.67,"super":25.07,"small":0.0,"d5":23.18,"turnover":"9.36%","prior4":17.51,"ratio":32.38,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"002685","name":"华东重机","price":8.14,"chg":10.0,"amount":16.37,"net":-8.0,"super":14.8,"small":0.32,"d5":-17.9,"turnover":"20.15%","prior4":-9.9,"ratio":-80.81,"label":"继续流出","tone":"neg","sector":"题材/机械"},{"code":"688836","name":"宇树科技","price":708.0,"chg":20.0,"amount":46.77,"net":1.12,"super":12.93,"small":0.0,"d5":-2.9,"turnover":"23.99%","prior4":-4.02,"ratio":27.86,"label":"弱回补","tone":"warn","sector":"人形机器人"},{"code":"603986","name":"兆易创新","price":214.61,"chg":4.24,"amount":71.83,"net":10.66,"super":10.84,"small":-0.0,"d5":12.05,"turnover":"5.15%","prior4":1.39,"ratio":766.91,"label":"加速流入","tone":"pos","sector":"存储/芯片"},{"code":"603893","name":"瑞芯微","price":202.88,"chg":10.0,"amount":36.55,"net":-6.0,"super":9.7,"small":0.21,"d5":-7.77,"turnover":"4.42%","prior4":-1.77,"ratio":-338.98,"label":"继续流出","tone":"neg","sector":"芯片"},{"code":"300394","name":"天孚通信","price":116.3,"chg":13.82,"amount":84.75,"net":8.5,"super":9.45,"small":0.0,"d5":14.79,"turnover":"7.13%","prior4":6.29,"ratio":135.14,"label":"加速流入","tone":"pos","sector":"光模块"},{"code":"300308","name":"中际旭创","price":417.2,"chg":6.1,"amount":227.67,"net":11.28,"super":9.18,"small":0.0,"d5":46.3,"turnover":"5.04%","prior4":35.02,"ratio":32.21,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"002242","name":"九阳股份","price":31.86,"chg":10.01,"amount":25.19,"net":-4.86,"super":8.57,"small":0.43,"d5":-0.94,"turnover":"10.62%","prior4":3.92,"ratio":-123.98,"label":"转出","tone":"neg","sector":"小家电"},{"code":"300750","name":"宁德时代","price":227.39,"chg":-0.17,"amount":86.11,"net":10.29,"super":7.39,"small":0.0,"d5":51.55,"turnover":"0.89%","prior4":41.26,"ratio":24.94,"label":"流入衰减","tone":"warn","sector":"动力电池"},{"code":"601689","name":"拓普集团","price":52.92,"chg":10.0,"amount":27.61,"net":2.69,"super":7.19,"small":0.18,"d5":0.71,"turnover":"3.12%","prior4":-1.98,"ratio":135.86,"label":"新钱","tone":"pos","sector":"机器人/汽零"},{"code":"300829","name":"金丹科技","price":31.44,"chg":20.0,"amount":13.56,"net":-4.92,"super":7.07,"small":0.1,"d5":-5.51,"turnover":"25.70%","prior4":-0.59,"ratio":-833.9,"label":"继续流出","tone":"neg","sector":"化工"},{"code":"002050","name":"三花智控","price":33.88,"chg":7.9,"amount":29.07,"net":5.32,"super":6.48,"small":-0.0,"d5":5.47,"turnover":"2.40%","prior4":0.15,"ratio":3546.67,"label":"加速流入","tone":"pos","sector":"机器人/热管理"},{"code":"002579","name":"中京电子","price":14.73,"chg":10.01,"amount":25.87,"net":-5.24,"super":6.44,"small":0.23,"d5":-5.17,"turnover":"30.34%","prior4":0.07,"ratio":-7485.71,"label":"转出","tone":"neg","sector":"PCB"},{"code":"000725","name":"京东方A","price":4.46,"chg":1.59,"amount":41.9,"net":6.44,"super":5.91,"small":-0.0,"d5":23.7,"turnover":"2.70%","prior4":17.26,"ratio":37.31,"label":"流入衰减","tone":"warn","sector":"面板"},{"code":"603259","name":"药明康德","price":146.55,"chg":4.08,"amount":53.49,"net":6.48,"super":5.41,"small":-0.0,"d5":3.94,"turnover":"1.50%","prior4":-2.54,"ratio":255.12,"label":"新钱","tone":"pos","sector":"CXO"},{"code":"300476","name":"胜宏科技","price":115.1,"chg":6.36,"amount":51.13,"net":3.86,"super":4.67,"small":0.0,"d5":11.37,"turnover":"5.29%","prior4":7.51,"ratio":51.4,"label":"持续流入","tone":"pos","sector":"PCB"}],"new_money":[{"code":"603259","name":"药明康德","price":146.55,"chg":4.08,"amount":53.49,"net":6.48,"super":5.41,"small":-0.0,"d5":3.94,"turnover":"1.50%","prior4":-2.54,"ratio":255.12,"label":"新钱","tone":"pos","sector":"CXO"},{"code":"000001","name":"平安银行","price":12.34,"chg":0.98,"amount":29.99,"net":4.38,"super":1.47,"small":-0.08,"d5":0.41,"turnover":"1.25%","prior4":-3.97,"ratio":110.33,"label":"新钱","tone":"pos","sector":"银行"},{"code":"002428","name":"云南锗业","price":65.94,"chg":2.23,"amount":36.42,"net":2.26,"super":0.16,"small":0.0,"d5":0.2,"turnover":"8.74%","prior4":-2.06,"ratio":109.71,"label":"新钱","tone":"pos","sector":""}],"strong_refill":[{"code":"603993","name":"洛阳钼业","price":12.14,"chg":3.67,"amount":21.85,"net":3.3,"super":1.29,"small":-0.03,"d5":-0.5,"turnover":"1.05%","prior4":-3.8,"ratio":86.84,"label":"强回补","tone":"warn","sector":"有色"},{"code":"603083","name":"剑桥科技","price":100.0,"chg":6.35,"amount":33.06,"net":2.18,"super":3.51,"small":0.0,"d5":-0.5,"turnover":"12.60%","prior4":-2.68,"ratio":81.34,"label":"强回补","tone":"warn","sector":""},{"code":"600016","name":"民生银行","price":3.51,"chg":1.15,"amount":13.31,"net":2.31,"super":1.48,"small":-0.01,"d5":-0.81,"turnover":"1.07%","prior4":-3.12,"ratio":74.04,"label":"强回补","tone":"warn","sector":""},{"code":"300223","name":"君正股份","price":90.53,"chg":4.9,"amount":30.56,"net":2.47,"super":0.93,"small":-0.0,"d5":-1.71,"turnover":"8.23%","prior4":-4.18,"ratio":59.09,"label":"强回补","tone":"warn","sector":""},{"code":"000938","name":"紫光股份","price":22.41,"chg":2.33,"amount":22.89,"net":2.37,"super":2.58,"small":0.01,"d5":-2.15,"turnover":"3.64%","prior4":-4.52,"ratio":52.43,"label":"强回补","tone":"warn","sector":""},{"code":"688017","name":"绿的谐波","price":260.28,"chg":12.77,"amount":26.39,"net":2.03,"super":1.12,"small":0.02,"d5":-2.02,"turnover":"5.92%","prior4":-4.05,"ratio":50.12,"label":"强回补","tone":"warn","sector":"机器人/减速器"},{"code":"002156","name":"通富微电","price":40.16,"chg":1.24,"amount":35.59,"net":2.16,"super":4.39,"small":0.01,"d5":-3.27,"turnover":"6.03%","prior4":-5.43,"ratio":39.78,"label":"弱回补","tone":"warn","sector":"封测"},{"code":"601899","name":"紫金矿业","price":24.26,"chg":2.23,"amount":68.03,"net":3.33,"super":-2.53,"small":-0.0,"d5":-7.27,"turnover":"1.37%","prior4":-10.6,"ratio":31.42,"label":"弱回补","tone":"warn","sector":"有色"},{"code":"688521","name":"芯原股份","price":79.58,"chg":3.49,"amount":22.25,"net":2.21,"super":0.72,"small":-0.0,"d5":-5.25,"turnover":"5.50%","prior4":-7.46,"ratio":29.62,"label":"弱回补","tone":"warn","sector":""},{"code":"300058","name":"蓝色光标","price":11.36,"chg":5.09,"amount":23.45,"net":2.61,"super":1.47,"small":-0.0,"d5":-10.01,"turnover":"6.08%","prior4":-12.62,"ratio":20.68,"label":"弱回补","tone":"warn","sector":""},{"code":"688825","name":"长鑫科技","price":35.9,"chg":2.1,"amount":109.65,"net":3.6,"super":-1.93,"small":0.0,"d5":-31.91,"turnover":"7.00%","prior4":-35.51,"ratio":10.14,"label":"弱回补","tone":"warn","sector":""}],"steady_inflow":[{"code":"300308","name":"中际旭创","price":417.2,"chg":6.1,"amount":227.67,"net":11.28,"super":9.18,"small":0.0,"d5":46.3,"turnover":"5.04%","prior4":35.02,"ratio":32.21,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"603986","name":"兆易创新","price":214.61,"chg":4.24,"amount":71.83,"net":10.66,"super":10.84,"small":-0.0,"d5":12.05,"turnover":"5.15%","prior4":1.39,"ratio":766.91,"label":"加速流入","tone":"pos","sector":"存储/芯片"},{"code":"300750","name":"宁德时代","price":227.39,"chg":-0.17,"amount":86.11,"net":10.29,"super":7.39,"small":0.0,"d5":51.55,"turnover":"0.89%","prior4":41.26,"ratio":24.94,"label":"流入衰减","tone":"warn","sector":"动力电池"},{"code":"300394","name":"天孚通信","price":116.3,"chg":13.82,"amount":84.75,"net":8.5,"super":9.45,"small":0.0,"d5":14.79,"turnover":"7.13%","prior4":6.29,"ratio":135.14,"label":"加速流入","tone":"pos","sector":"光模块"},{"code":"000725","name":"京东方A","price":4.46,"chg":1.59,"amount":41.9,"net":6.44,"super":5.91,"small":-0.0,"d5":23.7,"turnover":"2.70%","prior4":17.26,"ratio":37.31,"label":"流入衰减","tone":"warn","sector":"面板"},{"code":"300502","name":"新易盛","price":181.36,"chg":9.92,"amount":205.61,"net":5.67,"super":25.07,"small":0.0,"d5":23.18,"turnover":"9.36%","prior4":17.51,"ratio":32.38,"label":"流入衰减","tone":"warn","sector":"光模块"},{"code":"002384","name":"东山精密","price":71.47,"chg":5.72,"amount":107.26,"net":5.39,"super":4.6,"small":0.0,"d5":10.1,"turnover":"11.14%","prior4":4.71,"ratio":114.44,"label":"加速流入","tone":"pos","sector":"PCB"},{"code":"601138","name":"工业富联","price":38.29,"chg":3.01,"amount":47.9,"net":5.19,"super":1.99,"small":-0.0,"d5":16.94,"turnover":"0.65%","prior4":11.75,"ratio":44.17,"label":"流入衰减","tone":"warn","sector":"AI服务器"},{"code":"688008","name":"澜起科技","price":132.2,"chg":2.95,"amount":40.93,"net":4.47,"super":1.16,"small":0.0,"d5":18.6,"turnover":"2.78%","prior4":14.13,"ratio":31.63,"label":"流入衰减","tone":"warn","sector":"芯片"},{"code":"300059","name":"东方财富","price":18.62,"chg":1.14,"amount":40.49,"net":4.01,"super":1.97,"small":-0.0,"d5":18.76,"turnover":"1.62%","prior4":14.75,"ratio":27.19,"label":"流入衰减","tone":"warn","sector":"券商"},{"code":"300476","name":"胜宏科技","price":115.1,"chg":6.36,"amount":51.13,"net":3.86,"super":4.67,"small":0.0,"d5":11.37,"turnover":"5.29%","prior4":7.51,"ratio":51.4,"label":"持续流入","tone":"pos","sector":"PCB"},{"code":"600183","name":"生益科技","price":60.75,"chg":4.08,"amount":59.78,"net":3.26,"super":0.96,"small":0.0,"d5":12.02,"turnover":"4.18%","prior4":8.76,"ratio":37.21,"label":"流入衰减","tone":"warn","sector":"覆铜板"}]},"divergence":{"big_buy_sell":[{"code":"002685","name":"华东重机","price":8.14,"chg":10.0,"amount":16.37,"net":-8.0,"super":14.8,"small":0.32,"d5":-17.9,"turnover":"20.15%","prior4":-9.9,"ratio":-80.81,"label":"继续流出","tone":"neg","sector":"题材/机械"},{"code":"603893","name":"瑞芯微","price":202.88,"chg":10.0,"amount":36.55,"net":-6.0,"super":9.7,"small":0.21,"d5":-7.77,"turnover":"4.42%","prior4":-1.77,"ratio":-338.98,"label":"继续流出","tone":"neg","sector":"芯片"},{"code":"002242","name":"九阳股份","price":31.86,"chg":10.01,"amount":25.19,"net":-4.86,"super":8.57,"small":0.43,"d5":-0.94,"turnover":"10.62%","prior4":3.92,"ratio":-123.98,"label":"转出","tone":"neg","sector":"小家电"},{"code":"300829","name":"金丹科技","price":31.44,"chg":20.0,"amount":13.56,"net":-4.92,"super":7.07,"small":0.1,"d5":-5.51,"turnover":"25.70%","prior4":-0.59,"ratio":-833.9,"label":"继续流出","tone":"neg","sector":"化工"},{"code":"002579","name":"中京电子","price":14.73,"chg":10.01,"amount":25.87,"net":-5.24,"super":6.44,"small":0.23,"d5":-5.17,"turnover":"30.34%","prior4":0.07,"ratio":-7485.71,"label":"转出","tone":"neg","sector":"PCB"},{"code":"002815","name":"崇达技术","price":14.96,"chg":10.0,"amount":18.65,"net":-2.81,"super":4.58,"small":0.25,"d5":-2.87,"turnover":"16.48%","prior4":-0.06,"ratio":-4683.33,"label":"继续流出","tone":"neg","sector":""},{"code":"002708","name":"光洋股份","price":20.99,"chg":10.01,"amount":6.96,"net":-2.96,"super":4.39,"small":0.17,"d5":-2.81,"turnover":"6.61%","prior4":0.15,"ratio":-1973.33,"label":"转出","tone":"neg","sector":""},{"code":"605488","name":"福莱新材","price":46.77,"chg":10.0,"amount":15.29,"net":-2.88,"super":4.24,"small":0.2,"d5":-3.48,"turnover":"11.28%","prior4":-0.6,"ratio":-480.0,"label":"继续流出","tone":"neg","sector":""},{"code":"002771","name":"真视通","price":17.4,"chg":9.99,"amount":18.52,"net":-3.87,"super":3.99,"small":0.13,"d5":-8.38,"turnover":"60.41%","prior4":-4.51,"ratio":-85.81,"label":"继续流出","tone":"neg","sector":"通信"},{"code":"002086","name":"东方海洋","price":4.13,"chg":10.13,"amount":17.29,"net":-2.37,"super":3.65,"small":0.21,"d5":7.69,"turnover":"26.59%","prior4":10.06,"ratio":-23.56,"label":"转出","tone":"neg","sector":""},{"code":"601599","name":"浙文影业","price":3.65,"chg":9.94,"amount":8.34,"net":-1.33,"super":3.39,"small":0.22,"d5":7.16,"turnover":"20.11%","prior4":8.49,"ratio":-15.67,"label":"转出","tone":"neg","sector":""},{"code":"301575","name":"艾芬达","price":28.68,"chg":20.0,"amount":6.02,"net":-2.49,"super":3.19,"small":0.11,"d5":-2.43,"turnover":"29.81%","prior4":0.06,"ratio":-4150.0,"label":"转出","tone":"neg","sector":""},{"code":"603626","name":"科森科技","price":23.84,"chg":10.01,"amount":9.59,"net":-1.19,"super":2.93,"small":0.19,"d5":-0.64,"turnover":"7.43%","prior4":0.55,"ratio":-216.36,"label":"转出","tone":"neg","sector":""},{"code":"603236","name":"移远通信","price":81.25,"chg":10.01,"amount":18.42,"net":-1.42,"super":2.67,"small":0.14,"d5":0.05,"turnover":"5.86%","prior4":1.47,"ratio":-96.6,"label":"转出","tone":"neg","sector":""},{"code":"002584","name":"西陇科学","price":8.5,"chg":9.96,"amount":10.26,"net":-1.67,"super":2.57,"small":0.21,"d5":-6.65,"turnover":"26.62%","prior4":-4.98,"ratio":-33.53,"label":"继续流出","tone":"neg","sector":""}],"big_sell_buy":[{"code":"601899","name":"紫金矿业","price":24.26,"chg":2.23,"amount":68.03,"net":3.33,"super":-2.53,"small":-0.0,"d5":-7.27,"turnover":"1.37%","prior4":-10.6,"ratio":31.42,"label":"弱回补","tone":"warn","sector":"有色"},{"code":"600715","name":"文投控股","price":2.85,"chg":4.01,"amount":23.89,"net":3.06,"super":-2.41,"small":0.0,"d5":23.07,"turnover":"31.01%","prior4":20.01,"ratio":15.29,"label":"流入衰减","tone":"warn","sector":"传媒"},{"code":"688072","name":"拓荆科技","price":508.3,"chg":-3.73,"amount":34.83,"net":1.08,"super":-1.99,"small":-0.0,"d5":11.19,"turnover":"2.43%","prior4":10.11,"ratio":10.68,"label":"流入衰减","tone":"warn","sector":""},{"code":"688825","name":"长鑫科技","price":35.9,"chg":2.1,"amount":109.65,"net":3.6,"super":-1.93,"small":0.0,"d5":-31.91,"turnover":"7.00%","prior4":-35.51,"ratio":10.14,"label":"弱回补","tone":"warn","sector":""},{"code":"688012","name":"中微公司","price":258.34,"chg":-1.21,"amount":66.36,"net":1.72,"super":-1.67,"small":0.0,"d5":19.2,"turnover":"2.82%","prior4":17.48,"ratio":9.84,"label":"流入衰减","tone":"warn","sector":"半导体设备"},{"code":"300872","name":"天阳科技","price":9.48,"chg":-15.96,"amount":4.76,"net":2.14,"super":-1.61,"small":-0.16,"d5":1.09,"turnover":"12.35%","prior4":-1.05,"ratio":203.81,"label":"新钱","tone":"pos","sector":""}]},"lhb":{"date":"2026-11-20","top_buy":[{"code":"301313","name":"凡拓数创","chg":20.0,"net":0.87,"buyers":4,"sellers":3,"reason":"日换手率达到30%的前5只证券"},{"code":"002916","name":"深南电路","chg":-0.59,"net":0.69,"buyers":3,"sellers":4,"reason":"连续三个交易日内，涨幅偏离值累计达到20%的证券"},{"code":"000889","name":"中嘉博创","chg":-1.4,"net":0.68,"buyers":4,"sellers":2,"reason":"日振幅值达到15%的前5只证券"},{"code":"000530","name":"冰山冷热","chg":10.03,"net":0.58,"buyers":1,"sellers":0,"reason":"日涨幅偏离值达到7%的前5只证券"},{"code":"301583","name":"托伦斯","chg":1.75,"net":0.5,"buyers":3,"sellers":1,"reason":"日换手率达到30%的前5只证券"},{"code":"000823","name":"超声电子","chg":9.98,"net":0.43,"buyers":1,"sellers":1,"reason":"日涨幅偏离值达到7%的前5只证券"},{"code":"002148","name":"北纬科技","chg":8.17,"net":0.43,"buyers":1,"sellers":0,"reason":"日换手率达到20%的前5只证券"},{"code":"002453","name":"华软科技","chg":-0.46,"net":0.11,"buyers":3,"sellers":4,"reason":"日振幅值达到15%的前5只证券"}],"top_sell":[{"code":"600316","name":"洪都航空","chg":-10.01,"net":-2.24,"buyers":2,"sellers":4,"reason":"有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券"},{"code":"301660","name":"粤芯半导体","chg":1.97,"net":-2.01,"buyers":3,"sellers":5,"reason":"日换手率达到30%的前5只证券"},{"code":"000678","name":"襄阳轴承","chg":1.43,"net":-1.2,"buyers":2,"sellers":2,"reason":"日换手率达到20%的前5只证券"},{"code":"002425","name":"凯撒文化","chg":-10.08,"net":-0.53,"buyers":1,"sellers":3,"reason":"连续三个交易日内，跌幅偏离值累计达到20%的证券"},{"code":"603151","name":"邦基科技","chg":-9.98,"net":-0.49,"buyers":1,"sellers":4,"reason":"非S证券连续三个交易日内收盘价格跌幅偏离值累计达到20%的证券"}],"note":"目标日 2026-11-23 龙虎榜 17:00 后披露；此处为最近披露日 2026-11-20 机构席位统计。"},"sources":["腾讯行情（a-stock-data tencent_quote）","东方财富 push2 资金流（沪市单点快照）","同花顺资金流（行业/概念/个股，即时与5日）","新浪 MoneyFlow（超大单/小单）","东方财富涨停池/跌停池/昨日涨停","上交所/深交所两融数据","gjd_research 国家队 ETF 申赎（15只宽基，估算口径）","东方财富龙虎榜机构统计（2026-11-20）"],"narrative":{"hero_title":"深V反转：<em>ETF 在托底，大单在回补，杠杆仍在出清</em>","hero_dek":"上证最低 -1.61%、收 3,538.95（+0.15%），创业板 +3.08%；上涨 <b>4306</b> 家、下跌 <b>780</b> 家，涨停 <b>151</b> 家。ETF 5 日净申购 <b>+1,887.5 亿</b>；主动全单今天 <b>+694.5 亿</b>、前 4 日 <b>-848.9 亿</b>；融资余额 4 日 <b>-845.8 亿</b>。一句话：<b>被动资金在持续建仓，主动资金在做超跌回补，杠杆仍在撤退</b>。","lead_cards":[{"kicker":"01 · 指数","title":"深 V，不是普通反弹","body":"上证最低 <b>-1.61%</b>，收盘 <b>+0.15%</b>；创业板从低点拉回 <b>+4.19%</b>。上涨 <b>4306</b> 家、下跌 <b>780</b> 家，涨停 <b>151</b> 家——早盘的恐慌盘被资金接走了。"},{"kicker":"02 · 钱","title":"ETF 在持续买，主动资金只是回补","body":"15 只宽基 ETF 在 2026-11-16 至 2026-11-20 合计净申购 <b>+1,887.5 亿</b>，2026-11-20 单日 <b>+920.1 亿</b>。主动全单今天 <b>+694.5 亿</b>，但过去 4 日累计 <b>-848.9 亿</b>，今天回补了 <b>81.8%</b>。"},{"kicker":"03 · 主线","title":"光模块仍是“今天 + 5日”双正的成长主线","body":"中际旭创 <b>+11.3 / 5日 +46.3 亿</b>，天孚通信 <b>+8.5 / 5日 +14.8 亿</b>，新易盛 <b>+5.7 / 5日 +23.2 亿</b>。银行也是双正（+16.4 / +44.3），但属防守方向。"}],"signals":[{"status":"成立","cls":"ok","kicker":"01 · 被动资金","title":"ETF 通道持续净申购","body":"5 日 +1,887.5 亿，2026-11-20 单日 +920.1 亿；最近 5 日有 5 日为净申购。"},{"status":"成立","cls":"ok","kicker":"02 · 主动大单","title":"龙头集中加仓","body":"中际旭创、天孚通信、新易盛 今日与 5 日双正；大单集中在少数龙头，不是全面铺开。"},{"status":"待确认","cls":"warn","kicker":"03 · 全市场","title":"单日回补，不是全面加仓","body":"今日全单 +694.5 亿，但前 4 日 -848.9 亿；只回补 81.8%."},{"status":"不成立","cls":"bad","kicker":"04 · 杠杆","title":"融资余额仍在撤","body":"融资余额 21,437.9 亿（2026-11-20），4 日 -845.8 亿、5 日 -1,059.9 亿；上涨不是杠杆推的。"}],"reversal_note":"科创50 收 -0.26%，但盘中最低 -4.35%、收盘从低点拉回 +4.27%——今天最典型的“深水打捞”。","flows_note":"东财沪市为单点快照；深市同接口收盘后常被限流，未取到的不做同口径展示。新浪为全 A 超大单，同花顺为全 A 主动买卖全单；口径不同，只看方向与量级，不能相加。","etf_note":"+167 → +155 → +145 → +501 → +920 亿；5 日合计 +1,887.5 亿。","etf_decomp_note":"沪深300 <b>+1,017.7 亿（54%）</b>、上证50 <b>+229.1 亿（12%）</b>，两者合计约 <b>66%</b>；中证500+1000 约 343 亿，创业板+科创50 约 349 亿。买盘主要在大盘宽基，托底属性强于进攻属性。","active_desc":"全 A 主动买卖净额（同花顺口径）。过去 4 日 <b class=\"down\">-848.9 亿</b>，今天回补 <b>82%</b>。","margin_desc":"融资余额（2026-11-20）。4 个交易日 <b class=\"down\">-845.8 亿</b>，5 日 <b class=\"down\">-1,059.9 亿</b>。今天上涨不是杠杆推的。","etf_desc":"2026-11-16 至 2026-11-20 的 5 日净申购；2026-11-20 单日 <b>+920.1 亿</b>。其中大盘宽基占比约 <b>66%</b>。","signal_note":"升级为“全面加仓”的三个确认条件：① 通信设备/半导体连续 2–3 日净流入；② 融资余额止跌回升；③ 光模块龙头继续放量且不出现高位放量长阴。少一个，都只能定义为“结构性建仓”。","zt_note":"3 板仅 1 家、4 板空缺——普涨特征明显，接力意愿不强。明天看的是“首板晋级率”，不是涨停总数。","margin_note":"2026-11-12 见顶 22,663 亿，2026-11-20 回落至 21,438 亿；杠杆资金在科技抛售中持续降仓。","conclusion":"<strong>今天的结论：</strong>大资金在买，但买法是“ETF 托底 + 龙头集中加仓”，不是全面建仓。ETF 5 日 +1,887.5 亿，主动全单今天 +694.5 亿、前 4 日 -848.9 亿，融资余额 4 日 -845.8 亿。要确认“逐渐建仓”升级为“全面加仓”，至少看三个信号：① 通信设备/半导体连续 2–3 日净流入；② 融资余额止跌回升；③ 光模块龙头继续放量、不出现高位放量长阴。","industry_note":"今日：通信设备、半导体、元件 净流入靠前；工程机械、保险、电力 净流出靠前。5 日：银行、保险 靠前，半导体、通信设备 靠后。今天的强，要放到 5 日/10 日里看，不能只看单日。","scatter_note":"左上角最密集：通信设备、半导体、元件、汽车零部件——今天涨/流入，但 5 日仍是净流出，属于回补。右下角：保险、电力、白酒——5 日流入、今天流出，是今天的“提款机”。","concept_note":"今日：芯片概念、数据中心(AIDC)、机器人概念；5 日仍靠前的是 跨境支付(CIPS)、抽水蓄能、互联网保险。主题资金是脉冲还是趋势，看 5 日能否接上。","stock_note":"华东重机 超大单 +14.8 / 全单 -8.0、瑞芯微 超大单 +9.7 / 全单 -6.0、九阳股份 超大单 +8.6 / 全单 -4.9——大单买、中小单卖，更像游资/量化大单接力，不宜直接当成机构建仓。","topin_note":"中际旭创 +11.3（5日 +46.3）、兆易创新 +10.7（5日 +12.1）、宁德时代 +10.3（5日 +51.5）。","divergence_note":"这不是“机构建仓”的证据，更像大单/游资在涨停板上接货、中小单兑现。要看次日能否继续封板、有没有机构席位接力。","lhb_note":"目标日 2026-11-23 龙虎榜 17:00 后披露；此处为最近披露日 2026-11-20 机构席位统计。","topout_note":"华东重机 -8.0（5日 -17.9）、中国平安 -6.9（5日 +1.6）、贵州茅台 -6.0（5日 +15.4）。","refill_note":"按“今日净额 / |前 4 日净额|”排序：行业里回补比例最高的是 贵金属、服装家纺、医疗器械、电池。比例超过 100% 才算新钱，50%–100% 是强回补，低于 50% 只是弱回补。","stock_quality_note":"新钱榜：药明康德、平安银行、云南锗业；强回补：洛阳钼业、剑桥科技、民生银行、君正股份；持续流入：中际旭创、兆易创新、宁德时代、天孚通信。新钱是“前 4 日卖、今天买回更多”，持续流入是“前 4 日已在买、今天继续买”。","method_note":"收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。","footer_date":"2026-11-23 · 周一"},"rendered_at":"2026-11-23T20:08:04"};
+</script>
+<script>
+(function(){
+  const D = DATA;
+  if (!D) {
+    document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
+    return;
+  }
+  const fmt = (v, d=1) => {
+    v = Number(v);
+    const body = Math.abs(v).toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d});
+    return (v > 0 ? '+' : '') + (v < 0 ? '-' : '') + body;
+  };
+  const cls = v => v >= 0 ? 'up' : 'down';
+  const el = id => document.getElementById(id);
+
+  // ---------- narrative ----------
+  function renderNarrative(){
+    const N = D.narrative || {};
+    document.title = `盘面说明 · ${D.date} · 资金面`;
+    el('hero-title').innerHTML = N.hero_title || '盘面说明';
+    el('hero-dek').innerHTML = N.hero_dek || '';
+    el('lead-grid').innerHTML = (N.lead_cards || []).map(c=>`
+      <article class="lead-card">
+        <div class="kicker">${c.kicker}</div>
+        <h3>${c.title}</h3>
+        <p>${c.body}</p>
+      </article>`).join('');
+    el('signal-grid').innerHTML = (N.signals || []).map(s=>`
+      <div class="signal ${s.cls}">
+        <span class="badge">${s.status}</span>
+        <span class="st">${s.kicker}</span>
+        <b>${s.title}</b>
+        <p>${s.body}</p>
+      </div>`).join('');
+    if (el('signal-title')) {
+      const okCount = (N.signals || []).filter(s=>s.cls==='ok').length;
+      el('signal-title').textContent = `大资金建仓判断：四个信号，目前 ${okCount} 个成立`;
+    }
+    const notes = {
+      'reversal-note':'reversal_note', 'flows-note':'flows_note', 'etf-note':'etf_note',
+      'etf-decomp-note':'etf_decomp_note', 'margin-desc':'margin_desc', 'active-desc':'active_desc',
+      'etf-desc':'etf_desc', 'signal-note':'signal_note', 'zt-note':'zt_note', 'margin-note':'margin_note',
+      'conclusion':'conclusion', 'industry-note':'industry_note', 'scatter-note':'scatter_note',
+      'concept-note':'concept_note', 'stock-note':'stock_note', 'topin-note':'topin_note',
+      'divergence-note':'divergence_note', 'lhb-note':'lhb_note', 'topout-note':'topout_note',
+      'refill-note':'refill_note', 'stock-quality-note':'stock_quality_note'
+    };
+    for (const [id, key] of Object.entries(notes)) {
+      if (el(id)) el(id).innerHTML = N[key] || '';
+    }
+    if (el('etf-date')) el('etf-date').textContent = D.etf.date;
+    if (el('lhb-date')) el('lhb-date').textContent = D.lhb.date || '待披露';
+    if (el('caveat-etf-date')) el('caveat-etf-date').textContent = D.etf.date;
+    if (el('caveat-margin-date')) el('caveat-margin-date').textContent = D.margin.date;
+    if (el('footer-date')) el('footer-date').textContent = D.date + ' · ' + D.weekday;
+    if (el('opp-margin')) el('opp-margin').textContent = D.margin.total_fin.toLocaleString('zh-CN',{maximumFractionDigits:1}) + ' 亿';
+    if (el('opp-active')) el('opp-active').textContent = fmt(D.flows.ths.total,1) + ' 亿';
+    if (el('opp-etf')) el('opp-etf').textContent = fmt(D.etf.d5,1) + ' 亿';
+  }
+
+  // ---------- hero ----------
+  el('hero-meta').textContent = `${D.date} · ${D.weekday} · 收盘后`;
+  el('hero-chips').innerHTML = `
+    <span class="chip">上证 <strong class="${cls(D.indices[0].change_pct)}">${D.indices[0].price.toFixed(2)}</strong><span class="${cls(D.indices[0].change_pct)}">${fmt(D.indices[0].change_pct,2)}%</span></span>
+    <span class="chip">创业板 <strong class="${cls(D.indices[2].change_pct)}">${D.indices[2].price.toFixed(2)}</strong><span class="${cls(D.indices[2].change_pct)}">${fmt(D.indices[2].change_pct,2)}%</span></span>
+    <span class="chip">成交额 <strong>${D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})} 亿</strong></span>
+    <span class="chip">涨停 <strong class="up">${D.breadth.limit_up} 家</strong><span class="down">跌停 ${D.breadth.limit_down} 家</span></span>`;
+
+  // ---------- KPI ----------
+  const kpis = [
+    ['上证指数', D.indices[0].price.toFixed(2), fmt(D.indices[0].change_pct,2)+'%', cls(D.indices[0].change_pct)],
+    ['创业板指', D.indices[2].price.toFixed(2), fmt(D.indices[2].change_pct,2)+'%', cls(D.indices[2].change_pct)],
+    ['两市成交额', D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})+' 亿', '含北证 '+D.turnover.bj.toFixed(0)+' 亿', ''],
+    ['上涨 / 下跌', D.breadth.up+' / '+D.breadth.down, '平盘 '+D.breadth.flat+'，停牌 '+D.breadth.suspended, 'up'],
+    ['涨停 / 跌停', D.breadth.limit_up+' / '+D.breadth.limit_down, '真实 '+D.breadth.real_limit_up+' / '+D.breadth.real_limit_down, 'up'],
+    ['沪市主力', D.flows.em_sh.main_yi ? fmt(D.flows.em_sh.main_yi,1)+' 亿' : '未取到', D.flows.em_sh.super_yi ? '超大单 '+fmt(D.flows.em_sh.super_yi,1)+' 亿' : '接口限流，见口径说明', 'up'],
+    ['全 A 超大单', fmt(D.flows.sina.super_total,1)+' 亿', '沪 '+D.flows.sina.sh.toFixed(0)+' / 深 '+D.flows.sina.sz.toFixed(0), 'up'],
+    ['ETF 5 日', fmt(D.etf.d5,1)+' 亿', '最新 '+D.etf.date+' 单日 '+fmt(D.etf.net,1), 'up'],
+  ];
+  el('kpis').innerHTML = kpis.map(k=>`
+    <div class="kpi"><div class="label">${k[0]}</div>
+      <div class="value ${k[3]}">${k[1]}</div>
+      <div class="sub">${k[2]}</div></div>`).join('');
+
+  // ---------- reversal ----------
+  el('reversal').innerHTML = D.indices.map(i=>{
+    const lowPct = (i.low / i.prev_close - 1) * 100;
+    const highPct = (i.high / i.prev_close - 1) * 100;
+    const pos = Math.max(2, Math.min(98, i.close_pos));
+    return `<div class="rev-row">
+      <div class="rev-name">${i.name}</div>
+      <div class="rev-px">${i.price.toFixed(2)}<small class="${cls(i.change_pct)}">${fmt(i.change_pct,2)}%</small></div>
+      <div class="rev-track">
+        <div class="rev-fill" style="width:${pos}%"></div>
+        <div class="rev-dot" style="left:${pos}%"></div>
+        <span class="rev-lohi lo">低 ${lowPct.toFixed(2)}%</span>
+        <span class="rev-lohi hi">高 ${highPct.toFixed(2)}%</span>
+      </div>
+      <div class="rev-note">从低点 <strong>+${i.reversal_from_low.toFixed(2)}%</strong> · 收盘位置 ${i.close_pos.toFixed(0)}% · 振幅 ${i.amplitude.toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+
+  // ---------- charts registry ----------
+  const charts = [];
+  const inited = {};
+  function mk(id){ const c = echarts.init(el(id), null, {renderer:'canvas'}); charts.push(c); return c; }
+
+  const C = {red:'#c33a32', red2:'#e06055', green:'#1f7a5c', green2:'#3a9b78', gold:'#b0832f', blue:'#39658c', ink:'#1b1e26', muted:'#6e707a'};
+  const axis = {axisLine:{lineStyle:{color:'rgba(27,30,38,.18)'}}, axisTick:{show:false}, axisLabel:{color:C.muted, fontSize:11}, splitLine:{lineStyle:{color:'rgba(27,30,38,.07)'}}};
+  const tip = {backgroundColor:'rgba(27,30,38,.92)', borderWidth:0, textStyle:{color:'#fff', fontSize:12}, padding:[7,10]};
+
+  // ---------- flows ----------
+  function initFlows(){
+    const c = mk('chart-flows');
+    const rows = [
+      {name:'同花顺 · 全A全单', v:D.flows.ths.total},
+      {name:'新浪 · 全A超大单', v:D.flows.sina.super_total},
+      {name:'东财 · 沪市超大单', v:D.flows.em_sh.super_yi},
+      {name:'东财 · 沪市主力', v:D.flows.em_sh.main_yi},
+    ].filter(r=>Math.abs(r.v) > 0.001);
+    c.setOption({
+      grid:{left:118,right:66,top:12,bottom:24},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>`${s[0].name}<br><b>${fmt(s[0].value,2)} 亿</b>`},
+      xAxis:{type:'value', ...axis, axisLabel:{...axis.axisLabel, formatter:'{value}'}},
+      yAxis:{type:'category', data:rows.map(r=>r.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:12}},
+      series:[{
+        type:'bar', data:rows.map(r=>r.v), barWidth:18,
+        itemStyle:{borderRadius:[0,6,6,0], color:p=>p.value>=0?C.red:C.green},
+        label:{show:true, position:'right', formatter:p=>fmt(p.value,1), color:C.ink, fontWeight:650, fontSize:12}
+      }]
+    });
+  }
+
+  // ---------- ETF ----------
+  function initEtf(){
+    const c = mk('chart-etf');
+    const seq = D.etf.seq;
+    c.setOption({
+      grid:{left:44,right:16,top:24,bottom:28},
+      tooltip:{...tip, trigger:'axis', formatter:s=>`${s[0].name}<br>净申赎 <b>${fmt(s[0].value,2)} 亿</b>`},
+      xAxis:{type:'category', data:seq.map(x=>x.date.slice(5)), ...axis, axisLabel:{...axis.axisLabel, interval:0, rotate:0}},
+      yAxis:{type:'value', ...axis, axisLabel:{...axis.axisLabel, formatter:'{value}'}},
+      series:[{
+        type:'bar', data:seq.map(x=>x.net), barWidth:'52%',
+        itemStyle:{borderRadius:[4,4,0,0], color:p=>p.value>=0?C.red:C.green},
+        label:{show:true, position:'top', formatter:p=>Math.abs(p.value)>=100?fmt(p.value,0):'', color:C.ink, fontSize:10},
+        markLine:{silent:true, symbol:'none', lineStyle:{color:'rgba(27,30,38,.25)', type:'dashed'}, data:[{yAxis:0}]}
+      }]
+    });
+  }
+
+  // ---------- ETF decomposition ----------
+  function initEtfDecomp(){
+    const c = mk('chart-etf-decomp');
+    const rows = (D.etf.decomp && D.etf.decomp.buckets || []).slice().sort((a,b)=>a.net-b.net);
+    const colorMap = {red:C.red, red2:C.red2, blue:C.blue, green:C.green, gold:C.gold, muted:C.muted};
+    c.setOption({
+      grid:{left:96,right:88,top:18,bottom:26},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>{
+        const r = rows[s[0].dataIndex];
+        return `${r.name}（${r.style}）<br>5 日净申赎 <b>${fmt(r.net,2)} 亿</b><br>占 15 只宽基合计 <b>${fmt(r.share,1)}%</b>`;
+      }},
+      xAxis:{type:'value', ...axis, axisLabel:{...axis.axisLabel, formatter:'{value}'}},
+      yAxis:{type:'category', data:rows.map(r=>r.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:11}},
+      series:[{
+        type:'bar', data:rows.map(r=>({value:r.net, itemStyle:{color:colorMap[r.tone]||C.muted}})), barWidth:17,
+        itemStyle:{borderRadius:[0,6,6,0]},
+        label:{show:true, position:'right', formatter:p=>{
+          const r = rows[p.dataIndex];
+          return `${fmt(r.net,1)} 亿 · ${r.share.toFixed(0)}%`;
+        }, color:C.ink, fontSize:11, fontWeight:650},
+        markLine:{silent:true, symbol:'none', label:{show:false}, lineStyle:{color:'rgba(27,30,38,.25)', type:'dashed'}, data:[{xAxis:0}]}
+      }]
+    });
+  }
+
+  // ---------- industry refill ----------
+  function initRefill(){
+    const c = mk('chart-refill');
+    const rows = (D.flow_quality && D.flow_quality.industries || []).slice(0,12).sort((a,b)=>a.ratio-b.ratio);
+    const maxRatio = Math.max(120, ...rows.map(r=>r.ratio||0));
+    c.setOption({
+      grid:{left:96,right:118,top:14,bottom:26},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>{
+        const r = rows[s[0].dataIndex];
+        return `${r.name}<br>今日 <b>${fmt(r.net,2)} 亿</b> · 前4日 ${fmt(r.prior4,2)} 亿<br>回补比例 <b>${r.ratio.toFixed(0)}%</b> · ${r.label}`;
+      }},
+      xAxis:{type:'value', max:Math.ceil(maxRatio*1.1), ...axis, axisLabel:{...axis.axisLabel, formatter:'{value}%'}},
+      yAxis:{type:'category', data:rows.map(r=>r.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:11}},
+      series:[{
+        type:'bar', data:rows.map(r=>({value:r.ratio, itemStyle:{color:r.ratio>=100?C.red:r.ratio>=50?C.gold:C.muted}})), barWidth:14,
+        itemStyle:{borderRadius:[0,5,5,0]},
+        label:{show:true, position:'right', formatter:p=>{
+          const r = rows[p.dataIndex];
+          return `+${r.net.toFixed(1)} 亿 · ${r.ratio.toFixed(0)}%`;
+        }, color:C.ink, fontSize:10, fontWeight:600},
+        markLine:{silent:true, symbol:'none', label:{show:true, color:C.muted, fontSize:9}, lineStyle:{color:'rgba(176,131,47,.4)', type:'dashed'}, data:[{xAxis:50,label:{formatter:'50%'}},{xAxis:100,label:{formatter:'100%'}}]}
+      }]
+    });
+  }
+
+  // ---------- industry ----------
+  let indMetric = 'net';
+  function industryOption(metric){
+    const list = D.industries.slice().sort((a,b)=>b[metric]-a[metric]);
+    const top = list.slice(0,10), bottom = list.slice(-6);
+    const rows = [...top, ...bottom].reverse();
+    return {
+      grid:{left:92,right:74,top:14,bottom:24},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>{
+        const r = rows[s[0].dataIndex];
+        return `${r.name}<br>今日 <b>${fmt(r.net,2)} 亿</b><br>5日 ${fmt(r.net5,2)} 亿 · 10日 ${fmt(r.net10,2)} 亿<br>涨跌 ${fmt(r.chg,2)}% · 成交 ${r.amount.toFixed(0)} 亿`;
+      }},
+      xAxis:{type:'value', ...axis, axisLabel:{...axis.axisLabel, formatter:'{value}'}},
+      yAxis:{type:'category', data:rows.map(r=>r.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:11}},
+      series:[{
+        type:'bar', data:rows.map(r=>({value:r[metric], itemStyle:{color:r[metric]>=0?C.red:C.green}})), barWidth:14,
+        itemStyle:{borderRadius:[0,5,5,0]},
+        label:{show:true, position:'right', formatter:p=>fmt(p.value,1), color:C.ink, fontSize:10, fontWeight:600}
+      }]
+    };
+  }
+  function initIndustry(){
+    const c = mk('chart-industry');
+    c.setOption(industryOption(indMetric));
+    document.querySelectorAll('[data-ind]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('[data-ind]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        indMetric = btn.dataset.ind;
+        c.setOption(industryOption(indMetric), {notMerge:true});
+      });
+    });
+  }
+
+  // ---------- scatter ----------
+  function initScatter(){
+    const c = mk('chart-scatter');
+    const key = ['通信设备','半导体','元件','银行','保险','白酒'];
+    const data = D.industries.map(r=>({
+      name:r.name, value:[r.net5, r.net, r.amount], chg:r.chg, net5:r.net5, net:r.net,
+      symbolSize: Math.max(7, Math.min(30, Math.sqrt(Math.max(r.amount,1))*1.05))
+    }));
+    c.setOption({
+      grid:{left:56,right:26,top:30,bottom:46},
+      tooltip:{...tip, formatter:p=>`${p.data.name}<br>5日 <b>${fmt(p.data.net5,2)} 亿</b> · 今日 <b>${fmt(p.data.net,2)} 亿</b><br>今日涨跌 ${fmt(p.data.chg,2)}% · 成交 ${p.data.value[2].toFixed(0)} 亿`},
+      xAxis:{type:'value', ...axis, name:'5日净额（亿）', nameLocation:'middle', nameGap:28, nameTextStyle:{color:C.muted,fontSize:11}},
+      yAxis:{type:'value', ...axis, name:'今日净额（亿）', nameLocation:'middle', nameGap:38, nameTextStyle:{color:C.muted,fontSize:11}},
+      series:[{
+        type:'scatter', data:data,
+        itemStyle:{color:p=>{
+          const x=p.data.value[0], y=p.data.value[1];
+          if (x>=0 && y>=0) return 'rgba(195,58,50,.78)';
+          if (x<0 && y>=0) return 'rgba(176,131,47,.85)';
+          if (x>=0 && y<0) return 'rgba(31,122,92,.72)';
+          return 'rgba(110,112,122,.55)';
+        }, borderColor:'rgba(255,255,255,.85)', borderWidth:1},
+        label:{show:true, formatter:p=>key.includes(p.data.name)?p.data.name:'', position:'top', color:C.ink, fontSize:10, fontWeight:650,
+          backgroundColor:'rgba(255,255,255,.72)', padding:[1,3], borderRadius:3},
+        labelLayout:{hideOverlap:true},
+        emphasis:{scale:1.15},
+        markLine:{silent:true, symbol:'none', label:{show:false}, lineStyle:{color:'rgba(27,30,38,.22)', width:1}, data:[{xAxis:0},{yAxis:0}]}
+      }],
+      graphic:[
+        {type:'text', left:'12%', top:26, style:{text:'5日流出 · 今日回补', fill:'#b0832f', fontSize:11, fontWeight:650}},
+        {type:'text', right:'6%', top:26, style:{text:'5日 + 今日双流入', fill:'#c33a32', fontSize:11, fontWeight:650}},
+        {type:'text', left:'12%', bottom:14, style:{text:'双流出', fill:'#6e707a', fontSize:11, fontWeight:650}},
+        {type:'text', right:'6%', bottom:14, style:{text:'5日流入 · 今日流出', fill:'#1f7a5c', fontSize:11, fontWeight:650}}
+      ]
+    });
+  }
+
+  // ---------- concepts ----------
+  function initConcept(){
+    const c = mk('chart-concept');
+    const exclude = ['融资融券','深股通','沪股通','2026中报预增','人民币贬值受益','证金持股','高股息精选','同花顺漂亮100','同花顺中特估100','超级品牌'];
+    const list = D.concepts.filter(x=>!exclude.includes(x.name)).sort((a,b)=>b.net-a.net).slice(0,12).reverse();
+    c.setOption({
+      grid:{left:110,right:60,top:12,bottom:20},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>{
+        const r=list[s[0].dataIndex]; return `${r.name}<br>今日 <b>${fmt(r.net,2)} 亿</b><br>5日 ${fmt(r.net5,2)} 亿 · 成分 ${r.stocks} 只`;
+      }},
+      xAxis:{type:'value', ...axis},
+      yAxis:{type:'category', data:list.map(x=>x.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:11}},
+      series:[{type:'bar', data:list.map(x=>({value:x.net,itemStyle:{color:x.net>=0?C.red:C.green}})), barWidth:13,
+        itemStyle:{borderRadius:[0,5,5,0]},
+        label:{show:true, position:'right', formatter:p=>fmt(p.value,1), color:C.ink, fontSize:10, fontWeight:600}}]
+    });
+  }
+
+  // ---------- stocks ----------
+  function initStocks(){
+    const c = mk('chart-stocks');
+    const list = D.stocks.featured.slice().reverse();
+    c.setOption({
+      grid:{left:96,right:64,top:28,bottom:24},
+      legend:{top:0, right:0, itemWidth:10, itemHeight:10, textStyle:{color:C.muted,fontSize:11}, data:['超大单净额','全单净额']},
+      tooltip:{...tip, trigger:'axis', axisPointer:{type:'shadow'}, formatter:s=>{
+        const r=list[s[0].dataIndex]; return `${r.name} <span style="opacity:.7">${r.code}</span><br>涨跌 ${fmt(r.chg,2)}% · 成交 ${r.amount.toFixed(1)} 亿<br>超大单 <b>${fmt(r.super,2)} 亿</b><br>全单 <b>${fmt(r.net,2)} 亿</b><br>5日 ${fmt(r.d5,2)} 亿`;
+      }},
+      xAxis:{type:'value', ...axis},
+      yAxis:{type:'category', data:list.map(x=>x.name), ...axis, splitLine:{show:false}, axisLabel:{...axis.axisLabel, color:C.ink, fontSize:11}},
+      series:[
+        {name:'超大单净额', type:'bar', data:list.map(x=>x.super), barWidth:9, itemStyle:{color:C.red, borderRadius:[0,4,4,0]},
+          label:{show:false}},
+        {name:'全单净额', type:'bar', data:list.map(x=>x.net), barWidth:9, itemStyle:{color:C.gold, borderRadius:[0,4,4,0]},
+          label:{show:true, position:'right', formatter:p=>fmt(p.value,1), color:C.ink, fontSize:10, fontWeight:600}}
+      ]
+    });
+  }
+
+  // ---------- zt donut ----------
+  function initZt(){
+    const c = mk('chart-zt');
+    const ladder = D.zt.ladder || {};
+    const data = [
+      {name:`首板 ${Number(ladder['1']||0)}`, value:Number(ladder['1']||0), itemStyle:{color:'#e6b8b3'}},
+      {name:`2板 ${Number(ladder['2']||0)}`, value:Number(ladder['2']||0), itemStyle:{color:'#d9867e'}},
+      {name:`3板 ${Number(ladder['3']||0)}`, value:Number(ladder['3']||0), itemStyle:{color:'#c33a32'}},
+      {name:`4板 ${Number(ladder['4']||0)}`, value:Number(ladder['4']||0), itemStyle:{color:'#a52d27'}},
+      {name:`5板+ ${Number(D.zt.fifth_plus||0)}`, value:Number(D.zt.fifth_plus||0), itemStyle:{color:'#7d1f1a'}}
+    ].filter(x=>x.value>0);
+    c.setOption({
+      tooltip:{...tip, formatter:p=>`${p.name}：<b>${p.value} 只</b>（${p.percent}%）`},
+      title:{text:String(D.zt.count), subtext:`涨停 / 最高 ${D.zt.max_height} 板`, left:'center', top:'36%', textStyle:{fontSize:26,fontWeight:750,color:C.ink}, subtextStyle:{fontSize:11,color:C.muted}},
+      legend:{bottom:0, left:'center', itemWidth:8, itemHeight:8, itemGap:10, textStyle:{fontSize:10,color:C.muted}},
+      series:[{type:'pie', radius:['44%','66%'], center:['50%','44%'], avoidLabelOverlap:true,
+        itemStyle:{borderColor:'#fff',borderWidth:2}, label:{show:false}, labelLine:{show:false},
+        data:data}]
+    });
+  }
+
+  // ---------- margin ----------
+  function initMargin(){
+    const c = mk('chart-margin');
+    const s = D.margin.series;
+    const vals = s.map(x=>x.total);
+    const min = Math.floor((Math.min(...vals) - 300) / 500) * 500;
+    const max = Math.ceil((Math.max(...vals) + 300) / 500) * 500;
+    c.setOption({
+      grid:{left:56,right:18,top:22,bottom:26},
+      tooltip:{...tip, trigger:'axis', formatter:x=>`${x[0].name}<br>融资余额 <b>${Number(x[0].value).toLocaleString('zh-CN',{maximumFractionDigits:0})} 亿</b>`},
+      xAxis:{type:'category', data:s.map(x=>x.date.slice(5)), ...axis, axisLabel:{...axis.axisLabel, interval:0, fontSize:10}},
+      yAxis:{type:'value', min:min, max:max, ...axis, axisLabel:{...axis.axisLabel, formatter:v=>v.toLocaleString('zh-CN')}},
+      series:[{type:'line', data:s.map(x=>x.total), smooth:true, symbolSize:5,
+        lineStyle:{color:C.green, width:2.5}, itemStyle:{color:C.green},
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(31,122,92,.18)'},{offset:1,color:'rgba(31,122,92,.02)'}]}},
+        markPoint:{symbol:'pin', symbolSize:44, data:[{coord:[s.length-1, s[s.length-1].total], value:Math.round(s[s.length-1].total).toLocaleString('zh-CN')}], itemStyle:{color:C.green}, label:{show:false}, symbolOffset:[0,-14]}
+      }]
+    });
+  }
+
+  // ---------- tables ----------
+  function qcls(label){
+    if (!label) return 'muted';
+    if (label.includes('新钱') || label.includes('加速')) return 'new';
+    if (label.includes('强回补')) return 'strong';
+    if (label.includes('弱回补') || label.includes('衰减')) return 'weak';
+    if (label.includes('持续')) return 'steady';
+    if (label.includes('转出') || label.includes('流出')) return 'dist';
+    return 'muted';
+  }
+  function qualityBadge(r){
+    if (!r || !r.label) return '<span class="state muted">—</span>';
+    const ratio = r.ratio == null ? '' : ` ${r.ratio.toFixed(0)}%`;
+    return `<span class="state ${qcls(r.label)}">${r.label}${ratio}</span>`;
+  }
+
+  function renderStockQuality(mode='new_money'){
+    const rows = (D.stocks && D.stocks[mode] || []).slice(0,12);
+    const html = `<thead><tr><th>#</th><th>股票</th><th>今日净额</th><th>前4日</th><th>比例</th><th>5日净额</th><th>类型</th></tr></thead><tbody>` +
+      rows.map((s,i)=>`<tr>
+        <td class="num">${i+1}</td>
+        <td class="name"><strong>${s.name}</strong><br><span style="color:#8a8c94;font-size:10px">${s.code}${s.sector?` · ${s.sector}`:''}</span></td>
+        <td class="num ${cls(s.net)}">${fmt(s.net,2)}</td>
+        <td class="num ${cls(s.prior4)}">${fmt(s.prior4,2)}</td>
+        <td class="num">${s.ratio==null?'—':fmt(s.ratio,0)+'%'}</td>
+        <td class="num ${cls(s.d5)}">${fmt(s.d5,2)}</td>
+        <td>${qualityBadge(s)}</td>
+      </tr>`).join('') + '</tbody>';
+    el('table-stock-quality').innerHTML = html;
+  }
+
+  function renderTopIn(){
+    const rows = D.stocks.top_in.slice(0,12);
+    const html = `<thead><tr><th>#</th><th>股票</th><th>涨跌</th><th>成交额</th><th>全单净额</th><th>超大单</th><th>5日净额</th><th>质量</th></tr></thead><tbody>` +
+      rows.map((s,i)=>`<tr>
+        <td class="num">${i+1}</td>
+        <td class="name"><strong>${s.name}</strong><br><span style="color:#8a8c94;font-size:10px">${s.code}${s.sector?` · ${s.sector}`:''}</span></td>
+        <td class="num ${cls(s.chg)}">${fmt(s.chg,2)}%</td>
+        <td class="num">${s.amount.toFixed(1)} 亿</td>
+        <td class="num ${cls(s.net)}">${fmt(s.net,2)}</td>
+        <td class="num ${cls(s.super)}">${fmt(s.super,2)}</td>
+        <td class="num ${cls(s.d5)}">${fmt(s.d5,2)}</td>
+        <td>${qualityBadge(s)}</td>
+      </tr>`).join('') + '</tbody>';
+    el('table-top-in').innerHTML = html;
+  }
+
+  function renderTopOut(){
+    const rows = D.stocks.top_out.slice(0,12);
+    const html = `<thead><tr><th>#</th><th>股票</th><th>涨跌</th><th>成交额</th><th>全单净额</th><th>超大单</th><th>5日净额</th></tr></thead><tbody>` +
+      rows.map((s,i)=>`<tr>
+        <td class="num">${i+1}</td>
+        <td class="name"><strong>${s.name}</strong><br><span style="color:#8a8c94;font-size:10px">${s.code}${s.sector?` · ${s.sector}`:''}</span></td>
+        <td class="num ${cls(s.chg)}">${fmt(s.chg,2)}%</td>
+        <td class="num">${s.amount.toFixed(1)} 亿</td>
+        <td class="num ${cls(s.net)}">${fmt(s.net,2)}</td>
+        <td class="num ${cls(s.super)}">${fmt(s.super,2)}</td>
+        <td class="num ${cls(s.d5)}">${fmt(s.d5,2)}</td>
+      </tr>`).join('') + '</tbody>';
+    el('table-top-out').innerHTML = html;
+  }
+
+  function renderDivergence(){
+    const rows = D.divergence.big_buy_sell.slice(0,10);
+    const html = `<thead><tr><th>股票</th><th>涨跌</th><th>全单净额</th><th>超大单</th><th>解读</th></tr></thead><tbody>` +
+      rows.map(s=>`<tr>
+        <td class="name"><strong>${s.name}</strong><br><span style="color:#8a8c94;font-size:10px">${s.code}</span></td>
+        <td class="num ${cls(s.chg)}">${fmt(s.chg,2)}%</td>
+        <td class="num ${cls(s.net)}">${fmt(s.net,2)}</td>
+        <td class="num ${cls(s.super)}">${fmt(s.super,2)}</td>
+        <td><span class="tag">大单接 · 中小单出</span></td>
+      </tr>`).join('') + '</tbody>';
+    el('table-divergence').innerHTML = html;
+  }
+
+  function renderLhb(){
+    const buys = D.lhb.top_buy.slice(0,6);
+    const sells = D.lhb.top_sell.slice(0,5);
+    const row = (s, sign) => `<tr>
+      <td class="name"><strong>${s.name}</strong><br><span style="color:#8a8c94;font-size:10px">${s.code}</span></td>
+      <td class="num ${sign>0?'pos':'neg'}">${fmt(s.net,2)} 亿</td>
+      <td class="num">${s.buyers} / ${s.sellers}</td>
+      <td style="white-space:normal;color:#666;font-size:11px;min-width:180px">${s.reason}</td>
+    </tr>`;
+    el('table-lhb').innerHTML = `<thead><tr><th>股票</th><th>机构净额</th><th>买方 / 卖方</th><th>上榜原因</th></tr></thead><tbody>` +
+      buys.map(s=>row(s,1)).join('') + sells.map(s=>row(s,-1)).join('') + '</tbody>';
+  }
+
+  function renderSectors(){
+    const keys = ['通信设备','半导体','元件','银行','保险','白酒','电力','自动化设备','医疗服务','影视院线','游戏','文化传媒','消费电子','光学光电子','汽车零部件','电池','贵金属','工程机械'];
+    const rows = D.industries.filter(x=>keys.includes(x.name)).sort((a,b)=>b.net-a.net);
+    const html = `<thead><tr><th>行业</th><th>今日涨跌</th><th>今日净额</th><th>5日净额</th><th>10日净额</th><th>成交额</th><th>领涨股</th><th>状态</th></tr></thead><tbody>` +
+      rows.map(r=>{
+        let state = '—', stateCls = 'out';
+        if (r.net>0 && r.net5>0) { state = '双流入'; stateCls = 'buy'; }
+        else if (r.net>0 && r.net5<0) { state = '5日流出·今日回补'; stateCls = 'refill'; }
+        else if (r.net<0 && r.net5>0) { state = '5日流入·今日流出'; stateCls = 'sell'; }
+        else { state = '双流出'; stateCls = 'out'; }
+        return `<tr>
+          <td class="name"><strong>${r.name}</strong></td>
+          <td class="num ${cls(r.chg)}">${fmt(r.chg,2)}%</td>
+          <td class="num ${cls(r.net)}">${fmt(r.net,2)}</td>
+          <td class="num ${cls(r.net5)}">${fmt(r.net5,2)}</td>
+          <td class="num ${cls(r.net10)}">${fmt(r.net10,2)}</td>
+          <td class="num">${r.amount.toFixed(0)} 亿</td>
+          <td>${r.leader||'—'}</td>
+          <td><span class="state ${stateCls}">${state}</span>${r.ratio!=null?`<br><span style="font-size:10px;color:#8a8c94">${r.ratio.toFixed(0)}%</span>`:''}</td>
+        </tr>`;
+      }).join('') + '</tbody>';
+    el('table-sectors').innerHTML = html;
+  }
+
+  // ---------- init ----------
+  function initOverview(){
+    initFlows(); initEtf(); initEtfDecomp(); initZt(); initMargin();
+  }
+  function initFlowTab(){ initIndustry(); initRefill(); initScatter(); initConcept(); }
+  function initStockTab(){ initStocks(); }
+
+  renderNarrative();
+  initOverview();
+  renderTopIn(); renderTopOut(); renderDivergence(); renderLhb(); renderSectors(); renderStockQuality('new_money');
+  document.querySelectorAll('[data-quality]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-quality]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderStockQuality(btn.dataset.quality);
+    });
+  });
+
+  const tabMap = {overview:initOverview, flow:initFlowTab, stocks:initStockTab, method:()=>{}};
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
+      if(!inited[tab]){
+        inited[tab] = true;
+        setTimeout(()=>{ tabMap[tab] && tabMap[tab](); charts.forEach(c=>c.resize()); }, 30);
+      } else {
+        setTimeout(()=>charts.forEach(c=>c.resize()), 20);
+      }
+    });
+  });
+  inited.overview = true;
+
+  window.addEventListener('resize', ()=>charts.forEach(c=>c.resize()));
+  el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
+})();
+</script>
+</body>
+</html>
+
