@@ -203,6 +203,10 @@
       "dest": "/tools/cycle-mirror/index.html"
     },
     {
+      "src": "^/cycle-mirror/?$",
+      "dest": "/tools/cycle-mirror/index.html"
+    },
+    {
       "src": "^/tools/cycle-mirror/data/(.*)$",
       "dest": "/tools/cycle-mirror/data/$1",
       "headers": {
