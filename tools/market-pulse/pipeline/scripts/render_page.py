@@ -24,7 +24,9 @@ def main(date: str | None = None):
 
     online = os.environ.get("MP_ONLINE") == "1"
     if online:
-        echarts_tag = '<script src="vendor/echarts.min.js"></script>'
+        # Absolute URL: /pulse resolves relative "vendor/..." to /vendor/..., which is not
+        # where the page assets live. Keep this absolute so it works from the /pulse route.
+        echarts_tag = '<script src="/tools/market-pulse/vendor/echarts.min.js"></script>'
     else:
         echarts = (ROOT / "vendor" / "echarts.min.js").read_text(encoding="utf-8")
         if "</script" in echarts.lower():
@@ -35,9 +37,12 @@ def main(date: str | None = None):
     if "__ECHARTS_TAG__" in html or "__DATA_JSON__" in html:
         raise SystemExit("placeholder left unreplaced")
 
-    out = ROOT / f"盘面说明_{date}.html"
-    out.write_text(html, encoding="utf-8")
-    print(f"written {out} {out.stat().st_size} bytes")
+    # Online builds are deployed from MP_OUT_DIR; never overwrite the local standalone
+    # single-file page with the external-ECharts variant.
+    if not online:
+        out = ROOT / f"盘面说明_{date}.html"
+        out.write_text(html, encoding="utf-8")
+        print(f"written {out} {out.stat().st_size} bytes")
 
     out_dir = os.environ.get("MP_OUT_DIR")
     if out_dir:
