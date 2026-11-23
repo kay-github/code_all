@@ -1,5 +1,5 @@
 {
-  "revision": "2026-11-23.stock1",
+  "revision": "2026-11-23.stock2",
   "items": [
     {
       "symbol": "sz300308",
@@ -81,7 +81,7 @@
     {
       "symbol": "sh688048",
       "name": "长光华芯",
-      "track": false,
+      "track": true,
       "week": {
         "main": [
           "2026-07-01",
@@ -117,7 +117,7 @@
     {
       "symbol": "sz301183",
       "name": "东田微",
-      "track": false,
+      "track": true,
       "week": {
         "main": [
           "2026-09-23",
