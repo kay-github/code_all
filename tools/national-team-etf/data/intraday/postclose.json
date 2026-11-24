@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-20T15:48:03+08:00",
-  "business_date": "2026-11-20",
+  "generated_at": "2026-11-23T15:56:17+08:00",
+  "business_date": "2026-11-23",
   "disclosure_stage": "初值或不完整",
   "pending_review": true,
   "coverage": 0,
@@ -8,6 +8,6 @@
   "complete": false,
   "complete_total_policy": "覆盖不足时不展示核心15只完整合计，缺口不补0",
   "note": "深交所T日晚间初值仅供参考，以T+1早间更新为准；本文件不覆盖生产页、不作为正式发布依据",
-  "next_step": "次日 10:00 复核交易所正式份额后发布权威版本；本初值届时自动标记为已被替代",
+  "next_step": "19:30 交易所T日份额披露后重跑晚间值；次晨复核后发布权威版本",
   "retries_exhausted": null
 }
