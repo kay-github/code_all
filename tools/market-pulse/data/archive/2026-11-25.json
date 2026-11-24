@@ -1,7 +1,7 @@
 {
   "date": "2026-11-25",
   "weekday": "周三",
-  "generated_at": "2026-11-25T03:33:32",
+  "generated_at": "2026-11-25T04:12:09",
   "headline": "指数收红：ETF 在托底，杠杆仍在出清",
   "indices": [
     {
@@ -18,8 +18,8 @@
       "turnover_pct": 1.01,
       "pe_ttm": 16.24,
       "amplitude_pct": 1.31,
-      "float_mcap_yi": 559279.38,
-      "mcap_yi": 620219.77,
+      "float_mcap_yi": 559279.5,
+      "mcap_yi": 620219.96,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -46,8 +46,8 @@
       "turnover_pct": 2.39,
       "pe_ttm": 32.38,
       "amplitude_pct": 2.98,
-      "float_mcap_yi": 295679.57,
-      "mcap_yi": 347535.51,
+      "float_mcap_yi": 295654.49,
+      "mcap_yi": 347515.23,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -74,7 +74,7 @@
       "turnover_pct": 3.38,
       "pe_ttm": 40.48,
       "amplitude_pct": 4.27,
-      "float_mcap_yi": 108108.14,
+      "float_mcap_yi": 108108.43,
       "mcap_yi": 135945.22,
       "pb": 0.0,
       "limit_up": -1.0,
@@ -130,8 +130,8 @@
       "turnover_pct": 0.59,
       "pe_ttm": 13.48,
       "amplitude_pct": 1.36,
-      "float_mcap_yi": 481168.73,
-      "mcap_yi": 507318.16,
+      "float_mcap_yi": 481148.41,
+      "mcap_yi": 507297.84,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -158,8 +158,8 @@
       "turnover_pct": 1.26,
       "pe_ttm": 26.25,
       "amplitude_pct": 3.04,
-      "float_mcap_yi": 126309.99,
-      "mcap_yi": 137144.2,
+      "float_mcap_yi": 126309.93,
+      "mcap_yi": 137144.15,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -284,14 +284,14 @@
     },
     "em_sh": {
       "date": "2026-11-25",
-      "main_yi": 203.82,
-      "super_yi": 136.69,
-      "large_yi": 67.12,
-      "medium_yi": -91.39,
-      "small_yi": -112.43,
-      "stocks": 1200,
+      "main_yi": 204.94,
+      "super_yi": 136.89,
+      "large_yi": 68.05,
+      "medium_yi": -91.28,
+      "small_yi": -113.66,
+      "stocks": 900,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-25T03:28:45",
+      "fetched_at": "2026-11-25T04:07:25",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -2266,18 +2266,6 @@
       "tone": "neg"
     },
     {
-      "name": "富士康概念",
-      "chg": 0.97,
-      "net": -22.89,
-      "net5": -8.89,
-      "stocks": 111,
-      "leader": "鸿富诚",
-      "prior4": 14.0,
-      "ratio": -163.5,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "华为海思概念股",
       "chg": 0.97,
       "net": -12.57,
@@ -2286,6 +2274,18 @@
       "leader": "慧博云通",
       "prior4": 17.6,
       "ratio": -71.42,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "富士康概念",
+      "chg": 0.97,
+      "net": -22.89,
+      "net5": -8.89,
+      "stocks": 111,
+      "leader": "鸿富诚",
+      "prior4": 14.0,
+      "ratio": -163.5,
       "label": "转出",
       "tone": "neg"
     },
@@ -2914,6 +2914,18 @@
       "tone": "neg"
     },
     {
+      "name": "物联网",
+      "chg": 0.45,
+      "net": -78.36,
+      "net5": -0.51,
+      "stocks": 472,
+      "leader": "奥尼电子",
+      "prior4": 77.85,
+      "ratio": -100.66,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
       "name": "太赫兹",
       "chg": 0.45,
       "net": -12.43,
@@ -2935,18 +2947,6 @@
       "prior4": -0.5,
       "ratio": -1338.0,
       "label": "继续流出",
-      "tone": "neg"
-    },
-    {
-      "name": "物联网",
-      "chg": 0.45,
-      "net": -78.36,
-      "net5": -0.51,
-      "stocks": 472,
-      "leader": "奥尼电子",
-      "prior4": 77.85,
-      "ratio": -100.66,
-      "label": "转出",
       "tone": "neg"
     },
     {
@@ -3058,18 +3058,6 @@
       "tone": "neg"
     },
     {
-      "name": "5G",
-      "chg": 0.36,
-      "net": -203.86,
-      "net5": -30.12,
-      "stocks": 454,
-      "leader": "银禧科技",
-      "prior4": 173.74,
-      "ratio": -117.34,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "AI语料",
       "chg": 0.36,
       "net": -15.55,
@@ -3079,6 +3067,18 @@
       "prior4": -2.71,
       "ratio": -573.8,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "5G",
+      "chg": 0.36,
+      "net": -203.86,
+      "net5": -30.12,
+      "stocks": 454,
+      "leader": "银禧科技",
+      "prior4": 173.74,
+      "ratio": -117.34,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -3310,18 +3310,6 @@
       "tone": "neg"
     },
     {
-      "name": "MiniLED",
-      "chg": 0.22,
-      "net": -72.8,
-      "net5": 13.5,
-      "stocks": 108,
-      "leader": "翰博高新",
-      "prior4": 86.3,
-      "ratio": -84.36,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "体育产业",
       "chg": 0.22,
       "net": -13.77,
@@ -3330,6 +3318,18 @@
       "leader": "创源股份",
       "prior4": 2.82,
       "ratio": -488.3,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "MiniLED",
+      "chg": 0.22,
+      "net": -72.8,
+      "net5": 13.5,
+      "stocks": 108,
+      "leader": "翰博高新",
+      "prior4": 86.3,
+      "ratio": -84.36,
       "label": "转出",
       "tone": "neg"
     },
@@ -4138,18 +4138,6 @@
       "tone": "neg"
     },
     {
-      "name": "横琴新区",
-      "chg": -0.09,
-      "net": -1.98,
-      "net5": -3.64,
-      "stocks": 38,
-      "leader": "*ST建艺",
-      "prior4": -1.66,
-      "ratio": -119.28,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "网络游戏",
       "chg": -0.09,
       "net": -16.99,
@@ -4162,15 +4150,15 @@
       "tone": "neg"
     },
     {
-      "name": "染料",
+      "name": "横琴新区",
       "chg": -0.09,
-      "net": -2.78,
-      "net5": 0.72,
-      "stocks": 40,
-      "leader": "联合化学",
-      "prior4": 3.5,
-      "ratio": -79.43,
-      "label": "转出",
+      "net": -1.98,
+      "net5": -3.64,
+      "stocks": 38,
+      "leader": "*ST建艺",
+      "prior4": -1.66,
+      "ratio": -119.28,
+      "label": "继续流出",
       "tone": "neg"
     },
     {
@@ -4194,6 +4182,18 @@
       "leader": "和仁科技",
       "prior4": 51.21,
       "ratio": -186.62,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "染料",
+      "chg": -0.09,
+      "net": -2.78,
+      "net5": 0.72,
+      "stocks": 40,
+      "leader": "联合化学",
+      "prior4": 3.5,
+      "ratio": -79.43,
       "label": "转出",
       "tone": "neg"
     },
@@ -4294,18 +4294,6 @@
       "tone": "neg"
     },
     {
-      "name": "核电",
-      "chg": -0.12,
-      "net": -38.91,
-      "net5": -11.11,
-      "stocks": 352,
-      "leader": "东华测试",
-      "prior4": 27.8,
-      "ratio": -139.96,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "证金持股",
       "chg": -0.12,
       "net": 11.34,
@@ -4326,6 +4314,18 @@
       "leader": "ST合纵",
       "prior4": 33.33,
       "ratio": -123.01,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "核电",
+      "chg": -0.12,
+      "net": -38.91,
+      "net5": -11.11,
+      "stocks": 352,
+      "leader": "东华测试",
+      "prior4": 27.8,
+      "ratio": -139.96,
       "label": "转出",
       "tone": "neg"
     },
@@ -4378,18 +4378,6 @@
       "tone": "neg"
     },
     {
-      "name": "高铁",
-      "chg": -0.15,
-      "net": -15.08,
-      "net5": 0.68,
-      "stocks": 181,
-      "leader": "宁波东力",
-      "prior4": 15.76,
-      "ratio": -95.69,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "创投",
       "chg": -0.15,
       "net": -105.86,
@@ -4398,6 +4386,18 @@
       "leader": "安培龙",
       "prior4": 68.55,
       "ratio": -154.43,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "高铁",
+      "chg": -0.15,
+      "net": -15.08,
+      "net5": 0.68,
+      "stocks": 181,
+      "leader": "宁波东力",
+      "prior4": 15.76,
+      "ratio": -95.69,
       "label": "转出",
       "tone": "neg"
     },
@@ -4522,18 +4522,6 @@
       "tone": "neg"
     },
     {
-      "name": "培育钻石",
-      "chg": -0.22,
-      "net": -3.12,
-      "net5": 0.07,
-      "stocks": 19,
-      "leader": "沃尔德",
-      "prior4": 3.19,
-      "ratio": -97.81,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "跨境支付(CIPS)",
       "chg": -0.22,
       "net": -3.09,
@@ -4543,6 +4531,18 @@
       "prior4": -2.27,
       "ratio": -136.12,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "培育钻石",
+      "chg": -0.22,
+      "net": -3.12,
+      "net5": 0.07,
+      "stocks": 19,
+      "leader": "沃尔德",
+      "prior4": 3.19,
+      "ratio": -97.81,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -4570,18 +4570,6 @@
       "tone": "neg"
     },
     {
-      "name": "雅下水电概念",
-      "chg": -0.23,
-      "net": -11.24,
-      "net5": -3.39,
-      "stocks": 90,
-      "leader": "东华测试",
-      "prior4": 7.85,
-      "ratio": -143.18,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "MLCC概念",
       "chg": -0.23,
       "net": -12.44,
@@ -4590,6 +4578,18 @@
       "leader": "斯迪克",
       "prior4": 13.22,
       "ratio": -94.1,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "雅下水电概念",
+      "chg": -0.23,
+      "net": -11.24,
+      "net5": -3.39,
+      "stocks": 90,
+      "leader": "东华测试",
+      "prior4": 7.85,
+      "ratio": -143.18,
       "label": "转出",
       "tone": "neg"
     },
@@ -4798,18 +4798,6 @@
       "tone": "neg"
     },
     {
-      "name": "智能医疗",
-      "chg": -0.37,
-      "net": -41.41,
-      "net5": -6.64,
-      "stocks": 346,
-      "leader": "和仁科技",
-      "prior4": 34.77,
-      "ratio": -119.1,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "国产操作系统",
       "chg": -0.37,
       "net": -1.28,
@@ -4822,14 +4810,14 @@
       "tone": "neg"
     },
     {
-      "name": "装配式建筑",
-      "chg": -0.38,
-      "net": -8.66,
-      "net5": -3.38,
-      "stocks": 109,
-      "leader": "逸飞激光",
-      "prior4": 5.28,
-      "ratio": -164.02,
+      "name": "智能医疗",
+      "chg": -0.37,
+      "net": -41.41,
+      "net5": -6.64,
+      "stocks": 346,
+      "leader": "和仁科技",
+      "prior4": 34.77,
+      "ratio": -119.1,
       "label": "转出",
       "tone": "neg"
     },
@@ -4858,14 +4846,14 @@
       "tone": "neg"
     },
     {
-      "name": "PVDF概念",
-      "chg": -0.39,
-      "net": -6.28,
-      "net5": -0.22,
-      "stocks": 17,
-      "leader": "中创环保",
-      "prior4": 6.06,
-      "ratio": -103.63,
+      "name": "装配式建筑",
+      "chg": -0.38,
+      "net": -8.66,
+      "net5": -3.38,
+      "stocks": 109,
+      "leader": "逸飞激光",
+      "prior4": 5.28,
+      "ratio": -164.02,
       "label": "转出",
       "tone": "neg"
     },
@@ -4878,6 +4866,18 @@
       "leader": "新炬网络",
       "prior4": 2.38,
       "ratio": -138.66,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "PVDF概念",
+      "chg": -0.39,
+      "net": -6.28,
+      "net5": -0.22,
+      "stocks": 17,
+      "leader": "中创环保",
+      "prior4": 6.06,
+      "ratio": -103.63,
       "label": "转出",
       "tone": "neg"
     },
@@ -5722,18 +5722,6 @@
       "tone": "neg"
     },
     {
-      "name": "光伏建筑一体化",
-      "chg": -0.77,
-      "net": -15.7,
-      "net5": -0.53,
-      "stocks": 135,
-      "leader": "海达股份",
-      "prior4": 15.17,
-      "ratio": -103.49,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "统一大市场",
       "chg": -0.77,
       "net": -13.43,
@@ -5742,6 +5730,18 @@
       "leader": "*ST瑞茂",
       "prior4": 4.78,
       "ratio": -280.96,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "光伏建筑一体化",
+      "chg": -0.77,
+      "net": -15.7,
+      "net5": -0.53,
+      "stocks": 135,
+      "leader": "海达股份",
+      "prior4": 15.17,
+      "ratio": -103.49,
       "label": "转出",
       "tone": "neg"
     },
@@ -6274,18 +6274,6 @@
       "tone": "neg"
     },
     {
-      "name": "参股券商",
-      "chg": -1.2,
-      "net": -11.72,
-      "net5": -0.35,
-      "stocks": 226,
-      "leader": "三人行",
-      "prior4": 11.37,
-      "ratio": -103.08,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "维生素",
       "chg": -1.2,
       "net": -7.02,
@@ -6294,6 +6282,18 @@
       "leader": "川宁生物",
       "prior4": 4.8,
       "ratio": -146.25,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "参股券商",
+      "chg": -1.2,
+      "net": -11.72,
+      "net5": -0.35,
+      "stocks": 226,
+      "leader": "三人行",
+      "prior4": 11.37,
+      "ratio": -103.08,
       "label": "转出",
       "tone": "neg"
     },
@@ -8264,5 +8264,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-25 · 周三"
   },
-  "rendered_at": "2026-11-25T03:33:32"
+  "rendered_at": "2026-11-25T04:12:09"
 }
