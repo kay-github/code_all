@@ -196,6 +196,8 @@ a {
 .tool-card {
   --cat: var(--accent);
   --cat-soft: var(--accent-soft);
+  --tone: var(--cat);
+  --tone-soft: var(--cat-soft);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -214,7 +216,7 @@ a {
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
-  background: var(--cat);
+  background: var(--tone);
   opacity: 0.9;
 }
 
@@ -223,13 +225,22 @@ a {
 .tool-card[data-color="research"] { --cat: var(--research); --cat-soft: var(--research-soft); }
 .tool-card[data-color="tool"] { --cat: var(--tool); --cat-soft: var(--tool-soft); }
 
+.tool-card[data-tone="ember"] { --tone: var(--tone-ember); --tone-soft: var(--tone-ember-soft); }
+.tool-card[data-tone="amber"] { --tone: var(--tone-amber); --tone-soft: var(--tone-amber-soft); }
+.tool-card[data-tone="rose"] { --tone: var(--tone-rose); --tone-soft: var(--tone-rose-soft); }
+.tool-card[data-tone="teal"] { --tone: var(--tone-teal); --tone-soft: var(--tone-teal-soft); }
+.tool-card[data-tone="cyan"] { --tone: var(--tone-cyan); --tone-soft: var(--tone-cyan-soft); }
+.tool-card[data-tone="blue"] { --tone: var(--tone-blue); --tone-soft: var(--tone-blue-soft); }
+.tool-card[data-tone="indigo"] { --tone: var(--tone-indigo); --tone-soft: var(--tone-indigo-soft); }
+.tool-card[data-tone="violet"] { --tone: var(--tone-violet); --tone-soft: var(--tone-violet-soft); }
+
 .tool-card:hover {
-  border-color: var(--cat);
+  border-color: var(--tone);
 }
 
 .tool-card:active {
   transform: translateY(1px);
-  background: var(--cat-soft);
+  background: var(--tone-soft);
 }
 
 .tool-topline {
@@ -246,8 +257,8 @@ a {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--cat-soft);
-  color: var(--cat);
+  background: var(--tone-soft);
+  color: var(--tone);
   font-size: 15px;
   font-weight: 800;
   line-height: 1;
@@ -263,8 +274,8 @@ a {
 .tool-badge {
   padding: 2px 6px;
   border-radius: 999px;
-  background: var(--cat-soft);
-  color: var(--cat);
+  background: var(--tone-soft);
+  color: var(--tone);
   font-size: 10.5px;
   font-weight: 600;
   line-height: 1.5;
@@ -293,10 +304,18 @@ a {
 
 .tool-arrow {
   flex: none;
-  color: var(--cat);
+  color: var(--tone);
   font-size: 16px;
   line-height: 1;
   opacity: 0.7;
+}
+
+.tool-kicker {
+  color: var(--tone);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
 }
 
 .tool-desc {
@@ -370,6 +389,22 @@ button:focus-visible {
   --research-soft: #e4dcf3;
   --tool: #46586b;
   --tool-soft: #dde5ec;
+  --tone-ember: #c2410c;
+  --tone-ember-soft: #fbe4d8;
+  --tone-amber: #a16207;
+  --tone-amber-soft: #f7ecd0;
+  --tone-rose: #be123c;
+  --tone-rose-soft: #fbe1e7;
+  --tone-teal: #0f766e;
+  --tone-teal-soft: #d9ece9;
+  --tone-cyan: #0e7490;
+  --tone-cyan-soft: #d9ebf0;
+  --tone-blue: #1d4ed8;
+  --tone-blue-soft: #dde6fa;
+  --tone-indigo: #4338ca;
+  --tone-indigo-soft: #e2e2fb;
+  --tone-violet: #6d28d9;
+  --tone-violet-soft: #ece1fa;
 }
 
 :root[data-site-theme="dark"] {
@@ -393,6 +428,22 @@ button:focus-visible {
   --research-soft: #2a2145;
   --tool: #cbd5e1;
   --tool-soft: #233042;
+  --tone-ember: #fdba74;
+  --tone-ember-soft: #3b2718;
+  --tone-amber: #fcd34d;
+  --tone-amber-soft: #3a2f16;
+  --tone-rose: #fda4af;
+  --tone-rose-soft: #3a1c24;
+  --tone-teal: #5eead4;
+  --tone-teal-soft: #103029;
+  --tone-cyan: #67e8f9;
+  --tone-cyan-soft: #0f2c35;
+  --tone-blue: #93c5fd;
+  --tone-blue-soft: #1b2c45;
+  --tone-indigo: #a5b4fc;
+  --tone-indigo-soft: #252347;
+  --tone-violet: #c4b5fd;
+  --tone-violet-soft: #2a2145;
 }
 
 .site-workspace .page {

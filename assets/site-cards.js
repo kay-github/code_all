@@ -1,8 +1,7 @@
 (function () {
   const CATEGORY_META = {
-    盯盘看板: { color: 'board', hint: '盘中和收盘后自动更新，先看异动' },
-    资金与持仓: { color: 'flow', hint: '谁在买，仓位有没有回来' },
-    研究与情景: { color: 'research', hint: '回撤、概率与路径推演' },
+    盯盘与资金: { color: 'board', hint: '盘中异动、资金流向与仓位变化' },
+    研究与情景: { color: 'research', hint: '回撤、周期与波浪推演' },
     投资管理与工具: { color: 'tool', hint: '仓位计划、交易流水与速记' },
   };
   const FALLBACK = { color: 'tool', hint: '' };
@@ -25,6 +24,7 @@
     const link = document.createElement(preview ? 'div' : 'a');
     link.className = 'tool-card';
     link.dataset.color = item.color || 'tool';
+    if (item.tone) link.dataset.tone = item.tone;
     if (!preview) {
       link.href = item.url;
       link.setAttribute('aria-label', `打开${item.name}`);
@@ -47,6 +47,7 @@
     const content = span('tool-content');
     const nameRow = span('tool-name-row');
     nameRow.append(span('tool-name', item.name), span('tool-arrow', '›'));
+    if (item.kicker) content.append(span('tool-kicker', item.kicker));
     content.append(nameRow, span('tool-desc', item.description));
     link.append(top, content);
     return link;
