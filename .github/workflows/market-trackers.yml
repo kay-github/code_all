@@ -76,6 +76,14 @@ jobs:
               *) tasks+=(etf-close) ;;
             esac
           fi
+          # After the morning window, every scheduled runner also checks the latest
+          # formal day. This backfills when GitHub delays or drops the 10:07/12:23 runs.
+          if [[ -n "$SCHEDULE" ]] && (( weekday <= 6 && hhmm >= 1020 )); then
+            case " ${tasks[*]} " in
+              *" etf-final "*) ;;
+              *) tasks+=(etf-final) ;;
+            esac
+          fi
           selection='[]'
           if (( ${#tasks[@]} )); then
             printf -v list '"%s",' "${tasks[@]}"
