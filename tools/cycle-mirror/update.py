@@ -431,6 +431,25 @@ def build(no_fetch=False, reset_baseline=False):
     if int(round(pos)) < len(tpl_fit):
         out["current_pos"]["tpl_date_equiv"] = tpl_dates[t0 + int(round(pos))]
 
+    # 数据没变就不刷新构建号：一天多个调度时点不会制造无意义的提交
+    old = None
+    if os.path.exists(OUT_JSON):
+        try:
+            with open(OUT_JSON, encoding="utf-8") as f:
+                old = json.load(f)
+        except Exception:
+            old = None
+    if isinstance(old, dict):
+        a = json.loads(json.dumps(out, ensure_ascii=False))
+        b = json.loads(json.dumps(old, ensure_ascii=False))
+        for d in (a, b):
+            d.get("meta", {}).pop("build", None)
+            d.get("meta", {}).pop("generated_at", None)
+        if a == b and old.get("meta", {}).get("build"):
+            out["meta"]["build"] = old["meta"]["build"]
+            out["meta"]["generated_at"] = old["meta"].get("generated_at", out["meta"]["generated_at"])
+            print(f"[out] 数据无变化，保留构建号 {out['meta']['build']}")
+
     with open(BASE_JSON, "w", encoding="utf-8") as f:
         json.dump(base_store, f, ensure_ascii=False, indent=1)
     with open(OUT_JSON, "w", encoding="utf-8") as f:
