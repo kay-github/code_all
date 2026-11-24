@@ -1,7 +1,7 @@
 {
   "date": "2026-11-24",
   "weekday": "周二",
-  "generated_at": "2026-11-24T18:18:25",
+  "generated_at": "2026-11-24T10:26:52",
   "headline": "指数收红：ETF 在托底，杠杆仍在出清",
   "indices": [
     {
@@ -18,8 +18,8 @@
       "turnover_pct": 1.01,
       "pe_ttm": 16.24,
       "amplitude_pct": 1.31,
-      "float_mcap_yi": 559279.51,
-      "mcap_yi": 620219.99,
+      "float_mcap_yi": 559279.5,
+      "mcap_yi": 620219.96,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -46,8 +46,8 @@
       "turnover_pct": 2.39,
       "pe_ttm": 32.38,
       "amplitude_pct": 2.98,
-      "float_mcap_yi": 295654.5,
-      "mcap_yi": 347515.24,
+      "float_mcap_yi": 295654.48,
+      "mcap_yi": 347515.23,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -291,7 +291,7 @@
       "small_yi": -112.43,
       "stocks": 1200,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-24T10:14:44",
+      "fetched_at": "2026-11-24T10:24:55",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -3062,18 +3062,6 @@
       "tone": "neg"
     },
     {
-      "name": "5G",
-      "chg": 0.36,
-      "net": -203.86,
-      "net5": -30.12,
-      "stocks": 454,
-      "leader": "银禧科技",
-      "prior4": 173.74,
-      "ratio": -117.34,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "AI语料",
       "chg": 0.36,
       "net": -15.55,
@@ -3083,6 +3071,18 @@
       "prior4": -2.71,
       "ratio": -573.8,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "5G",
+      "chg": 0.36,
+      "net": -203.86,
+      "net5": -30.12,
+      "stocks": 454,
+      "leader": "银禧科技",
+      "prior4": 173.74,
+      "ratio": -117.34,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -3314,18 +3314,6 @@
       "tone": "neg"
     },
     {
-      "name": "MiniLED",
-      "chg": 0.22,
-      "net": -72.8,
-      "net5": 13.5,
-      "stocks": 108,
-      "leader": "翰博高新",
-      "prior4": 86.3,
-      "ratio": -84.36,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "体育产业",
       "chg": 0.22,
       "net": -13.77,
@@ -3334,6 +3322,18 @@
       "leader": "创源股份",
       "prior4": 2.82,
       "ratio": -488.3,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "MiniLED",
+      "chg": 0.22,
+      "net": -72.8,
+      "net5": 13.5,
+      "stocks": 108,
+      "leader": "翰博高新",
+      "prior4": 86.3,
+      "ratio": -84.36,
       "label": "转出",
       "tone": "neg"
     },
@@ -4166,6 +4166,18 @@
       "tone": "neg"
     },
     {
+      "name": "同花顺出海50",
+      "chg": -0.09,
+      "net": -34.02,
+      "net5": 19.6,
+      "stocks": 50,
+      "leader": "工业富联",
+      "prior4": 53.62,
+      "ratio": -63.45,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
       "name": "AI应用",
       "chg": -0.09,
       "net": -95.57,
@@ -4186,18 +4198,6 @@
       "leader": "联合化学",
       "prior4": 3.5,
       "ratio": -79.43,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
-      "name": "同花顺出海50",
-      "chg": -0.09,
-      "net": -34.02,
-      "net5": 19.6,
-      "stocks": 50,
-      "leader": "工业富联",
-      "prior4": 53.62,
-      "ratio": -63.45,
       "label": "转出",
       "tone": "neg"
     },
@@ -4382,18 +4382,6 @@
       "tone": "neg"
     },
     {
-      "name": "高铁",
-      "chg": -0.15,
-      "net": -15.08,
-      "net5": 0.68,
-      "stocks": 181,
-      "leader": "宁波东力",
-      "prior4": 15.76,
-      "ratio": -95.69,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "创投",
       "chg": -0.15,
       "net": -105.86,
@@ -4402,6 +4390,18 @@
       "leader": "安培龙",
       "prior4": 68.55,
       "ratio": -154.43,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "高铁",
+      "chg": -0.15,
+      "net": -15.08,
+      "net5": 0.68,
+      "stocks": 181,
+      "leader": "宁波东力",
+      "prior4": 15.76,
+      "ratio": -95.69,
       "label": "转出",
       "tone": "neg"
     },
@@ -4526,18 +4526,6 @@
       "tone": "neg"
     },
     {
-      "name": "跨境支付(CIPS)",
-      "chg": -0.22,
-      "net": -3.09,
-      "net5": -5.36,
-      "stocks": 73,
-      "leader": "*ST天喻",
-      "prior4": -2.27,
-      "ratio": -136.12,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "培育钻石",
       "chg": -0.22,
       "net": -3.12,
@@ -4547,6 +4535,18 @@
       "prior4": 3.19,
       "ratio": -97.81,
       "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "跨境支付(CIPS)",
+      "chg": -0.22,
+      "net": -3.09,
+      "net5": -5.36,
+      "stocks": 73,
+      "leader": "*ST天喻",
+      "prior4": -2.27,
+      "ratio": -136.12,
+      "label": "继续流出",
       "tone": "neg"
     },
     {
@@ -4574,18 +4574,6 @@
       "tone": "neg"
     },
     {
-      "name": "雅下水电概念",
-      "chg": -0.23,
-      "net": -11.24,
-      "net5": -3.39,
-      "stocks": 90,
-      "leader": "东华测试",
-      "prior4": 7.85,
-      "ratio": -143.18,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "MLCC概念",
       "chg": -0.23,
       "net": -12.44,
@@ -4594,6 +4582,18 @@
       "leader": "斯迪克",
       "prior4": 13.22,
       "ratio": -94.1,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "雅下水电概念",
+      "chg": -0.23,
+      "net": -11.24,
+      "net5": -3.39,
+      "stocks": 90,
+      "leader": "东华测试",
+      "prior4": 7.85,
+      "ratio": -143.18,
       "label": "转出",
       "tone": "neg"
     },
@@ -4802,6 +4802,18 @@
       "tone": "neg"
     },
     {
+      "name": "智能医疗",
+      "chg": -0.37,
+      "net": -41.41,
+      "net5": -6.64,
+      "stocks": 346,
+      "leader": "和仁科技",
+      "prior4": 34.77,
+      "ratio": -119.1,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
       "name": "国产操作系统",
       "chg": -0.37,
       "net": -1.28,
@@ -4814,14 +4826,14 @@
       "tone": "neg"
     },
     {
-      "name": "智能医疗",
-      "chg": -0.37,
-      "net": -41.41,
-      "net5": -6.64,
-      "stocks": 346,
-      "leader": "和仁科技",
-      "prior4": 34.77,
-      "ratio": -119.1,
+      "name": "无人零售",
+      "chg": -0.38,
+      "net": -6.41,
+      "net5": -6.23,
+      "stocks": 26,
+      "leader": "天奇股份",
+      "prior4": 0.18,
+      "ratio": -3561.11,
       "label": "转出",
       "tone": "neg"
     },
@@ -4846,18 +4858,6 @@
       "leader": "逸飞激光",
       "prior4": 5.28,
       "ratio": -164.02,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
-      "name": "无人零售",
-      "chg": -0.38,
-      "net": -6.41,
-      "net5": -6.23,
-      "stocks": 26,
-      "leader": "天奇股份",
-      "prior4": 0.18,
-      "ratio": -3561.11,
       "label": "转出",
       "tone": "neg"
     },
@@ -5270,18 +5270,6 @@
       "tone": "neg"
     },
     {
-      "name": "职业教育",
-      "chg": -0.53,
-      "net": -12.44,
-      "net5": -21.09,
-      "stocks": 137,
-      "leader": "*ST开元",
-      "prior4": -8.65,
-      "ratio": -143.82,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "养鸡",
       "chg": -0.53,
       "net": -0.44,
@@ -5291,6 +5279,18 @@
       "prior4": 0.06,
       "ratio": -733.33,
       "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "职业教育",
+      "chg": -0.53,
+      "net": -12.44,
+      "net5": -21.09,
+      "stocks": 137,
+      "leader": "*ST开元",
+      "prior4": -8.65,
+      "ratio": -143.82,
+      "label": "继续流出",
       "tone": "neg"
     },
     {
@@ -8268,5 +8268,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-24 · 周二"
   },
-  "rendered_at": "2026-11-24T10:24:09"
+  "rendered_at": "2026-11-24T10:26:52"
 }
