@@ -11,7 +11,7 @@
       { id: 'cnvix', category: '盯盘看板', name: '中国波指', description: 'A 股 30 天隐含波动率', badge: '每日 16:50', url: '/cnvix', icon: '波', color: 'board', visible: true, image: '', newTab: false },
       { id: 'marketPulse', category: '盯盘看板', name: '资金面盘面说明', description: '每日收盘后资金面复盘', badge: '每日 16:10', url: '/pulse', icon: '盘', color: 'board', visible: true, image: '', newTab: false },
       { id: 'gjd', category: '资金与持仓', name: '国家队ETF追踪', description: '汇金 ETF 申赎与托底进度', badge: '次日更新', url: '/tools/national-team-etf/', icon: '国', color: 'flow', visible: true, image: '', newTab: false },
-      { id: 'fundRecovery', category: '资金与持仓', name: '光模块双龙仓位回补', description: '基金是否已买回新易盛/旭创', badge: '每日 08:43', url: '/tools/fund-dragon-recovery/', icon: '仓', color: 'flow', visible: true, image: '', newTab: false },
+      { id: 'fundRecovery', category: '资金与持仓', name: '光模块双龙仓位回补', description: '根据净值与定报观察双龙回补线索，区分收益关联和已披露持仓。', badge: '每日 08:43', url: '/tools/fund-dragon-recovery/', icon: '仓', color: 'flow', visible: true, image: '', newTab: false },
       { id: 'stocks', category: '研究与情景', name: '股票回撤研究室', description: '历史回撤与反弹测算', url: '/tools/stock-rebound-lab/', icon: '研', color: 'research', visible: true, image: '', newTab: false },
       { id: 'opticalScenario', category: '研究与情景', name: '光模块回撤情景实验室', description: '同类状态下的回撤概率', url: '/tools/optical-scenario/', icon: '景', color: 'research', visible: true, image: '', newTab: false },
       { id: 'cycleMirror', category: '研究与情景', name: '周期镜像', description: '5·19 与 9·24 走势叠加追踪', badge: '每日 15:20', url: '/mirror', icon: '镜', color: 'research', visible: true, image: '', newTab: false },

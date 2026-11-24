@@ -1,41 +1,41 @@
 {
-  "build_id": "20261121T160208_0800_97d44786b6",
+  "build_id": "20261124T100420_0800_41025caa4d",
   "passed": true,
-  "checks": 3412,
-  "verified_at": "2026-11-21T16:02:54+08:00",
+  "checks": 3458,
+  "verified_at": "2026-11-24T10:04:59+08:00",
   "summary": {
-    "groups": 3082,
-    "share_entries": 3128,
-    "latest_nav_count": 3066,
+    "groups": 3081,
+    "share_entries": 3127,
+    "latest_nav_count": 3046,
     "categories": {
-      "active_domestic": 2773,
+      "active_domestic": 2772,
       "enhanced_index": 309
     },
-    "latest_nav_coverage": 0.9948085658663206,
+    "latest_nav_coverage": 0.9886400519311912,
     "states": {
-      "初步升温线索": 2,
-      "初步升温，个基资料不足": 18,
-      "点估计升温，证据不足": 319,
-      "升温未获个基对照支持": 29,
-      "负向关联缓和，不足以指向回补": 256,
-      "模型分歧，保留线索": 52,
-      "暂无清晰升温证据": 777,
-      "保持正向收益关联": 107,
-      "收益关联走弱": 1164,
+      "初步升温，个基资料不足": 23,
+      "初步升温线索": 1,
+      "点估计升温，证据不足": 401,
+      "升温未获个基对照支持": 40,
+      "负向关联缓和，不足以指向回补": 239,
+      "模型分歧，保留线索": 39,
+      "暂无清晰升温证据": 809,
+      "保持正向收益关联": 113,
+      "收益关联走弱": 1060,
       "指数增强，仅作披露与收益观察": 309,
-      "数据或口径不足": 17,
-      "数据不足": 32
+      "数据或口径不足": 36,
+      "数据不足": 11
     },
     "verified_portfolios": 1,
     "confirmed_current_positions": 0,
     "fund_review_states": {
-      "passed": 2,
-      "insufficient": 18,
-      "not_reviewed": 3033,
-      "not_supported": 29
+      "insufficient": 23,
+      "passed": 1,
+      "not_reviewed": 3017,
+      "not_supported": 40
     },
     "model_usable": 3035,
-    "identifiable": 3034
+    "identifiable": 3035
   },
   "limitations": [
     "无真实实时持仓真值，不证明市场仓位识别准确率",
