@@ -2,7 +2,7 @@
  "version": "v2-shadow-2026-11",
  "mode": "shadow",
  "push_policy": "legacy_only",
- "generated_at": "2026-11-25 02:52",
+ "generated_at": "2026-11-25 03:30",
  "note": "V2 只计算、展示、留痕；PushPlus 仍由旧规则触发。",
  "sectors": [
   {
@@ -66,16 +66,16 @@
    "tier": 1,
    "tier_name": "观察",
    "action": "正常持有；E 层转弱时不加仓，暂不减仓",
-   "R": 18.1,
+   "R": 18.2,
    "E": 3,
-   "vol20": 0.7409,
+   "vol20": 0.746,
    "trigger": "E≥3 已出现，但近高未过",
    "red_trend": false,
    "red_accel": false,
    "deep": false,
    "recover": false,
    "stale": false,
-   "coverage": 1.0
+   "coverage": 0.984
   }
  ],
  "events": [
