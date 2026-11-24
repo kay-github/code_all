@@ -493,7 +493,7 @@ data = {
     "date": DATE,
     "weekday": WEEKDAY,
     "generated_at": datetime.now().isoformat(timespec="seconds"),
-    "headline": "深V反转：ETF 连续大额托底，大单回补光模块；杠杆仍在出清",
+    "headline": "",
     "indices": indices,
     "turnover": {
         "total": turnover_total,
@@ -555,6 +555,7 @@ data = {
 }
 
 data["narrative"] = build_narrative(data)
+data["headline"] = re.sub(r"<[^>]+>", "", data["narrative"].get("hero_title", "")).strip()
 
 OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 print("written", OUT, OUT.stat().st_size, "bytes")
