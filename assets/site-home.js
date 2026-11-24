@@ -10,7 +10,6 @@
     optical: '/tools/optical-decline-board/',
     gjd: '/tools/national-team-etf/',
     fundRecovery: '/tools/fund-dragon-recovery/',
-    opticalScenario: '/tools/optical-scenario/',
     waveTracker: '/waves',
     cnvix: '/cnvix',
     marketPulse: '/pulse',
