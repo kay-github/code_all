@@ -1,26 +1,26 @@
 {
  "399006": {
   "last_state": "waiting",
-  "last_event_key": "399006|2026-11-23|waiting"
+  "last_event_key": "399006|2026-11-24|waiting"
  },
  "000688": {
   "last_state": "waiting",
-  "last_event_key": "000688|2026-11-23|waiting"
+  "last_event_key": "000688|2026-11-24|waiting"
  },
  "optical": {
   "last_state": "waiting",
-  "last_event_key": "optical|2026-11-23|waiting"
+  "last_event_key": "optical|2026-11-24|waiting"
  },
  "semi_equip": {
   "last_state": "waiting",
-  "last_event_key": "semi_equip|2026-11-23|waiting"
+  "last_event_key": "semi_equip|2026-11-24|waiting"
  },
  "litho_cn": {
   "last_state": "waiting",
-  "last_event_key": "litho_cn|2026-11-23|waiting"
+  "last_event_key": "litho_cn|2026-11-24|waiting"
  },
  "storage": {
   "last_state": "waiting",
-  "last_event_key": "storage|2026-11-23|waiting"
+  "last_event_key": "storage|2026-11-24|waiting"
  }
 }

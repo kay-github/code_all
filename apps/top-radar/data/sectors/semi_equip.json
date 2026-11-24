@@ -3,10 +3,10 @@
   "id": "semi_equip",
   "name": "半导体设备",
   "enabled": true,
-  "as_of": "2026-11-23",
-  "generated_at": "2026-11-24 04:08",
+  "as_of": "2026-11-24",
+  "generated_at": "2026-11-25 02:50",
   "data_start": "2020-12-01",
-  "data_end": "2026-11-23",
+  "data_end": "2026-11-24",
   "n_constituents": 26,
   "effective_n": 26,
   "coverage": 1.0,
@@ -22,32 +22,32 @@
   "site": "https://1.688680.xyz/taoding"
  },
  "latest": {
-  "date": "2026-11-23",
-  "idx": 4.7925,
-  "R": 19.3,
+  "date": "2026-11-24",
+  "idx": 4.8514,
+  "R": 21.3,
   "tier": 0,
   "tier_name": "正常",
   "action": "正常持有",
   "E": 3,
   "C": 2,
-  "ret250": 0.3507,
-  "ret60": -0.3357,
-  "dist60": -0.2165,
-  "dd250": -0.5084,
-  "rsi14": 38.9,
+  "ret250": 0.3877,
+  "ret60": -0.3279,
+  "dist60": -0.2017,
+  "dd250": -0.5024,
+  "rsi14": 40.5,
   "amt_share": null,
-  "amt_ratio60": 1.08,
+  "amt_ratio60": 1.01,
   "crowd_label": "成交额/60日均",
-  "crowd_value": 1.08,
+  "crowd_value": 1.01,
   "limit_up": 0,
   "break20_20d": 16,
   "rebreak20_20d": 2,
   "hot": true,
   "near": false,
-  "ma20_slope": -0.0699,
+  "ma20_slope": -0.0599,
   "above60_ratio": 0.0,
   "newhigh20_ratio": 0.0,
-  "leader_excess20": 0.1226
+  "leader_excess20": 0.1202
  },
  "gate": {
   "ret250": false,
@@ -63,10 +63,10 @@
   "tier": 1,
   "tier_name": "观察",
   "action": "正常持有；E 层转弱时不加仓，暂不减仓",
-  "R": 19.3,
+  "R": 21.3,
   "E": 3,
   "C": 2,
-  "vol20": 0.8753,
+  "vol20": 0.8487,
   "quality_c": false,
   "red_trend": false,
   "red_accel": false,
@@ -95,28 +95,28 @@
    "state_name": "深跌后等待反弹",
    "action": "等待反弹成形，不操作",
    "color": "#8A7A55",
-   "trigger": "反弹 9.5%，但未同时满足成熟度与阻力位条件（成熟 0/4）",
-   "as_of": "2026-11-23",
-   "index": 4.7925,
+   "trigger": "反弹 10.8%，但未同时满足成熟度与阻力位条件（成熟 1/4）",
+   "as_of": "2026-11-24",
+   "index": 4.8514,
    "crash_high": 9.749,
    "crash_low": 4.3771,
    "crash_dd": -0.551,
    "peak_date": "2026-07-01",
    "low_date": "2026-11-03",
-   "days_since_low": 14,
+   "days_since_low": 15,
    "rebound_high": 5.3724,
-   "rebound_gain": 0.0949,
-   "retracement": 0.0773,
-   "high_drawdown": -0.1079,
+   "rebound_gain": 0.1084,
+   "retracement": 0.0883,
+   "high_drawdown": -0.097,
    "fib_382": 6.4292,
    "fib_500": 7.0631,
    "fib_618": 7.697,
-   "ma20": 4.973988417039473,
-   "ma60": 6.116596620886145,
-   "ma120": 6.7137899973042146,
+   "ma20": 4.971425170657062,
+   "ma60": 6.077154028147827,
+   "ma120": 6.704863202272918,
    "nearest_res": "MA60",
-   "res_distance": 0.2165,
-   "maturity_count": 0,
+   "res_distance": 0.2017,
+   "maturity_count": 1,
    "watch_date": null,
    "warn_date": null,
    "confirm_date": null
@@ -242,18 +242,18 @@
     "rebound_gain": 0.0949,
     "retracement": 0.0773,
     "state": "waiting"
+   },
+   {
+    "d": "2026-11-24",
+    "idx": 4.8514,
+    "rebound_high": 5.3724,
+    "rebound_gain": 0.1084,
+    "retracement": 0.0883,
+    "state": "waiting"
    }
   ]
  },
  "history": [
-  {
-   "d": "2025-10-29",
-   "idx": 3.7605,
-   "tier": 4,
-   "R": 81.4,
-   "v2t": 4,
-   "E": 2
-  },
   {
    "d": "2025-10-30",
    "idx": 3.6495,
@@ -2325,6 +2325,14 @@
    "R": 19.3,
    "v2t": 1,
    "E": 3
+  },
+  {
+   "d": "2026-11-24",
+   "idx": 4.8514,
+   "tier": 0,
+   "R": 21.3,
+   "v2t": 1,
+   "E": 3
   }
  ],
  "signals": [
@@ -3092,8 +3100,8 @@
   }
  ],
  "stats": {
-  "days": 1449,
+  "days": 1450,
   "start": "2020-12-01",
-  "end": "2026-11-23"
+  "end": "2026-11-24"
  }
 }
