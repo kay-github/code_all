@@ -387,7 +387,8 @@ def main():
         build(code, name, ind2, "cons", tier, grp=l1)
 
     # ---------- 数据日期与盘中判定 ----------
-    now = datetime.datetime.now()
+    # 固定按北京时间取“现在”，不能跟随 runner 的 UTC 时区；否则 15:00 后仍会被判成盘中
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).replace(tzinfo=None)
     today = now.strftime("%Y-%m-%d")
     dates_seen = sorted({r["last_date"] for r in rows if r.get("last_date")})
     kline_date = dates_seen[-1] if dates_seen else today

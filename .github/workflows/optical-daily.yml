@@ -65,6 +65,9 @@ jobs:
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # GitHub runner 默认 UTC；脚本用 datetime.now() 判断盘中/收盘，必须锁北京时间
+      TZ: Asia/Shanghai
     steps:
       - uses: actions/checkout@v4
 
@@ -94,13 +97,14 @@ jobs:
         working-directory: tools/optical-decline-board
         run: |
           BJ_TODAY=$(TZ=Asia/Shanghai date +%F)
-          DATA_DATE=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['data_date'])")
-          echo "data_date=${DATA_DATE} bj_today=${BJ_TODAY}"
-          if [ "$DATA_DATE" = "$BJ_TODAY" ]; then
+          DATA_DATE=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['data_date'])")
+          INTRADAY=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['intraday'])")
+          echo "data_date=${DATA_DATE} bj_today=${BJ_TODAY} intraday=${INTRADAY}"
+          if [ "$DATA_DATE" = "$BJ_TODAY" ] && [ "$INTRADAY" = "False" ]; then
             echo "match=true" >> "$GITHUB_OUTPUT"
           else
             echo "match=false" >> "$GITHUB_OUTPUT"
-            echo "skip commit: data_date is not Beijing today"
+            echo "skip commit: data_date is not Beijing today, or intraday is still true"
           fi
 
       - name: Commit & push
@@ -108,7 +112,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          DATA_DATE=$(python -c "import json; print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json', encoding='utf-8'))['data_date'])")
+          DATA_DATE=$(python -c "import json; print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['data_date'])")
           git add tools/optical-decline-board
           if git diff --cached --quiet; then
             echo "no changes"
