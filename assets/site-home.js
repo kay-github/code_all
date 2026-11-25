@@ -11,11 +11,10 @@
     gjd: '/tools/national-team-etf/',
     fundRecovery: '/tools/fund-dragon-recovery/',
     waveTracker: '/waves',
-    cnvix: '/cnvix',
     marketPulse: '/pulse',
     cycleMirror: '/mirror',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/cnvix', 'cnvix'], ['/cnvix/', 'cnvix'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);

@@ -177,17 +177,6 @@
       "dest": "/tools/wave-tracker/index.html"
     },
     {
-      "src": "^/cnvix/?$",
-      "dest": "/tools/cn-vix/index.html"
-    },
-    {
-      "src": "^/tools/cn-vix/data/(.*)$",
-      "dest": "/tools/cn-vix/data/$1",
-      "headers": {
-        "Cache-Control": "no-store"
-      }
-    },
-    {
       "src": "^/pulse/?$",
       "dest": "/tools/market-pulse/index.html"
     },

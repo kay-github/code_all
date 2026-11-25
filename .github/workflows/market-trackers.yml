@@ -21,7 +21,6 @@ on:
       - Market pulse daily
       - Investment goal reminders
       - top-radar-daily
-      - CNVIX daily update
       - Cycle mirror daily update
     types: [completed]
     branches: [main]
@@ -30,7 +29,6 @@ on:
     paths:
       - 'tools/market-pulse/data/latest.json'
       - 'apps/top-radar/data/summary.json'
-      - 'tools/cn-vix/data/cnvix.json'
       - 'tools/cycle-mirror/data/mirror.json'
   workflow_dispatch:
     inputs:
