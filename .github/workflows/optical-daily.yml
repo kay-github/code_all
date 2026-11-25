@@ -118,5 +118,20 @@ jobs:
             echo "no changes"
           else
             git commit -m "Daily optical decline board update ${DATA_DATE}"
-            git push
+            pushed=0
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                pushed=1
+                echo "pushed on attempt ${attempt}"
+                break
+              fi
+              echo "push attempt ${attempt} failed; retry after 5s"
+              sleep 5
+            done
+            if [ "$pushed" -ne 1 ]; then
+              echo "push failed after 3 attempts"
+              exit 1
+            fi
           fi
