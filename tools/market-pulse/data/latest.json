@@ -1,7 +1,7 @@
 {
   "date": "2026-11-25",
   "weekday": "周三",
-  "generated_at": "2026-11-25T18:50:10",
+  "generated_at": "2026-11-25T18:56:05",
   "headline": "指数调整：ETF 在托底，杠杆仍在出清",
   "indices": [
     {
@@ -292,7 +292,7 @@
       "small_yi": -58.33,
       "stocks": 300,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-25T18:45:31",
+      "fetched_at": "2026-11-25T18:51:56",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -3099,18 +3099,6 @@
       "tone": "neg"
     },
     {
-      "name": "跨境支付(CIPS)",
-      "chg": -2.48,
-      "net": 17.96,
-      "net5": -10.03,
-      "stocks": 73,
-      "leader": "*ST天喻",
-      "prior4": -27.99,
-      "ratio": 64.17,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "生物质能发电",
       "chg": -2.48,
       "net": -4.34,
@@ -3121,6 +3109,18 @@
       "ratio": -82.2,
       "label": "转出",
       "tone": "neg"
+    },
+    {
+      "name": "跨境支付(CIPS)",
+      "chg": -2.48,
+      "net": 17.96,
+      "net5": -10.03,
+      "stocks": 73,
+      "leader": "*ST天喻",
+      "prior4": -27.99,
+      "ratio": 64.17,
+      "label": "强回补",
+      "tone": "warn"
     },
     {
       "name": "化债概念(AMC概念)",
@@ -5451,18 +5451,6 @@
       "tone": "neg"
     },
     {
-      "name": "长安汽车概念",
-      "chg": -4.67,
-      "net": -33.48,
-      "net5": 4.35,
-      "stocks": 462,
-      "leader": "美晨科技",
-      "prior4": 37.83,
-      "ratio": -88.5,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "太赫兹",
       "chg": -4.67,
       "net": -8.83,
@@ -5471,6 +5459,18 @@
       "leader": "ST亚光",
       "prior4": 11.08,
       "ratio": -79.69,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "长安汽车概念",
+      "chg": -4.67,
+      "net": -33.48,
+      "net5": 4.35,
+      "stocks": 462,
+      "leader": "美晨科技",
+      "prior4": 37.83,
+      "ratio": -88.5,
       "label": "转出",
       "tone": "neg"
     },
@@ -8479,5 +8479,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-25 · 周三"
   },
-  "rendered_at": "2026-11-25T18:50:10"
+  "rendered_at": "2026-11-25T18:56:05"
 }
