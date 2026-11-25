@@ -162,6 +162,10 @@
       "dest": "/apps/top-radar/escape_report.html"
     },
     {
+      "src": "^/taoding/escape_v6/?$",
+      "dest": "/apps/top-radar/escape_v6.html"
+    },
+    {
       "src": "^/taoding/admin/?$",
       "dest": "/apps/top-radar/admin.html"
     },
