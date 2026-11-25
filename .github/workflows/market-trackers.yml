@@ -5,6 +5,8 @@ on:
   schedule:
     # Beijing time. Later slots give delayed or incomplete sources another chance.
     - cron: '7 2 * * 1-6'   # ETF final 10:07, including Saturday
+    - cron: '20 2 * * 1-6'  # ETF final 10:20 dedicated retry
+    - cron: '20 3 * * 1-6'  # ETF final 11:20 dedicated retry
     - cron: '23 4 * * 1-6'  # ETF final 12:23 fallback
     - cron: '17,39 6 * * 1-5'  # ETF intraday snapshots 14:17 and 14:39
     - cron: '33 11 * * 1-5' # ETF provisional 19:33
@@ -12,11 +14,12 @@ on:
     - cron: '43 0 * * 1-6'  # Fund NAV 08:43, including Saturday
     - cron: '19 3 * * 1-6'  # Fund NAV 11:19 fallback
     - cron: '11,41 * * * *'  # Catch-up selects tasks by the runner's actual Beijing time
-  # Event-driven backfill: these workflows finish after the morning window and
-  # give the ETF final/close a second chance when GitHub drops a schedule event.
+  # Event-driven backfill: these workflows provide a second chance when GitHub
+  # drops a schedule event. Investment goal reminders is the only morning source.
   workflow_run:
     workflows:
       - Market pulse daily
+      - Investment goal reminders
       - top-radar-daily
       - CNVIX daily update
       - Cycle mirror daily update
@@ -57,7 +60,21 @@ jobs:
           MANUAL_TASK: ${{ inputs.task }}
           SCHEDULE: ${{ github.event.schedule }}
           EVENT_NAME: ${{ github.event_name }}
+          UPSTREAM: ${{ github.event.workflow_run.name }}
         run: |
+          # Investment goal reminders completes at 10:32/10:47/11:02. Only these
+          # morning completions are allowed to ask for etf-final; its earlier
+          # completions would otherwise create a burst of redundant runs.
+          if [[ "$EVENT_NAME" == 'workflow_run' && "$UPSTREAM" == 'Investment goal reminders' ]]; then
+            read -r weekday clock < <(TZ=Asia/Shanghai date '+%u %H%M')
+            hhmm=$((10#$clock))
+            if (( weekday <= 6 && hhmm >= 1020 && hhmm <= 1115 )); then
+              printf 'tasks=["etf-final"]\n' >> "$GITHUB_OUTPUT"
+            else
+              printf 'tasks=[]\n' >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
           if [[ "$EVENT_NAME" == 'workflow_run' || "$EVENT_NAME" == 'push' ]]; then
             SCHEDULE='event-backfill'
           fi
@@ -75,7 +92,7 @@ jobs:
                 tasks+=(etf-close)
               fi
               ;;
-            '7 2 * * 1-6'|'23 4 * * 1-6') tasks=(etf-final) ;;
+            '7 2 * * 1-6'|'20 2 * * 1-6'|'20 3 * * 1-6'|'23 4 * * 1-6') tasks=(etf-final) ;;
             '17,39 6 * * 1-5') tasks=(etf-intraday) ;;
             '33 11 * * 1-5'|'13 13 * * 1-5') tasks=(etf-close) ;;
             '43 0 * * 1-6'|'19 3 * * 1-6') tasks=(fund) ;;

@@ -9,11 +9,8 @@ on:
     # GitHub cron is UTC. 08:xx-10:xx UTC = 16:xx-18:xx Beijing. Frequent slots
     # make a missed/delayed run much less likely; run_daily skips before 15:05.
     - cron: '11,41 8-10 * * 1-5'
-  workflow_run:
-    # Market trackers is an established, frequently-fired schedule. Use its
-    # completion as a cloud catch-up trigger, independent of this workflow's cron.
-    workflows: ["Market trackers"]
-    types: [completed]
+  # No reverse workflow_run on Market tracker updates: market-trackers already
+  # listens to this workflow; a reverse listener would create a loop.
   workflow_dispatch:
 
 permissions:
