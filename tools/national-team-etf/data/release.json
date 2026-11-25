@@ -1,10 +1,10 @@
 {
-  "build_id": "20261124T183244_0800_389d8adf22",
-  "business_date": "2026-11-23",
+  "build_id": "20261125T132634_0800_c2a0279ce9",
+  "business_date": "2026-11-24",
   "version": "2.2.0",
-  "checked_at": "2026-11-24T18:33:25+08:00",
-  "official_net_yi": 157.0360975257865,
-  "official_net5_yi": 1877.549268314339,
+  "checked_at": "2026-11-25T13:33:23+08:00",
+  "official_net_yi": -78.38271240752535,
+  "official_net5_yi": 1644.6056876549583,
   "checks": 20,
   "hash_format": "sha256; UTF-8 text CRLF normalized to LF; gzip raw bytes",
   "files": {
@@ -35,7 +35,7 @@
     "apps/national-team-etf/pipeline.py": "c5a17fd866bb2d839c69adc994c0f479a1c8a8a53f85170c3b4a6a4a3596541a",
     "apps/national-team-etf/postclose.py": "91fae25bacfec5f9661f958130501c37e60b9729a2e591f47b8004daa1b8fdf2",
     "apps/national-team-etf/publish.py": "62166bf2d7b357646de90f26a8425027c55274269a249caf2953f6bc6834f055",
-    "apps/national-team-etf/release.json": "c709c0917fa1bde5ed6240d702046b9c059c937e09215016b85068f4bd771acb",
+    "apps/national-team-etf/release.json": "4e79aedca93c6266bab20153d89589ca01a48d5227e7275ed4ead9f9a1fa25de",
     "apps/national-team-etf/scheduler.py": "c7fdeb53ecbe428e44d5b00fb20aaaf45af5696544dcfcfb1bddbe34f535dbb8",
     "apps/national-team-etf/serve_preview.py": "06a50be1542b915012eba59d3737d9f5cbb75ad0f715c930e15849434f653ac5",
     "apps/national-team-etf/tests/fixtures/regression_20261113.json.gz": "172020e1091efafccc7ea54079767f8fbca662903e14605b45a8818746030bc4",
@@ -63,14 +63,14 @@
     "apps/national-team-etf/weekly_report.py": "62d49707fd2c67546ca13d2ae12b621fce862317d0554a1d09996803a3b93e6b",
     "apps/national-team-etf/卖出侧观测手册.md": "e66df1a74d7a360614b65ca8d215aa54678531b86f77775f5b2d4dbff97ff2ec",
     "tests/nationalTeamEtf.test.cjs": "b5be44221492a64e0e8144e43286dfd020c0bc8e8800a2e7ffc8fb597c34ab9e",
-    "tools/national-team-etf/cycle.html": "687b408c00a07ab1c2abb44cd92ecdbf9844251a61d96e32a58aa1d0139a7661",
+    "tools/national-team-etf/cycle.html": "7230aee162d4c94e1ab97573fb204e3623125490ca41d3d90a1306897d5e6e6e",
     "tools/national-team-etf/data/intraday/baseline15.json": "974f6407ace103397aab54daaf247cc333d3728235309677802a1bde52fc2e96",
     "tools/national-team-etf/data/intraday/latest.json": "2dda4ab479348d0dfe566a11d72acd92e2a45d2e8ddfa702b8774339daf38182",
-    "tools/national-team-etf/data/intraday/postclose.json": "3be5d7e39556805e41df2ea12c64e74a1b5c552750490801dc509ce3a9cd80e9",
-    "tools/national-team-etf/data/inventory.csv": "c6651d6183ecdbcd93efad86d539d1a90c39ab4fc330d8bd93c5dd86e9d64d96",
-    "tools/national-team-etf/data/latest.json": "43a5fd206ac1799bbfe10e937a79eb7bac58c90bc45b1decb80d964371c8ea6a",
-    "tools/national-team-etf/data/official_flow.csv": "d84ff6f21709149aaa92f708b1aa512e34397612ff8ad8a6c749e4be7fba9e27",
-    "tools/national-team-etf/index.html": "cb4657930c400b29a0d8fdecf2578df8f1637fdf12c5954b14960a121ca99f99",
-    "tools/national-team-etf/segments.html": "d5d9c916dd40124dd5f199aa819f6f7a625bdedae77de2f07cd6999aee1d9404"
+    "tools/national-team-etf/data/intraday/postclose.json": "8836f1ebf075311e88913689256f302c3983f96feb424c9949966bca8e0cb803",
+    "tools/national-team-etf/data/inventory.csv": "773d9a17911d41f7850b44cb2268c1f60a9d663e5084406402905dadafb269e7",
+    "tools/national-team-etf/data/latest.json": "d84109e6b501ec10b0edf1a905b29e3bc0a4ffda35fc1859d29a2b1e9038fc3b",
+    "tools/national-team-etf/data/official_flow.csv": "73719c07d201cfd1162cec1bbcd2dad4ff74cd35907cefcf06a532e679796645",
+    "tools/national-team-etf/index.html": "ceb59917babaa49e4b73d11980b7cf7f4ad2c53bfb625e458c79094e0a19f402",
+    "tools/national-team-etf/segments.html": "1b4ab278892dc43968052d6c646eb928ab8977ca899b33969c79dc9a87fed9ec"
   }
 }
