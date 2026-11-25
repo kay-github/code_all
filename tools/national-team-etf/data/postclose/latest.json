@@ -7,8 +7,7 @@
   "generated_at": "2026-11-24T23:02:26+08:00",
   "build_id": "20261124T230209_0800_245bc566c2",
   "built_at": "2026-11-24T23:02:09+08:00",
-  "pending_review": true,
-  "superseded_by": null,
+  "pending_review": false,
   "primary": "official_sse",
   "primary_net_yi": -46.44425534279607,
   "primary_label": "SSE 10只小计（SZSE 5只待披露）",
@@ -63,8 +62,9 @@
     "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
   },
   "revision_risk": "SSE 10只已披露T日清算份额；SZSE 5只尚未披露。本卡只展示SSE小计，不发布核心15完整合计，也不混算供应商10份刻度。",
-  "next_step": "等待 SZSE 5只披露后重跑晚间值；次晨正式复核",
   "complete_total_policy": "覆盖不足时不展示核心15只完整合计，缺口不补0",
   "identity": "I0 当日买卖主体未确认",
-  "limitation": "盘后值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户"
+  "limitation": "盘后值只反映 T 日收盘口径的通道变化，不能归属到国家队实名账户",
+  "superseded_by": "20261125T132634_0800_c2a0279ce9",
+  "next_step": "已由权威构建 20261125T132634_0800_c2a0279ce9 复核替代；初值保留用于回看当时的判断依据"
 }
