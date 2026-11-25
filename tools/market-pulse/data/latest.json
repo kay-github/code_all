@@ -1,7 +1,7 @@
 {
   "date": "2026-11-25",
   "weekday": "周三",
-  "generated_at": "2026-11-25T09:21:52",
+  "generated_at": "2026-11-25T18:50:10",
   "headline": "指数调整：ETF 在托底，杠杆仍在出清",
   "indices": [
     {
@@ -46,8 +46,8 @@
       "turnover_pct": 2.26,
       "pe_ttm": 31.27,
       "amplitude_pct": 3.03,
-      "float_mcap_yi": 285934.02,
-      "mcap_yi": 335531.48,
+      "float_mcap_yi": 285934.01,
+      "mcap_yi": 335531.46,
       "pb": 0.0,
       "limit_up": -1.0,
       "limit_down": -1.0,
@@ -285,14 +285,15 @@
     },
     "em_sh": {
       "date": "2026-11-25",
-      "main_yi": 0.0,
-      "super_yi": 0.0,
-      "large_yi": 0.0,
-      "medium_yi": 0.0,
-      "small_yi": 0.0,
-      "close": 3476.47,
-      "chg": -2.03,
-      "note": "今日未取到东财 push2 沪市资金流快照（收盘后接口限流）；该口径留空，不用 0 值替代真实数据。"
+      "main_yi": 72.09,
+      "super_yi": 39.45,
+      "large_yi": 32.64,
+      "medium_yi": -13.76,
+      "small_yi": -58.33,
+      "stocks": 300,
+      "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
+      "fetched_at": "2026-11-25T18:45:31",
+      "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
       "ths": -823.03,
@@ -3158,18 +3159,6 @@
       "tone": "neg"
     },
     {
-      "name": "职业教育",
-      "chg": -2.57,
-      "net": -10.44,
-      "net5": -6.79,
-      "stocks": 137,
-      "leader": "*ST开元",
-      "prior4": 3.65,
-      "ratio": -286.03,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "动物疫苗",
       "chg": -2.57,
       "net": -1.5,
@@ -3178,6 +3167,18 @@
       "leader": "国药现代",
       "prior4": 1.59,
       "ratio": -94.34,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "职业教育",
+      "chg": -2.57,
+      "net": -10.44,
+      "net5": -6.79,
+      "stocks": 137,
+      "leader": "*ST开元",
+      "prior4": 3.65,
+      "ratio": -286.03,
       "label": "转出",
       "tone": "neg"
     },
@@ -3434,18 +3435,6 @@
       "tone": "neg"
     },
     {
-      "name": "国产航母",
-      "chg": -2.87,
-      "net": -7.98,
-      "net5": -1.89,
-      "stocks": 36,
-      "leader": "国瑞科技",
-      "prior4": 6.09,
-      "ratio": -131.03,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "绿色电力",
       "chg": -2.87,
       "net": -30.8,
@@ -3454,6 +3443,18 @@
       "leader": "创源股份",
       "prior4": 22.53,
       "ratio": -136.71,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "国产航母",
+      "chg": -2.87,
+      "net": -7.98,
+      "net5": -1.89,
+      "stocks": 36,
+      "leader": "国瑞科技",
+      "prior4": 6.09,
+      "ratio": -131.03,
       "label": "转出",
       "tone": "neg"
     },
@@ -4370,18 +4371,6 @@
       "tone": "neg"
     },
     {
-      "name": "可降解塑料",
-      "chg": -3.72,
-      "net": -5.53,
-      "net5": -5.23,
-      "stocks": 174,
-      "leader": "锦盛新材",
-      "prior4": 0.3,
-      "ratio": -1843.33,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "Web3.0",
       "chg": -3.72,
       "net": -10.64,
@@ -4390,6 +4379,18 @@
       "leader": "ST恒信",
       "prior4": 11.06,
       "ratio": -96.2,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "可降解塑料",
+      "chg": -3.72,
+      "net": -5.53,
+      "net5": -5.23,
+      "stocks": 174,
+      "leader": "锦盛新材",
+      "prior4": 0.3,
+      "ratio": -1843.33,
       "label": "转出",
       "tone": "neg"
     },
@@ -5882,18 +5883,6 @@
       "tone": "neg"
     },
     {
-      "name": "毫米波雷达",
-      "chg": -5.1,
-      "net": -37.2,
-      "net5": 9.73,
-      "stocks": 127,
-      "leader": "中京电子",
-      "prior4": 46.93,
-      "ratio": -79.27,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "智能音箱",
       "chg": -5.1,
       "net": -21.37,
@@ -5902,6 +5891,18 @@
       "leader": "瀛通通讯",
       "prior4": 11.58,
       "ratio": -184.54,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "毫米波雷达",
+      "chg": -5.1,
+      "net": -37.2,
+      "net5": 9.73,
+      "stocks": 127,
+      "leader": "中京电子",
+      "prior4": 46.93,
+      "ratio": -79.27,
       "label": "转出",
       "tone": "neg"
     },
@@ -6086,18 +6087,6 @@
       "tone": "neg"
     },
     {
-      "name": "比亚迪概念",
-      "chg": -5.36,
-      "net": -109.25,
-      "net5": -29.54,
-      "stocks": 698,
-      "leader": "美晨科技",
-      "prior4": 79.71,
-      "ratio": -137.06,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "减速器",
       "chg": -5.36,
       "net": -22.19,
@@ -6106,6 +6095,18 @@
       "leader": "宁波东力",
       "prior4": 9.67,
       "ratio": -229.47,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "比亚迪概念",
+      "chg": -5.36,
+      "net": -109.25,
+      "net5": -29.54,
+      "stocks": 698,
+      "leader": "美晨科技",
+      "prior4": 79.71,
+      "ratio": -137.06,
       "label": "转出",
       "tone": "neg"
     },
@@ -8336,13 +8337,13 @@
         "reason": "日跌幅达到15%的前5只证券"
       },
       {
-        "code": "688066",
-        "name": "*ST航图",
-        "chg": 20.0,
-        "net": 0.02,
+        "code": "920157",
+        "name": "宇特光电",
+        "chg": -0.07,
+        "net": 0.01,
         "buyers": 1,
-        "sellers": 0,
-        "reason": "有价格涨跌幅限制的日收盘价格涨幅达到15%的前五只证券"
+        "sellers": 1,
+        "reason": "当日换手率达到20%的前5只股票"
       }
     ],
     "top_sell": [
@@ -8478,5 +8479,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-25 · 周三"
   },
-  "rendered_at": "2026-11-25T10:39:50"
+  "rendered_at": "2026-11-25T18:50:10"
 }
