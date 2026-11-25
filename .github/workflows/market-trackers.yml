@@ -1,5 +1,5 @@
 name: Market tracker updates
-run-name: Market trackers · ${{ inputs.task || github.event.schedule }}
+run-name: Market trackers · ${{ inputs.task || github.event.schedule || github.event_name }}
 
 on:
   schedule:
@@ -12,6 +12,23 @@ on:
     - cron: '43 0 * * 1-6'  # Fund NAV 08:43, including Saturday
     - cron: '19 3 * * 1-6'  # Fund NAV 11:19 fallback
     - cron: '11,41 * * * *'  # Catch-up selects tasks by the runner's actual Beijing time
+  # Event-driven backfill: these workflows finish after the morning window and
+  # give the ETF final/close a second chance when GitHub drops a schedule event.
+  workflow_run:
+    workflows:
+      - Market pulse daily
+      - top-radar-daily
+      - CNVIX daily update
+      - Cycle mirror daily update
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'tools/market-pulse/data/latest.json'
+      - 'apps/top-radar/data/summary.json'
+      - 'tools/cn-vix/data/cnvix.json'
+      - 'tools/cycle-mirror/data/mirror.json'
   workflow_dispatch:
     inputs:
       task:
@@ -29,6 +46,7 @@ permissions:
 
 jobs:
   select:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
@@ -38,13 +56,25 @@ jobs:
         env:
           MANUAL_TASK: ${{ inputs.task }}
           SCHEDULE: ${{ github.event.schedule }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          if [[ "$EVENT_NAME" == 'workflow_run' || "$EVENT_NAME" == 'push' ]]; then
+            SCHEDULE='event-backfill'
+          fi
           tasks=()
           if [[ -n "$SCHEDULE" ]]; then
             read -r weekday clock < <(TZ=Asia/Shanghai date '+%u %H%M')
             hhmm=$((10#$clock))
           fi
           case "$SCHEDULE" in
+            'event-backfill')
+              if (( weekday <= 6 && hhmm >= 1020 )); then
+                tasks+=(etf-final)
+              fi
+              if (( weekday <= 5 && hhmm >= 1515 )); then
+                tasks+=(etf-close)
+              fi
+              ;;
             '7 2 * * 1-6'|'23 4 * * 1-6') tasks=(etf-final) ;;
             '17,39 6 * * 1-5') tasks=(etf-intraday) ;;
             '33 11 * * 1-5'|'13 13 * * 1-5') tasks=(etf-close) ;;
@@ -70,9 +100,9 @@ jobs:
           esac
           # A delayed scheduled event is still an opportunity to publish today's close.
           if [[ -n "$SCHEDULE" ]] && (( weekday <= 5 && hhmm >= 1900 )); then
-            case "${tasks[*]}" in
-              etf-close) ;;
-              etf-intraday) tasks=(etf-close) ;;
+            case " ${tasks[*]} " in
+              *" etf-close "*) ;;
+              *" etf-intraday "*) tasks=(etf-close) ;;
               *) tasks+=(etf-close) ;;
             esac
           fi
