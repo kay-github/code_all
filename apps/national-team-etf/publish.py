@@ -57,6 +57,17 @@ def stage():
         files.append(copy(path/src,DEST/dst))
     files.append(copy(path/'official_flow.csv',DEST/'data/official_flow.csv'))
     files.append(copy(path/'inventory.csv',DEST/'data/inventory.csv'))
+    # 全市场非货币 ETF 辅助报告：只做背景，不进入正式 release_gate。
+    flow_dir=ROOT/'data/market_flow'
+    for rel in ('latest.json','latest.md','history.csv'):
+        src=flow_dir/rel
+        if src.exists():
+            files.append(copy(src,DEST/'data/market_flow'/rel))
+    reports=flow_dir/'reports'
+    if reports.exists():
+        for src in sorted(reports.glob('etf_flow_*')):
+            if src.is_file():
+                files.append(copy(src,DEST/'data/market_flow/reports'/src.name))
     inventory={k:v for k,v in a['inventory'].items() if k not in {'series','components','provenance'}}
     public=dict(version=a['version'],build_id=a['build_id'],business_date=a['end'],built_at=a['built_at'],
         data_stage=a['exchange']['stage'],core_members=a['pools']['core15']['members'],
@@ -103,10 +114,13 @@ def stage():
     files.append('tools/national-team-etf/data/intraday/postclose.json')
     for name in MODULES+['README.md','README_v2.md','卖出侧观测手册.md','AGENTS.md']:
         files.append(copy(ROOT/name,SOURCE/name))
-    for sub in ['config','tests']:
+    for sub in ['config','tests','market_flow']:
         for file in (ROOT/sub).rglob('*'):
-            if file.is_file() and '__pycache__' not in file.parts and file.suffix in {'.py','.json','.gz','.cjs'}:
+            if file.is_file() and '__pycache__' not in file.parts and file.suffix in {'.py','.json','.gz','.cjs','.txt','.md'}:
                 files.append(copy(file,SOURCE/file.relative_to(ROOT)))
+    workflow=ROOT/'market_flow/etf-market-flow.yml'
+    if workflow.exists():
+        files.append(copy(workflow,REPO/'.github/workflows/etf-market-flow.yml'))
     for name in DOCUMENTS:
         original=ROOT/'docs'/name if (ROOT/'docs'/name).exists() else ROOT.parent/name
         target=SOURCE/'docs'/name
@@ -155,7 +169,8 @@ def deploy(files,message=None):
     git('add','--',*files)
     if git('diff','--cached','--name-only'):
         git('commit','-m',message or 'Improve ETF tracking with official share history and verified releases')
-        git('push','origin','main')
+        branch=git('rev-parse','--abbrev-ref','HEAD')
+        git('push','origin','main' if branch=='main' else 'HEAD:main')
         print('已推送项目白名单；继续核对Vercel Ready及线上构建号',git('rev-parse','HEAD'),flush=True)
 
 

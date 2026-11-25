@@ -1,0 +1,548 @@
+{
+  "generated_at": "2026-11-25T19:30:44.525327+08:00",
+  "akshare_version": "1.20.65",
+  "source_policy": "AkShare only; SSE/SZSE shares, Sina calendar, THS/Eastmoney classification and NAV; money ETFs excluded",
+  "methodology": "Change in exchange-reported ETF outstanding shares; estimated cash flow uses AkShare NAV, then AkShare market price as fallback",
+  "trade_date": "20261123",
+  "previous_trade_date": "20261120",
+  "summary": {
+    "direction": "净申购",
+    "net_flow_yi": 86.985613876,
+    "gross_subscription_yi": 277.49310530599996,
+    "gross_redemption_yi": 190.50749143,
+    "stock_net_flow_yi": 172.7629817,
+    "subscription_count": 489,
+    "redemption_count": 440,
+    "unchanged_count": 776
+  },
+  "quality": {
+    "exchange_matched_etfs": 1708,
+    "exchange_unmatched_etfs": 9,
+    "excluded_money_etfs": 3,
+    "included_etfs": 1705,
+    "valued_etfs": 1705,
+    "unvalued_changed_etfs": 0,
+    "nav_priced_etfs": 1704,
+    "market_price_priced_etfs": 0,
+    "structural_change_flags": 0
+  },
+  "by_fund_type": [
+    {
+      "fund_type": "股票型",
+      "etf_count": 1633,
+      "subscription_count": 475,
+      "redemption_count": 398,
+      "net_flow_yi": 172.7629817
+    },
+    {
+      "fund_type": "未分类",
+      "etf_count": 2,
+      "subscription_count": 0,
+      "redemption_count": 0,
+      "net_flow_yi": 0.0
+    },
+    {
+      "fund_type": "其他",
+      "etf_count": 17,
+      "subscription_count": 9,
+      "redemption_count": 8,
+      "net_flow_yi": -6.23329
+    },
+    {
+      "fund_type": "债券型",
+      "etf_count": 53,
+      "subscription_count": 5,
+      "redemption_count": 34,
+      "net_flow_yi": -79.544077824
+    }
+  ],
+  "top_subscriptions": [
+    {
+      "ts_code": "512100.SH",
+      "name": "南方中证1000ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 150000.0,
+      "share_change_pct": 0.062496829327525455,
+      "nav_em": null,
+      "nav_ths": 2.3649,
+      "nav_szse": null,
+      "unit_nav": 2.3649,
+      "market_price_em": null,
+      "valuation_price": 2.3649,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 35.4735,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "510500.SH",
+      "name": "南方中证500ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 38000.0,
+      "share_change_pct": 0.031326852291236905,
+      "nav_em": null,
+      "nav_ths": 6.1644,
+      "nav_szse": null,
+      "unit_nav": 6.1644,
+      "market_price_em": null,
+      "valuation_price": 6.1644,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 23.424719999999997,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "588000.SH",
+      "name": "华夏上证科创板50成份ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 154200.0,
+      "share_change_pct": 0.01488005227495532,
+      "nav_em": null,
+      "nav_ths": 1.2992,
+      "nav_szse": null,
+      "unit_nav": 1.2992,
+      "market_price_em": null,
+      "valuation_price": 1.2992,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 20.033663999999998,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "513180.SH",
+      "name": "华夏恒生科技ETF(QDII)",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 441100.0,
+      "share_change_pct": 0.05183328397067915,
+      "nav_em": null,
+      "nav_ths": 0.441,
+      "nav_szse": null,
+      "unit_nav": 0.441,
+      "market_price_em": null,
+      "valuation_price": 0.441,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 19.45251,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "510310.SH",
+      "name": "易方达沪深300ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 43920.0,
+      "share_change_pct": 0.015431456785737175,
+      "nav_em": null,
+      "nav_ths": 3.9196,
+      "nav_szse": null,
+      "unit_nav": 3.9196,
+      "market_price_em": null,
+      "valuation_price": 3.9196,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 17.2148832,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "159915.SZ",
+      "name": "易方达创业板ETF",
+      "fund_type": "股票型",
+      "exchange": "SZSE",
+      "share_change_wan": 74100.0,
+      "share_change_pct": 0.013935262728914793,
+      "nav_em": null,
+      "nav_ths": 2.2958,
+      "nav_szse": 2.2946,
+      "unit_nav": 2.2958,
+      "market_price_em": null,
+      "valuation_price": 2.2958,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 17.011878,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "510300.SH",
+      "name": "华泰柏瑞沪深300ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 40230.0,
+      "share_change_pct": 0.007290039298204462,
+      "nav_em": null,
+      "nav_ths": 4.0328,
+      "nav_szse": null,
+      "unit_nav": 4.0328,
+      "market_price_em": null,
+      "valuation_price": 4.0328,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 16.2239544,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "588170.SH",
+      "name": "华夏上证科创板半导体材料设备主题ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 141600.0,
+      "share_change_pct": 0.020024479926710404,
+      "nav_em": null,
+      "nav_ths": 0.6797,
+      "nav_szse": null,
+      "unit_nav": 0.6797,
+      "market_price_em": null,
+      "valuation_price": 0.6797,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 9.624552,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "510050.SH",
+      "name": "华夏上证50ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": 24480.0,
+      "share_change_pct": 0.010143296100862283,
+      "nav_em": null,
+      "nav_ths": 2.88,
+      "nav_szse": null,
+      "unit_nav": 2.88,
+      "market_price_em": null,
+      "valuation_price": 2.88,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 7.05024,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "159530.SZ",
+      "name": "易方达国证机器人产业ETF",
+      "fund_type": "股票型",
+      "exchange": "SZSE",
+      "share_change_wan": 57400.0,
+      "share_change_pct": 0.041514143267343186,
+      "nav_em": null,
+      "nav_ths": 1.2052,
+      "nav_szse": 1.2246,
+      "unit_nav": 1.2052,
+      "market_price_em": null,
+      "valuation_price": 1.2052,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": 6.917847999999999,
+      "structural_change_flag": false
+    }
+  ],
+  "top_redemptions": [
+    {
+      "ts_code": "511380.SH",
+      "name": "博时可转债ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -9940.0,
+      "share_change_pct": -0.021788275089116568,
+      "nav_em": null,
+      "nav_ths": 11.9498,
+      "nav_szse": null,
+      "unit_nav": 11.9498,
+      "market_price_em": null,
+      "valuation_price": 11.9498,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -11.8781012,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "511090.SH",
+      "name": "鹏扬中债-30年期国债ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -718.0,
+      "share_change_pct": -0.01885117574363031,
+      "nav_em": null,
+      "nav_ths": 121.3755,
+      "nav_szse": null,
+      "unit_nav": 121.3755,
+      "market_price_em": null,
+      "valuation_price": 121.3755,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -8.7147609,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "511360.SH",
+      "name": "海富通中证短融ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -536.0,
+      "share_change_pct": -0.006445851361072783,
+      "nav_em": null,
+      "nav_ths": 114.204,
+      "nav_szse": null,
+      "unit_nav": 114.204,
+      "market_price_em": null,
+      "valuation_price": 114.204,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -6.121334399999999,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "511190.SH",
+      "name": "海富通上证基准做市公司债ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -540.0,
+      "share_change_pct": -0.02368480264638195,
+      "nav_em": null,
+      "nav_ths": 103.1035,
+      "nav_szse": null,
+      "unit_nav": 103.1035,
+      "market_price_em": null,
+      "valuation_price": 103.1035,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -5.567589,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "510210.SH",
+      "name": "上证综指ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": -58800.0,
+      "share_change_pct": -0.030220187058229563,
+      "nav_em": null,
+      "nav_ths": 0.9202,
+      "nav_szse": null,
+      "unit_nav": 0.9202,
+      "market_price_em": null,
+      "valuation_price": 0.9202,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -5.410776,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "511070.SH",
+      "name": "南方上证基准做市公司债ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -500.0,
+      "share_change_pct": -0.01414143128254297,
+      "nav_em": null,
+      "nav_ths": 103.2266,
+      "nav_szse": null,
+      "unit_nav": 103.2266,
+      "market_price_em": null,
+      "valuation_price": 103.2266,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -5.16133,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "511130.SH",
+      "name": "博时上证30年期国债ETF",
+      "fund_type": "债券型",
+      "exchange": "SSE",
+      "share_change_wan": -379.0,
+      "share_change_pct": -0.014437561735813953,
+      "nav_em": null,
+      "nav_ths": 110.9227,
+      "nav_szse": null,
+      "unit_nav": 110.9227,
+      "market_price_em": null,
+      "valuation_price": 110.9227,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -4.20397033,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "158900.SZ",
+      "name": "南方均衡配置主动管理ETF",
+      "fund_type": "股票型",
+      "exchange": "SZSE",
+      "share_change_wan": -41200.0,
+      "share_change_pct": -0.2059953658252527,
+      "nav_em": null,
+      "nav_ths": 0.9906,
+      "nav_szse": 0.9907,
+      "unit_nav": 0.9906,
+      "market_price_em": null,
+      "valuation_price": 0.9906,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -4.081272,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "158903.SZ",
+      "name": "鹏华价值臻选主动管理ETF",
+      "fund_type": "股票型",
+      "exchange": "SZSE",
+      "share_change_wan": -38800.0,
+      "share_change_pct": -0.19398891537638094,
+      "nav_em": null,
+      "nav_ths": 1.0087,
+      "nav_szse": 1.0074,
+      "unit_nav": 1.0087,
+      "market_price_em": null,
+      "valuation_price": 1.0087,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -3.913756,
+      "structural_change_flag": false
+    },
+    {
+      "ts_code": "515450.SH",
+      "name": "南方标普中国A股大盘红利低波50ETF",
+      "fund_type": "股票型",
+      "exchange": "SSE",
+      "share_change_wan": -25950.0,
+      "share_change_pct": -0.018619722483619847,
+      "nav_em": null,
+      "nav_ths": 1.5057,
+      "nav_szse": null,
+      "unit_nav": 1.5057,
+      "market_price_em": null,
+      "valuation_price": 1.5057,
+      "price_source": "ths_nav",
+      "estimated_flow_yi": -3.9072915,
+      "structural_change_flag": false
+    }
+  ],
+  "structural_change_flags": [],
+  "unmatched_exchange_etfs": [
+    {
+      "ts_code": "581000.SH",
+      "exchange_name": "N大盘成",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581010.SH",
+      "exchange_name": "N均衡智",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581020.SH",
+      "exchange_name": "N均衡慧",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581030.SH",
+      "exchange_name": "N质量",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581050.SH",
+      "exchange_name": "N品质",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581060.SH",
+      "exchange_name": "N景气MW",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581070.SH",
+      "exchange_name": "N红利PA",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581080.SH",
+      "exchange_name": "N主动",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    },
+    {
+      "ts_code": "581090.SH",
+      "exchange_name": "N价值ETF",
+      "trade_date": "20261123",
+      "exchange": "SSE",
+      "missing_on": "20261120"
+    }
+  ],
+  "excluded_money_etfs": [
+    {
+      "ts_code": "159001.SZ",
+      "name": "易方达保证金货币A",
+      "fund_type": "货币型",
+      "exchange": "SZSE"
+    },
+    {
+      "ts_code": "159003.SZ",
+      "name": "招商保证金快线A",
+      "fund_type": "货币型",
+      "exchange": "SZSE"
+    },
+    {
+      "ts_code": "159005.SZ",
+      "name": "汇添富收益快钱货币A",
+      "fund_type": "货币型",
+      "exchange": "SZSE"
+    }
+  ],
+  "missing_price_etfs": [
+    {
+      "ts_code": "530080.SH",
+      "name": "180指基",
+      "fund_type": "未分类",
+      "share_change_wan": 0.0
+    }
+  ],
+  "components": [
+    {
+      "component": "trade_calendar",
+      "status": "ok",
+      "rows": 8797,
+      "source": "AkShare.tool_trade_date_hist_sina / Sina",
+      "error": null
+    },
+    {
+      "component": "sse_etf_share_20261120",
+      "status": "ok",
+      "rows": 927,
+      "source": "AkShare.fund_etf_scale_sse / SSE",
+      "error": null
+    },
+    {
+      "component": "sse_etf_share_20261123",
+      "status": "ok",
+      "rows": 936,
+      "source": "AkShare.fund_etf_scale_sse / SSE",
+      "error": null
+    },
+    {
+      "component": "szse_etf_share_20261120_20261123",
+      "status": "ok",
+      "rows": 1562,
+      "source": "AkShare.fund_scale_daily_szse / SZSE",
+      "error": null
+    },
+    {
+      "component": "szse_etf_classification_latest",
+      "status": "ok",
+      "rows": 1097,
+      "source": "AkShare.fund_etf_scale_szse / SZSE",
+      "error": null
+    },
+    {
+      "component": "etf_nav_type_ths_20261123",
+      "status": "ok",
+      "rows": 1803,
+      "source": "AkShare.fund_etf_spot_ths / THS",
+      "error": null
+    },
+    {
+      "component": "etf_nav_price_em_20261123",
+      "status": "error",
+      "rows": 0,
+      "source": "AkShare.fund_etf_fund_daily_em / Eastmoney",
+      "error": "RuntimeError: Eastmoney ETF response is stale or missing columns for 20261123: ['2026-11-23-单位净值']"
+    }
+  ]
+}

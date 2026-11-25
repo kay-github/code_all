@@ -1,0 +1,3 @@
+﻿trade_date,previous_trade_date,net_flow_yi,stock_net_flow_yi,gross_subscription_yi,gross_redemption_yi,included_etfs,excluded_money_etfs,exchange_unmatched_etfs,unvalued_changed_etfs,akshare_version,generated_at
+20261123,20261120,86.985613876,172.7629817,277.49310530599996,190.50749143,1705,3,9,0,1.20.65,2026-11-25T19:30:44.525327+08:00
+20261124,20261123,-185.4047863439999,-132.62484235000002,129.894040494,315.2988268379999,1714,3,2,0,1.20.65,2026-11-25T19:31:00.096741+08:00

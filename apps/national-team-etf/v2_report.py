@@ -409,9 +409,15 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
   .focus-grid #inventory .inventory-kpis{grid-template-columns:minmax(0,1fr)}
   .focus-grid #inventory .inventory-kpis .kpi{flex-direction:row;align-items:baseline;justify-content:space-between;gap:4px}
 }
+.market-flow-core td{background:var(--accent-soft);font-weight:600}
+.market-flow-core td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.market-flow-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+.market-flow-kpis .kpi{background:var(--inset)}
+.market-flow-kpis .note{margin-top:4px}
+@media(max-width:760px){.market-flow-kpis{grid-template-columns:1fr}}
 </style></head><body>
 <button id="backTop" aria-label="回到顶部" title="回到顶部">↑</button>
-<header><strong>国家队观察</strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#official">全部明细</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段成交</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
+<header><strong>国家队观察</strong><nav><a href="#focus">最新一日</a><a href="#inventory">本轮刻度</a><a href="#official">全部明细</a><a href="#marketFlow">全市场背景</a><a href="/gjd/cycle">历史复盘</a><a href="/tools/national-team-etf/segments.html">分段成交</a><button id="themeToggle" aria-label="切换深浅色">深浅色</button></nav></header>
 <main>
 __FOCUS_BLOCK__
 <section id="stages" aria-labelledby="stagesTitle"><h2 id="stagesTitle">数据版本</h2>
@@ -428,6 +434,17 @@ __FOCUS_BLOCK__
 <p class="note" id="postcloseScope"></p>
 <div id="postcloseBody"></div></details></section>
 <section id="official"><h2>交易所正式份额 · 核心15只</h2><details><summary>展开完整15只明细、来源与修订</summary><p class="note" id="officialScope"></p><div class="scroll desktop-core"><table><thead><tr><th>ETF / 家族</th><th>前日 / 亿份</th><th>当日 / 亿份</th><th>变化 / 亿份</th><th>变化比例</th><th>敞口估算 / 亿元</th><th>5日 / 亿元</th><th>正式份额状态</th><th>来源</th></tr></thead><tbody id="officialRows"></tbody></table></div><div id="officialMobile" class="mobile-cards"></div><details><summary>最近交易日的正式份额变化</summary><div class="scroll"><table><thead><tr><th>日期</th><th>敞口估算 / 亿元</th><th>减少 / 增加</th><th>覆盖</th></tr></thead><tbody id="officialDays"></tbody></table></div></details><p class="note">正式份额确认的是基金净申赎。金额按份额变化×当日不复权成交均价估算，表示证券敞口变化；不是国家队实际现金流。无法据此识别赎回账户，也不能覆盖全部二级市场卖出。</p></details></section>
+<section id="marketFlow"><h2>全市场 ETF 申赎背景 <span class="pill">T-1 · 非货币ETF</span></h2>
+<details><summary>展开全市场、股票型与核心15对照</summary>
+<p class="note" id="marketFlowScope">正在读取辅助报告…</p>
+<div class="kpis market-flow-kpis" id="marketFlowKpis"></div>
+<div class="twocol">
+<div><h3>净申购前十</h3><div class="scroll"><table><thead><tr><th>ETF</th><th>估算净申赎 / 亿</th><th>份额变化</th></tr></thead><tbody id="marketFlowBuys"></tbody></table></div></div>
+<div><h3>净赎回前十</h3><div class="scroll"><table><thead><tr><th>ETF</th><th>估算净申赎 / 亿</th><th>份额变化</th></tr></thead><tbody id="marketFlowSells"></tbody></table></div></div>
+</div>
+<p class="note" id="marketFlowQuality"></p>
+<p class="note">只作背景：全市场总量含债券、商品、跨境，股票型单列；金额为份额变化×净值估算，不是原始申赎成交额；买卖主体未知（I0）。核心15只正式份额与10份刻度仍以本页「交易所正式份额」为准。<a id="marketFlowJson" href="/tools/national-team-etf/data/market_flow/latest.json" target="_blank" rel="noopener">查看 JSON</a> · <a id="marketFlowHistory" href="/tools/national-team-etf/data/market_flow/history.csv" download>下载历史 CSV</a></p>
+</details></section>
 <section><h2>核心正式份额 · 分通道减仓观察</h2><details><summary>展开分通道减仓观察</summary><p class="note">使用相同固定核心成员，正式份额独立计算5/10/20日与事件状态；未覆盖的窗口不补历史反推。短期回补不自动清除旧事件。规则阈值尚未用实名交易校准。</p><div class="scroll"><table><thead><tr><th>家族</th><th>当日 / 亿元</th><th>5日</th><th>10日</th><th>20日</th><th>状态</th></tr></thead><tbody id="officialFamilies"></tbody></table></div></details></section>
 <section><h2>历史补充 · 核心通道近100日换手率反推</h2><details><summary>展开近100日反推图</summary><div class="legend"><span>红：净申购</span><span>绿：净赎回</span><span>金额单位：亿元；缺失留空</span></div><p class="note">以下为供应商换手率反推序列，分母可能滞后或修订。与上方正式披露独立计算，避免混接两种口径；当日判断优先看上方正式份额。</p><div id="chart"></div></details></section>
 <section id="channels"><h2>历史反推 · 分通道减仓观察</h2><details><summary>展开历史反推与通道状态</summary><p class="note">本表是换手率反推的历史观察状态，不能替代上方正式份额。份额回撤按过去63个交易日峰值计算，跨份额合并已换至同一单位。5/10/20日均使用逐日估算相加。短暂回补不会自动解除持续流出观察。</p>
@@ -554,6 +571,61 @@ function renderFocus(){
  $('interpretationRows').innerHTML=notes.map(x=>`<li>${esc(x)}</li>`).join('');
 }
 renderFocus();
+async function renderMarketFlow(){
+ const kpis=$('marketFlowKpis'); if(!kpis)return;
+ const mfUrl='/tools/national-team-etf/data/market_flow/latest.json';
+ let mf=null;
+ try{
+  if(typeof fetch!=='function')throw new Error('fetch unavailable');
+  const r=await fetch(mfUrl,{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  mf=await r.json();
+ }catch(err){
+  $('marketFlowScope').textContent='尚未取到全市场辅助报告；缺失不补0。';
+  kpis.innerHTML='<div class="empty">全市场背景未同步或当前预览环境无法读取。</div>';
+  return;
+ }
+ if(!mf||mf.status!=='ok'){
+  $('marketFlowScope').textContent='全市场辅助报告状态异常，暂不展示。';
+  kpis.innerHTML='<div class="empty">辅助报告未通过状态检查。</div>';
+  return;
+ }
+ const s=mf.summary||{},q=mf.quality||{};
+ const core=Number.isFinite(D.exchange?.latest?.net_estimate)?D.exchange.latest.net_estimate:null;
+ const coreComplete=!!(D.exchange?.latest?.complete&&D.exchange.latest.valid_members===D.exchange.latest.expected_members);
+ const stock=Number.isFinite(s.stock_net_flow_yi)?s.stock_net_flow_yi:null;
+ const all=Number.isFinite(s.net_flow_yi)?s.net_flow_yi:null;
+ let relation='—';
+ if(Number.isFinite(stock)&&Number.isFinite(core)&&Math.abs(stock)>=1){
+  relation=`${(core/stock*100).toFixed(0)}%`;
+ }
+ if(Number.isFinite(stock)&&Number.isFinite(core)&&Math.sign(stock)!==Math.sign(core))relation='方向背离';
+ const ymd=x=>x&&String(x).length===8?`${String(x).slice(0,4)}-${String(x).slice(4,6)}-${String(x).slice(6)}`:(x||'—');
+ const gen=mf.generated_at?String(mf.generated_at).replace('T',' ').slice(0,16):'—';
+ $('marketFlowScope').textContent=`报告日 ${ymd(mf.trade_date)}（对比 ${ymd(mf.previous_trade_date)}） · 生成 ${gen} · AkShare ${mf.akshare_version||'—'}`;
+ const kpi=(label,value,sub)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${value}</div><div class="note">${esc(sub||'')}</div></div>`;
+ kpis.innerHTML=[
+  kpi('全市场非货币ETF',Number.isFinite(all)?val(all):'—',s.direction||''),
+  kpi('其中股票型',Number.isFinite(stock)?val(stock):'—','排除债券/商品/跨境'),
+  kpi('核心15 / 股票型',coreComplete?val(core):'<span class="risk">正式份额未齐</span>',coreComplete?('占股票型 '+relation):'不以缺数估算')
+ ].join('');
+ const coreSet=new Set((D.pools?.core15?.members??[]).map(String));
+ const row=(r)=>{
+  const code=String(r.ts_code||'').split('.')[0];
+  const isCore=coreSet.has(code);
+  const pct=Number.isFinite(r.share_change_pct)?r.share_change_pct*100:null;
+  return `<tr${isCore?' class="market-flow-core"':''}><td class="name"><b>${esc(r.name)}</b><small>${esc(code)} · ${esc(r.fund_type)}</small></td><td>${val(r.estimated_flow_yi)}</td><td>${pct===null?'—':(pct>0?'+':'')+pct.toFixed(2)+'%'}</td></tr>`;
+ };
+ const rows=(arr,id,empty)=>$(id).innerHTML=(arr&&arr.length?arr.map(row).join(''):`<tr><td colspan="3">${empty}</td></tr>`);
+ rows(mf.top_subscriptions,'marketFlowBuys','无净申购');
+ rows(mf.top_redemptions,'marketFlowSells','无净赎回');
+ const totalSub=Number.isFinite(s.gross_subscription_yi)?num(s.gross_subscription_yi):'—';
+ const totalRedeem=Number.isFinite(s.gross_redemption_yi)?num(-Math.abs(s.gross_redemption_yi)):'—';
+ $('marketFlowQuality').textContent=`纳入 ${q.included_etfs??'—'} 只 · 排除货币 ${q.excluded_money_etfs??'—'} 只 · 交易所未匹配 ${q.exchange_unmatched_etfs??'—'} 只 · 未估值变化 ${q.unvalued_changed_etfs??'—'} 只 · 总申购分项 ${totalSub} 亿 / 总赎回分项 ${totalRedeem} 亿。`;
+ const j=$('marketFlowJson'); if(j)j.href=mfUrl;
+ const c=$('marketFlowHistory'); if(c)c.href='/tools/national-team-etf/data/market_flow/history.csv';
+}
+renderMarketFlow();
 $('officialScope').textContent=`业务日 ${D.end}；资料状态：${O.stage}。正式份额与不复权价格配对覆盖 ${of.valid_members}/15。上交所口径为当日清算后份额；深交所按业务日记账，T日晚间初值以T+1早间更新为准。两日均取自同一交易所披露序列，份额披露精度为100份。`;
 const ors=Object.values(O.instruments).sort((a,b)=>(a.latest?.net_estimate??Infinity)-(b.latest?.net_estimate??Infinity));
 const shares=x=>x===null||x===undefined?'—':(x/1e8).toLocaleString('zh-CN',{minimumFractionDigits:4,maximumFractionDigits:4});
