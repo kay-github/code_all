@@ -443,7 +443,7 @@ __FOCUS_BLOCK__
 <div><h3>净赎回前十</h3><div class="scroll"><table><thead><tr><th>ETF</th><th>估算净申赎 / 亿</th><th>份额变化</th></tr></thead><tbody id="marketFlowSells"></tbody></table></div></div>
 </div>
 <p class="note" id="marketFlowQuality"></p>
-<p class="note">只作背景：全市场总量含债券、商品、跨境，股票型单列；金额为份额变化×净值估算，不是原始申赎成交额；买卖主体未知（I0）。核心15只正式份额与10份刻度仍以本页「交易所正式份额」为准。<a id="marketFlowJson" href="/tools/national-team-etf/data/market_flow/latest.json" target="_blank" rel="noopener">查看 JSON</a> · <a id="marketFlowHistory" href="/tools/national-team-etf/data/market_flow/history.csv" download>下载历史 CSV</a></p>
+<p class="note">只作背景：全市场总量含债券、商品、跨境；股票型按数据源分类，含 QDII/跨境，不等于境内股票ETF；金额为份额变化×净值估算，不是原始申赎成交额；买卖主体未知（I0）。核心15只正式份额与10份刻度仍以本页「交易所正式份额」为准。<a id="marketFlowJson" href="/tools/national-team-etf/data/market_flow/latest.json" target="_blank" rel="noopener">查看 JSON</a> · <a id="marketFlowHistory" href="/tools/national-team-etf/data/market_flow/history.csv" download>下载历史 CSV</a></p>
 </details></section>
 <section><h2>核心正式份额 · 分通道减仓观察</h2><details><summary>展开分通道减仓观察</summary><p class="note">使用相同固定核心成员，正式份额独立计算5/10/20日与事件状态；未覆盖的窗口不补历史反推。短期回补不自动清除旧事件。规则阈值尚未用实名交易校准。</p><div class="scroll"><table><thead><tr><th>家族</th><th>当日 / 亿元</th><th>5日</th><th>10日</th><th>20日</th><th>状态</th></tr></thead><tbody id="officialFamilies"></tbody></table></div></details></section>
 <section><h2>历史补充 · 核心通道近100日换手率反推</h2><details><summary>展开近100日反推图</summary><div class="legend"><span>红：净申购</span><span>绿：净赎回</span><span>金额单位：亿元；缺失留空</span></div><p class="note">以下为供应商换手率反推序列，分母可能滞后或修订。与上方正式披露独立计算，避免混接两种口径；当日判断优先看上方正式份额。</p><div id="chart"></div></details></section>
@@ -607,7 +607,7 @@ async function renderMarketFlow(){
  kpis.innerHTML=[
   kpi('全市场非货币ETF',Number.isFinite(all)?val(all):'—',s.direction||''),
   kpi('其中股票型',Number.isFinite(stock)?val(stock):'—','排除债券/商品/跨境'),
-  kpi('核心15 / 股票型',coreComplete?val(core):'<span class="risk">正式份额未齐</span>',coreComplete?('占股票型 '+relation):'不以缺数估算')
+  kpi('核心15 / 股票型',coreComplete?val(core):'<span class="risk">正式份额未齐</span>',coreComplete?('占股票型（含跨境） '+relation):'不以缺数估算')
  ].join('');
  const coreSet=new Set((D.pools?.core15?.members??[]).map(String));
  const row=(r)=>{
