@@ -11,7 +11,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, time as dtime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -21,6 +21,18 @@ START = (datetime.strptime(DATE, "%Y-%m-%d") - timedelta(days=18)).strftime("%Y%
 STATUS_PATH = ROOT / "run_status.json"
 STATUS = {"date": DATE, "started_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
           "current": None, "steps": []}
+
+# A GitHub schedule can arrive hours late. Never let a pre-close run publish
+# yesterday's tape under today's date. Explicit dates are for manual research.
+if len(sys.argv) == 1 and not os.environ.get("MP_DATE"):
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    if now.weekday() < 5 and now.time() < dtime(15, 5):
+        STATUS["skipped"] = "preclose"
+        STATUS["finished_at"] = now.isoformat(timespec="seconds")
+        STATUS["ok"] = True
+        STATUS_PATH.write_text(json.dumps(STATUS, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[skip] {now:%F %R} 北京，未到收盘后；保留上一版，不生成 {DATE} 的空盘面")
+        raise SystemExit(0)
 
 
 def save_status():
