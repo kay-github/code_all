@@ -53,7 +53,7 @@ jobs:
           BJ_DAY=$(TZ=Asia/Shanghai date +%u)
           BJ_HM=$(TZ=Asia/Shanghai date +%H%M)
           echo "Beijing now: $(TZ=Asia/Shanghai date '+%F %T weekday=%u')"
-          if [ "$BJ_DAY" -ge 1 ] && [ "$BJ_DAY" -le 5 ] && [ "$BJ_HM" -ge 1510 ] && [ "$BJ_HM" -le 2359 ]; then
+          if [ "$BJ_DAY" -ge 1 ] && [ "$BJ_DAY" -le 5 ] && [ "$((10#$BJ_HM))" -ge 1510 ] && [ "$((10#$BJ_HM))" -le 2359 ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
