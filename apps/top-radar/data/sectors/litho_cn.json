@@ -3,10 +3,10 @@
   "id": "litho_cn",
   "name": "国产光刻机",
   "enabled": true,
-  "as_of": "2026-11-24",
-  "generated_at": "2026-11-25 03:30",
+  "as_of": "2026-11-25",
+  "generated_at": "2026-11-26 01:56",
   "data_start": "2020-12-01",
-  "data_end": "2026-11-24",
+  "data_end": "2026-11-25",
   "n_constituents": 28,
   "effective_n": 28,
   "coverage": 1.0,
@@ -22,32 +22,32 @@
   "site": "https://1.688680.xyz/taoding"
  },
  "latest": {
-  "date": "2026-11-24",
-  "idx": 3.4047,
-  "R": 21.1,
+  "date": "2026-11-25",
+  "idx": 3.0855,
+  "R": 16.0,
   "tier": 0,
   "tier_name": "正常",
   "action": "正常持有",
   "E": 3,
   "C": 2,
-  "ret250": 0.2035,
-  "ret60": -0.3162,
-  "dist60": -0.1933,
-  "dd250": -0.5119,
-  "rsi14": 41.6,
+  "ret250": 0.0847,
+  "ret60": -0.3704,
+  "dist60": -0.2636,
+  "dd250": -0.5576,
+  "rsi14": 34.4,
   "amt_share": null,
-  "amt_ratio60": 1.05,
+  "amt_ratio60": 0.86,
   "crowd_label": "成交额/60日均",
-  "crowd_value": 1.05,
+  "crowd_value": 0.86,
   "limit_up": 0,
   "break20_20d": 16,
   "rebreak20_20d": 2,
   "hot": true,
   "near": false,
-  "ma20_slope": -0.0419,
-  "above60_ratio": 0.0714,
+  "ma20_slope": -0.0446,
+  "above60_ratio": 0.0,
   "newhigh20_ratio": 0.0,
-  "leader_excess20": 0.0952
+  "leader_excess20": 0.1307
  },
  "gate": {
   "ret250": false,
@@ -63,10 +63,10 @@
   "tier": 1,
   "tier_name": "观察",
   "action": "正常持有；E 层转弱时不加仓，暂不减仓",
-  "R": 21.1,
+  "R": 16.0,
   "E": 3,
   "C": 2,
-  "vol20": 0.8177,
+  "vol20": 0.8618,
   "quality_c": false,
   "red_trend": false,
   "red_accel": false,
@@ -95,28 +95,28 @@
    "state_name": "深跌后等待反弹",
    "action": "等待反弹成形，不操作",
    "color": "#8A7A55",
-   "trigger": "反弹 8.5%，但未同时满足成熟度与阻力位条件（成熟 1/4）",
-   "as_of": "2026-11-24",
-   "index": 3.4047,
+   "trigger": "深跌 -55.8% 已满足；当前仅自低点反弹 0.0%，等待反弹成形",
+   "as_of": "2026-11-25",
+   "index": 3.0855,
    "crash_high": 6.9752,
-   "crash_low": 3.1387,
-   "crash_dd": -0.55,
+   "crash_low": 3.0855,
+   "crash_dd": -0.5576,
    "peak_date": "2026-06-30",
-   "low_date": "2026-11-03",
-   "days_since_low": 15,
-   "rebound_high": 3.7454,
-   "rebound_gain": 0.0848,
-   "retracement": 0.0693,
-   "high_drawdown": -0.091,
-   "fib_382": 4.6042,
-   "fib_500": 5.057,
-   "fib_618": 5.5097,
-   "ma20": 3.4889649576884865,
-   "ma60": 4.220338677636131,
-   "ma120": 4.71998356742287,
+   "low_date": "2026-11-25",
+   "days_since_low": 0,
+   "rebound_high": 3.0855,
+   "rebound_gain": 0.0,
+   "retracement": 0.0,
+   "high_drawdown": 0.0,
+   "fib_382": 4.5714,
+   "fib_500": 5.0304,
+   "fib_618": 5.4894,
+   "ma20": 3.4624997322550626,
+   "ma60": 4.190089235092661,
+   "ma120": 4.7079617325846375,
    "nearest_res": "MA60",
-   "res_distance": 0.1933,
-   "maturity_count": 1,
+   "res_distance": 0.2636,
+   "maturity_count": 0,
    "watch_date": null,
    "warn_date": null,
    "confirm_date": null
@@ -124,144 +124,16 @@
   "events": [],
   "history": [
    {
-    "d": "2026-11-03",
-    "idx": 3.1387,
-    "rebound_high": 3.1387,
+    "d": "2026-11-25",
+    "idx": 3.0855,
+    "rebound_high": 3.0855,
     "rebound_gain": 0.0,
     "retracement": 0.0,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-04",
-    "idx": 3.5416,
-    "rebound_high": 3.5416,
-    "rebound_gain": 0.1284,
-    "retracement": 0.105,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-05",
-    "idx": 3.65,
-    "rebound_high": 3.65,
-    "rebound_gain": 0.1629,
-    "retracement": 0.1333,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-06",
-    "idx": 3.5317,
-    "rebound_high": 3.65,
-    "rebound_gain": 0.1252,
-    "retracement": 0.1024,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-09",
-    "idx": 3.5364,
-    "rebound_high": 3.65,
-    "rebound_gain": 0.1267,
-    "retracement": 0.1037,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-10",
-    "idx": 3.6414,
-    "rebound_high": 3.65,
-    "rebound_gain": 0.1602,
-    "retracement": 0.131,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-11",
-    "idx": 3.7454,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1933,
-    "retracement": 0.1581,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-12",
-    "idx": 3.739,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1913,
-    "retracement": 0.1565,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-13",
-    "idx": 3.6294,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1564,
-    "retracement": 0.1279,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-16",
-    "idx": 3.4158,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.0883,
-    "retracement": 0.0722,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-17",
-    "idx": 3.5308,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1249,
-    "retracement": 0.1022,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-18",
-    "idx": 3.5316,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1252,
-    "retracement": 0.1024,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-19",
-    "idx": 3.5549,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.1326,
-    "retracement": 0.1085,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-20",
-    "idx": 3.2671,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.0409,
-    "retracement": 0.0335,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-23",
-    "idx": 3.3772,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.076,
-    "retracement": 0.0622,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-24",
-    "idx": 3.4047,
-    "rebound_high": 3.7454,
-    "rebound_gain": 0.0848,
-    "retracement": 0.0693,
     "state": "waiting"
    }
   ]
  },
  "history": [
-  {
-   "d": "2025-10-30",
-   "idx": 2.987,
-   "tier": 4,
-   "R": 64.2,
-   "v2t": 4,
-   "E": 3
-  },
   {
    "d": "2025-10-31",
    "idx": 2.9195,
@@ -2333,6 +2205,14 @@
    "R": 21.1,
    "v2t": 1,
    "E": 3
+  },
+  {
+   "d": "2026-11-25",
+   "idx": 3.0855,
+   "tier": 0,
+   "R": 16.0,
+   "v2t": 1,
+   "E": 3
   }
  ],
  "signals": [
@@ -3100,8 +2980,8 @@
   }
  ],
  "stats": {
-  "days": 1450,
+  "days": 1451,
   "start": "2020-12-01",
-  "end": "2026-11-24"
+  "end": "2026-11-25"
  }
 }
