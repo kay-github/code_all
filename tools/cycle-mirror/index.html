@@ -358,10 +358,10 @@ function drawMain(){
   }
   if(pf) out+='<path d="'+pf+'" fill="none" stroke="#e5533d" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>';
 
-  // 现在位置的缺口竖线：折算模板 − 实际
-  var nowR=p.a*m.r[n], gapR=p.a*tplR(pos);
+  // 现在位置的缺口竖线：折算模板 − 实际（竖线按缩放后的高度画，标签写未缩放的真实差额）
+  var gapRaw=tplR(pos)-m.r[n], nowR=p.a*m.r[n], gapR=p.a*tplR(pos);
   out+='<line x1="'+x(pos)+'" y1="'+y(nowR)+'" x2="'+x(pos)+'" y2="'+y(gapR)+'" stroke="#f0b24a" stroke-width="1.4" stroke-dasharray="3 3" opacity=".85"/>';
-  out+='<text x="'+(x(pos)+7)+'" y="'+((y(nowR)+y(gapR))/2+4)+'" fill="#f0b24a" font-size="10" font-family="ui-monospace,monospace" opacity=".9">'+(gapR>=nowR?"缺口 ":"超出 ")+fmt(Math.abs(gapR-nowR),1)+"pp</text>";
+  out+='<text x="'+(x(pos)+7)+'" y="'+((y(nowR)+y(gapR))/2+4)+'" fill="#f0b24a" font-size="10" font-family="ui-monospace,monospace" opacity=".9">'+(gapRaw>=0?"缺口 ":"超出 ")+fmt(Math.abs(gapRaw),1)+"pp</text>";
 
   // 现在竖线
   out+='<line x1="'+x(pos)+'" y1="'+pad.t+'" x2="'+x(pos)+'" y2="'+(H-pad.b)+'" stroke="#e6ebf2" stroke-width="1" stroke-dasharray="4 4" opacity=".5"/>';
