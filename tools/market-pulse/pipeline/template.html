@@ -1050,12 +1050,30 @@ window.DATA = __DATA_JSON__;
     });
   });
 
+  function scrollToTabTop(panel){
+    if (!panel || !panel.classList.contains('active')) return;
+    const tabs = document.querySelector('.tabs');
+    const tabsH = tabs ? tabs.offsetHeight : 0;
+    const y = panel.getBoundingClientRect().top + window.pageYOffset - tabsH - 10;
+    // Tab switching should land at the top of the selected panel. Disable the
+    // global smooth-scroll only for this jump, so it doesn't animate past it.
+    const root = document.documentElement;
+    const oldBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, Math.max(0, y));
+    root.style.scrollBehavior = oldBehavior;
+  }
+
   const tabMap = {overview:initOverview, flow:initFlowTab, stocks:initStockTab, method:()=>{}};
   document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const tab = btn.dataset.tab;
+      const switched = !btn.classList.contains('active');
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
       document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
+      if(switched){
+        requestAnimationFrame(()=>scrollToTabTop(document.getElementById('panel-'+tab)));
+      }
       if(!inited[tab]){
         inited[tab] = true;
         setTimeout(()=>{ tabMap[tab] && tabMap[tab](); charts.forEach(c=>c.resize()); }, 30);
