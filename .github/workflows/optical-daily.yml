@@ -1,13 +1,31 @@
 name: optical-daily-update
 
-# 北京时间周一至周五 15:01（UTC 07:01）；GitHub cron 可能有几分钟延迟，
-# 也出现过整天不触发的情况 → 16:05（UTC 08:05）再跑一次兜底；
-# 第二次结果若与第一次一致，git diff 为空会自然跳过提交。
+# GitHub 的 schedule 不是准点闹钟：实测经常延迟 9～12 小时，偶尔更久。
+# 因此不再只押 15:01 / 16:05 两个点，而是铺两组窗口：
+#   1) UTC 07:01-07:46（北京 15:01-15:46）：覆盖 0～8 小时延迟；
+#   2) UTC 前一日 22:30-23:15（北京 06:30-07:15）：覆盖 9～17 小时延迟，
+#      延迟后正好落到北京 15:30-24:15。
+# 每个 run 先过“北京工作日 15:10-23:59”闸门；不在窗口内直接退出，不装依赖、不抓数。
+# 抓完后再校验 data_date 必须等于北京今天，避免节假日/停市把旧数据提交上去。
+
 on:
   schedule:
     - cron: '1 7 * * 1-5'
+    - cron: '16 7 * * 1-5'
+    - cron: '31 7 * * 1-5'
+    - cron: '46 7 * * 1-5'
     - cron: '5 8 * * 1-5'
+    - cron: '30 22 * * 0-4'
+    - cron: '45 22 * * 0-4'
+    - cron: '0 23 * * 0-4'
+    - cron: '15 23 * * 0-4'
   workflow_dispatch:
+    inputs:
+      force:
+        description: '忽略北京时间闸门（仅手动补跑用）'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -17,7 +35,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - name: Check Beijing close window
+        id: check
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "true" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "manual force: bypass time gate"
+            exit 0
+          fi
+          BJ_DAY=$(TZ=Asia/Shanghai date +%u)
+          BJ_HM=$(TZ=Asia/Shanghai date +%H%M)
+          echo "Beijing now: $(TZ=Asia/Shanghai date '+%F %T weekday=%u')"
+          if [ "$BJ_DAY" -ge 1 ] && [ "$BJ_DAY" -le 5 ] && [ "$BJ_HM" -ge 1510 ] && [ "$BJ_HM" -le 2359 ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "skip: outside Beijing weekday 15:10-23:59"
+          fi
+
   update:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -44,14 +89,30 @@ jobs:
           echo "---- 产物 ----"
           ls -la index.html archive/ | head -20
 
+      - name: Verify data date
+        id: verify
+        working-directory: tools/optical-decline-board
+        run: |
+          BJ_TODAY=$(TZ=Asia/Shanghai date +%F)
+          DATA_DATE=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['data_date'])")
+          echo "data_date=${DATA_DATE} bj_today=${BJ_TODAY}"
+          if [ "$DATA_DATE" = "$BJ_TODAY" ]; then
+            echo "match=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "match=false" >> "$GITHUB_OUTPUT"
+            echo "skip commit: data_date is not Beijing today"
+          fi
+
       - name: Commit & push
+        if: steps.verify.outputs.match == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          DATA_DATE=$(python -c "import json; print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json', encoding='utf-8'))['data_date'])")
           git add tools/optical-decline-board
           if git diff --cached --quiet; then
             echo "no changes"
           else
-            git commit -m "Daily optical decline board update $(date -u +%F)"
+            git commit -m "Daily optical decline board update ${DATA_DATE}"
             git push
           fi
