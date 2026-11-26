@@ -29,8 +29,14 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .direction-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .direction-columns > .panel, #technical > .panel:first-child, #emotion > .panel:first-child { margin-top: 0; }
 .valuation-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 9px; }
-.valuation-range { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
-.valuation-range select { width: auto; min-height: 44px; }
+.valuation-controls { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-inline-start: auto; }
+.valuation-controls label { display: flex; align-items: center; gap: 8px; }
+.valuation-controls select { width: auto; min-height: 44px; }
+@media (max-width: 560px) {
+  .valuation-controls { flex: 1 0 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .valuation-controls label { display: grid; gap: 2px; }
+  .valuation-controls select { width: 100%; }
+}
 .valuation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(7px, 1.2vw, 13px); }
 @media (min-width: 800px) { .valuation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .valuation-card { min-width: 0; padding: clamp(8px, 1.4vw, 15px); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-variant-numeric: tabular-nums; }
@@ -45,6 +51,9 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .valuation-metric.pb dt::before { border-top-style: dashed; }
 .valuation-metric dd { margin: 0; font-size: clamp(14px, 2.4vw, 22px); font-weight: 750; line-height: 1.2; }
 .valuation-metric small { color: var(--muted); font-size: 11px; }
+.valuation-difference { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin: 0 0 8px; color: var(--muted); font-size: 11px; }
+.valuation-difference strong { color: var(--text); font-weight: 650; white-space: nowrap; }
+@media (max-width: 560px) { .valuation-difference span { flex-basis: 100%; } }
 .valuation-card .pe { --series-color: var(--accent); }
 .valuation-card .pb { --series-color: var(--negative); }
 .valuation-plot { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px; }

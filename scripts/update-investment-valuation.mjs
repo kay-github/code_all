@@ -25,15 +25,22 @@ export function indexSnapshot(code, name, valuations, closes, now = new Date()) 
   const cutoff = code === 'HSI' ? '16:15' : '15:05';
   const closeByDate = new Map(closes.filter(row => row.trdCode === code && positive(row.pxClose))
     .map(row => [row.trdDt, row.pxClose]));
-  const usable = valuations.filter(row => row.trdCode === code && isDay(row.trdDt) &&
+  const accepted = valuations.filter(row => row.trdCode === code && isDay(row.trdDt) &&
     (row.trdDt < today || (row.trdDt === today && timeFormat.format(now) >= cutoff)) &&
-    positive(row.pETtm) && positive(row.pBLf) && percentile(row.pETtm10Y) && percentile(row.pBLf10Y))
+    positive(row.pETtm) && positive(row.pBLf) && percentile(row.pETtm10Y) && percentile(row.pBLf10Y));
+  const usable = [...new Map(accepted.map(row => [row.trdDt, row])).values()]
     .sort((a, b) => a.trdDt.localeCompare(b.trdDt));
-  const last = usable.findLast(row => closeByDate.has(row.trdDt));
-  if (!last) throw new Error('缺少同日收盘点位、PE 或 PB');
+  const last = usable.findLast(row => closeByDate.has(row.trdDt) &&
+    percentile(row.pETtmBgn) && percentile(row.pBLfBgn));
+  if (!last) throw new Error('缺少同日收盘点位或两种口径的 PE、PB 分位');
   const date = last.trdDt;
-  const history = [...new Map(usable.filter(row => row.trdDt <= date)
-    .map(row => [row.trdDt, [row.trdDt, round(row.pETtm10Y), round(row.pBLf10Y)]])).values()];
+  // Bgn is the provider's percentile from the start of its history through that trading day.
+  const history = usable.filter(row => row.trdDt <= date)
+    .map(row => [
+      row.trdDt, round(row.pETtm10Y), round(row.pBLf10Y),
+      percentile(row.pETtmBgn) ? round(row.pETtmBgn) : null,
+      percentile(row.pBLfBgn) ? round(row.pBLfBgn) : null,
+    ]);
   if (history.length < 2) throw new Error('估值历史不足');
   return { code, name, date, close: round(closeByDate.get(date)), pe: last.pETtm, pb: last.pBLf, history };
 }

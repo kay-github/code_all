@@ -610,7 +610,9 @@ function valuationPoints(history, column) {
   }).join(' ');
 }
 
-function valuationCard(row, years) {
+const hasFullValuation = point => Number.isFinite(point?.[3]) && Number.isFinite(point?.[4]);
+
+function valuationCard(row, years, fullBasis) {
   const card = el('article', 'valuation-card');
   const header = el('header');
   header.append(el('h3', '', row.name), el('span', 'valuation-code', row.code));
@@ -624,7 +626,7 @@ function valuationCard(row, years) {
     date(row.date));
   const metrics = el('dl', 'valuation-metrics');
   const last = row.history.at(-1);
-  let history = row.history;
+  let history = fullBasis ? row.history.filter(hasFullValuation) : row.history;
   if (years) {
     const cutoff = new Date(row.date);
     const month = cutoff.getUTCMonth();
@@ -634,18 +636,28 @@ function valuationCard(row, years) {
     history = history.filter(([day]) => day >= startDay);
   }
   const first = history[0];
+  const basisLabel = fullBasis ? '全部历史' : '近 10 年';
   const chart = svgNode('svg', {
     viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img',
-    'aria-label': row.name + '市盈率和市净率分位走势，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%',
+    'aria-label': row.name + '市盈率和市净率分位走势，' + basisLabel + '口径，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%',
   });
   for (const y of [0, 25, 50, 75, 100]) {
     chart.append(svgNode('line', { x1: 0, x2: 240, y1: y, y2: y, class: 'valuation-gridline' }));
   }
-  for (const [key, title, column] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
+  const difference = el('p', 'valuation-difference');
+  difference.append(el('span', '', '全历史差值（百分点）'));
+  for (const [key, title, tenYearColumn] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
+    const fullColumn = tenYearColumn + 2;
+    const column = fullBasis ? fullColumn : tenYearColumn;
     const metric = el('div', 'valuation-metric ' + key);
     metric.append(el('dt', '', title + ' 分位'), el('dd', '', pct(last[column])),
       el('small', '', fmt.format(row[key]) + ' 倍'));
     metrics.append(metric);
+    if (hasFullValuation(last)) {
+      const delta = Math.round((last[fullColumn] - last[tenYearColumn]) * 100) / 100;
+      const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';
+      difference.append(el('strong', '', title + ' ' + sign + fmt.format(Math.abs(delta))));
+    }
     const points = valuationPoints(history, column);
     if (key === 'pe') chart.append(svgNode('polygon', { points: '0,100 ' + points + ' 240,100', class: 'valuation-area pe' }));
     chart.append(svgNode('polyline', { points, class: 'valuation-line ' + key }));
@@ -659,7 +671,9 @@ function valuationCard(row, years) {
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
   for (const time of times.children) time.title = time.dateTime;
-  card.append(header, details, metrics, plot, times);
+  card.append(header, details, metrics);
+  if (hasFullValuation(last)) card.append(difference);
+  card.append(plot, times);
   return card;
 }
 
@@ -668,7 +682,8 @@ let valuationLoadedAt = 0;
 let valuationRows = [];
 function renderValuations() {
   const years = Number($('valuation-range').value) || 0;
-  $('index-valuations').replaceChildren(...valuationRows.map(row => valuationCard(row, years)));
+  const fullBasis = $('valuation-basis').value === 'all';
+  $('index-valuations').replaceChildren(...valuationRows.map(row => valuationCard(row, years, fullBasis)));
 }
 
 async function refreshValuations() {
@@ -681,6 +696,9 @@ async function refreshValuations() {
     const { indices } = await api('./valuations.json');
     if (!indices?.length) throw Error('缺少指数估值数据');
     valuationRows = indices;
+    const basis = $('valuation-basis');
+    basis.disabled = !indices.every(row => hasFullValuation(row.history.at(-1)));
+    if (basis.disabled) basis.value = '10';
     renderValuations();
     $('valuation-range').disabled = false;
     $('valuation-sources').hidden = false;
@@ -1446,6 +1464,7 @@ snapshotButtons.forEach(button => button.addEventListener('click', () => refresh
 $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
 $('valuation-retry').addEventListener('click', refreshValuations);
 $('valuation-range').addEventListener('change', renderValuations);
+$('valuation-basis').addEventListener('change', renderValuations);
 const pageParams = new URLSearchParams(location.search);
 if (pageParams.get('tab') !== 'goal') void refreshValuations();
 tradeFields();
