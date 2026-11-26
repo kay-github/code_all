@@ -1,7 +1,7 @@
 {
   "date": "2026-11-26",
   "weekday": "周四",
-  "generated_at": "2026-11-26T17:41:25",
+  "generated_at": "2026-11-26T09:45:20",
   "headline": "指数收红：ETF 在托底，杠杆仍在出清",
   "indices": [
     {
@@ -285,14 +285,15 @@
     },
     "em_sh": {
       "date": "2026-11-26",
-      "main_yi": 0.0,
-      "super_yi": 0.0,
-      "large_yi": 0.0,
-      "medium_yi": 0.0,
-      "small_yi": 0.0,
-      "close": 3476.88,
-      "chg": 0.01,
-      "note": "今日未取到东财 push2 沪市资金流快照（收盘后接口限流）；该口径留空，不用 0 值替代真实数据。"
+      "main_yi": 162.4,
+      "super_yi": 100.85,
+      "large_yi": 61.55,
+      "medium_yi": -42.87,
+      "small_yi": -119.53,
+      "stocks": 1200,
+      "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
+      "fetched_at": "2026-11-26T09:43:15",
+      "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
       "ths": -1146.5,
@@ -2438,18 +2439,6 @@
       "tone": "neg"
     },
     {
-      "name": "高压氧舱",
-      "chg": 0.3,
-      "net": -0.66,
-      "net5": -1.42,
-      "stocks": 11,
-      "leader": "大湖股份",
-      "prior4": -0.76,
-      "ratio": -86.84,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "抽水蓄能",
       "chg": 0.3,
       "net": -3.45,
@@ -2458,6 +2447,18 @@
       "leader": "雪人集团",
       "prior4": -4.58,
       "ratio": -75.33,
+      "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "高压氧舱",
+      "chg": 0.3,
+      "net": -0.66,
+      "net5": -1.42,
+      "stocks": 11,
+      "leader": "大湖股份",
+      "prior4": -0.76,
+      "ratio": -86.84,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -3050,14 +3051,14 @@
       "tone": "neg"
     },
     {
-      "name": "乡村振兴",
+      "name": "华为盘古",
       "chg": -0.06,
-      "net": -13.84,
-      "net5": -31.34,
-      "stocks": 438,
-      "leader": "瑜欣电子",
-      "prior4": -17.5,
-      "ratio": -79.09,
+      "net": -3.12,
+      "net5": -9.84,
+      "stocks": 30,
+      "leader": "拓维信息",
+      "prior4": -6.72,
+      "ratio": -46.43,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -3074,14 +3075,14 @@
       "tone": "warn"
     },
     {
-      "name": "华为盘古",
+      "name": "乡村振兴",
       "chg": -0.06,
-      "net": -3.12,
-      "net5": -9.84,
-      "stocks": 30,
-      "leader": "拓维信息",
-      "prior4": -6.72,
-      "ratio": -46.43,
+      "net": -13.84,
+      "net5": -31.34,
+      "stocks": 438,
+      "leader": "瑜欣电子",
+      "prior4": -17.5,
+      "ratio": -79.09,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -3266,18 +3267,6 @@
       "tone": "neg"
     },
     {
-      "name": "黑龙江自贸区",
-      "chg": -0.14,
-      "net": -0.89,
-      "net5": -3.85,
-      "stocks": 36,
-      "leader": "宝泰隆",
-      "prior4": -2.96,
-      "ratio": -30.07,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "啤酒概念",
       "chg": -0.14,
       "net": 0.24,
@@ -3288,6 +3277,18 @@
       "ratio": 19.83,
       "label": "弱回补",
       "tone": "warn"
+    },
+    {
+      "name": "黑龙江自贸区",
+      "chg": -0.14,
+      "net": -0.89,
+      "net5": -3.85,
+      "stocks": 36,
+      "leader": "宝泰隆",
+      "prior4": -2.96,
+      "ratio": -30.07,
+      "label": "继续流出",
+      "tone": "neg"
     },
     {
       "name": "风电",
@@ -3314,18 +3315,6 @@
       "tone": "muted"
     },
     {
-      "name": "充电桩",
-      "chg": -0.17,
-      "net": -7.18,
-      "net5": -27.87,
-      "stocks": 387,
-      "leader": "金禄电子",
-      "prior4": -20.69,
-      "ratio": -34.7,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "海工装备",
       "chg": -0.17,
       "net": -10.05,
@@ -3334,6 +3323,18 @@
       "leader": "雪人集团",
       "prior4": -15.64,
       "ratio": -64.26,
+      "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "充电桩",
+      "chg": -0.17,
+      "net": -7.18,
+      "net5": -27.87,
+      "stocks": 387,
+      "leader": "金禄电子",
+      "prior4": -20.69,
+      "ratio": -34.7,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -4358,18 +4359,6 @@
       "tone": "neg"
     },
     {
-      "name": "雄安新区",
-      "chg": -0.46,
-      "net": -5.6,
-      "net5": -17.32,
-      "stocks": 196,
-      "leader": "岳阳林纸",
-      "prior4": -11.72,
-      "ratio": -47.78,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "换电概念",
       "chg": -0.46,
       "net": 2.6,
@@ -4380,6 +4369,18 @@
       "ratio": 48.69,
       "label": "弱回补",
       "tone": "warn"
+    },
+    {
+      "name": "雄安新区",
+      "chg": -0.46,
+      "net": -5.6,
+      "net5": -17.32,
+      "stocks": 196,
+      "leader": "岳阳林纸",
+      "prior4": -11.72,
+      "ratio": -47.78,
+      "label": "继续流出",
+      "tone": "neg"
     },
     {
       "name": "信创",
@@ -4790,18 +4791,6 @@
       "tone": "neg"
     },
     {
-      "name": "虚拟现实",
-      "chg": -0.59,
-      "net": -10.14,
-      "net5": -51.36,
-      "stocks": 287,
-      "leader": "慧博云通",
-      "prior4": -41.22,
-      "ratio": -24.6,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "新能源汽车",
       "chg": -0.59,
       "net": -22.69,
@@ -4810,6 +4799,18 @@
       "leader": "金禄电子",
       "prior4": -31.33,
       "ratio": -72.42,
+      "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "虚拟现实",
+      "chg": -0.59,
+      "net": -10.14,
+      "net5": -51.36,
+      "stocks": 287,
+      "leader": "慧博云通",
+      "prior4": -41.22,
+      "ratio": -24.6,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -4886,18 +4887,6 @@
       "tone": "warn"
     },
     {
-      "name": "燃料电池",
-      "chg": -0.62,
-      "net": -17.74,
-      "net5": -12.99,
-      "stocks": 212,
-      "leader": "雪人集团",
-      "prior4": 4.75,
-      "ratio": -373.47,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "小红书概念",
       "chg": -0.62,
       "net": -1.43,
@@ -4907,6 +4896,18 @@
       "prior4": -21.77,
       "ratio": -6.57,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "燃料电池",
+      "chg": -0.62,
+      "net": -17.74,
+      "net5": -12.99,
+      "stocks": 212,
+      "leader": "雪人集团",
+      "prior4": 4.75,
+      "ratio": -373.47,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -4934,6 +4935,18 @@
       "tone": "neg"
     },
     {
+      "name": "ChatGPT概念",
+      "chg": -0.62,
+      "net": -13.0,
+      "net5": -40.56,
+      "stocks": 140,
+      "leader": "慧博云通",
+      "prior4": -27.56,
+      "ratio": -47.17,
+      "label": "继续流出",
+      "tone": "neg"
+    },
+    {
       "name": "房屋检测",
       "chg": -0.62,
       "net": -1.45,
@@ -4954,18 +4967,6 @@
       "leader": "品高股份",
       "prior4": -1.69,
       "ratio": -78.7,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
-      "name": "ChatGPT概念",
-      "chg": -0.62,
-      "net": -13.0,
-      "net5": -40.56,
-      "stocks": 140,
-      "leader": "慧博云通",
-      "prior4": -27.56,
-      "ratio": -47.17,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -5006,18 +5007,6 @@
       "tone": "neg"
     },
     {
-      "name": "华为鲲鹏",
-      "chg": -0.63,
-      "net": -7.58,
-      "net5": -33.19,
-      "stocks": 178,
-      "leader": "旋极信息",
-      "prior4": -25.61,
-      "ratio": -29.6,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "人民币贬值受益",
       "chg": -0.63,
       "net": 3.21,
@@ -5030,16 +5019,16 @@
       "tone": "warn"
     },
     {
-      "name": "AI手机",
-      "chg": -0.64,
-      "net": 3.28,
-      "net5": -2.82,
-      "stocks": 42,
-      "leader": "中京电子",
-      "prior4": -6.1,
-      "ratio": 53.77,
-      "label": "强回补",
-      "tone": "warn"
+      "name": "华为鲲鹏",
+      "chg": -0.63,
+      "net": -7.58,
+      "net5": -33.19,
+      "stocks": 178,
+      "leader": "旋极信息",
+      "prior4": -25.61,
+      "ratio": -29.6,
+      "label": "继续流出",
+      "tone": "neg"
     },
     {
       "name": "无线充电",
@@ -5054,16 +5043,16 @@
       "tone": "neg"
     },
     {
-      "name": "科创次新股",
-      "chg": -0.66,
-      "net": -13.88,
-      "net5": -2.19,
-      "stocks": 27,
-      "leader": "盛合晶微",
-      "prior4": 11.69,
-      "ratio": -118.73,
-      "label": "转出",
-      "tone": "neg"
+      "name": "AI手机",
+      "chg": -0.64,
+      "net": 3.28,
+      "net5": -2.82,
+      "stocks": 42,
+      "leader": "中京电子",
+      "prior4": -6.1,
+      "ratio": 53.77,
+      "label": "强回补",
+      "tone": "warn"
     },
     {
       "name": "NFT概念",
@@ -5075,6 +5064,18 @@
       "prior4": -11.84,
       "ratio": -58.19,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "科创次新股",
+      "chg": -0.66,
+      "net": -13.88,
+      "net5": -2.19,
+      "stocks": 27,
+      "leader": "盛合晶微",
+      "prior4": 11.69,
+      "ratio": -118.73,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -5318,18 +5319,6 @@
       "tone": "neg"
     },
     {
-      "name": "短剧游戏",
-      "chg": -0.75,
-      "net": -15.8,
-      "net5": -25.31,
-      "stocks": 100,
-      "leader": "城市传媒",
-      "prior4": -9.51,
-      "ratio": -166.14,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "托育服务",
       "chg": -0.75,
       "net": 0.26,
@@ -5340,6 +5329,18 @@
       "ratio": 7.39,
       "label": "弱回补",
       "tone": "warn"
+    },
+    {
+      "name": "短剧游戏",
+      "chg": -0.75,
+      "net": -15.8,
+      "net5": -25.31,
+      "stocks": 100,
+      "leader": "城市传媒",
+      "prior4": -9.51,
+      "ratio": -166.14,
+      "label": "继续流出",
+      "tone": "neg"
     },
     {
       "name": "AIGC概念",
@@ -5534,14 +5535,14 @@
       "tone": "neg"
     },
     {
-      "name": "新型工业化",
+      "name": "乳业",
       "chg": -0.83,
-      "net": -9.07,
-      "net5": -38.7,
-      "stocks": 292,
-      "leader": "信邦智能",
-      "prior4": -29.63,
-      "ratio": -30.61,
+      "net": -2.35,
+      "net5": -2.7,
+      "stocks": 37,
+      "leader": "金健米业",
+      "prior4": -0.35,
+      "ratio": -671.43,
       "label": "继续流出",
       "tone": "neg"
     },
@@ -5870,18 +5871,6 @@
       "tone": "neg"
     },
     {
-      "name": "两轮车",
-      "chg": -1.06,
-      "net": -3.02,
-      "net5": -1.78,
-      "stocks": 81,
-      "leader": "骏成科技",
-      "prior4": 1.24,
-      "ratio": -243.55,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "拼多多概念",
       "chg": -1.06,
       "net": -0.97,
@@ -5891,6 +5880,18 @@
       "prior4": -2.88,
       "ratio": -33.68,
       "label": "继续流出",
+      "tone": "neg"
+    },
+    {
+      "name": "两轮车",
+      "chg": -1.06,
+      "net": -3.02,
+      "net5": -1.78,
+      "stocks": 81,
+      "leader": "骏成科技",
+      "prior4": 1.24,
+      "ratio": -243.55,
+      "label": "转出",
       "tone": "neg"
     },
     {
@@ -5978,18 +5979,6 @@
       "tone": "neg"
     },
     {
-      "name": "飞行汽车(eVTOL)",
-      "chg": -1.15,
-      "net": -14.03,
-      "net5": -14.07,
-      "stocks": 280,
-      "leader": "安达维尔",
-      "prior4": -0.04,
-      "ratio": -35075.0,
-      "label": "继续流出",
-      "tone": "neg"
-    },
-    {
       "name": "MR(混合现实)",
       "chg": -1.15,
       "net": -10.02,
@@ -5999,6 +5988,18 @@
       "prior4": 2.32,
       "ratio": -431.9,
       "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "飞行汽车(eVTOL)",
+      "chg": -1.15,
+      "net": -14.03,
+      "net5": -14.07,
+      "stocks": 280,
+      "leader": "安达维尔",
+      "prior4": -0.04,
+      "ratio": -35075.0,
+      "label": "继续流出",
       "tone": "neg"
     },
     {
@@ -6350,18 +6351,6 @@
       "tone": "neg"
     },
     {
-      "name": "减肥药",
-      "chg": -1.67,
-      "net": -5.11,
-      "net5": -3.73,
-      "stocks": 67,
-      "leader": "双鹭药业",
-      "prior4": 1.38,
-      "ratio": -370.29,
-      "label": "转出",
-      "tone": "neg"
-    },
-    {
       "name": "流感",
       "chg": -1.67,
       "net": -11.98,
@@ -6370,6 +6359,18 @@
       "leader": "康芝药业",
       "prior4": 3.8,
       "ratio": -315.26,
+      "label": "转出",
+      "tone": "neg"
+    },
+    {
+      "name": "减肥药",
+      "chg": -1.67,
+      "net": -5.11,
+      "net5": -3.73,
+      "stocks": 67,
+      "leader": "双鹭药业",
+      "prior4": 1.38,
+      "ratio": -370.29,
       "label": "转出",
       "tone": "neg"
     },
@@ -8656,5 +8657,5 @@
     "method_note": "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-26 · 周四"
   },
-  "rendered_at": "2026-11-26T09:41:34"
+  "rendered_at": "2026-11-26T09:45:20"
 }
