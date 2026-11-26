@@ -23,6 +23,27 @@ test('each market publishes only matching PE, PB and closing observations after 
   assert.equal(indexSnapshot(code, '恒生指数', malformed, closes(code), afterClose).date, dates[1]);
 });
 
+test('the full valuation history survives a shorter history of closing levels', () => {
+  const code = '000001';
+  const recent = valuations(code);
+  const old = { ...recent[0], trdDt: '2000-01-04', pETtm10Y: 21, pBLf10Y: 53 };
+  const invalid = { ...old, trdDt: '2000-01-03', pETtm10Y: null };
+  const snapshot = indexSnapshot(code, '上证指数', [...recent, old, invalid], closes(code), afterClose);
+  assert.deepEqual(snapshot.history[0], ['2000-01-04', 21, 53]);
+  assert.equal(snapshot.history.length, recent.length + 1);
+  assert.equal(snapshot.history.at(-1)[0], dates[2]);
+});
+
+test('refresh appends new observations without losing older published history', async () => {
+  const get = (code, kind) => kind === 'eod_price' ? closes(code) : valuations(code);
+  const { next: initial } = await refresh([], get, beforeHKClose);
+  const previous = initial.map(row => ({ ...row, history: [['2000-01-04', 21, 53], ...row.history] }));
+  const { next, warnings } = await refresh(previous, get, afterClose);
+  assert.ok(next.every(row => row.history.length === 4));
+  assert.ok(next.every(row => row.history[0][0] === '2000-01-04' && row.date === dates[2]));
+  assert.deepEqual(warnings, []);
+});
+
 test('refresh is repeatable and retains published dates when a source fails or regresses', async () => {
   const get = (code, kind) => kind === 'eod_price' ? closes(code) : valuations(code);
   const earlier = new Date('2026-11-25T20:00:00+08:00');

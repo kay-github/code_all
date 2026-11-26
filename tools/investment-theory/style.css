@@ -28,7 +28,9 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .direction-tabs button { font-size: 14px; }
 .direction-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .direction-columns > .panel, #technical > .panel:first-child, #emotion > .panel:first-child { margin-top: 0; }
-.valuation-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 9px; }
+.valuation-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 9px; }
+.valuation-range { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.valuation-range select { width: auto; min-height: 44px; }
 .valuation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(7px, 1.2vw, 13px); }
 @media (min-width: 800px) { .valuation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .valuation-card { min-width: 0; padding: clamp(8px, 1.4vw, 15px); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-variant-numeric: tabular-nums; }

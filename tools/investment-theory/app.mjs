@@ -584,7 +584,33 @@ function svgNode(tag, attributes) {
   return node;
 }
 
-function valuationCard(row) {
+function valuationPoints(history, column) {
+  const start = Date.parse(history[0][0]);
+  const span = Math.max(1, Date.parse(history.at(-1)[0]) - start);
+  let points = history;
+  if (history.length > 480) {
+    // Keep both extremes in each group so brief highs and lows are still visible.
+    const size = Math.ceil(history.length / 240);
+    points = [history[0]];
+    for (let from = 1; from < history.length - 1; from += size) {
+      let low = from;
+      let high = from;
+      for (let i = from + 1; i < Math.min(from + size, history.length - 1); i++) {
+        if (history[i][column] < history[low][column]) low = i;
+        if (history[i][column] > history[high][column]) high = i;
+      }
+      points.push(history[Math.min(low, high)]);
+      if (low !== high) points.push(history[Math.max(low, high)]);
+    }
+    points.push(history.at(-1));
+  }
+  return points.map(point => {
+    const x = 240 * (Date.parse(point[0]) - start) / span;
+    return x.toFixed(1) + ',' + (100 - point[column]).toFixed(2);
+  }).join(' ');
+}
+
+function valuationCard(row, years) {
   const card = el('article', 'valuation-card');
   const header = el('header');
   header.append(el('h3', '', row.name), el('span', 'valuation-code', row.code));
@@ -597,26 +623,30 @@ function valuationCard(row) {
   details.append(el('span', '', '收盘 ' + row.close.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
     date(row.date));
   const metrics = el('dl', 'valuation-metrics');
-  const first = row.history[0];
   const last = row.history.at(-1);
+  let history = row.history;
+  if (years) {
+    const cutoff = new Date(row.date);
+    const month = cutoff.getUTCMonth();
+    cutoff.setUTCFullYear(cutoff.getUTCFullYear() - years);
+    if (cutoff.getUTCMonth() !== month) cutoff.setUTCDate(0);
+    const startDay = cutoff.toISOString().slice(0, 10);
+    history = history.filter(([day]) => day >= startDay);
+  }
+  const first = history[0];
   const chart = svgNode('svg', {
     viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img',
-    'aria-label': row.name + '近一年市盈率和市净率分位走势，纵轴 0% 至 100%',
+    'aria-label': row.name + '市盈率和市净率分位走势，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%',
   });
   for (const y of [0, 25, 50, 75, 100]) {
     chart.append(svgNode('line', { x1: 0, x2: 240, y1: y, y2: y, class: 'valuation-gridline' }));
   }
-  const start = Date.parse(first[0]);
-  const span = Math.max(1, Date.parse(last[0]) - start);
   for (const [key, title, column] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
     const metric = el('div', 'valuation-metric ' + key);
     metric.append(el('dt', '', title + ' 分位'), el('dd', '', pct(last[column])),
       el('small', '', fmt.format(row[key]) + ' 倍'));
     metrics.append(metric);
-    const points = row.history.map(point => {
-      const x = 240 * (Date.parse(point[0]) - start) / span;
-      return x.toFixed(1) + ',' + (100 - point[column]).toFixed(2);
-    }).join(' ');
+    const points = valuationPoints(history, column);
     if (key === 'pe') chart.append(svgNode('polygon', { points: '0,100 ' + points + ' 240,100', class: 'valuation-area pe' }));
     chart.append(svgNode('polyline', { points, class: 'valuation-line ' + key }));
   }
@@ -628,12 +658,19 @@ function valuationCard(row) {
   const times = el('p', 'valuation-times');
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
+  for (const time of times.children) time.title = time.dateTime;
   card.append(header, details, metrics, plot, times);
   return card;
 }
 
 let valuationLoading = false;
 let valuationLoadedAt = 0;
+let valuationRows = [];
+function renderValuations() {
+  const years = Number($('valuation-range').value) || 0;
+  $('index-valuations').replaceChildren(...valuationRows.map(row => valuationCard(row, years)));
+}
+
 async function refreshValuations() {
   if (valuationLoading || Date.now() - valuationLoadedAt < 300_000) return;
   valuationLoading = true;
@@ -643,7 +680,9 @@ async function refreshValuations() {
   try {
     const { indices } = await api('./valuations.json');
     if (!indices?.length) throw Error('缺少指数估值数据');
-    $('index-valuations').replaceChildren(...indices.map(valuationCard));
+    valuationRows = indices;
+    renderValuations();
+    $('valuation-range').disabled = false;
     $('valuation-sources').hidden = false;
     status.hidden = true;
     valuationLoadedAt = Date.now();
@@ -1406,6 +1445,7 @@ document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventLi
 snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
 $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
 $('valuation-retry').addEventListener('click', refreshValuations);
+$('valuation-range').addEventListener('change', renderValuations);
 const pageParams = new URLSearchParams(location.search);
 if (pageParams.get('tab') !== 'goal') void refreshValuations();
 tradeFields();

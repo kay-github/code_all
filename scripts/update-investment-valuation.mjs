@@ -32,8 +32,7 @@ export function indexSnapshot(code, name, valuations, closes, now = new Date()) 
   const last = usable.findLast(row => closeByDate.has(row.trdDt));
   if (!last) throw new Error('缺少同日收盘点位、PE 或 PB');
   const date = last.trdDt;
-  const start = new Date(Date.parse(date) - 365 * 86400000).toISOString().slice(0, 10);
-  const history = [...new Map(usable.filter(row => row.trdDt >= start && row.trdDt <= date)
+  const history = [...new Map(usable.filter(row => row.trdDt <= date)
     .map(row => [row.trdDt, [row.trdDt, round(row.pETtm10Y), round(row.pBLf10Y)]])).values()];
   if (history.length < 2) throw new Error('估值历史不足');
   return { code, name, date, close: round(closeByDate.get(date)), pe: last.pETtm, pb: last.pBLf, history };
@@ -53,7 +52,10 @@ export async function refresh(previous, fetchRows, now = new Date()) {
     const saved = previous.find(row => row.code === code);
     if (result.status === 'fulfilled' && (!saved || result.value.date >= saved.date)) {
       succeeded++;
-      return result.value;
+      const snapshot = result.value;
+      // Keep older published observations if the source shortens its history.
+      const earlier = saved?.history.filter(([day]) => day < snapshot.history[0][0]) ?? [];
+      return earlier.length ? { ...snapshot, history: earlier.concat(snapshot.history) } : snapshot;
     }
     warnings.push(code + ' · ' + (result.status === 'rejected' ? result.reason.message : '来源日期早于已发布日期'));
     return saved;
