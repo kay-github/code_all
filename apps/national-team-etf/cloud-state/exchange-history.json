@@ -1,6 +1,6 @@
 {
-  "source_manifest_hash": "5cf5b9851bbf646ed5d77782eae020f313eca2ede02fdef7e1fd33e15ee45ffd",
-  "exchange_history_hash": "f53e02ddcb2f93861dae1db42ed0656e0c804f543ab2604cdf4a806c58661c4c",
+  "source_manifest_hash": "599e885b5c1161727f9f1dcbad82f25977d601dcb3f39ad8ab48891c4ee8273f",
+  "exchange_history_hash": "04786ad6c0f7790df21d480bfdba13087030a17669170f362cdd4cef95ac795c",
   "exchange_history": {
     "version": 1,
     "items": {
@@ -70,79 +70,79 @@
           },
           "2026-11-09": {
             "shares": 30869086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-10": {
             "shares": 30842086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-11": {
             "shares": 30821086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-12": {
             "shares": 30338086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-13": {
             "shares": 30104086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-16": {
             "shares": 29954086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-17": {
             "shares": 29567086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-18": {
             "shares": 29201086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-19": {
             "shares": 28880086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-20T11:10:38+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-20": {
             "shares": 27878086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-23T20:44:07+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-23": {
             "shares": 27815086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-24T20:26:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-24": {
             "shares": 27719086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-25T16:16:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-25": {
             "shares": 27170086600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-26T17:46:06+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26"
           }
@@ -214,79 +214,79 @@
           },
           "2026-11-09": {
             "shares": 3933425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-10": {
             "shares": 3987425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-11": {
             "shares": 4218425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-12": {
             "shares": 3684425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-13": {
             "shares": 3171425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-16": {
             "shares": 2958425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-17": {
             "shares": 2793425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-18": {
             "shares": 2652425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-19": {
             "shares": 2475425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-20T11:10:38+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-20": {
             "shares": 2388425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-23T20:44:07+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-23": {
             "shares": 2655425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-24T20:26:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-24": {
             "shares": 2430425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-25T16:16:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-25": {
             "shares": 2379425600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-26T17:46:06+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26"
           }
@@ -358,79 +358,79 @@
           },
           "2026-11-09": {
             "shares": 45862454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-10": {
             "shares": 45501454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-11": {
             "shares": 44626454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-12": {
             "shares": 44783454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-13": {
             "shares": 45200454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-16": {
             "shares": 46202454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-17": {
             "shares": 46859454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-18": {
             "shares": 49020454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-19": {
             "shares": 49907454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-20T11:10:38+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-20": {
             "shares": 53174454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-23T20:44:07+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-23": {
             "shares": 53915454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-24T20:26:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-24": {
             "shares": 53463454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-25T16:16:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-25": {
             "shares": 54886454900.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-26T17:46:06+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26"
           }
@@ -502,79 +502,79 @@
           },
           "2026-11-09": {
             "shares": 14011416600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-10": {
             "shares": 13957416600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-11": {
             "shares": 13817016600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-12": {
             "shares": 13673916600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-13": {
             "shares": 13565016600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-14T11:32:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-16": {
             "shares": 13838616600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-17": {
             "shares": 14200416600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-18": {
             "shares": 14191416600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-19": {
             "shares": 16186716600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-20T11:10:38+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-20": {
             "shares": 21567816600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-23T20:44:07+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-23": {
             "shares": 21614616600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-24T20:26:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-24": {
             "shares": 21332916600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-25T16:16:26+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-25": {
             "shares": 21332016600.0,
-            "fetched_at": "2026-11-26T20:48:03+08:00",
+            "fetched_at": "2026-11-26T22:03:43+08:00",
             "first_seen_at": "2026-11-26T17:46:06+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26"
           }
@@ -646,79 +646,79 @@
           },
           "2026-11-09": {
             "shares": 24023785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-10": {
             "shares": 24184785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-11": {
             "shares": 23634785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-12": {
             "shares": 23896785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-13": {
             "shares": 24200785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-16": {
             "shares": 24239785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-17": {
             "shares": 24537785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-18": {
             "shares": 24500785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-19": {
             "shares": 24185785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-20T11:10:42+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-20": {
             "shares": 24691785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T20:44:10+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-23": {
             "shares": 25114785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-24T20:26:21+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-24": {
             "shares": 24839785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-25T16:16:29+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           },
           "2026-11-25": {
             "shares": 25207785100.0,
-            "fetched_at": "2026-11-26T20:48:08+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-26T17:46:09+08:00",
             "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26"
           }
@@ -784,55 +784,55 @@
           },
           "2026-11-13": {
             "shares": 16198866800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:30+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 16526466800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 16458066800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 16479666800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 16660566800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-20T11:10:42+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 24134166800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T20:44:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 24378966800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T22:58:40+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 24143166800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-24T23:01:50+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 25417566800.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-25T22:38:09+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -898,55 +898,55 @@
           },
           "2026-11-13": {
             "shares": 45623287700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:30+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 47001187700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 48343087700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 49684087700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 51540787700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-20T11:10:42+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 55184887700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T20:44:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 55587187700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T22:58:40+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 54810487700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-24T23:01:50+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 55924687700.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-25T22:38:09+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1012,55 +1012,55 @@
           },
           "2026-11-13": {
             "shares": 25855844000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:30+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 26070044000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 26563244000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-18T10:37:19+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 26979944000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 27355244000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-20T11:10:42+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 28461344000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T20:44:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 28900544000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T22:58:40+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 28544144000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-24T23:01:50+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 30820244000.0,
-            "fetched_at": "2026-11-26T20:39:41+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-25T22:38:09+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1126,55 +1126,55 @@
           },
           "2026-11-13": {
             "shares": 15395649800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-14T11:32:31+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 16046349800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-17T19:52:17+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 16683549800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 17465649800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-19T11:34:15+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 19748949800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-20T11:10:42+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 19952349800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T20:44:11+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 19970349800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-23T22:58:40+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 20576949800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-24T23:01:51+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 23438049800.0,
-            "fetched_at": "2026-11-26T20:39:42+08:00",
+            "fetched_at": "2026-11-26T22:03:48+08:00",
             "first_seen_at": "2026-11-25T22:38:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510330&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1240,55 +1240,55 @@
           },
           "2026-11-13": {
             "shares": 8938168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-14T11:32:32+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 9072568600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 9458168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 9424168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 10674168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-20T11:10:44+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 12130168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T20:44:12+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 12510168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T22:58:41+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 12508168600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-24T23:01:51+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 13669768600.0,
-            "fetched_at": "2026-11-26T20:39:43+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-25T22:38:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510500&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1354,55 +1354,55 @@
           },
           "2026-11-13": {
             "shares": 18247992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-14T11:32:32+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 18148992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 17926992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 17953992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 17854992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-20T11:10:44+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 17767992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T20:44:12+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 17947992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T22:58:41+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 17554992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-24T23:01:52+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 17422992200.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-25T22:38:10+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1468,55 +1468,55 @@
           },
           "2026-11-13": {
             "shares": 17135217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-14T11:32:32+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 17197217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 17909217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 18367217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 20575217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-20T11:10:44+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 24001217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T20:44:13+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 25501217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-23T22:58:42+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 25567217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-24T23:01:52+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 26187217600.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:49+08:00",
             "first_seen_at": "2026-11-25T22:38:11+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=512100&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1582,55 +1582,55 @@
           },
           "2026-11-13": {
             "shares": 40498987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-14T11:32:33+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 40309987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 39364987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 39103987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 38605987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-20T11:10:44+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 38320987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T20:44:13+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 38761987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T22:58:43+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 38314987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-24T23:01:52+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 38152987400.0,
-            "fetched_at": "2026-11-26T20:39:44+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-25T22:38:12+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=563360&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1696,55 +1696,55 @@
           },
           "2026-11-13": {
             "shares": 103391668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-14T11:32:33+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 103469668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 103550668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 103187668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 102434668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-20T11:10:45+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 103628668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T20:44:13+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 105170668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T22:58:43+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 104315668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-24T23:01:53+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 105329668200.0,
-            "fetched_at": "2026-11-26T20:39:45+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-25T22:38:12+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588000&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1810,55 +1810,55 @@
           },
           "2026-11-13": {
             "shares": 34141628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-14T11:32:33+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-16": {
             "shares": 36463628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-17T19:52:18+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-17": {
             "shares": 36457628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-18T10:37:20+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-18": {
             "shares": 36169628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-19T11:34:16+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-19": {
             "shares": 43855628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-20T11:10:45+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-20": {
             "shares": 46465628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T20:44:14+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-23": {
             "shares": 46762628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-23T22:58:44+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-24": {
             "shares": 46693628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-24T23:01:53+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           },
           "2026-11-25": {
             "shares": 50458628100.0,
-            "fetched_at": "2026-11-26T20:39:46+08:00",
+            "fetched_at": "2026-11-26T22:03:50+08:00",
             "first_seen_at": "2026-11-25T22:38:12+08:00",
             "url": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=588080&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1"
           }
@@ -1867,6 +1867,6 @@
     },
     "revisions": [],
     "end": "2026-11-26",
-    "parent_manifest_hash": "764cb7f7ddaf0cf5092dcbe786528cc19264b0c3e82480b9aac9b63282be8755"
+    "parent_manifest_hash": "6af988f368e57b7df65c9cd5ee5c8efc1cf982e473b8d692190d9108a71ff869"
   }
 }
