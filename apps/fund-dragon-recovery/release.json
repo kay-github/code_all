@@ -1,9 +1,9 @@
 {
-  "build_id": "20261125T134105_0800_47cc07e7a4",
-  "business_date": "2026-11-24",
+  "build_id": "20261126T170525_0800_94541353a2",
+  "business_date": "2026-11-25",
   "version": "3.0.0",
   "code_hash": "dc67e81c06d88a40854c501002edb13baeb1d39439bf1e3bd44c58dcd98d13ae",
   "configuration_hash": "1fe56fff5fa87b41f6b89b13a37034bd3ba26d014de441f0272c0ba340534d6e",
-  "raw_manifest_hash": "117a2a82a91c392b101a5b27ef902407a6e11a07275a67f5f1e63b056eae92ec",
+  "raw_manifest_hash": "f681789416372ac2401d0b6ceb2efe890fbb742a5f060b9fd6a303acd8b05c78",
   "acceptance_hash": "c9dac6bbd9afae88e6b1b05be8c941619cecc6830d53065766050de0dd472ea3"
 }
