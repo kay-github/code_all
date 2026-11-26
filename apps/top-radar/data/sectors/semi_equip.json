@@ -3,10 +3,10 @@
   "id": "semi_equip",
   "name": "半导体设备",
   "enabled": true,
-  "as_of": "2026-11-25",
-  "generated_at": "2026-11-26 02:39",
+  "as_of": "2026-11-26",
+  "generated_at": "2026-11-27 01:41",
   "data_start": "2020-12-01",
-  "data_end": "2026-11-25",
+  "data_end": "2026-11-26",
   "n_constituents": 26,
   "effective_n": 26,
   "coverage": 1.0,
@@ -22,32 +22,32 @@
   "site": "https://1.688680.xyz/taoding"
  },
  "latest": {
-  "date": "2026-11-25",
-  "idx": 4.3981,
-  "R": 15.8,
+  "date": "2026-11-26",
+  "idx": 4.3568,
+  "R": 15.6,
   "tier": 0,
   "tier_name": "正常",
   "action": "正常持有",
   "E": 3,
   "C": 2,
-  "ret250": 0.2475,
-  "ret60": -0.3784,
-  "dist60": -0.2709,
-  "dd250": -0.5489,
-  "rsi14": 33.4,
+  "ret250": 0.2564,
+  "ret60": -0.3914,
+  "dist60": -0.2722,
+  "dd250": -0.5531,
+  "rsi14": 32.8,
   "amt_share": null,
-  "amt_ratio60": 0.9,
+  "amt_ratio60": 0.85,
   "crowd_label": "成交额/60日均",
-  "crowd_value": 0.9,
+  "crowd_value": 0.85,
   "limit_up": 0,
   "break20_20d": 16,
   "rebreak20_20d": 2,
   "hot": true,
   "near": false,
-  "ma20_slope": -0.0597,
+  "ma20_slope": -0.0576,
   "above60_ratio": 0.0,
   "newhigh20_ratio": 0.0,
-  "leader_excess20": 0.1179
+  "leader_excess20": 0.0657
  },
  "gate": {
   "ret250": false,
@@ -63,10 +63,10 @@
   "tier": 1,
   "tier_name": "观察",
   "action": "正常持有；E 层转弱时不加仓，暂不减仓",
-  "R": 15.8,
+  "R": 15.6,
   "E": 3,
   "C": 2,
-  "vol20": 0.8954,
+  "vol20": 0.8728,
   "quality_c": false,
   "red_trend": false,
   "red_accel": false,
@@ -95,28 +95,28 @@
    "state_name": "深跌后等待反弹",
    "action": "等待反弹成形，不操作",
    "color": "#8A7A55",
-   "trigger": "深跌 -55.1% 已满足；当前仅自低点反弹 0.5%，等待反弹成形",
-   "as_of": "2026-11-25",
-   "index": 4.3981,
+   "trigger": "深跌 -55.3% 已满足；当前仅自低点反弹 0.0%，等待反弹成形",
+   "as_of": "2026-11-26",
+   "index": 4.3568,
    "crash_high": 9.749,
-   "crash_low": 4.3771,
-   "crash_dd": -0.551,
+   "crash_low": 4.3568,
+   "crash_dd": -0.5531,
    "peak_date": "2026-07-01",
-   "low_date": "2026-11-03",
-   "days_since_low": 16,
-   "rebound_high": 5.3724,
-   "rebound_gain": 0.0048,
-   "retracement": 0.0039,
-   "high_drawdown": -0.1814,
-   "fib_382": 6.4292,
-   "fib_500": 7.0631,
-   "fib_618": 7.697,
-   "ma20": 4.935546626269875,
-   "ma60": 6.032528391741067,
-   "ma120": 6.694078697388114,
+   "low_date": "2026-11-26",
+   "days_since_low": 0,
+   "rebound_high": 4.3568,
+   "rebound_gain": 0.0,
+   "retracement": 0.0,
+   "high_drawdown": 0.0,
+   "fib_382": 6.4166,
+   "fib_500": 7.0529,
+   "fib_618": 7.6892,
+   "ma20": 4.912904659530823,
+   "ma60": 5.985834299573508,
+   "ma120": 6.682310661864275,
    "nearest_res": "MA60",
-   "res_distance": 0.2709,
-   "maturity_count": 1,
+   "res_distance": 0.2722,
+   "maturity_count": 0,
    "watch_date": null,
    "warn_date": null,
    "confirm_date": null
@@ -124,152 +124,16 @@
   "events": [],
   "history": [
    {
-    "d": "2026-11-03",
-    "idx": 4.3771,
-    "rebound_high": 4.3771,
+    "d": "2026-11-26",
+    "idx": 4.3568,
+    "rebound_high": 4.3568,
     "rebound_gain": 0.0,
     "retracement": 0.0,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-04",
-    "idx": 5.0483,
-    "rebound_high": 5.0483,
-    "rebound_gain": 0.1533,
-    "retracement": 0.1249,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-05",
-    "idx": 5.2658,
-    "rebound_high": 5.2658,
-    "rebound_gain": 0.203,
-    "retracement": 0.1654,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-06",
-    "idx": 5.1614,
-    "rebound_high": 5.2658,
-    "rebound_gain": 0.1792,
-    "retracement": 0.146,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-09",
-    "idx": 5.1424,
-    "rebound_high": 5.2658,
-    "rebound_gain": 0.1748,
-    "retracement": 0.1424,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-10",
-    "idx": 5.2189,
-    "rebound_high": 5.2658,
-    "rebound_gain": 0.1923,
-    "retracement": 0.1567,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-11",
-    "idx": 5.3559,
-    "rebound_high": 5.3559,
-    "rebound_gain": 0.2236,
-    "retracement": 0.1822,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-12",
-    "idx": 5.3724,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.2274,
-    "retracement": 0.1853,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-13",
-    "idx": 5.1741,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1821,
-    "retracement": 0.1484,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-16",
-    "idx": 4.8404,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1058,
-    "retracement": 0.0862,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-17",
-    "idx": 4.9469,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1302,
-    "retracement": 0.1061,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-18",
-    "idx": 5.0193,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1467,
-    "retracement": 0.1195,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-19",
-    "idx": 5.0641,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1569,
-    "retracement": 0.1279,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-20",
-    "idx": 4.7391,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.0827,
-    "retracement": 0.0674,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-23",
-    "idx": 4.7925,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.0949,
-    "retracement": 0.0773,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-24",
-    "idx": 4.8514,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.1084,
-    "retracement": 0.0883,
-    "state": "waiting"
-   },
-   {
-    "d": "2026-11-25",
-    "idx": 4.3981,
-    "rebound_high": 5.3724,
-    "rebound_gain": 0.0048,
-    "retracement": 0.0039,
     "state": "waiting"
    }
   ]
  },
  "history": [
-  {
-   "d": "2025-10-31",
-   "idx": 3.5234,
-   "tier": 4,
-   "R": 68.4,
-   "v2t": 4,
-   "E": 3
-  },
   {
    "d": "2025-11-03",
    "idx": 3.4914,
@@ -2341,6 +2205,14 @@
    "R": 15.8,
    "v2t": 1,
    "E": 3
+  },
+  {
+   "d": "2026-11-26",
+   "idx": 4.3568,
+   "tier": 0,
+   "R": 15.6,
+   "v2t": 1,
+   "E": 3
   }
  ],
  "signals": [
@@ -3108,8 +2980,8 @@
   }
  ],
  "stats": {
-  "days": 1451,
+  "days": 1452,
   "start": "2020-12-01",
-  "end": "2026-11-25"
+  "end": "2026-11-26"
  }
 }
