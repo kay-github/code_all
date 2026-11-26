@@ -68,15 +68,21 @@ test('legacy snapshots become the personal ledger and holders have separate bala
 });
 
 test('cash is the first allocation while legacy stock positions keep their cost and bucket', () => {
-  const oldAllocation = [{ name: '基础仓', target: 25 }, ...initialState().allocation.slice(1)];
-  const old = { ...initialState(), allocation: oldAllocation, trades: [
+  const oldAllocation = [{ name: '基础仓', target: 25 }, { name: '机动仓', target: 30 }, { name: '主仓', target: 35 }];
+  const old = { ...initialState(), allocation: oldAllocation, holders: [
+    { id: 'legacy-holder', name: '历史账本', allocation: oldAllocation },
+    { id: 'custom-holder', name: '自定义账本', allocation: [...oldAllocation.slice(0, 2), { name: '长期持有', target: 40 }] },
+  ], trades: [
     row('cash', 'deposit', { amount: 150 }),
     row('old-stock', 'opening', { bucket: 'base', qty: 100, price: 10 }),
     row('new-stock', 'opening', { qty: 30, price: 20 }),
   ] };
   const state = validateState(old);
-  assert.deepEqual(initialState().allocation.map(row => row.name), ['现金仓', '机动仓', '主仓']);
+  assert.deepEqual(initialState().allocation.map(row => row.name), ['现金仓', '机动仓', '底仓']);
   assert.deepEqual(state.allocation[0], { name: '现金仓', target: 25 });
+  assert.deepEqual(state.allocation[2], { name: '底仓', target: 35 });
+  assert.deepEqual(state.holders[0].allocation[2], { name: '底仓', target: 35 });
+  assert.deepEqual(state.holders[1].allocation[2], { name: '长期持有', target: 40 });
   const book = portfolio(state.trades, SELF, { [symbol]: { price: 20 } });
   assert.equal(book.cash, 15000);
   assert.equal(book.basis, 275000);

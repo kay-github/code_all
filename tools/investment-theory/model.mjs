@@ -2,7 +2,7 @@ export const buckets = ['base', 'flex', 'core'];
 export const legacyBucket = 'base';
 export const SELF = 'self';
 export const defaults = [
-  { name: '现金仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '主仓', target: 30 },
+  { name: '现金仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '底仓', target: 30 },
 ];
 export const horizons = ['远期', '中期', '短期'];
 export const metrics = { price: '价格 / 点位', marketCap: '总市值（亿元）', peTTM: 'PE TTM', changePct: '日涨跌幅（%）' };
@@ -140,10 +140,13 @@ function checkedRows(rows, parse, max) {
 }
 function allocationOf(input) {
   if (!Array.isArray(input) || input.length !== 3) throw Error('需要设置三个仓位');
-  const allocation = input.map((row, index) => ({
-    name: index === 0 ? defaults[0].name : text(row.name, '仓位名称', 16, true),
-    target: number(row.target, '目标占比', 0, 100),
-  }));
+  const allocation = input.map((row, index) => {
+    const name = index === 0 ? defaults[0].name : text(row.name, '仓位名称', 16, true);
+    return {
+      name: buckets[index] === 'core' && name === '主仓' ? defaults[index].name : name,
+      target: number(row.target, '目标占比', 0, 100),
+    };
+  });
   if (allocation.reduce((sum, row) => sum + row.target, 0) > 100 + 1e-8) throw Error('三个仓位目标占比之和不能超过 100%');
   return allocation;
 }

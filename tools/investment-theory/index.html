@@ -15,7 +15,7 @@
       <div>
         <a class="eyebrow" href="/">‹ 工具首页</a>
         <h1>333投资理论</h1>
-        <p>记录仓位，设定目标，持续跟踪投资方向。</p>
+        <p>分析市场，设定目标，管理仓位。</p>
       </div>
       <button id="data-toggle" type="button" aria-expanded="false" aria-controls="data-panel">账本与备份</button>
     </header>
@@ -39,9 +39,9 @@
     </section>
 
     <nav id="main-tabs" class="tabs" role="tablist" aria-label="投资管理">
-      <button id="tab-position" type="button" role="tab" aria-selected="true" aria-controls="position" disabled>仓位</button>
+      <button id="tab-direction" type="button" role="tab" aria-selected="true" aria-controls="direction" disabled>分析</button>
       <button id="tab-goal" type="button" role="tab" aria-selected="false" aria-controls="goal" tabindex="-1" disabled>目标</button>
-      <button id="tab-direction" type="button" role="tab" aria-selected="false" aria-controls="direction" tabindex="-1" disabled>方向</button>
+      <button id="tab-position" type="button" role="tab" aria-selected="false" aria-controls="position" tabindex="-1" disabled>仓位</button>
     </nav>
     <div id="sync-status" class="sync-status" hidden>
       <span id="sync-text" role="status"></span>
@@ -54,7 +54,7 @@
     </div>
     <p id="status" class="status" role="status" hidden></p>
 
-    <section id="position" role="tabpanel" aria-labelledby="tab-position">
+    <section id="position" role="tabpanel" aria-labelledby="tab-position" tabindex="0" hidden>
       <section class="panel position-overview" aria-label="仓位总览">
         <div class="position-header">
           <div class="position-actions">
@@ -140,9 +140,9 @@
       </details>
     </section>
 
-    <section id="direction" role="tabpanel" aria-labelledby="tab-direction" tabindex="0" hidden>
-      <div class="section-head tab-head"><div><h2>投资方向</h2><p class="muted">按基本面、技术面和情绪面跟踪市场与持仓。</p></div></div>
-      <nav id="direction-tabs" class="tabs direction-tabs" role="tablist" aria-label="方向分类">
+    <section id="direction" role="tabpanel" aria-labelledby="tab-direction" tabindex="0">
+      <div class="section-head tab-head"><div><h2>投资分析</h2><p class="muted">按基本面、技术面和情绪面跟踪市场与持仓。</p></div></div>
+      <nav id="direction-tabs" class="tabs direction-tabs" role="tablist" aria-label="分析分类">
         <button id="tab-fundamentals" type="button" role="tab" aria-selected="true" aria-controls="fundamentals" disabled>基本面</button>
         <button id="tab-technical" type="button" role="tab" aria-selected="false" aria-controls="technical" tabindex="-1" disabled>技术面</button>
         <button id="tab-emotion" type="button" role="tab" aria-selected="false" aria-controls="emotion" tabindex="-1" disabled>情绪面</button>
