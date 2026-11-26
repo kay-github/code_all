@@ -14,6 +14,20 @@
       "includeFiles": "apps/top-radar/**/*.json"
     }
   },
+  "schedules": {
+    "investment-goals": {
+      "schedule": "*/15 * * * *",
+      "timezone": "Asia/Shanghai",
+      "path": "/api/investment-scheduled/goal-alerts",
+      "requestMethod": "POST"
+    },
+    "investment-crowding": {
+      "schedule": "20,50 16-18 * * 1-5",
+      "timezone": "Asia/Shanghai",
+      "path": "/api/investment-scheduled/crowding",
+      "requestMethod": "POST"
+    }
+  },
   "routes": [
     {
       "src": "^/(?:admin(?:/.*)?|index\\.html)?$",
@@ -129,6 +143,10 @@
       "headers": {
         "Cache-Control": "no-store"
       }
+    },
+    {
+      "src": "^/api/investment-scheduled/(goal-alerts|crowding)/?$",
+      "dest": "/api/investment-market?view=$1&scheduled=1"
     },
     {
       "src": "^/api/top-radar/?$",

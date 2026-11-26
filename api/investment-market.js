@@ -94,6 +94,9 @@ async function sentiment() {
 
 module.exports = async function handler(req, res) {
   try {
+    const authorization = req.headers?.authorization;
+    const cron = req.query?.scheduled === '1' &&
+      matchesSecret(authorization, process.env.CRON_SECRET && 'Bearer ' + process.env.CRON_SECRET);
     if (req.query?.view === 'quote-health' && req.method === 'POST') {
       if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
         return sendJson(res, 401, { error: '未授权' });
@@ -103,11 +106,12 @@ module.exports = async function handler(req, res) {
     }
     if (req.query?.view === 'crowding') {
       if (req.method === 'POST') {
-        if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+        const monitor = matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET);
+        if (!cron && !monitor) {
           return sendJson(res, 401, { error: '未授权' });
         }
         try {
-          return sendJson(res, 200, await crowding.refreshCrowding({ store, force: req.query.force === '1' }));
+          return sendJson(res, 200, await crowding.refreshCrowding({ store, force: monitor && req.query.force === '1' }));
         } catch (error) {
           console.error('Crowding refresh:', error.message, error.cause?.cause?.code ?? error.cause?.message ?? '');
           return sendJson(res, 503, { error: '板块拥挤度更新暂不可用' });
@@ -120,7 +124,7 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, snapshot);
     }
     if (req.query?.view === 'goal-alerts' && req.method === 'POST') {
-      if (!matchesSecret(req.headers?.authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+      if (!cron && !matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
         return sendJson(res, 401, { error: '未授权' });
       }
       const config = (await store.read(CONFIG))?.value;

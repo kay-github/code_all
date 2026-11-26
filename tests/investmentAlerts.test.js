@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { CONFIG, runGoalAlerts, matchesImport, goalAlertsForAccount } = require('../lib/investmentAlerts');
+const { CONFIG, STATE, runGoalAlerts, matchesImport, goalAlertsForAccount } = require('../lib/investmentAlerts');
 const { createInvestmentQuotes, TENCENT_HOST } = require('../lib/investmentQuotes');
 
 function memory() {
@@ -160,9 +160,11 @@ test('delayed schedules can check same-day closing quotes but cannot use an olde
 });
 
 test('scheduled checks report partial coverage as retryable while the backup drill stays read-only', async t => {
-  const previous = { MONITOR_SECRET: process.env.MONITOR_SECRET, PUSHPLUS_TOKEN: process.env.PUSHPLUS_TOKEN };
+  const previous = { MONITOR_SECRET: process.env.MONITOR_SECRET, PUSHPLUS_TOKEN: process.env.PUSHPLUS_TOKEN,
+    CRON_SECRET: process.env.CRON_SECRET };
   process.env.MONITOR_SECRET = 'fixture-monitor';
   process.env.PUSHPLUS_TOKEN = 'fixture-pushplus';
+  process.env.CRON_SECRET = 'fixture-vercel-cron';
   t.after(() => {
     for (const [key, value] of Object.entries(previous)) {
       if (value === undefined) delete process.env[key];
@@ -171,6 +173,7 @@ test('scheduled checks report partial coverage as retryable while the backup dri
   });
   const storage = require('../lib/gridStore');
   t.mock.method(storage, 'read', async path => {
+    if (path === STATE) return null;
     assert.equal(path, CONFIG);
     return { value: { ...config, alertIds: ['short', 'mid'] } };
   });
@@ -183,10 +186,10 @@ test('scheduled checks report partial coverage as retryable while the backup dri
     return Response.json({ data: { diff: [row] } });
   });
   const handler = require('../api/investment-market');
-  const invoke = async query => {
+  const invoke = async (query, authorization = 'Bearer fixture-monitor') => {
     let body;
     const res = { statusCode: 0, setHeader() {}, end(value) { body = JSON.parse(value); } };
-    await handler({ method: 'POST', headers: { authorization: 'Bearer fixture-monitor' },
+    await handler({ method: 'POST', headers: { authorization },
       query: { view: 'goal-alerts', ...query } }, res);
     return { status: res.statusCode, body };
   };
@@ -198,4 +201,8 @@ test('scheduled checks report partial coverage as retryable while the backup dri
   assert.equal(dryRun.status, 200);
   assert.deepEqual(dryRun.body.sources, { 东方财富: 1 });
   assert.equal(dryRun.body.sent, 0);
+  const cron = 'Bearer fixture-vercel-cron';
+  assert.equal((await invoke({ dryRun: '1' }, cron)).status, 401);
+  assert.equal((await invoke({ view: 'quote-health', scheduled: '1' }, cron)).status, 401);
+  assert.equal((await invoke({ dryRun: '1', scheduled: '1' }, cron)).status, 200);
 });
