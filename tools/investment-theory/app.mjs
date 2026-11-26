@@ -541,6 +541,78 @@ function svgNode(tag, attributes) {
   for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
   return node;
 }
+
+function valuationCard(row) {
+  const card = el('article', 'valuation-card');
+  const header = el('header');
+  header.append(el('h3', '', row.name), el('span', 'valuation-code', row.code));
+  const date = (value, label = value) => {
+    const node = el('time', '', label);
+    node.dateTime = value;
+    return node;
+  };
+  const details = el('p', 'valuation-date');
+  details.append(el('span', '', '收盘 ' + row.close.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
+    date(row.date));
+  const metrics = el('dl', 'valuation-metrics');
+  const first = row.history[0];
+  const last = row.history.at(-1);
+  const chart = svgNode('svg', {
+    viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img',
+    'aria-label': row.name + '近一年市盈率和市净率分位走势，纵轴 0% 至 100%',
+  });
+  for (const y of [0, 25, 50, 75, 100]) {
+    chart.append(svgNode('line', { x1: 0, x2: 240, y1: y, y2: y, class: 'valuation-gridline' }));
+  }
+  const start = Date.parse(first[0]);
+  const span = Math.max(1, Date.parse(last[0]) - start);
+  for (const [key, title, column] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
+    const metric = el('div', 'valuation-metric ' + key);
+    metric.append(el('dt', '', title + ' 分位'), el('dd', '', pct(last[column])),
+      el('small', '', fmt.format(row[key]) + ' 倍'));
+    metrics.append(metric);
+    const points = row.history.map(point => {
+      const x = 240 * (Date.parse(point[0]) - start) / span;
+      return x.toFixed(1) + ',' + (100 - point[column]).toFixed(2);
+    }).join(' ');
+    if (key === 'pe') chart.append(svgNode('polygon', { points: '0,100 ' + points + ' 240,100', class: 'valuation-area pe' }));
+    chart.append(svgNode('polyline', { points, class: 'valuation-line ' + key }));
+  }
+  const axis = el('div', 'valuation-axis');
+  axis.setAttribute('aria-hidden', 'true');
+  axis.append(...['100%', '50%', '0%'].map(value => el('span', '', value)));
+  const plot = el('div', 'valuation-plot');
+  plot.append(axis, chart);
+  const times = el('p', 'valuation-times');
+  const month = value => value.slice(0, 7).replace('-', '.');
+  times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
+  card.append(header, details, metrics, plot, times);
+  return card;
+}
+
+let valuationLoading = false;
+let valuationLoadedAt = 0;
+async function refreshValuations() {
+  if (valuationLoading || Date.now() - valuationLoadedAt < 300_000) return;
+  valuationLoading = true;
+  const status = $('valuation-status');
+  const retry = $('valuation-retry');
+  retry.hidden = true;
+  try {
+    const { indices } = await api('./valuations.json');
+    if (!indices?.length) throw Error('缺少指数估值数据');
+    $('index-valuations').replaceChildren(...indices.map(valuationCard));
+    $('valuation-sources').hidden = false;
+    status.hidden = true;
+    valuationLoadedAt = Date.now();
+  } catch {
+    status.hidden = false;
+    status.textContent = valuationLoadedAt ? '刷新失败，当前显示上次加载的数据。' : '收盘估值暂时无法加载。';
+    retry.hidden = false;
+  } finally {
+    valuationLoading = false;
+  }
+}
 function fearGauge(item) {
   const card = el('article', 'fear-card');
   const svg = svgNode('svg', { viewBox: '0 0 120 69', role: 'img', 'aria-label': Number.isFinite(item.score) ? `${item.score} 分` : '暂无分数' });
@@ -971,7 +1043,7 @@ for (const [panelId, kinds] of Object.entries(directionGroups)) {
     field(form, 'date').value = chinaDay();
     notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
   });
-  $(panelId).append(editor);
+  $(panelId === 'fundamentals' ? 'fundamental-notes' : panelId).append(editor);
 }
 
 function bindTabs(list, onSelect) {
@@ -1006,11 +1078,13 @@ function bindTabs(list, onSelect) {
   return select;
 }
 bindTabs($('direction-tabs'), panel => {
+  if (panel === 'fundamentals') void refreshValuations();
   if (panel !== 'fundamentals') void refreshSnapshot();
   if (panel === 'technical') void refreshCrowding();
 });
 const selectTab = bindTabs($('main-tabs'), panel => {
   if (panel === 'goal') void refreshGoalReminders();
+  if (panel === 'direction' && !$('fundamentals').hidden) void refreshValuations();
   if (panel === 'direction' && $('fundamentals').hidden) void refreshSnapshot();
   if (panel === 'direction' && !$('technical').hidden) void refreshCrowding();
 });
@@ -1162,6 +1236,8 @@ field($('goal-form'), 'symbol').addEventListener('input', goalFields);
 document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventListener('click', () => refreshQuotes(true)));
 snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
 $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
+$('valuation-retry').addEventListener('click', refreshValuations);
+if (new URLSearchParams(location.search).get('tab') !== 'goal') void refreshValuations();
 tradeFields();
 goalFields();
 let sessionUnknown = false;
@@ -1187,6 +1263,7 @@ window.addEventListener('online', () => {
 window.addEventListener('focus', () => {
   if (cloud && Date.now() - cloud.checkedAt > 10_000) void syncCloud(cloud);
   if (!$('goal').hidden) void refreshGoalReminders();
+  if (!$('direction').hidden && !$('fundamentals').hidden) void refreshValuations();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && pending) void syncCloud(cloud);

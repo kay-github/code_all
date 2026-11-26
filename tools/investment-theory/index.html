@@ -141,26 +141,37 @@
     </section>
 
     <section id="direction" role="tabpanel" aria-labelledby="tab-direction" tabindex="0">
-      <div class="section-head tab-head"><div><h2>投资分析</h2><p class="muted">按基本面、技术面和情绪面跟踪市场与持仓。</p></div></div>
       <nav id="direction-tabs" class="tabs direction-tabs" role="tablist" aria-label="分析分类">
         <button id="tab-fundamentals" type="button" role="tab" aria-selected="true" aria-controls="fundamentals" disabled>基本面</button>
         <button id="tab-technical" type="button" role="tab" aria-selected="false" aria-controls="technical" tabindex="-1" disabled>技术面</button>
         <button id="tab-emotion" type="button" role="tab" aria-selected="false" aria-controls="emotion" tabindex="-1" disabled>情绪面</button>
       </nav>
       <section id="fundamentals" role="tabpanel" aria-labelledby="tab-fundamentals" tabindex="0">
-        <div class="direction-columns">
-          <section class="panel" aria-labelledby="disclosed-title">
-            <h3 id="disclosed-title">已披露基本面</h3>
-            <p class="meta">记录公司公告和已披露财务数据。</p>
-            <div class="research-list" data-research-kind="已披露基本面"></div>
-          </section>
-          <section class="panel" aria-labelledby="forecast-title">
-            <h3 id="forecast-title">机构预测</h3>
-            <p class="meta">记录研报中的利润、增速和估值预期。</p>
-            <div class="research-list" data-research-kind="机构预测"></div>
-          </section>
+        <div class="valuation-heading">
+          <h2>指数估值</h2>
+          <span class="meta">近一年分位走势</span>
         </div>
-        <div class="actions resources"><a class="text-link" href="https://www.cninfo.com.cn/" target="_blank" rel="noopener">查阅公司公告 ↗</a></div>
+        <p id="valuation-status" class="meta" role="status">正在加载收盘估值…</p>
+        <button id="valuation-retry" type="button" hidden>重新加载估值</button>
+        <div id="index-valuations" class="valuation-grid"></div>
+        <p id="valuation-sources" class="meta valuation-sources" hidden>
+          近 10 年滚动分位，历史不足 10 年时按可用历史计算。
+          <a class="text-link" href="https://www.etf.com.cn/" target="_blank" rel="noopener">数据源 · 易方达指数直通车</a>
+        </p>
+        <details class="panel fold" id="fundamental-notes">
+          <summary>基本面观察记录</summary>
+          <div class="direction-columns">
+            <section class="panel" aria-labelledby="disclosed-title">
+              <h3 id="disclosed-title">已披露基本面</h3>
+              <div class="research-list" data-research-kind="已披露基本面"></div>
+            </section>
+            <section class="panel" aria-labelledby="forecast-title">
+              <h3 id="forecast-title">机构预测</h3>
+              <div class="research-list" data-research-kind="机构预测"></div>
+            </section>
+          </div>
+          <div class="actions resources"><a class="text-link" href="https://www.cninfo.com.cn/" target="_blank" rel="noopener">查阅公司公告 ↗</a></div>
+        </details>
       </section>
       <section id="technical" role="tabpanel" aria-labelledby="tab-technical" tabindex="0" hidden>
         <section class="panel" aria-labelledby="crowding-title">
