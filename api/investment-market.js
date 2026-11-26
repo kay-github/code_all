@@ -1,7 +1,7 @@
 const { numeric } = require('../lib/stockMarket');
 const { sendJson } = require('../lib/gridHttp');
 const store = require('../lib/gridStore');
-const { CONFIG, matchesSecret, matchesImport, runGoalAlerts } = require('../lib/investmentAlerts');
+const { CONFIG, investmentStatePath, matchesSecret, matchesImport, runGoalAlerts } = require('../lib/investmentAlerts');
 const { sendPushplus } = require('../lib/pushplus');
 const crowding = require('../lib/investmentCrowding');
 const { createInvestmentQuotes, TENCENT_HOST } = require('../lib/investmentQuotes');
@@ -124,14 +124,16 @@ module.exports = async function handler(req, res) {
         return sendJson(res, 401, { error: '未授权' });
       }
       const config = (await store.read(CONFIG))?.value;
-      if (!config?.alertIds?.length) return sendJson(res, 503, { error: '目标提醒尚未配置' });
+      if (!config) return sendJson(res, 503, { error: '目标提醒尚未配置' });
       if (!process.env.PUSHPLUS_TOKEN) return sendJson(res, 503, { error: '推加尚未配置' });
       const dryRun = req.query.dryRun === '1';
+      const scheduled = req.query.scheduled === '1';
+      const snapshot = config.ownerId && (await store.read(investmentStatePath(config.ownerId)))?.value?.payload;
       const stats = await runGoalAlerts({
-        store, config, quotes: dryRun && req.query.mode === 'fallback' ? diagnosticQuotes('fallback') : quotes,
-        send: sendPushplus, dryRun,
+        store, config, snapshot, quotes: dryRun && req.query.mode === 'fallback' ? diagnosticQuotes('fallback') : quotes,
+        send: sendPushplus, dryRun, scheduled,
       });
-      return sendJson(res, !dryRun && stats.unchecked ? 503 : 200, stats);
+      return sendJson(res, !dryRun && !scheduled && stats.unchecked ? 503 : 200, stats);
     }
     if (['goal-template', 'ledger-import'].includes(req.query?.view) && req.method === 'GET') {
       const isLedger = req.query.view === 'ledger-import';

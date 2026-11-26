@@ -1,6 +1,7 @@
 import {
   buckets, legacyBucket, horizons, directionGroups, metrics, tradeTypes, initialState, chinaDay,
   SELF, holderTrades, portfolio, replay, validateState, mergeImport, evaluateGoals, quoteKey,
+  marketTargets, macroTargets, goalType, periodDate, assignReserve,
 } from './model.mjs';
 import { drawShare } from './share.mjs';
 import { syncDecision } from './cloud-sync.mjs';
@@ -33,6 +34,7 @@ let accountBusy = false;
 let holderId = SELF;
 let editingHolder = false;
 let shareSnapshot = null;
+let selectedGoalType = 'point';
 const drafts = new Map();
 const path = '/api/grid/investment';
 const activeHolder = () => state.holders.find(holder => holder.id === holderId);
@@ -148,7 +150,8 @@ async function runCloudSync(context, choice) {
     } else if (pending || remoteRev !== revision) {
       saveLocal(state, revision, false);
     }
-    syncStatus(context, pending ? 'pending' : 'synced', pending ? '已存本机，等待同步…' : '云账本已同步');
+    syncStatus(context, pending ? 'pending' : 'synced', pending ? '已存本机，等待同步…' : '数据已同步');
+    if (!$('goal').hidden && !pending && ['upload', 'download'].includes(decision)) void refreshGoalReminders(true);
   } catch (error) {
     if (context !== cloud) return;
     if (error.status === 401) {
@@ -322,6 +325,11 @@ function renderPositions() {
   }
   const residual = 100 - allocation.reduce((sum, row) => sum + row.target, 0);
   $('allocation-foot').textContent = `未分配目标 ${pct(Math.max(0, residual))}${marked.some(row => row.bucket === legacyBucket) ? ' · 原基础仓持仓见下方明细' : ''}`;
+  const reserve = $('reserve-editor');
+  reserve.hidden = residual < 0.01 - 1e-8;
+  if (reserve.hidden) reserve.open = false;
+  options(field($('reserve-form'), 'destination'), allocation.map((row, i) => [String(i), row.name]));
+  field($('reserve-form'), 'points').max = Math.max(0, Math.floor((residual + 1e-8) * 100) / 100);
   $('allocations').replaceChildren(...cards);
   const holdings = $('holdings');
   const focusedBucket = holdings.querySelector('summary:focus')?.parentElement.dataset.bucket;
@@ -365,40 +373,68 @@ function renderTrades() {
 }
 function renderGoals() {
   $('goal-reminder-status').hidden = !cloud?.remindersUnavailable;
-  $('goals').replaceChildren(...horizons.map(horizon => {
+  const kind = selectedGoalType;
+  $(`goal-${kind}-list`).replaceChildren(...[...horizons].reverse().map(horizon => {
     const group = el('section', 'goal-group');
-    const rows = state.goals.filter(row => row.horizon === horizon);
+    const rows = state.goals.filter(row => row.horizon === horizon && goalType(row) === kind);
     const heading = el('div', 'goal-heading');
     heading.append(el('h3', '', horizon), el('span', 'count', `${rows.length} 项`));
     group.append(heading);
     if (!rows.length) group.append(el('p', 'goal-empty muted', '暂无目标'));
     for (const row of rows) {
       const quote = row.symbol ? quotes[quoteKey(row.symbol, row.index)] : null;
-      const condition = row.symbol ? `${row.symbol} · ${metrics[row.metric]} ${row.operator} ${row.threshold}` : '文字目标';
+      const target = marketTargets.find(([symbol]) => symbol === row.symbol);
+      const unit = row.metric === 'price' ? (target?.[2] ?? (row.index ? '点' : '元')) : '';
+      const condition = row.dueAt ? stamp(row.dueAt) + '（北京时间）' : row.symbol
+        ? `${target?.[1] ?? row.symbol} · ${row.metric === 'price' && target ? '' : metrics[row.metric] + ' '}${row.operator} ${fmt.format(row.threshold)} ${unit}` : '';
       const rule = cloud?.goalReminders?.get(row.id);
-      const enabled = rule && rule.symbol === row.symbol && rule.index === Boolean(row.index) &&
-        rule.metric === row.metric && rule.operator === row.operator && rule.threshold === row.threshold;
-      const badge = enabled ? el('span', 'goal-reminder', '微信推加已开启') : null;
+      const enabled = row.remind !== false && rule && (row.dueAt ? rule.dueAt === row.dueAt :
+        rule.symbol === row.symbol && rule.index === Boolean(row.index) &&
+        rule.metric === row.metric && rule.operator === row.operator && rule.threshold === row.threshold);
+      const sent = cloud?.goalDeliveries?.[row.id];
+      const waiting = row.remind === true && cloud?.canEnable && !enabled;
+      const badge = sent || enabled || waiting
+        ? el('span', 'goal-reminder', sent ? '微信已推送' : enabled ? '微信推加已开启' : '等待同步提醒') : null;
       const card = rowCard(row.title, condition, row.note, 'goals', row.id, badge);
+      if (kind !== 'plan' && cloud?.canEnable && !sent) {
+        const toggle = el('button', 'goal-toggle', enabled || waiting ? '关闭推加' : '开启推加');
+        toggle.type = 'button';
+        toggle.addEventListener('click', () => {
+          try {
+            persist({ ...state, goals: state.goals.map(item => item.id === row.id ? { ...item, remind: !(enabled || waiting) } : item) });
+            renderGoals();
+          } catch (error) { notice(error.message, true); }
+        });
+        card.querySelector('header').append(toggle);
+      }
       if (quote && Number.isFinite(quote[row.metric])) {
         const details = [quoteProvider(quote), quote.stale ? '缓存' : null, quote.suspended ? '停牌' : null].filter(Boolean);
         card.append(el('p', 'meta', [`最近读数 ${quote[row.metric]}`, stamp(quote.time), ...details].join(' · ')));
       } else if (row.symbol) {
         card.append(el('p', 'meta', '暂无可用行情读数'));
       }
-      if (row.hit) card.append(el('p', 'positive', `最近触发 ${row.hit.value} · ${stamp(row.hit.time)}`));
+      if (sent) card.append(el('p', 'meta', `推送时间 ${stamp(sent.at)}${Number.isFinite(sent.value) ? ' · 触发值 ' + fmt.format(sent.value) : ''}`));
+      else if (row.hit) card.append(el('p', 'positive', `最近触发 ${row.hit.value} · ${stamp(row.hit.time)}`));
       group.append(card);
     }
     return group;
   }));
+  goalPushFields();
 }
-async function refreshGoalReminders() {
+async function refreshGoalReminders(force = false) {
   const context = cloud;
-  if (!context || context.remindersLoading || Date.now() - (context.remindersCheckedAt ?? 0) < 30_000) return;
+  if (!context) return;
+  if (context.remindersLoading) {
+    if (force) context.remindersRefresh = true;
+    return;
+  }
+  if (!force && Date.now() - (context.remindersCheckedAt ?? 0) < 30_000) return;
   context.remindersLoading = true;
   try {
-    const { rules } = await api(`${path}?view=reminders`, 'GET', undefined, { 'X-Investment-Account': context.id });
+    const { rules, canEnable, deliveries } = await api(`${path}?view=reminders`, 'GET', undefined, { 'X-Investment-Account': context.id });
     context.goalReminders = new Map(rules.map(rule => [rule.id, rule]));
+    context.canEnable = canEnable;
+    context.goalDeliveries = deliveries;
     context.remindersUnavailable = false;
     context.remindersCheckedAt = Date.now();
   } catch {
@@ -406,7 +442,13 @@ async function refreshGoalReminders() {
     context.remindersUnavailable = true;
   } finally {
     context.remindersLoading = false;
-    if (context === cloud) renderGoals();
+    if (context === cloud) {
+      renderGoals();
+      if (context.remindersRefresh) {
+        context.remindersRefresh = false;
+        void refreshGoalReminders(true);
+      }
+    }
   }
 }
 function renderResearch() {
@@ -993,11 +1035,38 @@ function tradeFields() {
 }
 function goalFields() {
   const form = $('goal-form');
-  const index = field(form, 'kind').value === 'index';
-  const symbol = field(form, 'symbol');
-  symbol.placeholder = index ? '例 000001.SH' : '例 300502.SZ';
-  field(form, 'threshold').required = Boolean(symbol.value.trim());
-  options(field(form, 'metric'), Object.entries(metrics).filter(([key]) => !index || key === 'price' || key === 'changePct'));
+  const kind = selectedGoalType;
+  const target = field(form, 'target').value;
+  const custom = ['security', 'index'].includes(target);
+  const when = field(form, 'when').value;
+  const metric = field(form, 'metric');
+  const extra = kind === 'point' && custom ? 'point-custom' : kind === 'time' ? (when === 'after' ? 'time-after' : 'time-date') : '';
+  for (const label of form.querySelectorAll('[data-goal-field]')) {
+    const input = label.querySelector('input, select');
+    label.hidden = ![kind, extra].includes(label.dataset.goalField);
+    input.disabled = label.hidden;
+    input.required = !label.hidden;
+  }
+  $('goal-form-title').textContent = { point: '新增点位目标', time: '新增时间提醒', plan: '新增期限计划' }[kind];
+  field(form, 'symbol').placeholder = target === 'index' ? '例 000001.SH' : '例 300502.SZ';
+  const metricOptions = target === 'security' ? Object.entries(metrics)
+    : target === 'index' ? Object.entries(metrics).filter(([key]) => key === 'price' || key === 'changePct')
+      : [['price', '价格 / 点位']];
+  options(metric, metricOptions);
+  const unit = marketTargets.find(([symbol]) => symbol === target)?.[2];
+  $('goal-threshold-label').textContent = unit ? `目标值（${unit}）` : '目标值';
+  goalPushFields();
+}
+
+function goalPushFields() {
+  const choice = $('goal-push-choice');
+  const hint = $('goal-form-hint');
+  choice.hidden = selectedGoalType === 'plan';
+  field($('goal-form'), 'remind').disabled = choice.hidden || !cloud?.canEnable;
+  hint.hidden = choice.hidden;
+  hint.textContent = cloud?.canEnable
+    ? (selectedGoalType === 'time' ? '同步后按北京时间检查，达到设定时间推送一次。' : '同步后定时检查行情，首次满足条件时推送。')
+    : (cloud ? '当前账号的微信推加不可用，可先保存为站内目标。' : '登录已绑定微信推加的账号即可开启推送。');
 }
 function bindForm(form, submit) {
   form.addEventListener('submit', event => {
@@ -1006,30 +1075,55 @@ function bindForm(form, submit) {
     catch (error) { notice(error.message, true); }
   });
 }
-bindForm($('allocation-form'), form => {
-  const input = readForm(form);
-  const allocation = buckets.map((_, index) => ({ name: input[`name-${index}`], target: input[`target-${index}`] }));
+function saveAllocation(allocation) {
   persist(holderId === SELF ? { ...state, allocation } : {
     ...state, holders: state.holders.map(holder => holder.id === holderId ? { ...holder, allocation } : holder),
   });
   renderAllocationEditor();
   render();
+}
+bindForm($('allocation-form'), form => {
+  const input = readForm(form);
+  saveAllocation(buckets.map((_, index) => ({ name: input[`name-${index}`], target: input[`target-${index}`] })));
   notice('仓位设置已保存。');
 });
-for (const [formId, collection] of [['trade-form', 'trades'], ['goal-form', 'goals']]) {
-  bindForm($(formId), form => {
-    const input = readForm(form);
-    const row = { ...input, id: uuid(), index: input.kind === 'index', holderId };
-    persist({ ...state, [collection]: [...state[collection], row] });
-    render();
-    form.reset();
-    for (const date of form.querySelectorAll('input[type=date]')) date.value = chinaDay();
-    tradeFields();
-    goalFields();
-    notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
-    void refreshQuotes();
-  });
-}
+bindForm($('reserve-form'), form => {
+  const { destination, points } = readForm(form);
+  saveAllocation(assignReserve(allocationForHolder(), destination, points));
+  field(form, 'points').value = '';
+  $('reserve-editor').open = false;
+  notice('未分配比例已划入所选仓位。');
+});
+bindForm($('trade-form'), form => {
+  persist({ ...state, trades: [...state.trades, { ...readForm(form), id: uuid(), holderId }] });
+  render();
+  form.reset();
+  field(form, 'date').value = chinaDay();
+  tradeFields();
+  notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
+  void refreshQuotes();
+});
+bindForm($('goal-form'), form => {
+  const input = readForm(form);
+  const row = { id: uuid(), title: input.title, horizon: input.horizon, note: input.note };
+  if (selectedGoalType === 'time') {
+    const date = input.when === 'after' ? periodDate(chinaDay(), input.length, input.period) : input.dueDate;
+    row.dueAt = date + 'T' + input.dueTime + '+08:00';
+    if (!(Date.parse(row.dueAt) > Date.now())) throw Error('请选择将来的提醒时间。');
+    row.remind = Boolean(input.remind);
+  } else if (selectedGoalType === 'point') {
+    const symbol = input.symbol || input.target;
+    Object.assign(row, { symbol, index: input.target !== 'security' && !Object.hasOwn(macroTargets, symbol),
+      metric: input.metric, operator: input.operator, threshold: input.threshold, remind: Boolean(input.remind) });
+  }
+  persist({ ...state, goals: [...state.goals, row] });
+  renderGoals();
+  form.reset();
+  field(form, 'dueDate').value = chinaDay();
+  goalFields();
+  notice(row.remind ? '目标已保存，同步后启用微信推加。' : '目标已保存。');
+  if (row.symbol) void refreshQuotes();
+});
 for (const [panelId, kinds] of Object.entries(directionGroups)) {
   const editor = $('research-editor').content.cloneNode(true);
   const form = editor.querySelector('form');
@@ -1043,7 +1137,7 @@ for (const [panelId, kinds] of Object.entries(directionGroups)) {
     field(form, 'date').value = chinaDay();
     notice(cloud ? '已保存，云端同步状态见上方。' : '已保存到本机账本。');
   });
-  $(panelId === 'fundamentals' ? 'fundamental-notes' : panelId).append(editor);
+  $(panelId === 'fundamentals' ? 'fundamental-notes' : panelId === 'technical' ? 'technical-notes' : panelId).append(editor);
 }
 
 function bindTabs(list, onSelect) {
@@ -1077,16 +1171,89 @@ function bindTabs(list, onSelect) {
   });
   return select;
 }
+
+let etfFlowLoading = false;
+let etfFlowLoadedAt = 0;
+async function refreshEtfFlow() {
+  if (etfFlowLoading || Date.now() - etfFlowLoadedAt < 300_000) return;
+  etfFlowLoading = true;
+  const files = '/tools/national-team-etf/data/';
+  const status = $('etf-flow-status');
+  const root = $('etf-flow');
+  try {
+    const [formal, provisional] = await Promise.allSettled([
+      api(files + 'latest.json'), api(files + 'postclose/latest.json'),
+    ]);
+    const verified = formal.value;
+    const pending = provisional.value;
+    const cards = [];
+    const amount = (label, value, caption) => {
+      const card = el('article', 'flow-metric');
+      const readable = Number.isFinite(value) ? (value > 0 ? '+' : '') + fmt.format(value) + ' 亿' : '待完整披露';
+      card.append(el('h4', '', label), el('strong', difference(value), readable), el('p', 'meta', caption));
+      return card;
+    };
+    if (pending?.business_date && (!verified || pending.business_date > verified.business_date)) {
+      const rows = pending.official;
+      const values = el('div', 'flow-metrics');
+      const caption = pending.business_date + ' · 盘后待复核';
+      if (rows?.complete) values.append(amount('盘后估算 · 核心15只', rows.net_yi, caption));
+      else if (rows?.sse?.complete) values.append(amount('盘后初值 · 沪市小计', rows.sse.net_yi, caption + ' · 深市待披露'));
+      else if (rows?.szse?.complete) values.append(amount('盘后初值 · 深市小计', rows.szse.net_yi, caption + ' · 沪市待披露'));
+      if (values.childElementCount) cards.push(values);
+    }
+    if (verified?.business_date) {
+      const values = el('div', 'flow-metrics');
+      const { latest, w5 } = verified;
+      values.append(
+        amount('正式份额 · 当日', latest?.complete ? latest.net_estimate : null,
+          `${verified.business_date} · 覆盖 ${latest?.valid_members ?? 0}/${latest?.expected_members ?? 15}`),
+        amount('正式份额 · 近5日', w5?.complete ? w5.net_estimate : null, `截至 ${verified.business_date}`),
+      );
+      if (latest?.complete) {
+        const breadth = el('article', 'flow-metric');
+        breadth.append(el('h4', '', '当日份额分布'), el('strong', '', `${latest.inflow_count} 增 · ${latest.outflow_count} 减`),
+          el('p', 'meta', '核心15只 ETF'));
+        values.append(breadth);
+      }
+      cards.push(values);
+    }
+    if (!cards.length) throw Error('No ETF snapshot');
+    root.replaceChildren(...cards);
+    status.hidden = true;
+    etfFlowLoadedAt = Date.now();
+  } catch {
+    status.hidden = false;
+    status.textContent = etfFlowLoadedAt ? '刷新失败，显示上次读取的快照。' : '交易所份额快照暂不可用。';
+  } finally {
+    etfFlowLoading = false;
+  }
+}
+
+const selectGoalTab = bindTabs($('goal-tabs'), panel => {
+  selectedGoalType = panel.slice('goals-'.length);
+  goalFields();
+  renderGoals();
+  if (selectedGoalType === 'point') void refreshQuotes();
+});
+bindTabs($('technical-tabs'), panel => {
+  if (panel === 'technical-crowding') { void refreshCrowding(); void refreshSnapshot(); }
+  if (panel === 'technical-flow') void refreshEtfFlow();
+});
 bindTabs($('direction-tabs'), panel => {
   if (panel === 'fundamentals') void refreshValuations();
-  if (panel !== 'fundamentals') void refreshSnapshot();
-  if (panel === 'technical') void refreshCrowding();
+  if (panel === 'emotion') void refreshSnapshot();
+  if (panel === 'technical' && !$('technical-crowding').hidden) { void refreshCrowding(); void refreshSnapshot(); }
+  if (panel === 'technical' && !$('technical-flow').hidden) void refreshEtfFlow();
 });
 const selectTab = bindTabs($('main-tabs'), panel => {
   if (panel === 'goal') void refreshGoalReminders();
   if (panel === 'direction' && !$('fundamentals').hidden) void refreshValuations();
-  if (panel === 'direction' && $('fundamentals').hidden) void refreshSnapshot();
-  if (panel === 'direction' && !$('technical').hidden) void refreshCrowding();
+  if (panel === 'direction' && !$('emotion').hidden) void refreshSnapshot();
+  if (panel === 'direction' && !$('technical').hidden) {
+    if (!$('technical-crowding').hidden) { void refreshCrowding(); void refreshSnapshot(); }
+    if (!$('technical-flow').hidden) void refreshEtfFlow();
+  }
 });
 async function importLinkedData() {
   const match = location.hash.match(/^#add-(goals|ledger)=([a-f0-9]{48})$/);
@@ -1114,6 +1281,7 @@ async function importLinkedData() {
     if (changed) persist(merged);
     const imported = source && state.holders.find(row => row.id === source.id || row.name === source.name);
     selectTab($(isLedger ? 'tab-position' : 'tab-goal'));
+    if (!isLedger) selectGoalTab($('tab-goals-point'));
     if (imported && imported.id !== holderId) selectHolder(imported.id);
     else if (changed) { renderLedger(); void refreshQuotes(); }
     history.replaceState(null, '', location.pathname + location.search);
@@ -1229,15 +1397,17 @@ $('share-save').addEventListener('click', () => {
 });
 
 options($('trade-type'), Object.entries(tradeTypes));
+options(field($('goal-form'), 'target'), [...marketTargets.map(([code, name]) => [code, name]),
+  ['security', '股票 / ETF（输入代码）'], ['index', '其他 A 股指数（输入代码）']]);
 document.querySelectorAll('input[type=date]').forEach(input => { input.value = chinaDay(); });
 $('trade-type').addEventListener('change', tradeFields);
-field($('goal-form'), 'kind').addEventListener('change', goalFields);
-field($('goal-form'), 'symbol').addEventListener('input', goalFields);
+for (const name of ['target', 'when']) field($('goal-form'), name).addEventListener('change', goalFields);
 document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventListener('click', () => refreshQuotes(true)));
 snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
 $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
 $('valuation-retry').addEventListener('click', refreshValuations);
-if (new URLSearchParams(location.search).get('tab') !== 'goal') void refreshValuations();
+const pageParams = new URLSearchParams(location.search);
+if (pageParams.get('tab') !== 'goal') void refreshValuations();
 tradeFields();
 goalFields();
 let sessionUnknown = false;
@@ -1252,7 +1422,11 @@ async function restoreAccount() {
   }
 }
 await restoreAccount();
-if (new URLSearchParams(location.search).get('tab') === 'goal') selectTab($('tab-goal'));
+if (pageParams.get('tab') === 'goal') {
+  const goalKind = pageParams.get('kind');
+  if (['time', 'point', 'plan'].includes(goalKind)) selectGoalTab($('tab-goals-' + goalKind));
+  selectTab($('tab-goal'));
+}
 window.addEventListener('hashchange', () => { void importLinkedData(); });
 void importLinkedData();
 window.addEventListener('online', () => {
@@ -1264,8 +1438,12 @@ window.addEventListener('focus', () => {
   if (cloud && Date.now() - cloud.checkedAt > 10_000) void syncCloud(cloud);
   if (!$('goal').hidden) void refreshGoalReminders();
   if (!$('direction').hidden && !$('fundamentals').hidden) void refreshValuations();
+  if (!$('direction').hidden && !$('technical').hidden && !$('technical-flow').hidden) void refreshEtfFlow();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && pending) void syncCloud(cloud);
 });
-setInterval(() => { if (visible() && tradingWindow()) void refreshQuotes(); }, 60_000);
+setInterval(() => {
+  if (visible() && (tradingWindow() || (!$('goal').hidden && selectedGoalType === 'point' &&
+    state.goals.some(row => Object.hasOwn(macroTargets, row.symbol))))) void refreshQuotes();
+}, 60_000);

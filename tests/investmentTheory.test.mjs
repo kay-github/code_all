@@ -1,10 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SELF, initialState, instrument, validateState, mergeImport, replay, evaluateGoals, portfolio } from '../tools/investment-theory/model.mjs';
+import { SELF, initialState, instrument, validateState, mergeImport, replay, evaluateGoals, portfolio,
+  assignReserve, goalType, periodDate } from '../tools/investment-theory/model.mjs';
 import { syncDecision } from '../tools/investment-theory/cloud-sync.mjs';
 
 const symbol = '300502.SZ';
 const row = (id, type, extras) => ({ id, type, date: '2026-11-05', bucket: 'core', symbol, ...extras });
+
+test('goals keep horizons while validating date, relative periods and macro point targets', () => {
+  assert.equal(periodDate('2026-01-31', 1, 'months'), '2026-02-28');
+  assert.equal(periodDate('2028-01-31', '1', 'months'), '2028-02-29');
+  assert.equal(periodDate('2026-11-26', 2, 'weeks'), '2026-12-10');
+  const state = validateState({ ...initialState(), goals: [
+    { id: 'date', title: '周期复核', horizon: '中期', dueAt: '2026-12-25T09:00+08:00', remind: true },
+    { id: 'price', title: '黄金', horizon: '短期', symbol: 'AU9999', metric: 'price', operator: '>=', threshold: 800, remind: true },
+    { id: 'plan', title: '旧计划', horizon: '远期' },
+  ] });
+  assert.deepEqual(state.goals.map(goalType), ['time', 'point', 'plan']);
+  assert.equal(state.goals[0].dueAt, '2026-12-25T09:00+08:00');
+  assert.equal(state.goals[1].symbol, 'AU9999');
+  assert.equal(instrument('932000.SH', true), '932000.SH');
+  assert.throws(() => instrument('AU9999'));
+  assert.throws(() => validateState({ ...state, goals: [{ ...state.goals[0], dueAt: '2026-12-35T09:00+08:00' }] }), /日期/);
+});
+
+test('reserve moves only target percentage points to the selected bucket', () => {
+  const before = initialState().allocation;
+  assert.deepEqual(assignReserve(before, '2', '4.25').map(row => row.target), [30, 30, 34.25]);
+  assert.deepEqual(before.map(row => row.target), [30, 30, 30]);
+  assert.throws(() => assignReserve(before, 2, 10.01));
+});
 
 test('cloud sync compares revisions before uploading and recognizes a write whose response was lost', () => {
   const state = initialState();

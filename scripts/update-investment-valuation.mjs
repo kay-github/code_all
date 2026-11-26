@@ -5,7 +5,7 @@ const output = new URL('../tools/investment-theory/valuations.json', import.meta
 const source = 'https://cdn.efunds.com.cn/etf-net/';
 export const indices = [
   ['000001', '上证指数'], ['000300', '沪深300'], ['399006', '创业板指'],
-  ['000688', '科创50'], ['399001', '深证成指'], ['HSI', '恒生指数'],
+  ['000688', '科创50'], ['399001', '深证成指'], ['HSI', '恒生指数'], ['000985', '中证全指（全A）'],
 ];
 const dateFormat = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai', dateStyle: 'short' });
 const timeFormat = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Shanghai', timeStyle: 'short' });

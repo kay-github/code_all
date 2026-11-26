@@ -163,6 +163,30 @@ test('aborts a stalled primary and reaches the backup within the page request bu
   assert.ok(Date.now() - start < 6000);
 });
 
+test('routes the CSI 2000, SGE gold, CL and BTC to their verified feeds', async () => {
+  const now = Date.parse('2026-11-26T14:32:37+08:00');
+  const calls = [];
+  const quote = createInvestmentQuotes({ clock: () => now, fetcher: async url => {
+    calls.push(url.hostname);
+    if (url.hostname === 'hq.sinajs.cn') return new Response([
+      'var hq_str_hf_CL="84.043,,84.060,84.080,85.230,83.800,14:32:32,83.680,84.090,0,9,5,2026-11-26,CL,0";',
+      'var hq_str_SGE_AU9999="AU9999,Gold,Au99.99,766.15,767.74,757.35,757.80,775.00,736.51,757.40,766.15,766.48,197.00,200.00,539586.00,19633696000.00,2026-11-26 14:32:31,1.16%";',
+    ].join('\n'));
+    if (url.hostname === 'api.exchange.coinbase.com') {
+      return Response.json({ price: '60579.75', time: '2026-11-26T06:32:35Z' });
+    }
+    assert.equal(url.hostname, 'push2his.eastmoney.com');
+    assert.equal(url.searchParams.get('secid'), '2.932000');
+    return Response.json({ data: { code: '932000', market: 2, preClose: 2345.15,
+      trends: ['2026-11-26 14:32,2320.36,2325.79,2326.00,2320.00'] } });
+  } });
+  const result = await quote('index:932000.SH,AU9999,CL,BTC-USD');
+  assert.deepEqual(Object.fromEntries(Object.entries(result.quotes).map(([key, row]) => [key, row.price])),
+    { 'index:932000.SH': 2325.79, AU9999: 766.15, CL: 84.043, 'BTC-USD': 60579.75 });
+  assert.ok(Object.values(result.quotes).every(row => !row.stale && !row.suspended));
+  assert.ok(!calls.includes(TENCENT_HOST));
+});
+
 test('rejects invalid quotes and invalid inputs before they can be used for a position or a goal', async () => {
   let requests = 0;
   const quotes = createInvestmentQuotes({ clock: () => now, fetcher: async url => {

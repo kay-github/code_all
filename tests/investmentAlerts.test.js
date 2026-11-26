@@ -35,6 +35,36 @@ test('badge rules disclose only the signed-in owner’s enabled conditions', () 
   ]);
 });
 
+test('subscribed cloud date reminders fire once even on weekends and when quotes fail', async () => {
+  const owned = { ...config, ownerId: 'owner' };
+  const due = { id: 'friday', title: '期限复核', horizon: '短期', dueAt: '2026-12-25T09:00+08:00', remind: true };
+  const late = { ...due, id: 'next', dueAt: '2026-12-27T09:00+08:00' };
+  const target = { ...config.goals[0], remind: false };
+  const btc = { id: 'btc', title: '比特币', symbol: 'BTC-USD', horizon: '短期',
+    metric: 'price', operator: '>=', threshold: 60000, remind: true };
+  const snapshot = { goals: [due, late, target, btc] };
+  assert.deepEqual(goalAlertsForAccount(owned, 'owner', snapshot).map(row => row.id), ['friday', 'next', 'btc']);
+  assert.deepEqual(goalAlertsForAccount(owned, 'other', snapshot), []);
+  const store = memory();
+  const start = Date.parse('2026-12-26T09:05:00+08:00');
+  let pushes = 0;
+  const input = { store, config: owned, snapshot, scheduled: true, now: start,
+    quotes: async () => { throw Error('feed offline'); },
+    send: async payload => {
+      pushes++;
+      assert.match(payload.title, /时间到了/);
+      assert.match(payload.content, /2026-12-25/);
+      return { serial: 'fixture' };
+    },
+  };
+  assert.equal((await runGoalAlerts({ ...input, dryRun: true })).matched, 1);
+  assert.equal(pushes, 0);
+  assert.equal((await runGoalAlerts(input)).sent, 1);
+  assert.equal((await runGoalAlerts(input)).sent, 0);
+  assert.equal(pushes, 1);
+  assert.equal((await store.read()).value.friday.at, start);
+});
+
 test('reminders evaluate only subscribed rules and send a single concise HTML card', async () => {
   const store = memory();
   const quotes = async keys => {

@@ -5,6 +5,16 @@ export const defaults = [
   { name: '现金仓', target: 30 }, { name: '机动仓', target: 30 }, { name: '底仓', target: 30 },
 ];
 export const horizons = ['远期', '中期', '短期'];
+export const marketTargets = [
+  ['000001.SH', '上证指数', '点'], ['399001.SZ', '深证成指', '点'],
+  ['399006.SZ', '创业板指', '点'], ['000688.SH', '科创50', '点'],
+  ['000300.SH', '沪深300', '点'], ['000905.SH', '中证500', '点'],
+  ['000852.SH', '中证1000', '点'], ['932000.SH', '中证2000', '点'],
+  ['000985.SH', '中证全指（全A）', '点'], ['AU9999', '黄金 Au99.99', '元/克'],
+  ['CL', '纽约原油 CL 连续', '美元/桶'], ['BTC-USD', '比特币 BTC/USD', '美元'],
+];
+export const macroTargets = Object.fromEntries(marketTargets.filter(([, , unit]) => unit !== '点')
+  .map(([symbol, name, unit]) => [symbol, { name, unit }]));
 export const metrics = { price: '价格 / 点位', marketCap: '总市值（亿元）', peTTM: 'PE TTM', changePct: '日涨跌幅（%）' };
 export const directionGroups = {
   fundamentals: ['已披露基本面', '机构预测'],
@@ -50,12 +60,37 @@ export function instrument(input, index = false) {
     /^(50|51|52|56|58|6)/.test(code || '') ? 'SH' : /^[03]/.test(code || '') ? 'SZ' :
     /^[489]/.test(code || '') ? 'BJ' : null;
   if (!exchange || (match[1] && match[1] !== exchange) || (match[3] && match[3] !== exchange) ||
-      (index && !((exchange === 'SH' && code.startsWith('000')) || (exchange === 'SZ' && code.startsWith('399'))))) {
+      (index && !((exchange === 'SH' && (code.startsWith('000') || code === '932000')) || (exchange === 'SZ' && code.startsWith('399'))))) {
     throw Error(index ? '指数须填写带交易所的代码，如 000001.SH' : '请输入 A 股或场内 ETF 代码');
   }
   return `${code}.${exchange}`;
 }
 export const quoteKey = (symbol, index) => index ? `index:${symbol}` : symbol;
+export const goalType = row => row.dueAt ? 'time' : row.symbol ? 'point' : 'plan';
+
+export function periodDate(start, count, unit) {
+  const date = new Date(day(start));
+  const units = ['days', 'weeks', 'months'];
+  choice(unit, units, '周期单位');
+  const length = int(count, '周期', 1, 365);
+  if (unit === 'months') {
+    const originalDay = date.getUTCDate();
+    date.setUTCMonth(date.getUTCMonth() + length, 1);
+    const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+    date.setUTCDate(Math.min(originalDay, lastDay));
+  } else date.setUTCDate(date.getUTCDate() + length * (unit === 'weeks' ? 7 : 1));
+  return date.toISOString().slice(0, 10);
+}
+
+export function assignReserve(allocation, index, amount) {
+  const destination = int(index, '目标仓位', 0, buckets.length - 1);
+  const remaining = 100 - allocation.reduce((sum, row) => sum + row.target, 0);
+  const available = Math.floor((remaining + 1e-8) * 100) / 100;
+  const points = number(amount, '调整百分点', 0.01, available);
+  if (Math.abs(points * 100 - Math.round(points * 100)) > 1e-8) throw Error('调整百分点最多保留两位小数');
+  return allocation.map((row, i) => i === destination
+    ? { ...row, target: Number((row.target + points).toFixed(8)) } : row);
+}
 const cents = (value, label) => Math.round(number(value, label, 0, 1e9) * 100);
 const id = value => text(value, '记录编号', 60, true);
 
@@ -116,10 +151,17 @@ export function replay(trades, holderId = SELF) {
 function goal(row) {
   const base = { id: id(row.id), horizon: choice(row.horizon, horizons, '投资期限'),
     title: text(row.title, '目标名称', 80, true), note: text(row.note ?? '', '投资逻辑', 1000) };
+  const reminder = typeof row.remind === 'boolean' ? { remind: row.remind } : {};
+  if (row.dueAt) {
+    if (typeof row.dueAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d\+08:00$/.test(row.dueAt)) throw Error('提醒时间无效');
+    day(row.dueAt.slice(0, 10));
+    return { ...base, dueAt: row.dueAt, ...reminder };
+  }
   if (!row.symbol) return base;
   const index = row.index === true;
-  const metric = choice(row.metric, index ? ['price', 'changePct'] : Object.keys(metrics), '条件指标');
-  return { ...base, symbol: instrument(row.symbol, index), index, metric,
+  const macro = Object.hasOwn(macroTargets, row.symbol);
+  const metric = choice(row.metric, macro ? ['price'] : index ? ['price', 'changePct'] : Object.keys(metrics), '条件指标');
+  return { ...base, symbol: macro ? row.symbol : instrument(row.symbol, index), index: !macro && index, metric, ...reminder,
     operator: choice(row.operator, ['>=', '<='], '比较方式'), threshold: number(row.threshold, '阈值', -1e7, 1e7),
     hit: row.hit ? { time: text(row.hit.time, '行情时间', 40, true), value: number(row.hit.value, '触发值', -1e7, 1e7) } : null,
     matched: row.matched === true };
@@ -180,7 +222,7 @@ export function mergeImport(state, { holders: incomingHolders = [], trades: inco
     }
     trades.push(...rows.map(row => ({ ...row, holderId: existing?.id ?? source.id })));
   }
-  const goalKey = row => [row.horizon, row.symbol, Boolean(row.index), row.metric, row.operator, row.threshold,
+  const goalKey = row => [row.horizon, row.dueAt, row.symbol, Boolean(row.index), row.metric, row.operator, row.threshold,
     row.symbol ? '' : row.title].join('/');
   const keys = new Set(state.goals.map(goalKey));
   const goals = [...state.goals];
