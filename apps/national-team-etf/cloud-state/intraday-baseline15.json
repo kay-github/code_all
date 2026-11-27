@@ -1664,8 +1664,8 @@
   "complete": true,
   "source": "新浪 CN_MarketDataService getKLineData scale=5（单源）；分段汇总须与东财日线成交额勾稽",
   "note": "同一序列只认单一来源；分段汇总须与日线成交额勾稽。缺失段不补0；勾稽未通过或样本不足时 complete=False，消费方不得据此升级。",
-  "generated_at": "2026-11-27T22:59:02+08:00",
-  "run_id": "20261127T225849_0800",
+  "generated_at": "2026-11-27T23:09:33+08:00",
+  "run_id": "20261127T230912_0800",
   "requested": 15,
   "received": 15
 }
