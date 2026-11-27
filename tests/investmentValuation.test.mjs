@@ -176,3 +176,21 @@ test('older cloud snapshots acquire historical multiples even when the trading d
   assert.deepEqual(record.value.indices, full.indices);
   assert.deepEqual(record.value.closeDates, legacy.closeDates);
 });
+
+test('the published order includes the full A-share market first and keeps new indices during a cloud upgrade', async () => {
+  const load = (code, kind) => kind === 'eod_price' ? closes(code) : valuations(code);
+  const { next: fallback } = await refresh([], load, new Date('2026-11-25T20:00:00+08:00'));
+  const { next: current } = await refresh(fallback, load, afterClose);
+  const newCodes = ['000932', '399989'];
+  const prior = current.filter(row => !newCodes.includes(row.code)).reverse();
+  const { indices: published } = valuationSnapshot({ indices: fallback }, { indices: prior });
+  assert.equal(published[0].name, '中证全指（全A）');
+  assert.deepEqual(published.slice(-2).map(row => [row.code, row.name]), [
+    ['000932', '中证主要消费'], ['399989', '中证医疗'],
+  ]);
+  assert.equal(published.length, 9);
+  for (const row of published) {
+    assert.equal(row.date, newCodes.includes(row.code) ? dates[1] : dates[2]);
+    assert.equal(row.history.at(-1).length, 7);
+  }
+});
