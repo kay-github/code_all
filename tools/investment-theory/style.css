@@ -38,19 +38,22 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
   .valuation-controls select { width: 100%; }
 }
 .valuation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(7px, 1.2vw, 13px); }
+@media (max-width: 315px) { .valuation-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (min-width: 800px) { .valuation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .valuation-card { min-width: 0; padding: clamp(8px, 1.4vw, 15px); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-variant-numeric: tabular-nums; }
 .valuation-card header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 1px 8px; }
 .valuation-card h3 { font-size: clamp(14px, 2vw, 17px); }
 .valuation-code, .valuation-date, .valuation-axis { font-size: 11px; color: var(--muted); }
 .valuation-date { display: flex; flex-wrap: wrap; gap: 0 7px; margin: 3px 0 8px; }
-.valuation-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 0 0 9px; }
-.valuation-metric { min-width: 0; display: grid; gap: 1px; padding: 5px clamp(4px, .8vw, 9px); border-radius: 6px; background: var(--inset); }
-.valuation-metric dt { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
-.valuation-metric dt::before { content: ''; width: 10px; border-top: 2px solid var(--series-color); }
-.valuation-metric.pb dt::before { border-top-style: dashed; }
-.valuation-metric dd { margin: 0; font-size: clamp(14px, 2.4vw, 22px); font-weight: 750; line-height: 1.2; }
-.valuation-metric small { color: var(--muted); font-size: 11px; }
+.valuation-metrics { width: 100%; table-layout: fixed; border-spacing: 0; margin: 0 0 4px; border-radius: 6px; background: var(--inset); text-align: right; }
+.valuation-metric-label { width: clamp(23px, 5vw, 54px); }
+.valuation-metrics th { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.valuation-metrics thead th { padding: 4px clamp(3px, 1vw, 12px) 2px 0; }
+.valuation-metrics tbody th { padding: 2px 0 4px 5px; text-align: left; }
+.valuation-metrics tbody th::after { content: ''; display: block; width: 10px; border-top: 2px solid var(--series-color); }
+.valuation-metrics .pb th::after { border-top-style: dashed; }
+.valuation-metrics tbody td { padding: 1px clamp(3px, 1vw, 12px) 3px 0; font-size: clamp(13px, 2.2vw, 21px); font-weight: 750; line-height: 1.2; white-space: nowrap; }
+.valuation-multiples { display: flex; flex-wrap: wrap; gap: 0 8px; margin: 0 0 4px; color: var(--muted); font-size: 11px; }
 .valuation-difference { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin: 0 0 8px; color: var(--muted); font-size: 11px; }
 .valuation-difference strong { color: var(--text); font-weight: 650; white-space: nowrap; }
 @media (max-width: 560px) { .valuation-difference span { flex-basis: 100%; } }
@@ -67,11 +70,7 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .valuation-line.pb { stroke-dasharray: 4 2; }
 .valuation-times { margin: 5px 0 0 30px; display: flex; justify-content: space-between; gap: 4px; color: var(--muted); font-size: 11px; }
 .valuation-sources { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 8px 0 0; }
-@media (max-width: 370px) {
-  .valuation-times { margin-left: 0; }
-  .valuation-metric dt::before { width: 7px; }
-}
-@media (max-width: 285px) { .valuation-metrics { grid-template-columns: 1fr; } }
+@media (max-width: 370px) { .valuation-times { margin-left: 0; } }
 .research-list .entry { background: var(--inset); }
 .research-empty { margin: 8px 0 0; }
 #direction .panel > .meta { margin: 5px 0 8px; }

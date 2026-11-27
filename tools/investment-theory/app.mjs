@@ -624,8 +624,19 @@ function valuationCard(row, years, fullBasis) {
   const details = el('p', 'valuation-date');
   details.append(el('span', '', '收盘 ' + row.close.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
     date(row.date));
-  const metrics = el('dl', 'valuation-metrics');
   const last = row.history.at(-1);
+  const canCompare = hasFullValuation(last);
+  const metrics = el('table', 'valuation-metrics');
+  metrics.setAttribute('aria-label', row.name + ' PE、PB 分位对比');
+  const columns = metrics.createTHead().insertRow();
+  columns.append(el('td', 'valuation-metric-label'));
+  for (const title of ['近 10 年', '全部历史']) {
+    const cell = el('th', '', title);
+    cell.scope = 'col';
+    columns.append(cell);
+  }
+  const metricRows = metrics.createTBody();
+  const multiples = el('p', 'valuation-multiples');
   let history = fullBasis ? row.history.filter(hasFullValuation) : row.history;
   if (years) {
     const cutoff = new Date(row.date);
@@ -649,11 +660,13 @@ function valuationCard(row, years, fullBasis) {
   for (const [key, title, tenYearColumn] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
     const fullColumn = tenYearColumn + 2;
     const column = fullBasis ? fullColumn : tenYearColumn;
-    const metric = el('div', 'valuation-metric ' + key);
-    metric.append(el('dt', '', title + ' 分位'), el('dd', '', pct(last[column])),
-      el('small', '', fmt.format(row[key]) + ' 倍'));
-    metrics.append(metric);
-    if (hasFullValuation(last)) {
+    const metric = metricRows.insertRow();
+    metric.className = key;
+    const label = el('th', '', title);
+    label.scope = 'row';
+    metric.append(label, el('td', '', pct(last[tenYearColumn])), el('td', '', pct(last[fullColumn])));
+    multiples.append(el('span', '', title + ' ' + fmt.format(row[key]) + ' 倍'));
+    if (canCompare) {
       const delta = Math.round((last[fullColumn] - last[tenYearColumn]) * 100) / 100;
       const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';
       difference.append(el('strong', '', title + ' ' + sign + fmt.format(Math.abs(delta))));
@@ -671,8 +684,8 @@ function valuationCard(row, years, fullBasis) {
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
   for (const time of times.children) time.title = time.dateTime;
-  card.append(header, details, metrics);
-  if (hasFullValuation(last)) card.append(difference);
+  card.append(header, details, metrics, multiples);
+  if (canCompare) card.append(difference);
   card.append(plot, times);
   return card;
 }
