@@ -245,6 +245,8 @@ def build(manifest_path=None):
     exchange=summarize_exchange(raw['exchange'],series,calendar,end,actions,instrument,raw['exchange_history'])
     from v2_tracking import attach as attach_official_tracking
     attach_official_tracking(exchange,series,calendar,actions,rules)
+    from v2_inventory import official_correction as summarize_official_correction
+    inventory['official_correction']=summarize_official_correction(inventory,exchange,inventory_config,actions)
     code_hash=digest({p.name:__import__('hashlib').sha256(p.read_bytes()).hexdigest() for p in code_files()})
     build_id=now().replace(':','').replace('-','').replace('+','_')+'_'+digest([manifest,config_hash,code_hash])[:10]
     folder=DATA/'builds'/build_id
@@ -302,10 +304,14 @@ def build(manifest_path=None):
                     r['share_change'],r['vwap'],r['net_estimate'],r['source_url'],r['fetched_at'],build_id])
     with (folder/'inventory.csv').open('w',newline='',encoding='utf-8-sig') as f:
         w=csv.writer(f);w.writerow(['date','reference_date','price_date','cycle_anchor_date','baseline_units','current_total_units',
-            'cycle_start_units','cycle_net_added_units','current_constant_price_yi','cycle_net_added_constant_price_yi','complete','build_id'])
+            'cycle_start_units','cycle_net_added_units','current_constant_price_yi','cycle_net_added_constant_price_yi','complete',
+            'official_revised_units','official_complete','build_id'])
+        official={r['date']:r for r in (inventory.get('official_correction') or {}).get('series',[])}
         for r in inventory['series']:
+            oc=official.get(r['date']) or {}
             w.writerow([r['date'],inventory['reference_date'],inventory['price_date'],inventory['cycle_anchor_date'],inventory['baseline_units'],
-                r['total_units'],inventory['cycle_start_units'],r['net_added_units'],r['current_yi'],r['net_added_yi'],r['complete'],build_id])
+                r['total_units'],inventory['cycle_start_units'],r['net_added_units'],r['current_yi'],r['net_added_yi'],r['complete'],
+                oc.get('units'),oc.get('complete'),build_id])
     logs=[dict(date=end,channel=c,build_id=build_id,rule_version=rules['version'],
                raw_run=manifest['run_id'],risk=v['latest']['risk'] if v['latest'] else None,
                official_share_observation=exchange['instruments'].get(c,{}).get('latest'),

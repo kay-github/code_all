@@ -71,6 +71,7 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 <div class="statusline"><span class="pill risk">ETF通道估算 · 非国家队实名仓位</span></div>
 <h2 id="inventoryTitle">本轮刻度 <span class="note inventory-unit">单位：份</span></h2>
 <p id="inventorySummary" class="lead"></p>
+<div class="inventory-dual" id="inventoryDual" aria-label="标准刻度与正式修正刻度"></div>
 <div class="inventory-kpis" id="inventoryKpis"></div>
 <div id="inventoryGauge" class="inventory-gauge"></div>
 <p id="inventoryStage" class="focus-stage"></p>
@@ -78,7 +79,8 @@ FOCUS_BLOCK=r'''<section id="focus" class="focus-hero" aria-labelledby="focusHea
 <a class="focus-more inventory-mix-link" href="#inventoryMixCard">查看 ETF 构成 ↓</a>
 <details><summary>基准、估算边界与上一轮峰值对照</summary><div id="inventoryMethod"></div>
 <p class="note">“份”为归一化刻度。本轮净新增＝当前总存量减起点存量，已计入净减少。</p></details>
-<details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>当前总存量 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
+<details><summary>最近交易日的存量刻度</summary><div class="scroll"><table><thead><tr><th>业务日</th><th>标准刻度 / 份</th><th>正式修正 / 份</th><th>本轮净新增 / 份</th><th>相对上一轮</th></tr></thead><tbody id="inventoryDays"></tbody></table></div>
+<p class="note">标准刻度为换手率反推历史序列；正式修正只在 15 只交易所正式份额齐全的日期显示，不插值、不并入标准序列。</p>
 <p class="note"><a href="/tools/national-team-etf/data/inventory.csv" download>下载存量 CSV</a></p></details>
 </section>
 <section id="inventoryMixCard" class="focus-card inventory-mix" aria-labelledby="inventoryMixTitle">
@@ -100,7 +102,7 @@ TEMPLATE=r'''<!doctype html>
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.65 system-ui,"Microsoft YaHei",sans-serif}main,header{max-width:1260px;margin:auto;padding:22px 24px}header{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line)}nav{display:flex;flex-wrap:wrap;gap:14px}a{color:var(--accent)}h1{font-size:clamp(25px,4vw,36px);line-height:1.3;margin:8px 0 12px;letter-spacing:-.7px}h2{font-size:20px;margin:0 0 10px}h3{font-size:16px;margin:16px 0 8px}.eyebrow{font-size:12px;letter-spacing:1px;color:var(--muted)}.lead{color:var(--muted);max-width:880px}.notice{padding:14px 16px;border-left:3px solid var(--amber);background:var(--surface);border-radius:8px;color:var(--amber);margin:18px 0}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.kpi,section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}.kpi .value{font:700 clamp(23px,3vw,30px)/1.4 ui-monospace,monospace;font-variant-numeric:tabular-nums}.kpi .label,.note{color:var(--muted);font-size:12px}.note{margin-top:10px;overflow-wrap:anywhere}section{margin:16px 0}.up{color:var(--red)}.dn{color:var(--green)}.risk{color:var(--amber)}.mono{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums}.pill{display:inline-block;background:var(--inset);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:12px;white-space:normal}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}input,select,button{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:7px;min-height:44px;padding:8px 12px}input{min-width:0;flex:1}button{cursor:pointer}button:hover{border-color:var(--accent)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.scroll{overflow:auto;max-width:100%}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th{font-size:12px;color:var(--muted);background:var(--inset);white-space:nowrap}td:first-child,th:first-child{text-align:left}td{white-space:nowrap}td.name{max-width:220px;white-space:normal;min-width:130px}small{display:block;color:var(--muted);font-size:11px;white-space:normal}details{border-top:1px solid var(--line);margin:10px 0;padding-top:10px}summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:600}svg{width:100%;height:200px;display:block}.legend{display:flex;gap:15px;color:var(--muted);font-size:12px}.statusline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}.empty{padding:20px;color:var(--muted)}footer{font-size:12px;color:var(--muted);padding:20px 0 60px;overflow-wrap:anywhere}.mobile-cards{display:none}.cardrow{padding:12px 0;border-bottom:1px solid var(--line)}.cardmetrics{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;margin-top:8px}.cardmetrics span{font-size:13px}.cardmetrics small{font-size:11px}
 @media(max-width:760px){header,main{padding:16px}header{align-items:flex-start;flex-direction:column}.kpis{grid-template-columns:1fr 1fr}.twocol{grid-template-columns:1fr}.desktop-core{display:none}.mobile-cards{display:block}input,select{font-size:16px}section{padding:14px}h2{font-size:19px}.tools>*{max-width:100%}.tools input{flex-basis:100%}.name{max-width:140px}nav a{min-height:36px}}
 .statusline{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}#intradayRows th:first-child,#intradayRows td:first-child,#postcloseBody th:first-child{text-align:left}.intraday-bad{color:var(--amber)}.intraday-ok{color:var(--muted)}
-#inventory{border-top:3px solid var(--accent)}#inventoryTitle{font-size:clamp(25px,4vw,36px);line-height:1.35;margin:12px 0} .inventory-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.inventory-kpis .kpi{min-width:0;background:var(--inset)}.inventory-kpis .value{overflow-wrap:anywhere}@media(max-width:760px){.inventory-kpis{grid-template-columns:1fr}.inventory-kpis .kpi{padding:14px}}
+#inventory{border-top:3px solid var(--accent)}#inventoryTitle{font-size:clamp(25px,4vw,36px);line-height:1.35;margin:12px 0}.inventory-dual{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.inventory-dual .dual-item{min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface-2)}.inventory-dual .dual-item.revised{background:var(--accent-soft);border-color:var(--accent-line)}.inventory-dual .dual-label{color:var(--muted);font-size:12px}.inventory-dual .dual-value{font:700 clamp(27px,3.2vw,36px)/1.25 ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-1px;overflow-wrap:anywhere}.inventory-dual .dual-note{color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5}.inventory-dual .dual-note b{color:var(--text)}@media(max-width:560px){.inventory-dual{grid-template-columns:1fr}.inventory-dual .dual-item{padding:10px}}.inventory-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.inventory-kpis .kpi{min-width:0;background:var(--inset)}.inventory-kpis .value{overflow-wrap:anywhere}@media(max-width:760px){.inventory-kpis{grid-template-columns:1fr}.inventory-kpis .kpi{padding:14px}}
 /* ==== v2.3 视觉层：统一 token / 三级层级 / 语义状态 / 交互反馈 ====
    覆盖上方基础样式，基础样式保留作 fallback；不改动任何文案、数据与 id。 */
 :root{
@@ -389,6 +391,9 @@ footer{margin-top:var(--s6);padding:var(--s5) 0 var(--s7);border-top:1px solid v
 .focus-grid #inventory{margin:0;min-width:0;border-top:1px solid var(--line);box-shadow:var(--shadow-sm);padding:var(--s4);border-radius:var(--r-card)}
 .focus-grid #inventory>h2{font-size:19px;letter-spacing:-.4px;margin:var(--s2) 0}
 .focus-grid #inventory .inventory-kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s3) 0}
+.focus-grid #inventory .inventory-dual{gap:var(--s2);margin:var(--s3) 0}
+.focus-grid #inventory .inventory-dual .dual-item{padding:10px;border-radius:9px}
+.focus-grid #inventory .inventory-dual .dual-value{font-size:22px;letter-spacing:-.5px}
 .focus-grid #inventory .inventory-kpis .kpi{padding:10px;border-radius:9px}
 .focus-grid #inventory .inventory-kpis .value{font-size:22px;letter-spacing:-.5px}
 .focus-grid #inventory .inventory-kpis .kpi:first-child{grid-column:auto}
@@ -491,14 +496,31 @@ function renderInventoryMix(point){
   ${draw(rows.slice(0,shown))}
   ${rows.length>shown?`<details><summary>展开其余 ${rows.length-shown} 只 ETF</summary>${draw(rows.slice(shown),shown+1)}</details>`:''}`;
 }
+function renderInventoryDual(r,ok){
+ const oc=I?.official_correction?.latest,ocOk=!!(oc?.complete&&Number.isFinite(oc.units));
+ const standard=ok?r.total_units:null;
+ const standardDate=ok?r.date:null;
+ const delta=ocOk&&Number.isFinite(oc.delta_units)?oc.delta_units:null;
+ const revisedNote=oc?(
+  ocOk?`正式份额 ${oc.valid_members}/${oc.expected_members} · ${esc(oc.date)} · 每日追加修正`
+      :`正式份额 ${oc.valid_members}/${oc.expected_members} · 未齐不补`
+ ):`正式份额待核对`;
+ $('inventoryDual').innerHTML=`
+  <div class="dual-item"><div class="dual-label">标准刻度（之前标准最新）</div><div class="dual-value">${ip(standard)}</div><div class="dual-note">换手率反推 · ${standardDate?esc(standardDate):'待核对'} · 保持历史可比</div></div>
+  <div class="dual-item revised"><div class="dual-label">正式修正刻度（最新一日）</div><div class="dual-value">${ocOk?ip(oc.units):'—'}</div><div class="dual-note">${revisedNote}${delta!==null?` · 较标准 <b>${num(delta,2)} 份</b>`:''}</div></div>`;
+}
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;
- renderInventoryMix(ok?r:null);
- $('inventorySummary').textContent=ok?`上一轮基准的 ${(r.current_ratio*100).toFixed(1)}% · 起点的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍`:'当前存量数据未齐，暂不展示比例。';
- $('inventoryKpis').innerHTML=[['当前总存量',ok?r.total_units:null],['本轮净新增',ok?r.net_added_units:null],['本轮起点',I?.cycle_start_units??null]].map(([label,v],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}</div></div>`).join('');
- $('inventoryBasis').textContent=I?`10 份基准 ${I.reference_date} · 固定价格 ${I.price_date}`:'基准待核对';
- $('inventoryMethod').innerHTML=I?`<p>10 份基准取上一轮 924 周期结束值。本轮从 ${I.cycle_start} 起算，起点存量取 ${I.cycle_anchor_date}。</p><p>恒价规模（亿元）：10 份基准 ${ip(I.reference_yi)}，起点 ${ip(I.cycle_start_yi)}${ok?`，当前 ${ip(r.current_yi)}，本轮净新增 ${num(r.net_added_yi,1)}`:''}。</p><p>以 ${I.alternative_reference_date} 历史峰值为 10 份时，当前为 ${ok?ip(r.alternative_units):'—'} 份。</p><p class="note">份额来自换手率反推，价格固定在 ${I.price_date}。换手率分母、舍入和历史修订会影响估算。</p>`:'<p>暂无可用基准。</p>';
- $('inventoryDays').innerHTML=(I?.series??[]).slice(-10).reverse().map(x=>`<tr><td>${esc(x.date)}</td><td>${ip(x.total_units)}</td><td>${num(x.net_added_units,2)}</td><td>${x.current_ratio===null?'—':(x.current_ratio*100).toFixed(1)+'%'}</td></tr>`).join('')||'<tr><td colspan="4">尚无完整观察记录</td></tr>';
+ const oc=I?.official_correction?.latest,ocOk=!!(oc?.complete&&Number.isFinite(oc.units));
+ const ocSeries=new Map((I?.official_correction?.series??[]).filter(x=>x.complete&&Number.isFinite(x.units)).map(x=>[x.date,x.units]));
+ renderInventoryMix(ok?r:null);renderInventoryDual(r,ok);
+ let summary=ok?`标准刻度为上一轮基准的 ${(r.current_ratio*100).toFixed(1)}% · 起点的 ${(r.total_units/I.cycle_start_units).toFixed(1)} 倍`:'当前存量数据未齐，暂不展示比例。';
+ if(ocOk)summary+=`；正式修正 ${ip(oc.units)} 份${oc.date===r?.date&&Number.isFinite(oc.delta_units)?`（较标准 ${num(oc.delta_units,2)} 份）`:`（截至 ${oc.date}）`}。`;
+ $('inventorySummary').textContent=summary;
+ $('inventoryKpis').innerHTML=[['标准刻度',ok?r.total_units:null],['本轮净新增',ok?r.net_added_units:null],['本轮起点',I?.cycle_start_units??null]].map(([label,v],i)=>`<div class="kpi"><div class="label">${esc(label)}</div><div class="value">${i===1?num(v,2):ip(v)}</div></div>`).join('');
+ $('inventoryBasis').textContent=I?`10 份基准 ${I.reference_date} · 固定价格 ${I.price_date} · 正式修正只覆盖交易所正式份额完整日`:'基准待核对';
+ $('inventoryMethod').innerHTML=I?`<p>10 份基准取上一轮 924 周期结束值。本轮从 ${I.cycle_start} 起算，起点存量取 ${I.cycle_anchor_date}。</p><p>恒价规模（亿元）：10 份基准 ${ip(I.reference_yi)}，起点 ${ip(I.cycle_start_yi)}${ok?`，当前 ${ip(r.current_yi)}，本轮净新增 ${num(r.net_added_yi,1)}`:''}。</p><p>正式修正刻度使用同日 15 只交易所正式份额合计，按同一固定价格和 10 份基准归一；它只与标准刻度并排展示，不并入换手率反推历史序列。${ocOk?`当前正式修正 ${ip(oc.units)} 份，标准 ${ip(r.total_units)} 份，差 ${num(oc.delta_units,2)} 份。`:''}</p><p>以 ${I.alternative_reference_date} 历史峰值为 10 份时，当前为 ${ok?ip(r.alternative_units):'—'} 份。</p><p class="note">标准刻度份额来自换手率反推；正式修正来自交易所披露总份额。两者价格锚点相同，但份额口径不同。换手率分母、舍入和历史修订会影响标准刻度；正式数据未齐时留空。</p>`:'<p>暂无可用基准。</p>';
+ $('inventoryDays').innerHTML=(I?.series??[]).slice(-10).reverse().map(x=>`<tr><td>${esc(x.date)}</td><td>${ip(x.total_units)}</td><td>${ocSeries.has(x.date)?ip(ocSeries.get(x.date)):'—'}</td><td>${num(x.net_added_units,2)}</td><td>${x.current_ratio===null?'—':(x.current_ratio*100).toFixed(1)+'%'}</td></tr>`).join('')||'<tr><td colspan="5">尚无完整观察记录</td></tr>';
  const g=$('inventoryGauge'),stage=$('inventoryStage');
  if(!ok){g.innerHTML='';stage.textContent='';return;}
  const s=(I.series||[]).filter(x=>x.complete!==false&&Number.isFinite(x.total_units));

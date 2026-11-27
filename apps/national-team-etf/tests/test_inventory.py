@@ -1,7 +1,7 @@
 import copy,sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from v2_inventory import summarize
+from v2_inventory import summarize,official_correction
 
 END='2026-11-13'
 
@@ -80,6 +80,34 @@ class Inventory(unittest.TestCase):
     def test_nonfinite_share_does_not_produce_nan(self):
         cfg,data=case();data['a'][0]['shares']=float('nan')
         self.assertFalse(self.run_case(cfg,data)['complete'])
+
+    def test_official_correction_is_parallel_and_reconciles(self):
+        cfg,data=case();inv=self.run_case(cfg,data)
+        ex={'instruments':{'a':{'series':[dict(date=END,shares=80)]},
+                           'b':{'series':[dict(date=END,shares=30)]}}}
+        oc=official_correction(inv,ex,cfg,())
+        self.assertTrue(oc['latest']['complete'])
+        self.assertAlmostEqual(oc['latest']['value_yi'],280/1e8)
+        self.assertAlmostEqual(oc['latest']['units'],7)
+        self.assertAlmostEqual(oc['latest']['standard_units'],5)
+        self.assertAlmostEqual(oc['latest']['delta_units'],2)
+        self.assertAlmostEqual(inv['latest']['total_units'],5)
+
+    def test_official_correction_does_not_fill_missing_member(self):
+        cfg,data=case();inv=self.run_case(cfg,data)
+        ex={'instruments':{'a':{'series':[dict(date=END,shares=80)]}}}
+        oc=official_correction(inv,ex,cfg,())
+        self.assertIsNone(oc['latest'])
+        self.assertFalse(oc['series'][-1]['complete'])
+        self.assertEqual(oc['series'][-1]['valid_members'],1)
+
+    def test_official_correction_skips_unverified_share_action(self):
+        cfg,data=case();inv=self.run_case(cfg,data)
+        ex={'instruments':{'a':{'series':[dict(date=END,shares=80,share_action_quarantined=True)]},
+                           'b':{'series':[dict(date=END,shares=30)]}}}
+        oc=official_correction(inv,ex,cfg,())
+        self.assertIsNone(oc['latest'])
+        self.assertFalse(oc['series'][-1]['complete'])
 
 
 if __name__=='__main__':unittest.main()

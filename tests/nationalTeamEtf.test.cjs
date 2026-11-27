@@ -75,7 +75,9 @@ for(const width of [320,390,1440])test(`view calculations at ${width}px: data, s
  assert.equal((nodes.officialMobile.innerHTML.match(/class="cardrow"/g)||[]).length,15);
  assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,15);
  assert.ok(nodes.inventoryKpis.innerHTML.includes(data.inventory.latest.total_units.toFixed(2)));
- assert.ok(nodes.inventoryKpis.innerHTML.includes('当前总存量'));
+ assert.ok(nodes.inventoryKpis.innerHTML.includes('标准刻度'));
+ assert.ok(nodes.inventoryDual.innerHTML.includes('正式修正刻度'));
+ if(data.inventory.official_correction?.latest?.units)assert.ok(nodes.inventoryDual.innerHTML.includes(data.inventory.official_correction.latest.units.toFixed(2)));
  assert.ok(nodes.inventoryKpis.innerHTML.includes('本轮净新增'));
  assert.equal(context.window.GJD.inventoryUnits,data.inventory.latest.total_units);
  nodes.search.value='510330';nodes.search.handlers.input();assert.equal((nodes.fundRows.innerHTML.match(/<tr>/g)||[]).length,1);

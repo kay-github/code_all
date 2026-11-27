@@ -77,3 +77,65 @@ def summarize(series,calendar,end,actions,config,expected_members):
             '本轮净新增为起点至今的恒价存量差，已含净减少；非毛买入金额或实际现金流',
             '历史反推份额存在分母、舍入及修订风险；当前正式份额另列，不混接口径',
             f"固定{config['price_date']}价格权重，价格单独变化不会使指标跳动；锚点修订须升版本"])
+
+
+def official_correction(inventory,exchange,config,actions):
+    """Parallel 10-unit scale from exchange-disclosed shares.
+
+    This is deliberately a separate series: the vendor-turnover inventory remains
+    the historical standard, while this corrected view is re-based only on dates
+    where all 15 official share observations are available. It is never spliced
+    into the vendor series.
+    """
+    members=sorted(config['items']);expected=sorted(inventory.get('members') or members)
+    if members!=expected:raise ValueError('存量基准成员与固定核心池不一致；须升版本重建基准')
+    price_date=config['price_date'];reference=float(inventory['reference_yi'])
+    units=float(inventory['baseline_units']);end=inventory['date']
+    if reference<=0 or units<=0:raise ValueError('存量基准无效')
+    prices={c:float(v['fixed_price']) for c,v in config['items'].items()}
+    by_date={}
+    for c in members:
+        item=(exchange.get('instruments') or {}).get(c) or {}
+        for row in item.get('series') or []:
+            d=row.get('date')
+            if d and config['cycle_start']<=d<=end:
+                by_date.setdefault(d,{})[c]=row
+    standard={r['date']:r for r in inventory.get('series') or []}
+
+    def point(day):
+        values=[];shares_values=[];missing=[]
+        for c in members:
+            row=by_date.get(day,{}).get(c)
+            try:
+                if end<price_date:raise ValueError('固定价格锚点晚于数据日，不作当时已知指标')
+                if not row:raise ValueError('当日正式份额缺失')
+                if row.get('share_action_quarantined'):raise ValueError('正式份额行动未核验')
+                sh=float(row['shares'])
+                if not math.isfinite(sh) or sh<=0:raise ValueError('正式份额无效')
+                values.append(convert_units(c,sh,day,price_date,actions)*prices[c]/1e8)
+                shares_values.append(sh)
+            except (ValueError,KeyError,TypeError) as exc:
+                missing.append(dict(code=c,reason=str(exc)))
+        complete=not missing;total=sum(values) if complete else None
+        shares_total=sum(shares_values) if complete else None
+        official_units=total/reference*units if complete else None
+        std=standard.get(day) or {}
+        standard_units=std.get('total_units') if std.get('complete') else None
+        delta_units=(official_units-standard_units
+                     if official_units is not None and standard_units is not None else None)
+        return dict(date=day,complete=complete,valid_members=len(values),expected_members=len(members),
+            missing=missing,shares_total=shares_total,
+            shares_total_yi=shares_total/1e8 if complete else None,
+            value_yi=total,units=official_units,
+            standard_units=standard_units,delta_units=delta_units)
+
+    points=[point(d) for d in sorted(by_date)]
+    latest=next((p for p in reversed(points) if p['complete']),None)
+    return dict(version=inventory.get('version'),date=end,latest=latest,series=points,
+        baseline_units=units,reference_date=config['reference_date'],reference_yi=reference,
+        price_date=price_date,standard_latest=dict(date=end,units=inventory['latest'].get('total_units')),
+        source='exchange_disclosed_total',
+        method='按同日15只交易所正式份额合计×固定价格权重，以同一10份基准归一；只与同日标准刻度并排，不并入换手率反推历史序列',
+        limitations=['正式份额只覆盖近期披露日，不能回填到历史起点',
+            '正式披露时点与供应商反推口径不同；两值差额不是误差修正，也不是现金流入',
+            '正式数据未齐的日期留空，不插值、不补0'])
