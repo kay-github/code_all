@@ -1,9 +1,10 @@
 {
   "date": "2026-11-27",
-  "started_at": "2026-11-27T02:25:05+08:00",
+  "session": "pm",
+  "started_at": "2026-11-27T12:39:53+08:00",
   "current": null,
   "steps": [],
   "skipped": "preclose",
-  "finished_at": "2026-11-27T02:25:05+08:00",
+  "finished_at": "2026-11-27T12:39:53+08:00",
   "ok": true
 }
