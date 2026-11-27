@@ -13,6 +13,9 @@ ROOT = Path(os.environ.get("MP_ROOT", Path(__file__).resolve().parent.parent))
 def main(date: str | None = None):
     if date is None:
         date = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MP_DATE") or datetime.now().strftime("%Y-%m-%d")
+    session = os.environ.get("MP_SESSION", "pm").lower()
+    if session not in ("am", "pm"):
+        session = "pm"
     data_path = ROOT / "data" / date / "analysis.json"
     if not data_path.exists():
         raise SystemExit(f"missing {data_path}")
@@ -39,14 +42,20 @@ def main(date: str | None = None):
         # stall inside the root-site iframe, and a blocking CDN tag makes the
         # whole report wait on a third-party request.
         echarts_tag = '<script src="/tools/market-pulse/echarts-boot.js"></script>'
-        data_script = '<script src="/tools/market-pulse/data/latest.js"></script>'
+        data_script = (
+            '<script src="/tools/market-pulse/data/latest.js"></script>'
+            '<script src="/tools/market-pulse/data/am/latest.js"></script>'
+        )
         app_script = '<script src="/tools/market-pulse/app.js"></script>'
     else:
         echarts = (ROOT / "vendor" / "echarts.min.js").read_text(encoding="utf-8")
         if "</script" in echarts.lower():
             raise SystemExit("echarts contains </script>, cannot inline safely")
         echarts_tag = f"<script>{echarts}</script>"
-        data_script = f"<script>window.DATA = {payload};</script>"
+        if session == "am":
+            data_script = f"<script>window.DATA_AM = {payload};</script>"
+        else:
+            data_script = f"<script>window.DATA = {payload};</script>"
         app_script = f"<script>{app_js}</script>"
 
     html = template.replace("__ECHARTS_TAG__", echarts_tag)
@@ -59,7 +68,8 @@ def main(date: str | None = None):
     # Online builds are deployed from MP_OUT_DIR; never overwrite the local standalone
     # single-file page with the external-ECharts variant.
     if not online:
-        out = ROOT / f"盘面说明_{date}.html"
+        suffix = "_午盘" if session == "am" else ""
+        out = ROOT / f"盘面说明_{date}{suffix}.html"
         out.write_text(html, encoding="utf-8")
         print(f"written {out} {out.stat().st_size} bytes")
 
@@ -67,15 +77,21 @@ def main(date: str | None = None):
     if out_dir:
         target = Path(out_dir)
         target.mkdir(parents=True, exist_ok=True)
-        (target / "index.html").write_text(html, encoding="utf-8")
-        data_dir = target / "data"
+        if session == "am":
+            data_dir = target / "data" / "am"
+        else:
+            data_dir = target / "data"
+            # The page itself is only rebuilt by the closing (pm) run. The am
+            # run must not overwrite it with a snapshot-only view.
+            (target / "index.html").write_text(html, encoding="utf-8")
         data_dir.mkdir(parents=True, exist_ok=True)
         (data_dir / "latest.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         archive = data_dir / "archive"
         archive.mkdir(parents=True, exist_ok=True)
         (archive / f"{date}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         if online:
-            (data_dir / "latest.js").write_text(f"window.DATA = {payload};\n", encoding="utf-8")
+            key = "DATA_AM" if session == "am" else "DATA"
+            (data_dir / "latest.js").write_text(f"window.{key} = {payload};\n", encoding="utf-8")
             (target / "app.js").write_text(app_js, encoding="utf-8")
             (target / "echarts-boot.js").write_text(
                 """(function(){
@@ -108,7 +124,7 @@ def main(date: str | None = None):
         if online and vendor.exists():
             (target / "vendor").mkdir(parents=True, exist_ok=True)
             shutil.copy2(vendor, target / "vendor" / "echarts.min.js")
-        print(f"online {target / 'index.html'} {html.__len__()} chars; data latest + archive {date}")
+        print(f"online {session} data {data_dir} ({date}); page rewritten={session == 'pm'}")
 
 
 if __name__ == "__main__":

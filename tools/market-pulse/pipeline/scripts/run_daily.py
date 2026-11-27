@@ -17,21 +17,32 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(os.environ.get("MP_ROOT", Path(__file__).resolve().parent.parent))
 DATE = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MP_DATE") or datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d")
+SESSION = os.environ.get("MP_SESSION", "pm").lower()
+if SESSION not in ("am", "pm"):
+    SESSION = "pm"
 START = (datetime.strptime(DATE, "%Y-%m-%d") - timedelta(days=18)).strftime("%Y%m%d")
-STATUS_PATH = ROOT / "run_status.json"
-STATUS = {"date": DATE, "started_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
+STATUS_PATH = ROOT / ("run_status.json" if SESSION == "pm" else "run_status_am.json")
+STATUS = {"date": DATE, "session": SESSION, "started_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
           "current": None, "steps": []}
 
 # A GitHub schedule can arrive hours late. Never let a pre-close run publish
-# yesterday's tape under today's date. Explicit dates are for manual research.
+# yesterday's tape under today's date, and never let an afternoon run be
+# published as the morning snapshot. Explicit dates are for manual research.
 if len(sys.argv) == 1 and not os.environ.get("MP_DATE"):
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
-    if now.weekday() < 5 and now.time() < dtime(15, 5):
-        STATUS["skipped"] = "preclose"
+    t = now.time()
+    skipped = None
+    if now.weekday() < 5:
+        if SESSION == "pm" and t < dtime(15, 5):
+            skipped = "preclose"
+        if SESSION == "am" and (t < dtime(11, 35) or t >= dtime(13, 0)):
+            skipped = "outside_morning_window"
+    if skipped:
+        STATUS["skipped"] = skipped
         STATUS["finished_at"] = now.isoformat(timespec="seconds")
         STATUS["ok"] = True
         STATUS_PATH.write_text(json.dumps(STATUS, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"[skip] {now:%F %R} 北京，未到收盘后；保留上一版，不生成 {DATE} 的空盘面")
+        print(f"[skip] {now:%F %R} 北京，{skipped}；保留上一版，不生成 {DATE} 的空盘面")
         raise SystemExit(0)
 
 
@@ -45,6 +56,7 @@ env = os.environ.copy()
 env["MP_DATE"] = DATE
 env["MP_START"] = START
 env["MP_ROOT"] = str(ROOT)
+env["MP_SESSION"] = SESSION
 env["PYTHONIOENCODING"] = "utf-8"
 
 STEPS = [
@@ -86,4 +98,4 @@ STATUS["current"] = None
 STATUS["finished_at"] = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds")
 STATUS["ok"] = True
 save_status()
-print(f"\nDONE. Open: {ROOT / f'盘面说明_{DATE}.html'}")
+print(f"\nDONE. Open: {ROOT / (f'盘面说明_{DATE}' + ('_午盘' if SESSION == 'am' else '') + '.html')}")

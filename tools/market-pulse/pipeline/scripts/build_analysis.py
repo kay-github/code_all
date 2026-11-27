@@ -15,6 +15,16 @@ from narrative import build_narrative
 
 DATE = os.environ.get("MP_DATE") or (sys.argv[1] if len(sys.argv) > 1 else datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d"))
 ROOT = Path(os.environ.get("MP_ROOT", Path(__file__).resolve().parent.parent))
+SESSION = os.environ.get("MP_SESSION", "pm").lower()
+if SESSION not in ("am", "pm"):
+    SESSION = "pm"
+SESSION_INFO = {
+    "key": SESSION,
+    "label": "午盘休市" if SESSION == "am" else "收盘后",
+    "cutoff": "11:30" if SESSION == "am" else "15:00",
+    "cutoff_label": "11:30 上午收盘（午盘快照）" if SESSION == "am" else "15:00 收盘",
+    "is_final": SESSION == "pm",
+}
 RAW = ROOT / "data" / DATE / "raw"
 OUT = ROOT / "data" / DATE / "analysis.json"
 WEEKDAY_CN = "周一 周二 周三 周四 周五 周六 周日".split()
@@ -300,19 +310,39 @@ sse_m["fin_yi"] = sse_m["融资余额"] / 1e8
 sse_m["all_yi"] = sse_m["融资融券余额"] / 1e8
 sse_m = sse_m.sort_values("date", ascending=False).reset_index(drop=True)
 # 取最近一个有深交所明细的交易日，避免拿 T 日未披露的两融硬算
+# 深交所偶发整站不可达时，回退到历史日期目录里已下载的明细，保证页面仍能生成
+DATA_DIR = ROOT / "data"
+PREV_DAYS = sorted(
+    [d for d in DATA_DIR.iterdir() if d.is_dir() and re.fullmatch(r"20\d{2}-\d{2}-\d{2}", d.name) and d.name < DATE],
+    reverse=True,
+) if DATA_DIR.exists() else []
+
+
+def szse_file(d):
+    """当天目录里的深交所明细，找不到就回退到最近的历史目录。"""
+    p = RAW / f"margin_szse_{d}.csv"
+    if p.exists():
+        return p
+    for day in PREV_DAYS:
+        q = day / "raw" / f"margin_szse_{d}.csv"
+        if q.exists():
+            return q
+    return None
+
+
 margin_idx = None
 for i, row in sse_m.iterrows():
-    if (RAW / f"margin_szse_{row['date']}.csv").exists():
+    if szse_file(row["date"]) is not None:
         margin_idx = i
         break
 if margin_idx is None:
-    raise SystemExit("no margin_szse_*.csv found")
+    raise SystemExit("no margin_szse_*.csv found in current or previous days")
 sse_latest = sse_m.iloc[margin_idx]
-sz_latest = pd.read_csv(RAW / f"margin_szse_{sse_latest['date']}.csv").iloc[0]
+sz_latest = pd.read_csv(szse_file(sse_latest["date"])).iloc[0]
 sse_prev4 = sse_m.iloc[margin_idx + 4]
 sse_prev5 = sse_m.iloc[margin_idx + 5]
-sz_prev4 = pd.read_csv(RAW / f"margin_szse_{sse_prev4['date']}.csv").iloc[0]
-sz_prev5 = pd.read_csv(RAW / f"margin_szse_{sse_prev5['date']}.csv").iloc[0]
+sz_prev4 = pd.read_csv(szse_file(sse_prev4["date"])).iloc[0]
+sz_prev5 = pd.read_csv(szse_file(sse_prev5["date"])).iloc[0]
 margin_date = f"{sse_latest['date'][:4]}-{sse_latest['date'][4:6]}-{sse_latest['date'][6:]}"
 margin = {
     "date": margin_date,
@@ -326,8 +356,8 @@ margin = {
 margin_series = []
 for _, row in sse_m.sort_values("date").iterrows():
     d = row["date"]
-    sz_path = RAW / f"margin_szse_{d}.csv"
-    if not sz_path.exists():
+    sz_path = szse_file(d)
+    if sz_path is None:
         continue
     sz_row = pd.read_csv(sz_path).iloc[0]
     margin_series.append({"date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
@@ -492,6 +522,7 @@ if lhb_path.exists():
 data = {
     "date": DATE,
     "weekday": WEEKDAY,
+    "session": SESSION_INFO,
     "generated_at": datetime.now().isoformat(timespec="seconds"),
     "headline": "",
     "indices": indices,

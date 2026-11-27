@@ -84,6 +84,23 @@ h1 em{font-style:normal;color:var(--red)}
 }
 .tab-btn:hover{color:var(--ink);background:rgba(255,255,255,.55)}
 .tab-btn.active{background:var(--ink);color:#fff}
+.session-switch{display:flex;align-items:center;gap:2px;flex:0 0 auto;padding:2px;border-radius:10px;background:rgba(27,30,38,.055)}
+.session-btn{
+  appearance:none;border:0;background:transparent;color:var(--muted);
+  font:inherit;font-size:12px;font-weight:650;line-height:1.25;padding:6px 10px;border-radius:8px;cursor:pointer;
+  transition:.2s;white-space:nowrap;
+}
+.session-btn small{display:block;font-size:9px;font-weight:500;opacity:.72;letter-spacing:.02em;margin-top:1px}
+.session-btn:hover{color:var(--ink);background:rgba(255,255,255,.6)}
+.session-btn.active{background:var(--red);color:#fff}
+.session-btn:disabled{opacity:.38;cursor:not-allowed}
+.tab-sep{width:1px;height:26px;flex:0 0 auto;background:rgba(27,30,38,.12);margin:0 4px}
+.session-note{
+  margin:14px 2px 0;padding:10px 14px;border:1px solid rgba(176,131,47,.28);
+  border-radius:12px;background:rgba(176,131,47,.08);color:#7a5b1e;
+  font-size:12px;line-height:1.65;
+}
+.session-note[hidden]{display:none}
 .panel{display:none;animation:fade .25s ease}
 .panel.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -239,11 +256,17 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 </header>
 
 <nav class="tabs" aria-label="页面分区">
+  <div class="session-switch" role="group" aria-label="数据节点">
+    <button class="session-btn" type="button" data-session="am" aria-pressed="false">午盘 <small>11:30</small></button>
+    <button class="session-btn active" type="button" data-session="pm" aria-pressed="true">收盘 <small>15:00</small></button>
+  </div>
+  <span class="tab-sep" aria-hidden="true"></span>
   <button class="tab-btn active" data-tab="overview">总览</button>
   <button class="tab-btn" data-tab="flow">行业与主题</button>
   <button class="tab-btn" data-tab="stocks">主线与个股</button>
   <button class="tab-btn" data-tab="method">工具与方法</button>
 </nav>
+<div class="session-note" id="session-note" hidden></div>
 
 <main>
 <!-- ================= OVERVIEW ================= -->
@@ -254,7 +277,7 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 
   <div class="section-head">
     <h2>日内反转：谁被从低点拉回</h2>
-    <p>收盘位置 = (收盘 - 最低) / (最高 - 最低)；从低点涨幅按最低价计算</p>
+    <p>价格位置 = (现价 - 最低) / (最高 - 最低)；从低点涨幅按最低价计算</p>
   </div>
   <div class="card" style="padding-top:10px">
     <div class="reversal" id="reversal"></div>
@@ -462,7 +485,7 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 
   <div class="card">
     <h3>每日数据流水线</h3>
-    <p class="sub">收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新；失败时保留上一版</p>
+    <p class="sub">工作日 11:36 起抓午盘快照；收盘后 16:10 抓正式版，17:10 补龙虎榜并二次更新；失败时保留上一版</p>
     <div class="flowline">
       <b>腾讯行情</b> 指数/成交额 <span class="arrow">→</span>
       <b>东财 push2</b> 沪市主力/超大单 <span class="arrow">→</span>
@@ -472,7 +495,7 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
       <b>国家队 ETF</b> 申赎 <span class="arrow">→</span>
       <b>analysis.json</b> <span class="arrow">→</span> <b>本页</b>
     </div>
-    <p class="note">线上入口 <code>/pulse</code>；GitHub Actions 工作日 16:10 / 17:10（北京时间）自动跑，白名单提交后 Vercel 自动部署。本地脚本在 <code>market_pulse/scripts</code>，线上管线在 <code>tools/market-pulse/pipeline</code>。</p>
+    <p class="note">线上入口 <code>/pulse</code>；午盘快照与收盘正式版在同一页切换。GitHub Actions 工作日 11:36–12:36 抓午盘、16:11–18:41 抓收盘，白名单提交后 Vercel 自动部署。本地脚本在 <code>market_pulse/scripts</code>，线上管线在 <code>tools/market-pulse/pipeline</code>。</p>
   </div>
 
   <div class="card">
@@ -494,13 +517,13 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 </main>
 
 <footer class="footer">
-  <b>盘面说明 · <span id="footer-date"></span></b> · 生成时间 <span id="gen-time"></span> · 数据截至 15:00 收盘<br>
+  <b>盘面说明 · <span id="footer-date"></span></b> · 生成时间 <span id="gen-time"></span> · 数据截至 <span id="data-cutoff">15:00 收盘</span><br>
   数据源：腾讯行情 / 东方财富 / 同花顺 / 新浪财经 / 上交所 / 深交所 / 国家队 ETF。开源工具：a-stock-data（Apache-2.0）、AKShare（MIT）。
 </footer>
 </div>
 
 <script src="/tools/market-pulse/echarts-boot.js"></script>
-<script src="/tools/market-pulse/data/latest.js"></script>
+<script src="/tools/market-pulse/data/latest.js"></script><script src="/tools/market-pulse/data/am/latest.js"></script>
 <script src="/tools/market-pulse/app.js"></script>
 </body>
 </html>

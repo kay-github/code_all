@@ -1,6 +1,8 @@
 (function(){
-  const D = window.DATA;
-  if (!D) {
+  const SESSION_DATA = {am: window.DATA_AM || null, pm: window.DATA || null};
+  let currentSession = null;
+  let D = null;
+  if (!SESSION_DATA.am && !SESSION_DATA.pm) {
     document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
     return;
   }
@@ -28,7 +30,10 @@
   // ---------- narrative ----------
   function renderNarrative(){
     const N = D.narrative || {};
-    document.title = `盘面说明 · ${D.date} · 资金面`;
+    const SM = D.session || D.snapshot || {};
+    const isAm = (SM.key || SM.type || currentSession) === 'am';
+    const shortLabel = isAm ? '午盘' : '收盘';
+    document.title = `盘面说明 · ${D.date} · ${shortLabel} · 资金面`;
     el('hero-title').innerHTML = N.hero_title || '盘面说明';
     el('hero-dek').innerHTML = N.hero_dek || '';
     el('lead-grid').innerHTML = (N.lead_cards || []).map(c=>`
@@ -86,52 +91,58 @@
     if (el('caveat-etf-date')) el('caveat-etf-date').textContent = D.etf.date;
     if (el('caveat-margin-date')) el('caveat-margin-date').textContent = D.margin.date;
     if (el('footer-date')) el('footer-date').textContent = D.date + ' · ' + D.weekday;
+    if (el('data-cutoff')) el('data-cutoff').textContent = D.session?.cutoff_label
+      || (isAm ? '11:30 上午收盘（午盘快照）' : '15:00 收盘');
     if (el('opp-margin')) el('opp-margin').textContent = D.margin.total_fin.toLocaleString('zh-CN',{maximumFractionDigits:1}) + ' 亿';
     if (el('opp-active')) el('opp-active').textContent = fmt(D.flows.ths.total,1) + ' 亿';
     if (el('opp-etf')) el('opp-etf').textContent = fmt(D.etf.d5,1) + ' 亿';
   }
 
-  // ---------- hero ----------
-  el('hero-meta').textContent = `${D.date} · ${D.weekday} · 收盘后`;
-  el('hero-chips').innerHTML = `
-    <span class="chip">上证 <strong class="${cls(D.indices[0].change_pct)}">${D.indices[0].price.toFixed(2)}</strong><span class="${cls(D.indices[0].change_pct)}">${fmt(D.indices[0].change_pct,2)}%</span></span>
-    <span class="chip">创业板 <strong class="${cls(D.indices[2].change_pct)}">${D.indices[2].price.toFixed(2)}</strong><span class="${cls(D.indices[2].change_pct)}">${fmt(D.indices[2].change_pct,2)}%</span></span>
-    <span class="chip">成交额 <strong>${D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})} 亿</strong></span>
-    <span class="chip">涨停 <strong class="up">${D.breadth.limit_up} 家</strong><span class="down">跌停 ${D.breadth.limit_down} 家</span></span>`;
+  // ---------- hero + KPI + reversal ----------
+  function renderHeroAndSummary(){
+    const SM = D.session || D.snapshot || {};
+    const isAm = (SM.key || SM.type || currentSession) === 'am';
+    const sessionLabel = SM.label || (isAm ? '午盘休市' : '收盘后');
+    const posLabel = isAm ? '午盘位置' : '收盘位置';
+    el('hero-meta').textContent = `${D.date} · ${D.weekday} · ${sessionLabel}`;
+    el('hero-chips').innerHTML = `
+      <span class="chip">上证 <strong class="${cls(D.indices[0].change_pct)}">${D.indices[0].price.toFixed(2)}</strong><span class="${cls(D.indices[0].change_pct)}">${fmt(D.indices[0].change_pct,2)}%</span></span>
+      <span class="chip">创业板 <strong class="${cls(D.indices[2].change_pct)}">${D.indices[2].price.toFixed(2)}</strong><span class="${cls(D.indices[2].change_pct)}">${fmt(D.indices[2].change_pct,2)}%</span></span>
+      <span class="chip">成交额 <strong>${D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})} 亿</strong></span>
+      <span class="chip">涨停 <strong class="up">${D.breadth.limit_up} 家</strong><span class="down">跌停 ${D.breadth.limit_down} 家</span></span>`;
 
-  // ---------- KPI ----------
-  const kpis = [
-    ['上证指数', D.indices[0].price.toFixed(2), fmt(D.indices[0].change_pct,2)+'%', cls(D.indices[0].change_pct)],
-    ['创业板指', D.indices[2].price.toFixed(2), fmt(D.indices[2].change_pct,2)+'%', cls(D.indices[2].change_pct)],
-    ['两市成交额', D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})+' 亿', '含北证 '+D.turnover.bj.toFixed(0)+' 亿', ''],
-    ['上涨 / 下跌', D.breadth.up+' / '+D.breadth.down, '平盘 '+D.breadth.flat+'，停牌 '+D.breadth.suspended, 'up'],
-    ['涨停 / 跌停', D.breadth.limit_up+' / '+D.breadth.limit_down, '真实 '+D.breadth.real_limit_up+' / '+D.breadth.real_limit_down, 'up'],
-    ['沪市主力', D.flows.em_sh.main_yi ? fmt(D.flows.em_sh.main_yi,1)+' 亿' : '未取到', D.flows.em_sh.super_yi ? '超大单 '+fmt(D.flows.em_sh.super_yi,1)+' 亿' : '接口限流，见口径说明', 'up'],
-    ['全 A 超大单', fmt(D.flows.sina.super_total,1)+' 亿', '沪 '+D.flows.sina.sh.toFixed(0)+' / 深 '+D.flows.sina.sz.toFixed(0), 'up'],
-    ['ETF 5 日', fmt(D.etf.d5,1)+' 亿', '最新 '+D.etf.date+' 单日 '+fmt(D.etf.net,1), 'up'],
-  ];
-  el('kpis').innerHTML = kpis.map(k=>`
-    <div class="kpi"><div class="label">${k[0]}</div>
-      <div class="value ${k[3]}">${k[1]}</div>
-      <div class="sub">${k[2]}</div></div>`).join('');
+    const kpis = [
+      ['上证指数', D.indices[0].price.toFixed(2), fmt(D.indices[0].change_pct,2)+'%', cls(D.indices[0].change_pct)],
+      ['创业板指', D.indices[2].price.toFixed(2), fmt(D.indices[2].change_pct,2)+'%', cls(D.indices[2].change_pct)],
+      ['两市成交额', D.turnover.total.toLocaleString('zh-CN',{maximumFractionDigits:0})+' 亿', '含北证 '+D.turnover.bj.toFixed(0)+' 亿', ''],
+      ['上涨 / 下跌', D.breadth.up+' / '+D.breadth.down, '平盘 '+D.breadth.flat+'，停牌 '+D.breadth.suspended, 'up'],
+      ['涨停 / 跌停', D.breadth.limit_up+' / '+D.breadth.limit_down, '真实 '+D.breadth.real_limit_up+' / '+D.breadth.real_limit_down, 'up'],
+      ['沪市主力', D.flows.em_sh.main_yi ? fmt(D.flows.em_sh.main_yi,1)+' 亿' : '未取到', D.flows.em_sh.super_yi ? '超大单 '+fmt(D.flows.em_sh.super_yi,1)+' 亿' : '接口限流，见口径说明', 'up'],
+      ['全 A 超大单', fmt(D.flows.sina.super_total,1)+' 亿', '沪 '+D.flows.sina.sh.toFixed(0)+' / 深 '+D.flows.sina.sz.toFixed(0), 'up'],
+      ['ETF 5 日', fmt(D.etf.d5,1)+' 亿', '最新 '+D.etf.date+' 单日 '+fmt(D.etf.net,1), 'up'],
+    ];
+    el('kpis').innerHTML = kpis.map(k=>`
+      <div class="kpi"><div class="label">${k[0]}</div>
+        <div class="value ${k[3]}">${k[1]}</div>
+        <div class="sub">${k[2]}</div></div>`).join('');
 
-  // ---------- reversal ----------
-  el('reversal').innerHTML = D.indices.map(i=>{
-    const lowPct = (i.low / i.prev_close - 1) * 100;
-    const highPct = (i.high / i.prev_close - 1) * 100;
-    const pos = Math.max(2, Math.min(98, i.close_pos));
-    return `<div class="rev-row">
-      <div class="rev-name">${i.name}</div>
-      <div class="rev-px">${i.price.toFixed(2)}<small class="${cls(i.change_pct)}">${fmt(i.change_pct,2)}%</small></div>
-      <div class="rev-track">
-        <div class="rev-fill" style="width:${pos}%"></div>
-        <div class="rev-dot" style="left:${pos}%"></div>
-        <span class="rev-lohi lo">低 ${lowPct.toFixed(2)}%</span>
-        <span class="rev-lohi hi">高 ${highPct.toFixed(2)}%</span>
-      </div>
-      <div class="rev-note">从低点 <strong>+${i.reversal_from_low.toFixed(2)}%</strong> · 收盘位置 ${i.close_pos.toFixed(0)}% · 振幅 ${i.amplitude.toFixed(2)}%</div>
-    </div>`;
-  }).join('');
+    el('reversal').innerHTML = D.indices.map(i=>{
+      const lowPct = (i.low / i.prev_close - 1) * 100;
+      const highPct = (i.high / i.prev_close - 1) * 100;
+      const pos = Math.max(2, Math.min(98, i.close_pos));
+      return `<div class="rev-row">
+        <div class="rev-name">${i.name}</div>
+        <div class="rev-px">${i.price.toFixed(2)}<small class="${cls(i.change_pct)}">${fmt(i.change_pct,2)}%</small></div>
+        <div class="rev-track">
+          <div class="rev-fill" style="width:${pos}%"></div>
+          <div class="rev-dot" style="left:${pos}%"></div>
+          <span class="rev-lohi lo">低 ${lowPct.toFixed(2)}%</span>
+          <span class="rev-lohi hi">高 ${highPct.toFixed(2)}%</span>
+        </div>
+        <div class="rev-note">从低点 <strong>+${i.reversal_from_low.toFixed(2)}%</strong> · ${posLabel} ${i.close_pos.toFixed(0)}% · 振幅 ${i.amplitude.toFixed(2)}%</div>
+      </div>`;
+    }).join('');
+  }
 
   // ---------- charts registry ----------
   const charts = [];
@@ -262,6 +273,7 @@
 
   // ---------- industry ----------
   let indMetric = 'net';
+  let industryChart = null;
   function industryOption(metric){
     const list = D.industries.slice().sort((a,b)=>b[metric]-a[metric]);
     const top = list.slice(0,10), bottom = list.slice(-6);
@@ -283,15 +295,8 @@
   }
   function initIndustry(){
     const c = mk('chart-industry');
+    industryChart = c;
     c.setOption(industryOption(indMetric));
-    document.querySelectorAll('[data-ind]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        document.querySelectorAll('[data-ind]').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        indMetric = btn.dataset.ind;
-        c.setOption(industryOption(indMetric), {notMerge:true});
-      });
-    });
   }
 
   // ---------- scatter ----------
@@ -530,16 +535,71 @@
   function initFlowTab(){ initIndustry(); initRefill(); initScatter(); initConcept(); }
   function initStockTab(){ initStocks(); }
 
-  renderNarrative();
-  initOverview();
-  renderTopIn(); renderTopOut(); renderDivergence(); renderLhb(); renderSectors(); renderStockQuality('new_money');
-  document.querySelectorAll('[data-quality]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('[data-quality]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      renderStockQuality(btn.dataset.quality);
+  function resetCharts(){
+    charts.forEach(c=>{ try { c.dispose(); } catch(e) {} });
+    charts.length = 0;
+    pendingCharts.length = 0;
+    document.querySelectorAll('.chart').forEach(node=>{ node.innerHTML = ''; });
+    Object.keys(inited).forEach(k=>delete inited[k]);
+    industryChart = null;
+    indMetric = 'net';
+  }
+
+  function resetTabs(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab==='overview'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-overview'));
+    document.querySelectorAll('[data-ind]').forEach((b,i)=>b.classList.toggle('active', i===0));
+    document.querySelectorAll('[data-quality]').forEach((b,i)=>b.classList.toggle('active', i===0));
+  }
+
+  function updateSessionUI(){
+    document.querySelectorAll('.session-btn').forEach(btn=>{
+      const key = btn.dataset.session;
+      const data = SESSION_DATA[key];
+      btn.classList.toggle('active', key === currentSession);
+      btn.disabled = !data;
+      btn.setAttribute('aria-pressed', key === currentSession ? 'true' : 'false');
+      btn.title = data
+        ? `${data.date} · ${(data.session || data.snapshot || {}).label || (key === 'am' ? '午盘' : '收盘')}`
+        : '该节点尚未更新';
     });
-  });
+    const note = el('session-note');
+    if (note){
+      const isAm = currentSession === 'am';
+      note.hidden = !isAm;
+      if (isAm){
+        const sm = D.session || D.snapshot || {};
+        note.innerHTML = `<b>午盘快照</b> · 数据截至 ${sm.cutoff || '11:30'} 上午收盘；这里不是全天收盘结果，收盘正式版会在 15:00 后自动更新。ETF、两融、龙虎榜仍按最近披露日展示。`;
+      } else {
+        note.innerHTML = '';
+      }
+    }
+  }
+
+  function renderAll(){
+    resetCharts();
+    resetTabs();
+    renderNarrative();
+    renderHeroAndSummary();
+    initOverview();
+    renderTopIn(); renderTopOut(); renderDivergence(); renderLhb(); renderSectors(); renderStockQuality('new_money');
+    inited.overview = true;
+    updateSessionUI();
+    el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
+  }
+
+  function switchSession(key, updateUrl=true){
+    if (!SESSION_DATA[key] || key === currentSession) return;
+    currentSession = key;
+    D = SESSION_DATA[key];
+    renderAll();
+    if (updateUrl){
+      const url = new URL(location.href);
+      url.searchParams.set('session', key);
+      history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+    requestAnimationFrame(()=>scrollToTabTop(el('panel-overview')));
+  }
 
   function scrollToTabTop(panel){
     if (!panel || !panel.classList.contains('active')) return;
@@ -554,6 +614,27 @@
     window.scrollTo(0, Math.max(0, y));
     root.style.scrollBehavior = oldBehavior;
   }
+
+  document.querySelectorAll('.session-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>switchSession(btn.dataset.session));
+  });
+
+  document.querySelectorAll('[data-quality]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-quality]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderStockQuality(btn.dataset.quality);
+    });
+  });
+
+  document.querySelectorAll('[data-ind]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-ind]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      indMetric = btn.dataset.ind;
+      if (industryChart) industryChart.setOption(industryOption(indMetric), {notMerge:true});
+    });
+  });
 
   const tabMap = {overview:initOverview, flow:initFlowTab, stocks:initStockTab, method:()=>{}};
   document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -573,8 +654,28 @@
       }
     });
   });
-  inited.overview = true;
 
   window.addEventListener('resize', ()=>charts.forEach(c=>c.resize()));
-  el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
+
+  // Choose the freshest node by default; explicit ?session= wins. A newer
+  // trading date beats an older one; if both are the same date, compare the
+  // render stamp so the just-updated close wins after 15:00.
+  const params = new URLSearchParams(location.search);
+  const requested = params.get('session');
+  const stamp = d => Date.parse(d?.rendered_at || d?.generated_at || '') || 0;
+  let initial = (requested && SESSION_DATA[requested]) ? requested : null;
+  if (!initial){
+    const amDate = SESSION_DATA.am?.date || '';
+    const pmDate = SESSION_DATA.pm?.date || '';
+    if (SESSION_DATA.am && (!SESSION_DATA.pm || amDate > pmDate)) initial = 'am';
+    else if (SESSION_DATA.pm && (!SESSION_DATA.am || pmDate > amDate)) initial = 'pm';
+    else {
+      const amT = stamp(SESSION_DATA.am), pmT = stamp(SESSION_DATA.pm);
+      initial = SESSION_DATA.am && (!SESSION_DATA.pm || amT > pmT) ? 'am' : 'pm';
+    }
+    if (!SESSION_DATA[initial]) initial = SESSION_DATA.am ? 'am' : 'pm';
+  }
+  currentSession = initial;
+  D = SESSION_DATA[initial];
+  renderAll();
 })();

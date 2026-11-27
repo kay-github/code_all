@@ -43,6 +43,11 @@ def _double_positive(rows):
 def build_narrative(d):
     idx = d.get("indices", [])
     sh = idx[0] if idx else {}
+    sm = d.get("session") or {}
+    is_am = (sm.get("key") or "pm") == "am"
+    close_word = "午盘" if is_am else "收盘"
+    position_word = "午盘位置" if is_am else "收盘位置"
+    price_verb = "午盘收" if is_am else "收"
     cyb = next((x for x in idx if x.get("code") == "sz399006"), idx[2] if len(idx) > 2 else {})
     kc = next((x for x in idx if x.get("code") == "sh000688"), {})
     breadth = d.get("breadth", {})
@@ -79,7 +84,7 @@ def build_narrative(d):
     if sh_chg > 0 and sh_pos >= 65 and sh_low < -0.5:
         move = "深V反转"
     elif sh_chg > 0:
-        move = "指数收红"
+        move = "指数午盘收红" if is_am else "指数收红"
     elif sh_chg < 0 and sh_pos >= 65:
         move = "探底回稳"
     else:
@@ -105,7 +110,7 @@ def build_narrative(d):
         refill_text = f"今天净额 <b>{_num(ths_net)} 亿</b>"
 
     hero_dek = (
-        f"上证最低 {_pct(sh_low)}、收 {sh.get('price', 0):,.2f}（{_pct(sh_chg)}），"
+        f"上证最低 {_pct(sh_low)}、{price_verb} {sh.get('price', 0):,.2f}（{_pct(sh_chg)}），"
         f"创业板 {_pct(cyb.get('change_pct', 0))}；上涨 <b>{breadth_up}</b> 家、下跌 <b>{breadth_down}</b> 家，"
         f"涨停 <b>{lu}</b> 家。ETF 5 日净申购 <b>{_num(etf_d5)} 亿</b>；主动全单今天 <b>{_num(ths_net)} 亿</b>、"
         f"前 4 日 <b>{_num(prior4)} 亿</b>；融资余额 4 日 <b>{_num(margin_chg4)} 亿</b>。"
@@ -118,14 +123,14 @@ def build_narrative(d):
     if sh_low < -0.5 and sh_chg > 0:
         lead1_title = "深 V，不是普通反弹"
         lead1_body = (
-            f"上证最低 <b>{_pct(sh_low)}</b>，收盘 <b>{_pct(sh_chg)}</b>；创业板从低点拉回 "
+            f"上证最低 <b>{_pct(sh_low)}</b>，{close_word} <b>{_pct(sh_chg)}</b>；创业板从低点拉回 "
             f"<b>{_pct(cyb.get('reversal_from_low', 0))}</b>。上涨 <b>{breadth_up}</b> 家、下跌 <b>{breadth_down}</b> 家，"
             f"涨停 <b>{lu}</b> 家——早盘的恐慌盘被资金接走了。"
         )
     else:
-        lead1_title = "指数与广度：先看收盘位置"
+        lead1_title = f"指数与广度：先看{position_word}"
         lead1_body = (
-            f"上证收 <b>{sh.get('price', 0):,.2f}</b>（{_pct(sh_chg)}），收盘位置 <b>{sh_pos:.0f}%</b>；"
+            f"上证{price_verb} <b>{sh.get('price', 0):,.2f}</b>（{_pct(sh_chg)}），{position_word} <b>{sh_pos:.0f}%</b>；"
             f"创业板 {_pct(cyb.get('change_pct', 0))}。上涨 <b>{breadth_up}</b> 家、下跌 <b>{breadth_down}</b> 家，"
             f"涨停 <b>{lu}</b> 家、跌停 <b>{ld}</b> 家。"
         )
@@ -227,9 +232,9 @@ def build_narrative(d):
     ] or idx
     max_rev = max(max_rev_pool, key=lambda x: x.get("reversal_from_low", -999)) if max_rev_pool else {}
     reversal_note = (
-        f"{_name(max_rev.get('name'))} 收 {_pct(max_rev.get('change_pct', 0))}，但盘中最低 "
+        f"{_name(max_rev.get('name'))} {price_verb} {_pct(max_rev.get('change_pct', 0))}，但盘中最低 "
         f"{_pct((max_rev.get('low', 0) / max_rev.get('prev_close', 1) - 1) * 100 if max_rev.get('prev_close') else 0)}、"
-        f"收盘从低点拉回 {_pct(max_rev.get('reversal_from_low', 0))}——今天最典型的“深水打捞”。"
+        f"{close_word}从低点拉回 {_pct(max_rev.get('reversal_from_low', 0))}——{'上午' if is_am else '今天'}最典型的“深水打捞”。"
     )
     flows_note = (
         "东财沪市为单点快照；深市同接口收盘后常被限流，未取到的不做同口径展示。"
@@ -352,7 +357,10 @@ def build_narrative(d):
         f"融资余额 4 日 {_num(margin_chg4)} 亿。要确认“逐渐建仓”升级为“全面加仓”，至少看三个信号："
         "① 通信设备/半导体连续 2–3 日净流入；② 融资余额止跌回升；③ 光模块龙头继续放量、不出现高位放量长阴。"
     )
-    method_note = "收盘后 16:10 自动跑；17:10 补龙虎榜并二次更新。数据源失败时保留上一版并在页面注明。"
+    method_note = (
+        "工作日 11:36 起抓午盘快照；收盘后 16:10 抓正式版、17:10 补龙虎榜并二次更新。"
+        "午盘与收盘同页切换，数据源失败时保留上一版并在页面注明。"
+    )
     footer_date = f"{d.get('date', '')} · {d.get('weekday', '')}"
 
     return {

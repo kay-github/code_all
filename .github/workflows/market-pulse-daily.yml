@@ -39,6 +39,7 @@ jobs:
       - name: Build today's market pulse
         env:
           TZ: Asia/Shanghai
+          MP_SESSION: pm
           MP_ROOT: ${{ github.workspace }}/tools/market-pulse/pipeline
           MP_OUT_DIR: ${{ github.workspace }}/tools/market-pulse
           MP_ONLINE: '1'
