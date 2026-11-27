@@ -1,8 +1,8 @@
 {
   "version": "2.2.0",
-  "build_id": "20261127T104632_0800_afd4bb91bb",
+  "build_id": "20261127T113119_0800_b0538002a6",
   "business_date": "2026-11-26",
-  "built_at": "2026-11-27T10:46:32+08:00",
+  "built_at": "2026-11-27T11:31:19+08:00",
   "data_stage": "次晨复核",
   "core_members": [
     "159338",
@@ -26,15 +26,15 @@
     "valid_members": 15,
     "expected_members": 15,
     "complete": true,
-    "net_estimate": 115.35191557089938,
-    "partial_net_estimate": 115.35191557089938,
+    "net_estimate": 115.35191557089937,
+    "partial_net_estimate": 115.35191557089937,
     "share_change_members": 15,
     "outflow_count": 4,
     "inflow_count": 10
   },
   "w5": {
     "complete": true,
-    "net_estimate": 1571.8614410824566
+    "net_estimate": 1571.8614410824564
   },
   "unit": "亿元；份额为原生份额",
   "valuation": "份额变化×当日成交均价，仅表示证券敞口变化估算，不是实际现金流",
