@@ -15,7 +15,7 @@
 
 GitHub Actions 两条正式链路：
 
-- 午盘：`.github/workflows/market-pulse-morning.yml`，工作日北京时间 11:36–12:36 五个窗口，`MP_SESSION=am`
+- 午盘：`.github/workflows/market-pulse-morning.yml`，工作日北京时间 11:36–12:36 五个窗口，`MP_SESSION=am`；另监听 `Market tracker updates` 完成事件，12:23 那次直接触发（11:20 / 下午的完成事件会被午盘窗口跳过）
 - 收盘：`.github/workflows/market-pulse-daily.yml`，工作日北京时间 16:11–18:41 六个窗口，`MP_SESSION=pm`；另监听 `top-radar-daily` 完成事件，15:10 那次被 `run_daily.py` 的 16:05 门槛跳过，16:10 那次直接触发
 - 云端看门狗：`.github/workflows/pulse-cloud-watchdog.yml`，工作日北京时间 11:00–21:50 每 10 分钟检查一次，数据缺失/过旧时用仓库自带的 `GITHUB_TOKEN` 调 GitHub API dispatch 对应 workflow；另监听 `top-radar-daily` 完成事件，在 16:10 附近补一次触发。它不跑管线，也不需要 PAT。
 - 失败不会覆盖上一版；线上保留最近一次成功页面。

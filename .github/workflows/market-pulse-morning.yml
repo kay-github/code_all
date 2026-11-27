@@ -10,6 +10,12 @@ on:
     # absorb schedule delays; run_daily refuses anything before 11:35 or after 13:00.
     - cron: '36,51 3 * * 1-5'
     - cron: '6,21,36 4 * * 1-5'
+  # Market tracker updates has a cloud clock at 12:23 Beijing (04:23 UTC).
+  # This is a direct second trigger; 11:20 / afternoon completions are skipped
+  # by run_daily's morning window and are harmless.
+  workflow_run:
+    workflows: ['Market tracker updates']
+    types: [completed]
   workflow_dispatch:
 
 permissions:
