@@ -507,7 +507,7 @@ function renderInventoryDual(r,ok){
  ):`正式份额待核对`;
  $('inventoryDual').innerHTML=`
   <div class="dual-item"><div class="dual-label">标准刻度（之前标准最新）</div><div class="dual-value">${ip(standard)}</div><div class="dual-note">换手率反推 · ${standardDate?esc(standardDate):'待核对'} · 保持历史可比</div></div>
-  <div class="dual-item revised"><div class="dual-label">正式修正刻度（最新一日）</div><div class="dual-value">${ocOk?ip(oc.units):'—'}</div><div class="dual-note">${revisedNote}${delta!==null?` · 较标准 <b>${num(delta,2)} 份</b>`:''}</div></div>`;
+  <div class="dual-item revised"><div class="dual-label">正式修正刻度（最新一日）</div><div class="dual-value">${ocOk?ip(oc.units):'—'}</div><div class="dual-note">${revisedNote}${delta!==null?` · 同日较标准 <b>${num(delta,2)} 份</b>`:''}</div></div>`;
 }
 function renderInventory(){
  const r=I?.latest,ok=I?.complete&&r?.complete&&r.date===D.end;

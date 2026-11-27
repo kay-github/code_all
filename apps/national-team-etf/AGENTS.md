@@ -219,6 +219,7 @@ python -X utf8 update.py --phase final --end 2026-11-16 --deploy
 - **上交所份额**：清算后数据一般 17:00 后才出。
 - **10 份刻度**：基准 `2025-12-31 = 10 份`，本轮起点 `2026-07-16`（锚点 07-15），固定价格 `2026-11-13`。改基准/价格/样本/起点必须升 `version`。这是 **ETF 通道估算，不是国家队实名仓位**。
 - **10 份刻度只认反推份额**：`v2_inventory.point()` 里 `share_source != 'vendor_turnover_estimate'` 直接抛 `不得混入不同份额口径`。所以正式区发布**不会**改变历史刻度值；正式份额敞口（`official_flow.csv`）是另一条独立序列，两者差额只能用舍入边界解释，不能拼成一条曲线。
+- **双刻度并列，不是拼接**：`inventory.official_correction` 用同日 15 只交易所正式份额合计、固定价格和同一 10 份基准，另算一个“正式修正刻度”；它只与标准刻度并排，缺失/未核验日留空，绝不写回 `inventory.series` 或替换历史标准值。2026-11-26 标准 7.098、正式修正 7.122、同日差 +0.024。
 - **风险等级 L0–L3** 在 `analysis.json.gz` 的 `latest.risk`，**不在**日表的 `flags` 里；`flags` 只放数据质量标记（如 `flow_within_rounding_uncertainty`）。
 - **`core15.latest.net` 是反推口径**，不是正式份额口径（正式值看 `official_flow.csv` 汇总）。看页面质量区时会同时出现两个数，别当成互相矛盾。
 
