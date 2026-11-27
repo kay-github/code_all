@@ -7,8 +7,14 @@ on:
       - 'tools/market-pulse/pipeline/requirements.txt'
   schedule:
     # GitHub cron is UTC. 08:xx-10:xx UTC = 16:xx-18:xx Beijing. Frequent slots
-    # make a missed/delayed run much less likely; run_daily skips before 15:05.
+    # make a missed/delayed run much less likely; run_daily skips before 16:05.
     - cron: '11,41 8-10 * * 1-5'
+  # top-radar is a cloud clock (15:10 / 16:10) and does not listen to pulse,
+  # so this adds a direct close trigger without the market-trackers loop.
+  # The 15:10 completion is skipped by run_daily's 16:05 guard; 16:10 runs.
+  workflow_run:
+    workflows: ['top-radar-daily']
+    types: [completed]
   # No reverse workflow_run on Market tracker updates: market-trackers already
   # listens to this workflow; a reverse listener would create a loop.
   workflow_dispatch:

@@ -33,7 +33,7 @@ if len(sys.argv) == 1 and not os.environ.get("MP_DATE"):
     t = now.time()
     skipped = None
     if now.weekday() < 5:
-        if SESSION == "pm" and t < dtime(15, 5):
+        if SESSION == "pm" and t < dtime(16, 5):
             skipped = "preclose"
         if SESSION == "am" and (t < dtime(11, 35) or t >= dtime(13, 0)):
             skipped = "outside_morning_window"
