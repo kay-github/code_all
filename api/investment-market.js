@@ -127,7 +127,8 @@ module.exports = async function handler(req, res) {
       const etag = '"' + createHash('sha256').update(body).digest('base64url') + '"';
       res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, must-revalidate');
       res.setHeader('ETag', etag);
-      if (req.headers?.['if-none-match'] === etag) {
+      const validators = (req.headers?.['if-none-match'] ?? '').split(',').map(value => value.trim().replace(/^W\//, ''));
+      if (validators.includes(etag) || validators.includes('*')) {
         res.statusCode = 304;
         return res.end();
       }

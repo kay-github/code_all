@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 import { indexSnapshot, indices, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
 
+const require = createRequire(import.meta.url);
 const beforeHKClose = new Date('2026-11-26T15:50:00+08:00');
 const afterClose = new Date('2026-11-26T16:25:00+08:00');
 const dates = ['2026-11-24', '2026-11-25', '2026-11-26'];
@@ -122,4 +124,26 @@ test('the cloud job records a delayed source then publishes matching valuations 
   assert.equal(valuationLoads, 3 * indices.length);
   assert.ok(valuationSnapshot(fallback, record.value).indices.every(row => row.history.length === 3));
   assert.ok(valuationSnapshot(record.value, fallback).indices.every(row => row.date === dates[2]));
+});
+
+test('the public endpoint supports conditional GET and keeps refresh authenticated', async t => {
+  const store = require('../lib/gridStore');
+  const handler = require('../api/investment-market');
+  t.mock.method(store, 'read', async () => null);
+  const request = async (method, headers = {}) => {
+    const response = {
+      headers: {}, body: undefined,
+      setHeader(key, value) { this.headers[key] = value; },
+      end(body) { this.body = body; },
+    };
+    await handler({ method, headers, query: { view: 'valuations', scheduled: '1' } }, response);
+    return response;
+  };
+  const first = await request('GET');
+  assert.equal(first.statusCode, 200);
+  assert.equal(JSON.parse(first.body).indices.length, indices.length);
+  const cached = await request('GET', { 'if-none-match': 'W/' + first.headers.ETag });
+  assert.equal(cached.statusCode, 304);
+  assert.equal(cached.body, undefined);
+  assert.equal((await request('POST')).statusCode, 401);
 });
