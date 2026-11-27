@@ -6,13 +6,14 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT = Path(os.environ.get("MP_ROOT", Path(__file__).resolve().parent.parent))
 
 
 def main(date: str | None = None):
     if date is None:
-        date = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MP_DATE") or datetime.now().strftime("%Y-%m-%d")
+        date = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MP_DATE") or datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d")
     session = os.environ.get("MP_SESSION", "pm").lower()
     if session not in ("am", "pm"):
         session = "pm"
@@ -20,7 +21,7 @@ def main(date: str | None = None):
     if not data_path.exists():
         raise SystemExit(f"missing {data_path}")
     data = json.loads(data_path.read_text(encoding="utf-8"))
-    data["rendered_at"] = datetime.now().isoformat(timespec="seconds")
+    data["rendered_at"] = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds")
     template = (ROOT / "template.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     if "</script" in payload.lower():

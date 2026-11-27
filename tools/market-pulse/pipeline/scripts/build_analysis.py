@@ -523,7 +523,7 @@ data = {
     "date": DATE,
     "weekday": WEEKDAY,
     "session": SESSION_INFO,
-    "generated_at": datetime.now().isoformat(timespec="seconds"),
+    "generated_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
     "headline": "",
     "indices": indices,
     "turnover": {
