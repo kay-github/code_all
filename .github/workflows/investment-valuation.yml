@@ -36,6 +36,7 @@ jobs:
           node-version: 24
       - name: Test and fetch closing valuations
         run: |
+          npm ci
           node --test tests/investmentValuation.test.mjs
           node scripts/update-investment-valuation.mjs
       - name: Publish changed snapshot
