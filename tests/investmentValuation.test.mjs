@@ -21,7 +21,8 @@ test('each market publishes only matching PE, PB and closing observations after 
   const snapshot = indexSnapshot(code, '恒生指数', valuations(code), closes(code), afterClose);
   assert.deepEqual([snapshot.date, snapshot.close, snapshot.pe, snapshot.pb], [dates[2], 3902, 12, 1.25]);
   assert.deepEqual(snapshot.history, [
-    [dates[0], 0, 100, 0, 55], [dates[1], 20.12, 99, 15.17, 54], [dates[2], 40.25, 98, 30.33, 53],
+    [dates[0], 0, 100, 0, 55, 10, 1.25], [dates[1], 20.12, 99, 15.17, 54, 11, 1.25],
+    [dates[2], 40.25, 98, 30.33, 53, 12, 1.25],
   ]);
   assert.equal(indexSnapshot(code, '恒生指数', valuations(code), closes(code).slice(0, 2), afterClose).date, dates[1]);
   const malformed = valuations(code).map((row, i) => i === 2 ? { ...row, pBLf10Y: null } : row);
@@ -34,7 +35,7 @@ test('the full valuation history survives a shorter history of closing levels', 
   const old = { ...recent[0], trdDt: '2000-01-04', pETtm10Y: 21, pBLf10Y: 53, pETtmBgn: 65, pBLfBgn: 90 };
   const invalid = { ...old, trdDt: '2000-01-03', pETtm10Y: null };
   const snapshot = indexSnapshot(code, '上证指数', [...recent, old, invalid], closes(code), afterClose);
-  assert.deepEqual(snapshot.history[0], ['2000-01-04', 21, 53, 65, 90]);
+  assert.deepEqual(snapshot.history[0], ['2000-01-04', 21, 53, 65, 90, 10, 1.25]);
   assert.equal(snapshot.history.length, recent.length + 1);
   assert.equal(snapshot.history.at(-1)[0], dates[2]);
 });
@@ -46,7 +47,7 @@ test('missing full-history percentiles are not substituted with ten-year ranks',
     { ...first, pBLfBgn: null }, second, last, { ...last, pETtmBgn: 101 },
   ], closes(code), afterClose);
   assert.equal(snapshot.date, dates[1]);
-  assert.deepEqual(snapshot.history, [[dates[0], 0, 100, 0, null], [dates[1], 20.12, 99, 15.17, 54]]);
+  assert.deepEqual(snapshot.history, [[dates[0], 0, 100, 0, null, 10, 1.25], [dates[1], 20.12, 99, 15.17, 54, 11, 1.25]]);
 });
 
 test('refresh appends new observations without losing older published history', async () => {
@@ -146,4 +147,32 @@ test('the public endpoint supports conditional GET and keeps refresh authenticat
   assert.equal(cached.statusCode, 304);
   assert.equal(cached.body, undefined);
   assert.equal((await request('POST')).statusCode, 401);
+});
+
+test('older cloud snapshots acquire historical multiples even when the trading date is unchanged', async () => {
+  const load = (code, kind, request) => {
+    if (kind === 'eod_price') return closes(code);
+    assert.equal(request.etag, undefined);
+    request.onETag('same-provider-file');
+    return valuations(code);
+  };
+  const full = { indices: (await refresh([], load, afterClose)).next };
+  const legacy = {
+    indices: full.indices.map(row => ({ ...row, history: row.history.map(point => point.slice(0, 5)) })),
+    closeDates: Object.fromEntries(indices.map(([code]) => [code, dates[2]])),
+    etags: Object.fromEntries(indices.map(([code]) => [code, 'same-provider-file'])),
+  };
+  assert.equal(valuationSnapshot(full, legacy).indices[0], full.indices[0]);
+  let record = { value: legacy, etag: 'saved-revision' };
+  const store = {
+    read: async () => record,
+    write: async (_path, value, etag) => {
+      assert.equal(etag, 'saved-revision');
+      record = { value, etag: 'updated-revision' };
+    },
+  };
+  const result = await refreshStoredValuations(store, legacy, load, afterClose);
+  assert.equal(result.changed, true);
+  assert.deepEqual(record.value.indices, full.indices);
+  assert.deepEqual(record.value.closeDates, legacy.closeDates);
 });

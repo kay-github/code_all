@@ -47,14 +47,23 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .valuation-date { display: flex; flex-wrap: wrap; gap: 0 7px; margin: 3px 0 8px; }
 .valuation-waiting { margin: -5px 0 7px; color: var(--muted); font-size: 11px; }
 .valuation-metrics { width: 100%; table-layout: fixed; border-spacing: 0; margin: 0 0 4px; border-radius: 6px; background: var(--inset); text-align: right; }
-.valuation-metric-label { width: clamp(23px, 5vw, 54px); }
+.valuation-metrics .valuation-metric-label { width: clamp(42px, 29%, 112px); padding-left: 5px; text-align: left; }
 .valuation-metrics th { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .valuation-metrics thead th { padding: 4px clamp(3px, 1vw, 12px) 2px 0; }
 .valuation-metrics tbody th { padding: 2px 0 4px 5px; text-align: left; }
-.valuation-metrics tbody th::after { content: ''; display: block; width: 10px; border-top: 2px solid var(--series-color); }
-.valuation-metrics .pb th::after { border-top-style: dashed; }
-.valuation-metrics tbody td { padding: 1px clamp(3px, 1vw, 12px) 3px 0; font-size: clamp(13px, 2.2vw, 21px); font-weight: 750; line-height: 1.2; white-space: nowrap; }
-.valuation-multiples { display: flex; flex-wrap: wrap; gap: 0 8px; margin: 0 0 4px; color: var(--muted); font-size: 11px; }
+.valuation-metric-value { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1px 7px; }
+.valuation-series-label::after { content: ''; display: block; width: 10px; border-top: 2px solid var(--series-color); }
+.valuation-metrics .pb .valuation-series-label::after { border-top-style: dashed; }
+.valuation-metrics tbody td { padding: 1px clamp(3px, 1vw, 12px) 3px 0; }
+.valuation-metrics tbody :is(td, strong) { color: var(--text); font-size: clamp(13px, 2.2vw, 21px); font-weight: 750; line-height: 1.2; white-space: nowrap; }
+@media (max-width: 375px) {
+  .valuation-metric-value { display: grid; }
+  .valuation-metrics thead th { font-size: 10px; }
+  .valuation-metrics :is(thead th:not(:first-child), tbody td) { padding-inline: 0; text-align: center; }
+  .valuation-metrics :is(thead th:last-child, tbody td:last-child) { border-inline-start: 1px solid var(--line); }
+  .valuation-metrics tbody :is(td, strong) { font-size: 12px; }
+}
+@media (max-width: 345px) { .valuation-metrics tbody td { font-size: 11px; } }
 .valuation-difference { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin: 0 0 8px; color: var(--muted); font-size: 11px; }
 .valuation-difference strong { color: var(--text); font-weight: 650; white-space: nowrap; }
 @media (max-width: 560px) { .valuation-difference span { flex-basis: 100%; } }
@@ -75,14 +84,20 @@ button.primary:hover:not(:disabled) { background: var(--primary-hover); border-c
 .valuation-marker { fill: var(--series-color); stroke: var(--surface); stroke-width: 1.25px; vector-effect: non-scaling-stroke; }
 .valuation-tooltip {
   position: absolute; z-index: 1; bottom: 100%;
-  left: clamp(0px, calc(var(--valuation-tooltip-x) - 68px), calc(100% - 136px));
-  width: 136px; max-width: 100%; padding: 5px 7px; border: 1px solid var(--control-line);
+  left: clamp(0px, calc(var(--valuation-tooltip-x) - 86px), calc(100% - 172px));
+  width: 172px; max-width: 100%; padding: 5px 7px; border: 1px solid var(--control-line);
   border-radius: 6px; color: var(--text); background: var(--surface); box-shadow: 0 3px 12px #0003;
   font-size: 11px; line-height: 1.35;
 }
 .valuation-tooltip time { display: block; margin-bottom: 3px; color: var(--muted); }
-.valuation-tooltip-values { display: flex; flex-wrap: wrap; gap: 2px 7px; font-weight: 700; }
+.valuation-tooltip-values { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 5px; text-align: right; font-weight: 700; }
 .valuation-tooltip-values span { white-space: nowrap; }
+.valuation-tooltip-values .valuation-tooltip-label { color: var(--muted); text-align: left; }
+.valuation-tooltip-values :is(.pe, .pb) { color: var(--series-color); }
+@media (max-width: 375px) {
+  .valuation-tooltip { padding-inline: 4px; }
+  .valuation-tooltip-values { gap: 2px 3px; }
+}
 .valuation-times { margin: 5px 0 0 30px; display: flex; justify-content: space-between; gap: 4px; color: var(--muted); font-size: 11px; }
 .valuation-sources { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 8px 0 0; }
 @media (max-width: 370px) { .valuation-times { margin-left: 0; } }

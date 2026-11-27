@@ -611,9 +611,10 @@ function valuationPoints(history, column) {
 }
 
 const hasFullValuation = point => Number.isFinite(point?.[3]) && Number.isFinite(point?.[4]);
+const valuationMultiple = value => Number.isFinite(value) ? fmt.format(value) : '—';
 
 let hideValuationTooltip;
-function addValuationTooltip(plot, chart, history, peColumn) {
+function addValuationTooltip(plot, chart, history, peColumn, latest) {
   const start = Date.parse(history[0][0]);
   const end = history.length - 1;
   const span = Math.max(1, Date.parse(history[end][0]) - start);
@@ -629,9 +630,12 @@ function addValuationTooltip(plot, chart, history, peColumn) {
   tooltip.setAttribute('role', 'status');
   const day = el('time');
   const values = el('div', 'valuation-tooltip-values');
+  const peValue = el('span', 'valuation-tooltip-multiple');
+  const pbValue = el('span', 'valuation-tooltip-multiple');
   const pe = el('span', 'pe');
   const pb = el('span', 'pb');
-  values.append(pe, pb);
+  values.append(el('span', 'valuation-tooltip-label', 'PE'), peValue, pe,
+    el('span', 'valuation-tooltip-label', 'PB'), pbValue, pb);
   tooltip.append(day, values);
   plot.append(tooltip);
 
@@ -656,8 +660,12 @@ function addValuationTooltip(plot, chart, history, peColumn) {
     tooltip.style.setProperty('--valuation-tooltip-x', left + 'px');
     day.dateTime = point[0];
     day.textContent = point[0];
-    pe.textContent = 'PE ' + pct(point[peColumn]);
-    pb.textContent = 'PB ' + pct(point[peColumn + 1]);
+    const priceEarnings = point[5] ?? (index === end ? latest.pe : null);
+    const priceBook = point[6] ?? (index === end ? latest.pb : null);
+    peValue.textContent = Number.isFinite(priceEarnings) ? valuationMultiple(priceEarnings) + ' 倍' : '—';
+    pbValue.textContent = Number.isFinite(priceBook) ? valuationMultiple(priceBook) + ' 倍' : '—';
+    pe.textContent = pct(point[peColumn]);
+    pb.textContent = pct(point[peColumn + 1]);
     guide.setAttribute('x1', x);
     guide.setAttribute('x2', x);
     peMarker.setAttribute('cx', x);
@@ -722,16 +730,17 @@ function valuationCard(row, years, fullBasis, closeDay) {
   const last = row.history.at(-1);
   const canCompare = hasFullValuation(last);
   const metrics = el('table', 'valuation-metrics');
-  metrics.setAttribute('aria-label', row.name + ' PE、PB 分位对比');
+  metrics.setAttribute('aria-label', row.name + ' PE、PB 倍数与分位对比');
   const columns = metrics.createTHead().insertRow();
-  columns.append(el('td', 'valuation-metric-label'));
+  const multipleHeader = el('th', 'valuation-metric-label', '倍数');
+  multipleHeader.scope = 'col';
+  columns.append(multipleHeader);
   for (const title of ['近 10 年', '全部历史']) {
     const cell = el('th', '', title);
     cell.scope = 'col';
     columns.append(cell);
   }
   const metricRows = metrics.createTBody();
-  const multiples = el('p', 'valuation-multiples');
   let history = fullBasis ? row.history.filter(hasFullValuation) : row.history;
   if (years) {
     const cutoff = new Date(row.date);
@@ -757,10 +766,12 @@ function valuationCard(row, years, fullBasis, closeDay) {
     const column = fullBasis ? fullColumn : tenYearColumn;
     const metric = metricRows.insertRow();
     metric.className = key;
-    const label = el('th', '', title);
+    const label = el('th');
     label.scope = 'row';
+    const value = el('div', 'valuation-metric-value');
+    value.append(el('span', 'valuation-series-label', title), el('strong', '', valuationMultiple(row[key])));
+    label.append(value);
     metric.append(label, el('td', '', pct(last[tenYearColumn])), el('td', '', pct(last[fullColumn])));
-    multiples.append(el('span', '', title + ' ' + fmt.format(row[key]) + ' 倍'));
     if (canCompare) {
       const delta = Math.round((last[fullColumn] - last[tenYearColumn]) * 100) / 100;
       const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';
@@ -775,7 +786,7 @@ function valuationCard(row, years, fullBasis, closeDay) {
   axis.append(...['100%', '50%', '0%'].map(value => el('span', '', value)));
   const plot = el('div', 'valuation-plot');
   plot.append(axis, chart);
-  addValuationTooltip(plot, chart, history, fullBasis ? 3 : 1);
+  addValuationTooltip(plot, chart, history, fullBasis ? 3 : 1, row);
   const times = el('p', 'valuation-times');
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
@@ -784,7 +795,7 @@ function valuationCard(row, years, fullBasis, closeDay) {
   if (closeDay > row.date) {
     card.append(el('p', 'valuation-waiting', '待更新 ' + closeDay.slice(5) + ' 估值'));
   }
-  card.append(metrics, multiples);
+  card.append(metrics);
   if (canCompare) card.append(difference);
   card.append(plot, times);
   return card;
