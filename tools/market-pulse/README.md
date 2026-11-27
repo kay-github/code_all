@@ -1,21 +1,34 @@
 # 资金面盘面说明（/pulse）
 
-每天收盘后自动生成的一份 A 股资金面复盘。页面重点是“钱”：主力/超大单、主动全单、ETF 申赎、融资余额，以及行业与个股的“新钱 / 回补 / 持续流入”。
+每天生成两份 A 股资金面复盘：**午盘 11:30** 与 **收盘 15:00**。页面重点是“钱”：主力/超大单、主动全单、ETF 申赎、融资余额，以及行业与个股的“新钱 / 回补 / 持续流入”。
 
 ## 线上
 
 - 页面：https://1.688680.xyz/pulse
-- 数据：`/tools/market-pulse/data/latest.json`，历史归档在 `data/archive/`
-- 根站卡片：`assets/site-defaults.js` 的 `marketPulse`
+- 历史档案：https://1.688680.xyz/pulse/history
+- 数据：`/tools/market-pulse/data/latest.json`（收盘）、`/data/am/latest.json`（午盘）
+- 历史索引：`/tools/market-pulse/data/index.json`
+- 单日归档：`/data/archive/YYYY-MM-DD.json`、`/data/am/archive/YYYY-MM-DD.json`
+- 根站卡片：`assets/site-defaults.js` 的 `marketPulse`、`marketPulseHistory`
 
-## 自动更新
+## 自动更新（不依赖本机）
 
-GitHub Actions：`.github/workflows/market-pulse-daily.yml`
+GitHub Actions 两条正式链路：
 
-- 工作日北京时间 **16:10** 主跑，**17:10** 补龙虎榜并二次更新
-- 失败不会覆盖上一版；线上保留最近一次成功页面
-- 白名单提交 `tools/market-pulse/index.html`、`tools/market-pulse/data/`，Vercel 自动部署
-- 管线 9 步：东财沪市快照（可选）→ 腾讯指数/同花顺行业概念个股/涨停/两融 → 同花顺收盘重抓 → 新浪超大单 → 同花顺 5/10 日 → 深交所两融序列 → 龙虎榜机构 → 结构化数据 → 页面渲染
+- 午盘：`.github/workflows/market-pulse-morning.yml`，工作日北京时间 11:36–12:36 五个窗口，`MP_SESSION=am`
+- 收盘：`.github/workflows/market-pulse-daily.yml`，工作日北京时间 16:11–18:41 六个窗口，`MP_SESSION=pm`
+- 云端看门狗：`.github/workflows/pulse-cloud-watchdog.yml`，工作日北京时间 11:00–21:50 每 10 分钟检查一次，数据缺失/过旧时用仓库自带的 `GITHUB_TOKEN` 调 GitHub API dispatch 对应 workflow；另监听 `top-radar-daily` 完成事件，在 16:10 附近补一次触发。它不跑管线，也不需要 PAT。
+- 失败不会覆盖上一版；线上保留最近一次成功页面。
+- **本机 `MarketPulseDaily` / `MarketPulseMorning` 计划任务已于 2026-11-27 停用**，不再作为兜底。需要本机补跑时用下面的命令，手动执行即可。
+
+白名单提交 `tools/market-pulse/index.html`、`app.js`、`data/`（含 `data/index.json`）、`pipeline/run_status*.json`，Vercel 自动部署。GitHub Actions 的 schedule 会延迟/漏触发，所以保留多窗口 + 看门狗两层。
+
+## 日期与历史
+
+- 默认 `/pulse` 显示最近交易日；顶部“交易日”下拉可回看历史。
+- `?date=YYYY-MM-DD&session=pm|am` 可直接打开某天某个节点；`session` 省略时优先收盘。
+- `/pulse/history` 按日期倒序列出双节点，并提供 `index.json` 入口；AI 做趋势分析先读索引，再按单日 `path` 取全文。
+- 每次 AM/PM 渲染都会重扫归档并更新 `data/index.json`，不需要额外任务。
 
 ## 页面内容
 
@@ -42,7 +55,7 @@ python scripts\render_page.py 2026-11-23
 
 ```powershell
 $env:MP_ONLINE="1"
-$env:MP_OUT_DIR="D:\code_all\tools\market-pulse"
+$env:MP_OUT_DIR="D:\code_all_pulse\tools\market-pulse"
 python scripts\render_page.py 2026-11-23
 ```
 

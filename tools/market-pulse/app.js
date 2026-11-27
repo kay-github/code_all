@@ -1,7 +1,12 @@
 (function(){
   const SESSION_DATA = {am: window.DATA_AM || null, pm: window.DATA || null};
+  const DATA_BASE = '/tools/market-pulse/data';
   let currentSession = null;
   let D = null;
+  let selectedDate = null;
+  let latestKnownDate = '';
+  let indexData = null;
+  let dateLoading = false;
   if (!SESSION_DATA.am && !SESSION_DATA.pm) {
     document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
     return;
@@ -26,6 +31,15 @@
   };
   const cls = v => v >= 0 ? 'up' : 'down';
   const el = id => document.getElementById(id);
+
+  const dataDate = d => (d && (d.date || '')) || '';
+  const currentDate = () => (D && D.date) || '';
+  const latestDate = () => {
+    if (latestKnownDate) return latestKnownDate;
+    const dates = [SESSION_DATA.am, SESSION_DATA.pm].map(dataDate).filter(Boolean);
+    dates.sort();
+    return dates.length ? dates[dates.length - 1] : '';
+  };
 
   // ---------- narrative ----------
   function renderNarrative(){
@@ -552,6 +566,113 @@
     document.querySelectorAll('[data-quality]').forEach((b,i)=>b.classList.toggle('active', i===0));
   }
 
+  function updateDateUI(){
+    const sel = el('date-select');
+    if (sel && selectedDate && Array.from(sel.options).some(o=>o.value===selectedDate)){
+      sel.value = selectedDate;
+    }
+    const hint = el('date-hint');
+    if (!hint) return;
+    if (dateLoading){
+      hint.textContent = '正在加载历史归档…';
+    } else if (selectedDate && selectedDate !== latestDate()){
+      hint.textContent = `${selectedDate} · 历史归档`;
+    } else {
+      hint.textContent = '默认最新交易日；可切换历史';
+    }
+  }
+
+  function populateDateSelect(){
+    const sel = el('date-select');
+    if (!sel) return;
+    const current = selectedDate || latestDate();
+    let rows = (indexData && Array.isArray(indexData.dates)) ? indexData.dates : [];
+    if (!rows.length && current){
+      rows = [{date: current, weekday: '', am: SESSION_DATA.am, pm: SESSION_DATA.pm}];
+    }
+    const latest = (indexData && indexData.latest) || latestDate();
+    sel.innerHTML = rows.map(row=>{
+      const bits = [];
+      if (row.date === latest) bits.push('最新');
+      if (row.weekday) bits.push(row.weekday);
+      if (row.am && row.pm) bits.push('午/收');
+      else if (row.am) bits.push('午盘');
+      else if (row.pm) bits.push('收盘');
+      return `<option value="${row.date}">${row.date}${bits.length ? ' · ' + bits.join(' · ') : ''}</option>`;
+    }).join('');
+    if (current && rows.some(r=>r.date===current)) sel.value = current;
+    else if (rows.length) sel.value = rows[0].date;
+    sel.disabled = !rows.length || dateLoading;
+  }
+
+  async function loadIndex(){
+    try {
+      const res = await fetch(`${DATA_BASE}/index.json?ts=${Date.now()}`, {cache: 'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      indexData = await res.json();
+      if (indexData && indexData.latest) latestKnownDate = indexData.latest;
+    } catch (err) {
+      console.warn('pulse index unavailable', err);
+    }
+    populateDateSelect();
+    updateDateUI();
+    return indexData;
+  }
+
+  async function fetchArchive(url){
+    try {
+      const res = await fetch(`${url}?ts=${Date.now()}`, {cache: 'no-store'});
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      console.warn('pulse archive fetch failed', url, err);
+      return null;
+    }
+  }
+
+  function updateUrl(withDate = true){
+    const url = new URL(location.href);
+    if (withDate && selectedDate && selectedDate !== latestDate()) url.searchParams.set('date', selectedDate);
+    else url.searchParams.delete('date');
+    if (currentSession) url.searchParams.set('session', currentSession);
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }
+
+  async function loadDate(date, requestedSession = null, scroll = true){
+    if (!date || dateLoading) return;
+    if (date === currentDate() && (!requestedSession || requestedSession === currentSession)) return;
+    dateLoading = true;
+    populateDateSelect();
+    updateDateUI();
+    try {
+      const [pm, am] = await Promise.all([
+        fetchArchive(`${DATA_BASE}/archive/${date}.json`),
+        fetchArchive(`${DATA_BASE}/am/archive/${date}.json`),
+      ]);
+      if (!pm && !am) throw new Error('该交易日暂无归档');
+      SESSION_DATA.pm = pm;
+      SESSION_DATA.am = am;
+      selectedDate = date;
+      let next = requestedSession && SESSION_DATA[requestedSession] ? requestedSession : null;
+      if (!next) next = currentSession && SESSION_DATA[currentSession] ? currentSession : (SESSION_DATA.pm ? 'pm' : 'am');
+      currentSession = next;
+      D = SESSION_DATA[next];
+      renderAll();
+      updateUrl(true);
+      populateDateSelect();
+      if (scroll) requestAnimationFrame(()=>window.scrollTo({top: 0, left: 0, behavior: 'auto'}));
+    } catch (err) {
+      console.warn('pulse archive load failed', err);
+      const hint = el('date-hint');
+      if (hint) hint.textContent = `${date} 归档读取失败，已保留当前数据`;
+      populateDateSelect();
+    } finally {
+      dateLoading = false;
+      populateDateSelect();
+      updateDateUI();
+    }
+  }
+
   function updateSessionUI(){
     document.querySelectorAll('.session-btn').forEach(btn=>{
       const key = btn.dataset.session;
@@ -585,6 +706,7 @@
     renderTopIn(); renderTopOut(); renderDivergence(); renderLhb(); renderSectors(); renderStockQuality('new_money');
     inited.overview = true;
     updateSessionUI();
+    updateDateUI();
     el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
   }
 
@@ -594,9 +716,7 @@
     D = SESSION_DATA[key];
     renderAll();
     if (updateUrl){
-      const url = new URL(location.href);
-      url.searchParams.set('session', key);
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      updateUrl(true);
     }
     requestAnimationFrame(()=>scrollToTabTop(el('panel-overview')));
   }
@@ -618,6 +738,11 @@
   document.querySelectorAll('.session-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>switchSession(btn.dataset.session));
   });
+
+  const dateSelect = el('date-select');
+  if (dateSelect){
+    dateSelect.addEventListener('change', ()=>loadDate(dateSelect.value, currentSession));
+  }
 
   document.querySelectorAll('[data-quality]').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -662,6 +787,7 @@
   // render stamp so the just-updated close wins after 15:00.
   const params = new URLSearchParams(location.search);
   const requested = params.get('session');
+  const requestedDate = params.get('date');
   const stamp = d => Date.parse(d?.rendered_at || d?.generated_at || '') || 0;
   let initial = (requested && SESSION_DATA[requested]) ? requested : null;
   if (!initial){
@@ -677,5 +803,13 @@
   }
   currentSession = initial;
   D = SESSION_DATA[initial];
+  selectedDate = D.date;
+  latestKnownDate = [SESSION_DATA.am?.date, SESSION_DATA.pm?.date].filter(Boolean).sort().slice(-1)[0] || '';
   renderAll();
+  populateDateSelect();
+  loadIndex().then(()=>{
+    if (requestedDate && requestedDate !== currentDate()){
+      loadDate(requestedDate, requested, false);
+    }
+  });
 })();

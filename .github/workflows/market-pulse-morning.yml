@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/market-pulse/data/am tools/market-pulse/pipeline/run_status_am.json
+          git add tools/market-pulse/data/am tools/market-pulse/data/index.json tools/market-pulse/pipeline/run_status_am.json
           if git diff --cached --quiet; then
             echo "No morning data changes"
             exit 0

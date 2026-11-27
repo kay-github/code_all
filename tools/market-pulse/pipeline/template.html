@@ -102,6 +102,25 @@ h1 em{font-style:normal;color:var(--red)}
   font-size:12px;line-height:1.65;
 }
 .session-note[hidden]{display:none}
+.date-bar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:10px 2px 0;padding:8px 12px;border:1px solid var(--line);
+  border-radius:12px;background:rgba(255,255,255,.55);color:var(--muted);
+  font-size:12px;line-height:1.4;
+}
+.date-bar label{font-weight:650;color:var(--ink)}
+.date-select{
+  appearance:none;border:1px solid var(--line);border-radius:8px;
+  background:rgba(255,255,255,.72);color:var(--ink);font:inherit;
+  font-size:12px;font-weight:600;padding:6px 28px 6px 10px;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.date-select:disabled{opacity:.55;cursor:wait}
+.date-hint{color:var(--muted)}
+.date-archive-link{margin-left:auto;color:var(--blue);font-weight:650;text-decoration:none;white-space:nowrap}
+.date-archive-link:hover{text-decoration:underline}
 .panel{display:none;animation:fade .25s ease}
 .panel.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -238,6 +257,7 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
 @media print{
   body{background:#fff}
   .tabs{display:none}
+  .date-bar{display:none}
   .panel{display:block!important;break-inside:avoid}
   .card,.hero{box-shadow:none}
 }
@@ -267,6 +287,12 @@ details.caveat ul{margin:10px 0 0;padding-left:18px;color:#555;font-size:12px;li
   <button class="tab-btn" data-tab="stocks">主线与个股</button>
   <button class="tab-btn" data-tab="method">工具与方法</button>
 </nav>
+<div class="date-bar" id="date-bar">
+  <label for="date-select">交易日</label>
+  <select class="date-select" id="date-select" aria-label="选择交易日" disabled><option>加载中…</option></select>
+  <span class="date-hint" id="date-hint">默认最新交易日；可切换历史</span>
+  <a class="date-archive-link" href="/pulse/history">历史档案 →</a>
+</div>
 <div class="session-note" id="session-note" hidden></div>
 
 <main>
@@ -533,8 +559,13 @@ window.DATA = __DATA_JSON__;
 <script>
 (function(){
   const SESSION_DATA = {am: window.DATA_AM || null, pm: window.DATA || null};
+  const DATA_BASE = '/tools/market-pulse/data';
   let currentSession = null;
   let D = null;
+  let selectedDate = null;
+  let latestKnownDate = '';
+  let indexData = null;
+  let dateLoading = false;
   if (!SESSION_DATA.am && !SESSION_DATA.pm) {
     document.body.innerHTML = '<div style="padding:40px;font:14px sans-serif">数据未加载。</div>';
     return;
@@ -559,6 +590,15 @@ window.DATA = __DATA_JSON__;
   };
   const cls = v => v >= 0 ? 'up' : 'down';
   const el = id => document.getElementById(id);
+
+  const dataDate = d => (d && (d.date || '')) || '';
+  const currentDate = () => (D && D.date) || '';
+  const latestDate = () => {
+    if (latestKnownDate) return latestKnownDate;
+    const dates = [SESSION_DATA.am, SESSION_DATA.pm].map(dataDate).filter(Boolean);
+    dates.sort();
+    return dates.length ? dates[dates.length - 1] : '';
+  };
 
   // ---------- narrative ----------
   function renderNarrative(){
@@ -1085,6 +1125,113 @@ window.DATA = __DATA_JSON__;
     document.querySelectorAll('[data-quality]').forEach((b,i)=>b.classList.toggle('active', i===0));
   }
 
+  function updateDateUI(){
+    const sel = el('date-select');
+    if (sel && selectedDate && Array.from(sel.options).some(o=>o.value===selectedDate)){
+      sel.value = selectedDate;
+    }
+    const hint = el('date-hint');
+    if (!hint) return;
+    if (dateLoading){
+      hint.textContent = '正在加载历史归档…';
+    } else if (selectedDate && selectedDate !== latestDate()){
+      hint.textContent = `${selectedDate} · 历史归档`;
+    } else {
+      hint.textContent = '默认最新交易日；可切换历史';
+    }
+  }
+
+  function populateDateSelect(){
+    const sel = el('date-select');
+    if (!sel) return;
+    const current = selectedDate || latestDate();
+    let rows = (indexData && Array.isArray(indexData.dates)) ? indexData.dates : [];
+    if (!rows.length && current){
+      rows = [{date: current, weekday: '', am: SESSION_DATA.am, pm: SESSION_DATA.pm}];
+    }
+    const latest = (indexData && indexData.latest) || latestDate();
+    sel.innerHTML = rows.map(row=>{
+      const bits = [];
+      if (row.date === latest) bits.push('最新');
+      if (row.weekday) bits.push(row.weekday);
+      if (row.am && row.pm) bits.push('午/收');
+      else if (row.am) bits.push('午盘');
+      else if (row.pm) bits.push('收盘');
+      return `<option value="${row.date}">${row.date}${bits.length ? ' · ' + bits.join(' · ') : ''}</option>`;
+    }).join('');
+    if (current && rows.some(r=>r.date===current)) sel.value = current;
+    else if (rows.length) sel.value = rows[0].date;
+    sel.disabled = !rows.length || dateLoading;
+  }
+
+  async function loadIndex(){
+    try {
+      const res = await fetch(`${DATA_BASE}/index.json?ts=${Date.now()}`, {cache: 'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      indexData = await res.json();
+      if (indexData && indexData.latest) latestKnownDate = indexData.latest;
+    } catch (err) {
+      console.warn('pulse index unavailable', err);
+    }
+    populateDateSelect();
+    updateDateUI();
+    return indexData;
+  }
+
+  async function fetchArchive(url){
+    try {
+      const res = await fetch(`${url}?ts=${Date.now()}`, {cache: 'no-store'});
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      console.warn('pulse archive fetch failed', url, err);
+      return null;
+    }
+  }
+
+  function updateUrl(withDate = true){
+    const url = new URL(location.href);
+    if (withDate && selectedDate && selectedDate !== latestDate()) url.searchParams.set('date', selectedDate);
+    else url.searchParams.delete('date');
+    if (currentSession) url.searchParams.set('session', currentSession);
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }
+
+  async function loadDate(date, requestedSession = null, scroll = true){
+    if (!date || dateLoading) return;
+    if (date === currentDate() && (!requestedSession || requestedSession === currentSession)) return;
+    dateLoading = true;
+    populateDateSelect();
+    updateDateUI();
+    try {
+      const [pm, am] = await Promise.all([
+        fetchArchive(`${DATA_BASE}/archive/${date}.json`),
+        fetchArchive(`${DATA_BASE}/am/archive/${date}.json`),
+      ]);
+      if (!pm && !am) throw new Error('该交易日暂无归档');
+      SESSION_DATA.pm = pm;
+      SESSION_DATA.am = am;
+      selectedDate = date;
+      let next = requestedSession && SESSION_DATA[requestedSession] ? requestedSession : null;
+      if (!next) next = currentSession && SESSION_DATA[currentSession] ? currentSession : (SESSION_DATA.pm ? 'pm' : 'am');
+      currentSession = next;
+      D = SESSION_DATA[next];
+      renderAll();
+      updateUrl(true);
+      populateDateSelect();
+      if (scroll) requestAnimationFrame(()=>window.scrollTo({top: 0, left: 0, behavior: 'auto'}));
+    } catch (err) {
+      console.warn('pulse archive load failed', err);
+      const hint = el('date-hint');
+      if (hint) hint.textContent = `${date} 归档读取失败，已保留当前数据`;
+      populateDateSelect();
+    } finally {
+      dateLoading = false;
+      populateDateSelect();
+      updateDateUI();
+    }
+  }
+
   function updateSessionUI(){
     document.querySelectorAll('.session-btn').forEach(btn=>{
       const key = btn.dataset.session;
@@ -1118,6 +1265,7 @@ window.DATA = __DATA_JSON__;
     renderTopIn(); renderTopOut(); renderDivergence(); renderLhb(); renderSectors(); renderStockQuality('new_money');
     inited.overview = true;
     updateSessionUI();
+    updateDateUI();
     el('gen-time').textContent = (D.rendered_at || D.generated_at).replace('T',' ');
   }
 
@@ -1127,9 +1275,7 @@ window.DATA = __DATA_JSON__;
     D = SESSION_DATA[key];
     renderAll();
     if (updateUrl){
-      const url = new URL(location.href);
-      url.searchParams.set('session', key);
-      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      updateUrl(true);
     }
     requestAnimationFrame(()=>scrollToTabTop(el('panel-overview')));
   }
@@ -1151,6 +1297,11 @@ window.DATA = __DATA_JSON__;
   document.querySelectorAll('.session-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>switchSession(btn.dataset.session));
   });
+
+  const dateSelect = el('date-select');
+  if (dateSelect){
+    dateSelect.addEventListener('change', ()=>loadDate(dateSelect.value, currentSession));
+  }
 
   document.querySelectorAll('[data-quality]').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -1195,6 +1346,7 @@ window.DATA = __DATA_JSON__;
   // render stamp so the just-updated close wins after 15:00.
   const params = new URLSearchParams(location.search);
   const requested = params.get('session');
+  const requestedDate = params.get('date');
   const stamp = d => Date.parse(d?.rendered_at || d?.generated_at || '') || 0;
   let initial = (requested && SESSION_DATA[requested]) ? requested : null;
   if (!initial){
@@ -1210,7 +1362,15 @@ window.DATA = __DATA_JSON__;
   }
   currentSession = initial;
   D = SESSION_DATA[initial];
+  selectedDate = D.date;
+  latestKnownDate = [SESSION_DATA.am?.date, SESSION_DATA.pm?.date].filter(Boolean).sort().slice(-1)[0] || '';
   renderAll();
+  populateDateSelect();
+  loadIndex().then(()=>{
+    if (requestedDate && requestedDate !== currentDate()){
+      loadDate(requestedDate, requested, false);
+    }
+  });
 })();
 </script>
 <!-- APP_SCRIPT_END -->

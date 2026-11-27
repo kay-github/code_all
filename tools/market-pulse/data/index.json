@@ -1,0 +1,212 @@
+{
+  "schema": "market-pulse-history-v1",
+  "updated_at": "2026-11-27T22:38:27+08:00",
+  "latest": "2026-11-27",
+  "count": 5,
+  "dates": [
+    {
+      "date": "2026-11-27",
+      "weekday": "周五",
+      "am": {
+        "label": "午盘休市",
+        "rendered_at": "2026-11-27T12:45:55",
+        "generated_at": "2026-11-27T12:45:55",
+        "is_final": false,
+        "headline": "指数午盘收红：ETF 在托底，大单在回补，杠杆仍在出清",
+        "weekday": "周五",
+        "sh": {
+          "close": 3486.76,
+          "chg": 0.28
+        },
+        "sz": {
+          "close": 10301.4,
+          "chg": 2.16
+        },
+        "cyb": {
+          "close": 2272.72,
+          "chg": 3.79
+        },
+        "k50": {
+          "close": 1221.79,
+          "chg": 4.43
+        },
+        "turnover_yi": 9270.03,
+        "zt_count": 92.0,
+        "etf_date": "2026-11-26",
+        "etf_d5": 1571.87,
+        "path": "/tools/market-pulse/data/am/archive/2026-11-27.json",
+        "url": "/pulse?date=2026-11-27&session=am"
+      },
+      "pm": {
+        "label": "收盘后",
+        "rendered_at": "2026-11-27T17:21:55+08:00",
+        "generated_at": "2026-11-27T17:21:55+08:00",
+        "is_final": true,
+        "headline": "指数收红：ETF 在托底，大单在回补，杠杆仍在出清",
+        "weekday": "周五",
+        "sh": {
+          "close": 3606.49,
+          "chg": 3.73
+        },
+        "sz": {
+          "close": 10814.02,
+          "chg": 7.24
+        },
+        "cyb": {
+          "close": 2443.96,
+          "chg": 11.61
+        },
+        "k50": {
+          "close": 1346.25,
+          "chg": 15.07
+        },
+        "turnover_yi": 20175.72,
+        "zt_count": 417.0,
+        "etf_date": "2026-11-26",
+        "etf_d5": 1571.87,
+        "path": "/tools/market-pulse/data/archive/2026-11-27.json",
+        "url": "/pulse?date=2026-11-27&session=pm"
+      }
+    },
+    {
+      "date": "2026-11-26",
+      "weekday": "周四",
+      "am": null,
+      "pm": {
+        "label": "收盘后",
+        "rendered_at": "2026-11-27T12:51:10+08:00",
+        "generated_at": "2026-11-27T12:24:10",
+        "is_final": true,
+        "headline": "指数收红：ETF 在托底，杠杆仍在出清",
+        "weekday": "周四",
+        "sh": {
+          "close": 3476.88,
+          "chg": 0.01
+        },
+        "sz": {
+          "close": 10084.04,
+          "chg": -0.02
+        },
+        "cyb": {
+          "close": 2189.82,
+          "chg": 0.29
+        },
+        "k50": {
+          "close": 1169.99,
+          "chg": -1.36
+        },
+        "turnover_yi": 13261.46,
+        "zt_count": 65.0,
+        "etf_date": "2026-11-26",
+        "etf_d5": 1571.87,
+        "path": "/tools/market-pulse/data/archive/2026-11-26.json",
+        "url": "/pulse?date=2026-11-26&session=pm"
+      }
+    },
+    {
+      "date": "2026-11-25",
+      "weekday": "周三",
+      "am": null,
+      "pm": {
+        "label": "收盘后",
+        "rendered_at": "2026-11-25T18:56:05",
+        "generated_at": "2026-11-25T18:56:05",
+        "is_final": true,
+        "headline": "指数调整：ETF 在托底，杠杆仍在出清",
+        "weekday": "周三",
+        "sh": {
+          "close": 3476.47,
+          "chg": -2.03
+        },
+        "sz": {
+          "close": 10086.36,
+          "chg": -3.24
+        },
+        "cyb": {
+          "close": 2183.58,
+          "chg": -4.19
+        },
+        "k50": {
+          "close": 1186.14,
+          "chg": -5.12
+        },
+        "turnover_yi": 13928.3,
+        "zt_count": 51.0,
+        "etf_date": "2026-11-24",
+        "etf_d5": 1644.62,
+        "path": "/tools/market-pulse/data/archive/2026-11-25.json",
+        "url": "/pulse?date=2026-11-25&session=pm"
+      }
+    },
+    {
+      "date": "2026-11-24",
+      "weekday": "周二",
+      "am": null,
+      "pm": {
+        "label": "收盘后",
+        "rendered_at": "2026-11-24T18:35:34",
+        "generated_at": "2026-11-24T18:35:34",
+        "is_final": true,
+        "headline": "指数收红：ETF 在托底，杠杆仍在出清",
+        "weekday": "周二",
+        "sh": {
+          "close": 3548.37,
+          "chg": 0.27
+        },
+        "sz": {
+          "close": 10423.6,
+          "chg": -0.29
+        },
+        "cyb": {
+          "close": 2278.99,
+          "chg": -0.05
+        },
+        "k50": {
+          "close": 1250.09,
+          "chg": 1.81
+        },
+        "turnover_yi": 16680.25,
+        "zt_count": 55.0,
+        "etf_date": "2026-11-20",
+        "etf_d5": 1887.53,
+        "path": "/tools/market-pulse/data/archive/2026-11-24.json",
+        "url": "/pulse?date=2026-11-24&session=pm"
+      }
+    },
+    {
+      "date": "2026-11-23",
+      "weekday": "周一",
+      "am": null,
+      "pm": {
+        "label": "收盘后",
+        "rendered_at": "2026-11-23T21:55:24",
+        "generated_at": "2026-11-23T21:55:24",
+        "is_final": true,
+        "headline": "深V反转：ETF 连续大额托底，大单回补光模块；杠杆仍在出清",
+        "weekday": "周一",
+        "sh": {
+          "close": 3538.95,
+          "chg": 0.15
+        },
+        "sz": {
+          "close": 10454.37,
+          "chg": 1.93
+        },
+        "cyb": {
+          "close": 2280.2,
+          "chg": 3.08
+        },
+        "k50": {
+          "close": 1227.89,
+          "chg": -0.26
+        },
+        "turnover_yi": 15641.79,
+        "zt_count": 146.0,
+        "etf_date": "2026-11-20",
+        "etf_d5": 1887.53,
+        "path": "/tools/market-pulse/data/archive/2026-11-23.json",
+        "url": "/pulse?date=2026-11-23&session=pm"
+      }
+    }
+  ]
+}

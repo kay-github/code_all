@@ -205,6 +205,10 @@
       "dest": "/tools/wave-tracker/index.html"
     },
     {
+      "src": "^/pulse/history(?:/|\\.html)?$",
+      "dest": "/tools/market-pulse/history.html"
+    },
+    {
       "src": "^/pulse/?$",
       "dest": "/tools/market-pulse/index.html"
     },

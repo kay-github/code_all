@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资金面历史档案 · Market Pulse</title>
+<style>
+:root{
+  --paper:#f7f4ee;--paper-2:#fbf9f4;--ink:#1b1e26;--muted:#6e707a;
+  --line:rgba(27,30,38,.10);--red:#c33a32;--green:#1f7a5c;--gold:#b0832f;--blue:#39658c;
+  --shadow:0 1px 2px rgba(24,28,36,.04),0 8px 24px rgba(24,28,36,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 500px at 8% -10%,rgba(195,58,50,.06),transparent 60%),radial-gradient(800px 420px at 92% 0, rgba(176,131,47,.08),transparent 55%),var(--paper);color:var(--ink);font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased}
+.page{max-width:1080px;margin:0 auto;padding:26px 22px 48px}
+header{padding:26px 28px 24px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.56));box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(195,58,50,.12)}
+h1{margin:14px 0 8px;font-size:31px;line-height:1.18;letter-spacing:-.02em}
+.dek{margin:0;max-width:760px;color:var(--muted);font-size:13px;line-height:1.75}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.6);color:var(--ink);font-size:12px;font-weight:650;text-decoration:none;transition:.2s}
+.btn:hover{background:#fff;border-color:rgba(27,30,38,.2)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:#30343e}
+.btn.ghost{background:transparent}
+main{margin-top:14px}
+.latest{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.72);box-shadow:var(--shadow)}
+.latest .eyebrow{font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.latest h2{margin:7px 0 6px;font-size:18px;line-height:1.35}
+.latest p{margin:0;color:var(--muted);font-size:12px;line-height:1.65}
+.latest-date{font-size:26px;font-weight:750;letter-spacing:-.02em;text-align:right;white-space:nowrap}
+.latest-date small{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--muted);margin-top:3px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:22px 2px 9px}
+.section-head h2{margin:0;font-size:17px}
+.section-head p{margin:0;color:var(--muted);font-size:11px}
+.day{border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.72);box-shadow:0 1px 2px rgba(24,28,36,.03);padding:15px 17px;margin-bottom:9px}
+.day-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.day-date{font-size:17px;font-weight:750;letter-spacing:-.01em}
+.day-week{font-size:10px;color:var(--muted);font-weight:650}
+.tag{font-size:9px;font-weight:700;letter-spacing:.05em;padding:3px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+.tag.pm{color:var(--red);border-color:rgba(195,58,50,.22);background:rgba(195,58,50,.06)}
+.tag.am{color:var(--gold);border-color:rgba(176,131,47,.25);background:rgba(176,131,47,.09)}
+.day-actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.day-actions .btn{padding:5px 9px;font-size:10px}
+.headline{margin:10px 0 9px;font-size:13px;line-height:1.65;color:#343841}
+.metrics{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:10px}
+.metrics b{font-size:11px;color:var(--ink);font-variant-numeric:tabular-nums}
+.up{color:var(--red)!important}.down{color:var(--green)!important}
+.ai-box{margin-top:20px;padding:16px 18px;border:1px solid rgba(57,101,140,.2);border-radius:15px;background:rgba(57,101,140,.055)}
+.ai-box h3{margin:0 0 6px;font-size:14px;color:var(--blue)}
+.ai-box p{margin:0 0 8px;color:var(--muted);font-size:11px;line-height:1.7}
+.ai-box code{display:block;padding:7px 9px;border-radius:8px;background:rgba(255,255,255,.65);border:1px solid var(--line);font-size:10px;color:#424752;word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ai-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.muted{color:var(--muted)}
+.error{padding:22px;border:1px solid rgba(195,58,50,.2);border-radius:14px;background:rgba(195,58,50,.05);color:#8d302a;font-size:12px;line-height:1.7}
+footer{margin-top:24px;color:var(--muted);font-size:10px;line-height:1.7}
+@media (max-width:680px){
+  .page{padding:14px 12px 30px}
+  header{padding:20px 18px}
+  h1{font-size:25px}
+  .latest{grid-template-columns:1fr;gap:10px}
+  .latest-date{text-align:left}
+  .day{padding:13px 13px}
+  .day-actions{width:100%;margin-left:0}
+  .metrics{gap:9px}
+}
+@media print{.top-actions,.day-actions{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="brand"><span class="dot"></span> MARKET PULSE · 资金面盘面说明</div>
+  <h1>资金面历史档案</h1>
+  <p class="dek">默认看最近交易日；这里按日期保留午盘与收盘两个节点。低频回看某一天时，点当天的“收盘版/午盘版”进入完整页面；做趋势分析时，直接读本页下方的 <b>index.json</b>，再按单日 path 取原始分析。</p>
+  <div class="top-actions">
+    <a class="btn primary" href="/pulse">打开最新盘面 →</a>
+    <a class="btn" href="/tools/market-pulse/data/index.json" target="_blank" rel="noopener">打开 JSON 索引</a>
+    <a class="btn ghost" href="/">返回首页</a>
+  </div>
+</header>
+<main>
+  <section class="latest" id="latest-card">
+    <div>
+      <div class="eyebrow">最近交易日</div>
+      <h2 id="latest-headline">正在读取归档…</h2>
+      <p id="latest-meta">数据来自 /tools/market-pulse/data/index.json</p>
+    </div>
+    <div class="latest-date" id="latest-date">--<small>DATE</small></div>
+  </section>
+
+  <div class="section-head">
+    <h2>按交易日回看</h2>
+    <p id="count-label">加载中</p>
+  </div>
+  <section id="date-list"><div class="muted">正在加载历史索引…</div></section>
+
+  <section class="ai-box">
+    <h3>给 AI 的趋势分析入口</h3>
+    <p>先读索引拿日期、收盘/午盘摘要和单日 path；需要拆解某天时再取对应 archive JSON。不要靠猜日期拼路径。</p>
+    <code>GET /tools/market-pulse/data/index.json</code>
+    <code>GET /tools/market-pulse/data/archive/YYYY-MM-DD.json &nbsp;（收盘全文）</code>
+    <code>GET /tools/market-pulse/data/am/archive/YYYY-MM-DD.json &nbsp;（午盘全文）</code>
+    <div class="ai-links">
+      <a class="btn" href="/tools/market-pulse/data/index.json" target="_blank" rel="noopener">index.json</a>
+      <a class="btn" href="/pulse">最新收盘版</a>
+      <a class="btn" href="/pulse?session=am">最新午盘版</a>
+    </div>
+  </section>
+</main>
+<footer>页面只展示已生成并提交的归档；没有归档的交易日不会出现在列表中。指数涨跌幅单位 %，成交额单位亿元，ETF 为 5 日累计净申赎估算。</footer>
+</div>
+<script>
+(function(){
+  const BASE = '/tools/market-pulse/data';
+  const fmt = (v, d=1) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '--';
+    const s = Math.abs(n).toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d});
+    return (n > 0 ? '+' : '') + (n < 0 ? '-' : '') + s;
+  };
+  const cls = v => Number(v) >= 0 ? 'up' : 'down';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pct = v => Number.isFinite(Number(v)) ? `${fmt(v,2)}%` : '--';
+  const yi = v => Number.isFinite(Number(v)) ? `${Number(v).toLocaleString('zh-CN',{maximumFractionDigits:1})} 亿` : '--';
+
+  function metric(label, value, klass){
+    return `<span>${esc(label)} <b class="${klass || ''}">${esc(value)}</b></span>`;
+  }
+
+  function dayHtml(row){
+    const pm = row.pm, am = row.am;
+    const primary = pm || am || {};
+    const hasBoth = !!(pm && am);
+    const actions = [];
+    if (pm) actions.push(`<a class="btn primary" href="${esc(pm.url)}">收盘版</a>`);
+    if (am) actions.push(`<a class="btn ghost" href="${esc(am.url)}">午盘版</a>`);
+    const tags = [];
+    if (pm) tags.push('<span class="tag pm">收盘</span>');
+    if (am) tags.push('<span class="tag am">午盘</span>');
+    if (hasBoth) tags.push('<span class="tag">双节点</span>');
+    return `<article class="day">
+      <div class="day-top">
+        <span class="day-date">${esc(row.date)}</span>
+        <span class="day-week">${esc(row.weekday || '')}</span>
+        ${tags.join('')}
+        <span class="day-actions">${actions.join('')}</span>
+      </div>
+      <p class="headline">${esc(primary.headline || '暂无标题')}</p>
+      <div class="metrics">
+        ${metric('上证', `${primary.sh && primary.sh.close != null ? primary.sh.close : '--'} ${pct(primary.sh && primary.sh.chg)}`, cls(primary.sh && primary.sh.chg))}
+        ${metric('创业板', pct(primary.cyb && primary.cyb.chg), cls(primary.cyb && primary.cyb.chg))}
+        ${metric('成交额', yi(primary.turnover_yi))}
+        ${metric('涨停', primary.zt_count != null ? primary.zt_count : '--')}
+        ${metric('ETF 5日', yi(primary.etf_d5))}
+      </div>
+    </article>`;
+  }
+
+  function render(index){
+    const dates = (index && index.dates) || [];
+    const latest = dates[0];
+    if (latest){
+      const p = latest.pm || latest.am || {};
+      document.getElementById('latest-headline').textContent = p.headline || '暂无标题';
+      document.getElementById('latest-meta').textContent = `${latest.date} ${latest.weekday || ''} · ${p.label || ''} · 生成 ${(p.rendered_at || p.generated_at || '').replace('T',' ')}`;
+      document.getElementById('latest-date').innerHTML = `${esc(latest.date)}<small>${esc(latest.weekday || '')} · 最近交易日</small>`;
+    } else {
+      document.getElementById('latest-headline').textContent = '暂无归档';
+    }
+    document.getElementById('count-label').textContent = `${dates.length} 个交易日`;
+    document.getElementById('date-list').innerHTML = dates.length ? dates.map(dayHtml).join('') : '<div class="error">还没有任何归档。先让 /pulse 生成当天数据后，这里会自动出现。</div>';
+  }
+
+  async function load(){
+    try{
+      const res = await fetch(`${BASE}/index.json?ts=${Date.now()}`, {cache:'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      render(await res.json());
+    } catch(err){
+      document.getElementById('date-list').innerHTML = `<div class="error">历史索引读取失败：${esc(err.message)}。请确认 <a href="${BASE}/index.json">index.json</a> 已部署。</div>`;
+      document.getElementById('latest-headline').textContent = '索引读取失败';
+    }
+  }
+  load();
+})();
+</script>
+</body>
+</html>
