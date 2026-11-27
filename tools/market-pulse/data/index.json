@@ -1,6 +1,6 @@
 {
   "schema": "market-pulse-history-v1",
-  "updated_at": "2026-11-27T22:38:27+08:00",
+  "updated_at": "2026-11-27T22:54:03+08:00",
   "latest": "2026-11-27",
   "count": 5,
   "dates": [
@@ -39,8 +39,8 @@
       },
       "pm": {
         "label": "收盘后",
-        "rendered_at": "2026-11-27T17:21:55+08:00",
-        "generated_at": "2026-11-27T17:21:55+08:00",
+        "rendered_at": "2026-11-27T22:54:03+08:00",
+        "generated_at": "2026-11-27T22:54:03+08:00",
         "is_final": true,
         "headline": "指数收红：ETF 在托底，大单在回补，杠杆仍在出清",
         "weekday": "周五",
