@@ -8,7 +8,7 @@
     "cutoff_label": "11:30 上午收盘（午盘快照）",
     "is_final": false
   },
-  "generated_at": "2026-11-28T03:07:41+08:00",
+  "generated_at": "2026-11-28T03:17:15+08:00",
   "headline": "指数午盘收红：ETF 在托底，大单在回补，杠杆仍在出清",
   "indices": [
     {
@@ -299,7 +299,7 @@
       "small_yi": -279.03,
       "stocks": 1200,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-28T03:03:05",
+      "fetched_at": "2026-11-28T03:12:28",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -4334,14 +4334,14 @@
       "tone": "warn"
     },
     {
-      "name": "超导概念",
+      "name": "食品安全",
       "chg": 7.43,
-      "net": 20.61,
-      "net5": -6.35,
-      "stocks": 33,
-      "leader": "阿石创",
-      "prior4": -26.96,
-      "ratio": 76.45,
+      "net": 5.02,
+      "net5": -2.44,
+      "stocks": 74,
+      "leader": "新莱应材",
+      "prior4": -7.46,
+      "ratio": 67.29,
       "label": "强回补",
       "tone": "warn"
     },
@@ -5018,18 +5018,6 @@
       "tone": "pos"
     },
     {
-      "name": "丙烯酸",
-      "chg": 6.33,
-      "net": 1.37,
-      "net5": -2.23,
-      "stocks": 20,
-      "leader": "日科化学",
-      "prior4": -3.6,
-      "ratio": 38.06,
-      "label": "弱回补",
-      "tone": "warn"
-    },
-    {
       "name": "长三角一体化",
       "chg": 6.33,
       "net": 44.49,
@@ -5039,6 +5027,18 @@
       "prior4": -60.94,
       "ratio": 73.01,
       "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "丙烯酸",
+      "chg": 6.33,
+      "net": 1.37,
+      "net5": -2.23,
+      "stocks": 20,
+      "leader": "日科化学",
+      "prior4": -3.6,
+      "ratio": 38.06,
+      "label": "弱回补",
       "tone": "warn"
     },
     {
@@ -8825,5 +8825,5 @@
     "method_note": "工作日 11:36 起抓午盘快照；收盘后 16:10 抓正式版、17:10 补龙虎榜并二次更新。午盘与收盘同页切换，数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-28 · 周六"
   },
-  "rendered_at": "2026-11-28T03:07:42+08:00"
+  "rendered_at": "2026-11-28T03:17:15+08:00"
 }
