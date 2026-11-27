@@ -26,6 +26,12 @@
       "timezone": "Asia/Shanghai",
       "path": "/api/investment-scheduled/crowding",
       "requestMethod": "POST"
+    },
+    "investment-valuations": {
+      "schedule": "20,50 0-1,7-9,15-23 * * *",
+      "timezone": "Asia/Shanghai",
+      "path": "/api/investment-scheduled/valuations",
+      "requestMethod": "POST"
     }
   },
   "routes": [
@@ -145,7 +151,7 @@
       }
     },
     {
-      "src": "^/api/investment-scheduled/(goal-alerts|crowding)/?$",
+      "src": "^/api/investment-scheduled/(goal-alerts|crowding|valuations)/?$",
       "dest": "/api/investment-market?view=$1&scheduled=1"
     },
     {

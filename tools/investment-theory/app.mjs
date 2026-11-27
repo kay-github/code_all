@@ -707,7 +707,7 @@ function addValuationTooltip(plot, chart, history, peColumn) {
   });
 }
 
-function valuationCard(row, years, fullBasis) {
+function valuationCard(row, years, fullBasis, closeDay) {
   const card = el('article', 'valuation-card');
   const header = el('header');
   header.append(el('h3', '', row.name), el('span', 'valuation-code', row.code));
@@ -780,7 +780,11 @@ function valuationCard(row, years, fullBasis) {
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
   for (const time of times.children) time.title = time.dateTime;
-  card.append(header, details, metrics, multiples);
+  card.append(header, details);
+  if (closeDay > row.date) {
+    card.append(el('p', 'valuation-waiting', '待更新 ' + closeDay.slice(5) + ' 估值'));
+  }
+  card.append(metrics, multiples);
   if (canCompare) card.append(difference);
   card.append(plot, times);
   return card;
@@ -788,35 +792,70 @@ function valuationCard(row, years, fullBasis) {
 
 let valuationLoading = false;
 let valuationLoadedAt = 0;
-let valuationRows = [];
+let valuationPayload;
+let valuationETag;
 function renderValuations() {
   hideValuationTooltip?.();
   const years = Number($('valuation-range').value) || 0;
   const fullBasis = $('valuation-basis').value === 'all';
-  $('index-valuations').replaceChildren(...valuationRows.map(row => valuationCard(row, years, fullBasis)));
+  const { indices = [], closeDates = {} } = valuationPayload ?? {};
+  $('index-valuations').replaceChildren(...indices.map(row => valuationCard(row, years, fullBasis, closeDates[row.code])));
 }
 
-async function refreshValuations() {
-  if (valuationLoading || Date.now() - valuationLoadedAt < 300_000) return;
+async function fetchValuations() {
+  try {
+    const response = await fetch('/api/investment-market?view=valuations', {
+      signal: AbortSignal.timeout(8_000),
+      cache: 'no-store',
+      headers: valuationETag ? { 'If-None-Match': valuationETag } : {},
+    });
+    if (response.status === 304 && valuationPayload) return valuationPayload;
+    if (!response.ok) throw Error('线上估值暂不可用');
+    const etag = response.headers.get('ETag');
+    if (etag && etag === valuationETag) return valuationPayload;
+    const payload = await response.json();
+    if (!payload.indices?.length) throw Error('缺少指数估值数据');
+    if (valuationPayload && payload.indices.some(row =>
+      row.date < valuationPayload.indices.find(saved => saved.code === row.code)?.date)) {
+      throw Error('线上估值早于页面已加载的数据');
+    }
+    valuationETag = etag;
+    return payload;
+  } catch (error) {
+    if (valuationPayload) throw error;
+    return { ...await api('./valuations.json'), fallback: true };
+  }
+}
+
+async function refreshValuations(force = false) {
+  if (valuationLoading || (!force && Date.now() - valuationLoadedAt < 120_000)) return;
   valuationLoading = true;
+  valuationLoadedAt = Date.now();
   const status = $('valuation-status');
   const retry = $('valuation-retry');
   retry.hidden = true;
   try {
-    const { indices } = await api('./valuations.json');
+    const payload = await fetchValuations();
+    const { indices, closeDates = {}, fallback } = payload;
     if (!indices?.length) throw Error('缺少指数估值数据');
-    valuationRows = indices;
-    const basis = $('valuation-basis');
-    basis.disabled = !indices.every(row => hasFullValuation(row.history.at(-1)));
-    if (basis.disabled) basis.value = '10';
-    renderValuations();
+    if (payload !== valuationPayload) {
+      valuationPayload = payload;
+      const basis = $('valuation-basis');
+      basis.disabled = !indices.every(row => hasFullValuation(row.history.at(-1)));
+      if (basis.disabled) basis.value = '10';
+      renderValuations();
+    }
     $('valuation-range').disabled = false;
     $('valuation-sources').hidden = false;
-    status.hidden = true;
-    valuationLoadedAt = Date.now();
+    const waiting = indices.filter(row => closeDates[row.code] > row.date).length;
+    const message = fallback ? '云端估值暂不可用，当前显示最近一版数据。' :
+      waiting ? waiting + ' 只指数的最新收盘估值尚未取得，系统会自动补查。' : '';
+    if (status.textContent !== message) status.textContent = message;
+    status.hidden = !message;
+    retry.hidden = !fallback;
   } catch {
     status.hidden = false;
-    status.textContent = valuationLoadedAt ? '刷新失败，当前显示上次加载的数据。' : '收盘估值暂时无法加载。';
+    status.textContent = valuationPayload ? '刷新失败，当前显示上次加载的数据。' : '收盘估值暂时无法加载。';
     retry.hidden = false;
   } finally {
     valuationLoading = false;
@@ -1572,7 +1611,7 @@ for (const name of ['target', 'when']) field($('goal-form'), name).addEventListe
 document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventListener('click', () => refreshQuotes(true)));
 snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
 $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
-$('valuation-retry').addEventListener('click', refreshValuations);
+$('valuation-retry').addEventListener('click', () => refreshValuations(true));
 $('valuation-range').addEventListener('change', renderValuations);
 $('valuation-basis').addEventListener('change', renderValuations);
 document.addEventListener('pointerdown', event => {
@@ -1619,6 +1658,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && pending) void syncCloud(cloud);
 });
 setInterval(() => {
+  if (visible() && !$('direction').hidden && !$('fundamentals').hidden) void refreshValuations();
   if (visible() && (tradingWindow() || (!$('goal').hidden && selectedGoalType === 'point' &&
     state.goals.some(row => Object.hasOwn(macroTargets, row.symbol))))) void refreshQuotes();
 }, 60_000);

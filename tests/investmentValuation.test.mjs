@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { indexSnapshot, indices, refresh } from '../scripts/update-investment-valuation.mjs';
+import { indexSnapshot, indices, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
 
 const beforeHKClose = new Date('2026-11-26T15:50:00+08:00');
 const afterClose = new Date('2026-11-26T16:25:00+08:00');
@@ -76,4 +76,50 @@ test('refresh is repeatable and retains published dates when a source fails or r
   assert.equal(retry.warnings.length, 2);
   await assert.rejects(refresh([], partial, afterClose), /HSI/);
   await assert.rejects(refresh(updated, () => { throw new Error('upstream offline'); }, afterClose), /upstream offline/);
+});
+
+test('the cloud job records a delayed source then publishes matching valuations when available', async () => {
+  const previous = (await refresh([], (code, kind) => (kind === 'eod_price' ? closes(code) : valuations(code)).slice(0, 2),
+    new Date('2026-11-25T20:00:00+08:00'))).next;
+  const fallback = { indices: previous };
+  let record;
+  let writes = 0;
+  const store = {
+    async read(path) {
+      assert.equal(path, valuationPath);
+      return record;
+    },
+    async write(path, value, etag) {
+      assert.equal(path, valuationPath);
+      assert.equal(etag, record?.etag ?? null);
+      record = { value, etag: String(++writes) };
+    },
+  };
+  let published = false;
+  let conditionalHits = 0;
+  let valuationLoads = 0;
+  const load = async (code, kind, request) => {
+    if (kind === 'eod_price') return closes(code);
+    valuationLoads++;
+    const etag = published ? 'new' : 'old';
+    if (request.etag === etag) {
+      conditionalHits++;
+      return null;
+    }
+    request.onETag(etag);
+    return published ? valuations(code) : valuations(code).slice(0, 2);
+  };
+  const waiting = await refreshStoredValuations(store, fallback, load, afterClose);
+  assert.ok(waiting.indices.every(row => row.date === dates[1] && row.closeDate === dates[2]));
+  assert.equal(writes, 1);
+  assert.equal((await refreshStoredValuations(store, fallback, load, afterClose)).changed, false);
+  assert.equal(conditionalHits, indices.length);
+  published = true;
+  const updated = await refreshStoredValuations(store, fallback, load, afterClose);
+  assert.ok(updated.indices.every(row => row.date === dates[2] && row.closeDate === dates[2]));
+  assert.equal(writes, 2);
+  assert.equal((await refreshStoredValuations(store, fallback, load, afterClose)).changed, false);
+  assert.equal(valuationLoads, 3 * indices.length);
+  assert.ok(valuationSnapshot(fallback, record.value).indices.every(row => row.history.length === 3));
+  assert.ok(valuationSnapshot(record.value, fallback).indices.every(row => row.date === dates[2]));
 });

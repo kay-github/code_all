@@ -1,3 +1,4 @@
+const { createHash } = require('node:crypto');
 const { numeric } = require('../lib/stockMarket');
 const { sendJson } = require('../lib/gridHttp');
 const store = require('../lib/gridStore');
@@ -103,6 +104,36 @@ module.exports = async function handler(req, res) {
       }
       const check = diagnosticQuotes(req.query.mode);
       return sendJson(res, 200, await check(req.query.symbols));
+    }
+    if (req.query?.view === 'valuations') {
+      if (req.method === 'POST') {
+        const monitor = matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET);
+        if (!cron && !monitor) return sendJson(res, 401, { error: '未授权' });
+        const { refreshStoredValuations } = await import('../lib/investmentValuation.mjs');
+        try {
+          return sendJson(res, 200, await refreshStoredValuations(store, require('../tools/investment-theory/valuations.json')));
+        } catch (error) {
+          console.warn('Index valuation refresh:', error.message);
+          return sendJson(res, 503, { error: '估值自动更新暂不可用' });
+        }
+      }
+      if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
+      const { valuationPath, valuationSnapshot } = await import('../lib/investmentValuation.mjs');
+      const saved = await store.read(valuationPath).catch(() => null);
+      const body = JSON.stringify({
+        ...valuationSnapshot(require('../tools/investment-theory/valuations.json'), saved?.value),
+        fallback: !saved,
+      });
+      const etag = '"' + createHash('sha256').update(body).digest('base64url') + '"';
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, must-revalidate');
+      res.setHeader('ETag', etag);
+      if (req.headers?.['if-none-match'] === etag) {
+        res.statusCode = 304;
+        return res.end();
+      }
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(body);
     }
     if (req.query?.view === 'crowding') {
       if (req.method === 'POST') {

@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/investment-valuation.yml'
       - 'scripts/update-investment-valuation.mjs'
+      - 'lib/investmentValuation.mjs'
       - 'tests/investmentValuation.test.mjs'
   workflow_dispatch:
 
