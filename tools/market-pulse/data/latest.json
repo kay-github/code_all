@@ -8,7 +8,7 @@
     "cutoff_label": "15:00 收盘",
     "is_final": true
   },
-  "generated_at": "2026-11-28T01:33:50+08:00",
+  "generated_at": "2026-11-28T02:19:26+08:00",
   "headline": "指数收红：ETF 在托底，大单在回补，杠杆仍在出清",
   "indices": [
     {
@@ -299,7 +299,7 @@
       "small_yi": -279.03,
       "stocks": 1200,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-28T01:28:39",
+      "fetched_at": "2026-11-28T02:15:29",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -3398,18 +3398,6 @@
       "tone": "warn"
     },
     {
-      "name": "数字孪生",
-      "chg": 8.93,
-      "net": 61.67,
-      "net5": -26.17,
-      "stocks": 215,
-      "leader": "汉鑫科技",
-      "prior4": -87.84,
-      "ratio": 70.21,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "减速器",
       "chg": 8.93,
       "net": 34.89,
@@ -3418,6 +3406,18 @@
       "leader": "鸿富瀚",
       "prior4": -46.93,
       "ratio": 74.34,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "数字孪生",
+      "chg": 8.93,
+      "net": 61.67,
+      "net5": -26.17,
+      "stocks": 215,
+      "leader": "汉鑫科技",
+      "prior4": -87.84,
+      "ratio": 70.21,
       "label": "强回补",
       "tone": "warn"
     },
@@ -3446,18 +3446,6 @@
       "tone": "warn"
     },
     {
-      "name": "AI语料",
-      "chg": 8.91,
-      "net": 23.32,
-      "net5": -9.43,
-      "stocks": 53,
-      "leader": "深圳瑞捷",
-      "prior4": -32.75,
-      "ratio": 71.21,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "数字乡村",
       "chg": 8.91,
       "net": 26.1,
@@ -3466,6 +3454,18 @@
       "leader": "众诚科技",
       "prior4": -42.44,
       "ratio": 61.5,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "AI语料",
+      "chg": 8.91,
+      "net": 23.32,
+      "net5": -9.43,
+      "stocks": 53,
+      "leader": "深圳瑞捷",
+      "prior4": -32.75,
+      "ratio": 71.21,
       "label": "强回补",
       "tone": "warn"
     },
@@ -4346,14 +4346,14 @@
       "tone": "warn"
     },
     {
-      "name": "超导概念",
+      "name": "食品安全",
       "chg": 7.43,
-      "net": 20.61,
-      "net5": -6.35,
-      "stocks": 33,
-      "leader": "阿石创",
-      "prior4": -26.96,
-      "ratio": 76.45,
+      "net": 5.02,
+      "net5": -2.44,
+      "stocks": 74,
+      "leader": "新莱应材",
+      "prior4": -7.46,
+      "ratio": 67.29,
       "label": "强回补",
       "tone": "warn"
     },
@@ -8825,5 +8825,5 @@
     "method_note": "工作日 11:36 起抓午盘快照；收盘后 16:10 抓正式版、17:10 补龙虎榜并二次更新。午盘与收盘同页切换，数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-28 · 周六"
   },
-  "rendered_at": "2026-11-28T01:33:50+08:00"
+  "rendered_at": "2026-11-28T02:19:26+08:00"
 }
