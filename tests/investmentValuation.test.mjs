@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import { indexSnapshot, indices, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
+import { packValuations, unpackValuations, valuationEncoding } from '../tools/investment-theory/valuation-codec.mjs';
 
 const require = createRequire(import.meta.url);
 const beforeHKClose = new Date('2026-11-26T15:50:00+08:00');
@@ -131,13 +132,13 @@ test('the public endpoint supports conditional GET and keeps refresh authenticat
   const store = require('../lib/gridStore');
   const handler = require('../api/investment-market');
   t.mock.method(store, 'read', async () => null);
-  const request = async (method, headers = {}) => {
+  const request = async (method, headers = {}, query = {}) => {
     const response = {
       headers: {}, body: undefined,
       setHeader(key, value) { this.headers[key] = value; },
       end(body) { this.body = body; },
     };
-    await handler({ method, headers, query: { view: 'valuations', scheduled: '1' } }, response);
+    await handler({ method, headers, query: { view: 'valuations', scheduled: '1', ...query } }, response);
     return response;
   };
   const first = await request('GET');
@@ -146,7 +147,60 @@ test('the public endpoint supports conditional GET and keeps refresh authenticat
   const cached = await request('GET', { 'if-none-match': 'W/' + first.headers.ETag });
   assert.equal(cached.statusCode, 304);
   assert.equal(cached.body, undefined);
+  const query = { format: valuationEncoding };
+  const packed = await request('GET', {}, query);
+  assert.equal(packed.statusCode, 200);
+  assert.notEqual(packed.headers.ETag, first.headers.ETag);
+  assert.deepEqual(unpackValuations(JSON.parse(packed.body)), JSON.parse(first.body));
+  const cachedPacked = await request('GET', { 'if-none-match': 'W/' + packed.headers.ETag }, query);
+  assert.equal(cachedPacked.statusCode, 304);
+  assert.equal(cachedPacked.body, undefined);
   assert.equal((await request('POST')).statusCode, 401);
+});
+
+test('packed valuation history retains missing fields and falls back exactly for legacy or higher precision rows', () => {
+  const payload = { fallback: false, closeDates: { code: dates[2] }, indices: [
+    { code: 'normal', history: [
+      [dates[0], 0, 100, null, 55, 10.2345, 1.25],
+      [dates[1], 20.12, 99, 15.17, 54, 9.1111, 1.2512],
+      [dates[2], 20, 99, 16, null, 9.1111, 1.2],
+    ] },
+    { code: 'legacy', history: [[dates[0], 20.12, 90]] },
+    { code: 'precise', history: [[dates[0], 10.12345, 99, 0, 90, 10.2345, 1.25]] },
+  ] };
+  const packed = packValuations(payload);
+  assert.ok(Array.isArray(packed.indices[0].history.days));
+  assert.equal(packed.indices[1].history, payload.indices[1].history);
+  assert.equal(packed.indices[2].history, payload.indices[2].history);
+  assert.deepEqual(unpackValuations(JSON.parse(JSON.stringify(packed))), payload);
+  assert.equal(unpackValuations(payload), payload);
+});
+
+test('an emotional snapshot section reads only its own upstream while the legacy request retains all sections', async t => {
+  const handler = require('../api/investment-market');
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    const { pathname } = new URL(url);
+    calls.push(pathname);
+    if (pathname === '/api/fear-greed/sectors') return Response.json({ items: [{ name: '电子', score: 42 }] });
+    return new Response(null, { status: 503 });
+  });
+  const request = async section => {
+    const response = { setHeader() {}, end(body) { this.body = JSON.parse(body); } };
+    await handler({ method: 'GET', query: { view: 'sentiment', section } }, response);
+    return response;
+  };
+  const industry = await request('industry');
+  assert.deepEqual(calls, ['/api/fear-greed/sectors']);
+  assert.equal(industry.statusCode, 200);
+  assert.equal(industry.body.industry.items[0].score, 42);
+  assert.equal(industry.body.fear, undefined);
+  const all = await request();
+  assert.equal(all.statusCode, 200);
+  assert.equal(all.body.fear.items.length, 4);
+  assert.equal(all.body.crowding, null);
+  assert.equal(all.body.industry.items[0].score, 42);
+  assert.equal((await request('__proto__')).statusCode, 400);
 });
 
 test('older cloud snapshots acquire historical multiples even when the trading date is unchanged', async () => {

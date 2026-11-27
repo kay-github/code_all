@@ -63,25 +63,32 @@ function fearItem(name, row, stale = false) {
   };
 }
 
-async function sentiment() {
-  const [overview, kc50, hs300, major, themes] = (await Promise.allSettled([
-    cached('fear-overview', SNAPSHOT_TTL, () => upstream('/api/fear-greed/overview')),
-    cached('fear-kc50', SNAPSHOT_TTL, () => upstream('/api/fear-greed/targets/kc50')),
-    cached('fear-hs300', SNAPSHOT_TTL, () => upstream('/api/fear-greed/targets/hs300')),
-    cached('major-industries', SNAPSHOT_TTL, () => upstream('/api/fear-greed/sectors?level=major&limit=40')),
-    cached('broad-themes', SNAPSHOT_TTL, () => upstream('/api/market-structure/crowding?limit=50')),
-  ])).map(result => result.value ?? null);
-  const details = { kc50, hs300 };
-  const items = indices.map(([key, name]) => ({
-    key, ...fearItem(name, details[key] ?? overview?.targets?.find(row => row.key === key), key === 'szzs' || key === 'cybz' ? overview?.stale === true : false),
-  }));
-  return {
-    fear: { date: overview?.trade_date ?? null, model: overview?.model_version ?? kc50?.model_version ?? hs300?.model_version, items },
-    industry: major && {
+const sentimentSource = (key, path) => cached(key, SNAPSHOT_TTL, () => upstream(path)).catch(() => null);
+
+const sentimentSections = {
+  async fear() {
+    const [overview, kc50, hs300] = await Promise.all([
+      sentimentSource('fear-overview', '/api/fear-greed/overview'),
+      sentimentSource('fear-kc50', '/api/fear-greed/targets/kc50'),
+      sentimentSource('fear-hs300', '/api/fear-greed/targets/hs300'),
+    ]);
+    const details = { kc50, hs300 };
+    const items = indices.map(([key, name]) => ({
+      key, ...fearItem(name, details[key] ?? overview?.targets?.find(row => row.key === key),
+        key === 'szzs' || key === 'cybz' ? overview?.stale === true : false),
+    }));
+    return { date: overview?.trade_date ?? null, model: overview?.model_version ?? kc50?.model_version ?? hs300?.model_version, items };
+  },
+  async industry() {
+    const major = await sentimentSource('major-industries', '/api/fear-greed/sectors?level=major&limit=40');
+    return major && {
       model: major.model_version,
       items: industryNames.map(name => fearItem(name, major.items?.find(row => row.name === name), major.stale === true)),
-    },
-    crowding: themes && {
+    };
+  },
+  async crowding() {
+    const themes = await sentimentSource('broad-themes', '/api/market-structure/crowding?limit=50');
+    return themes && {
       date: themes.target_trade_date, stale: themes.stale === true,
       items: themeIds.flatMap(id => {
         const row = themes.items?.find(item => item.sector_id === id);
@@ -89,8 +96,14 @@ async function sentiment() {
           name: row.native_name, date: row.trade_date, score: scoreOf(row.heat?.value), stale: row.stale === true,
         }] : [];
       }),
-    },
-  };
+    };
+  },
+};
+
+async function sentiment(section) {
+  if (section && !Object.hasOwn(sentimentSections, section)) throw Object.assign(Error('情绪数据分类无效'), { status: 400 });
+  const keys = section ? [section] : Object.keys(sentimentSections);
+  return Object.fromEntries(await Promise.all(keys.map(async key => [key, await sentimentSections[key]()])));
 }
 
 module.exports = async function handler(req, res) {
@@ -119,11 +132,13 @@ module.exports = async function handler(req, res) {
       }
       if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
       const { valuationPath, valuationSnapshot } = await import('../lib/investmentValuation.mjs');
+      const { valuationEncoding, packValuations } = await import('../tools/investment-theory/valuation-codec.mjs');
       const saved = await store.read(valuationPath).catch(() => null);
-      const body = JSON.stringify({
+      const payload = {
         ...valuationSnapshot(require('../tools/investment-theory/valuations.json'), saved?.value),
         fallback: !saved,
-      });
+      };
+      const body = JSON.stringify(req.query.format === valuationEncoding ? packValuations(payload) : payload);
       const etag = '"' + createHash('sha256').update(body).digest('base64url') + '"';
       res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, must-revalidate');
       res.setHeader('ETag', etag);
@@ -179,7 +194,7 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, isLedger ? config.data : { goals: config.goals });
     }
     if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
-    const data = req.query?.view === 'sentiment' ? await sentiment() : await quotes(req.query?.symbols);
+    const data = req.query?.view === 'sentiment' ? await sentiment(req.query.section) : await quotes(req.query?.symbols);
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', req.query?.view === 'sentiment' ? 'public, s-maxage=300' : 'private, no-store');

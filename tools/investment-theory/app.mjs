@@ -5,6 +5,7 @@ import {
 } from './model.mjs';
 import { drawShare } from './share.mjs';
 import { syncDecision } from './cloud-sync.mjs';
+import { unpackValuations, valuationEncoding } from './valuation-codec.mjs';
 
 const $ = id => document.getElementById(id);
 const field = (form, name) => form.elements.namedItem(name);
@@ -29,7 +30,8 @@ let cloud = null;
 let quotes = {};
 let fetchingQuotes = false;
 let loadingSnapshot = false;
-let snapshot = null;
+const loadingSentiment = new Set();
+const loadedSentiment = new Set();
 let accountBusy = false;
 let holderId = SELF;
 let editingHolder = false;
@@ -584,9 +586,7 @@ function svgNode(tag, attributes) {
   return node;
 }
 
-function valuationPoints(history, column) {
-  const start = Date.parse(history[0][0]);
-  const span = Math.max(1, Date.parse(history.at(-1)[0]) - start);
+function valuationPoints(history, column, start, span) {
   let points = history;
   if (history.length > 480) {
     // Keep both extremes in each group so brief highs and lows are still visible.
@@ -614,10 +614,7 @@ const hasFullValuation = point => Number.isFinite(point?.[3]) && Number.isFinite
 const valuationMultiple = value => Number.isFinite(value) ? fmt.format(value) : '—';
 
 let hideValuationTooltip;
-function addValuationTooltip(plot, chart, history, peColumn, latest) {
-  const start = Date.parse(history[0][0]);
-  const end = history.length - 1;
-  const span = Math.max(1, Date.parse(history[end][0]) - start);
+function addValuationTooltip(plot, chart, latest) {
   const cursor = svgNode('g', { class: 'valuation-cursor', hidden: '', 'aria-hidden': 'true' });
   const guide = svgNode('line', { class: 'valuation-guide', y1: 0, y2: 100 });
   const peMarker = svgNode('circle', { class: 'valuation-marker pe', r: 4 });
@@ -639,6 +636,7 @@ function addValuationTooltip(plot, chart, history, peColumn, latest) {
   tooltip.append(day, values);
   plot.append(tooltip);
 
+  let series;
   let selected = -1;
   function hide() {
     selected = -1;
@@ -652,6 +650,8 @@ function addValuationTooltip(plot, chart, history, peColumn, latest) {
     if (hideValuationTooltip !== hide) hideValuationTooltip?.();
     hideValuationTooltip = hide;
     selected = index;
+    const { history, peColumn, start, span } = series;
+    const end = history.length - 1;
     const point = history[index];
     const fraction = (Date.parse(point[0]) - start) / span;
     const x = 240 * fraction;
@@ -677,10 +677,11 @@ function addValuationTooltip(plot, chart, history, peColumn, latest) {
   }
 
   function pointAt(clientX) {
+    const { history, start, span } = series;
     const { left, width } = chart.getBoundingClientRect();
     const stamp = start + Math.min(1, Math.max(0, (clientX - left) / width)) * span;
     let low = 0;
-    let high = end;
+    let high = history.length - 1;
     while (low < high) {
       const middle = Math.floor((low + high) / 2);
       if (Date.parse(history[middle][0]) < stamp) low = middle + 1;
@@ -698,11 +699,12 @@ function addValuationTooltip(plot, chart, history, peColumn, latest) {
     if (event.pointerType !== 'touch') hide();
   });
   chart.addEventListener('focus', () => {
-    if (selected < 0 && chart.matches(':focus-visible')) show(end);
+    if (selected < 0 && chart.matches(':focus-visible')) show(series.history.length - 1);
   });
   chart.addEventListener('blur', hide);
   chart.addEventListener('keydown', event => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const end = series.history.length - 1;
     const index = selected < 0 ? end : selected;
     switch (event.key) {
       case 'ArrowLeft': show(Math.max(0, index - 1)); break;
@@ -713,9 +715,13 @@ function addValuationTooltip(plot, chart, history, peColumn, latest) {
     }
     event.preventDefault();
   });
+  return next => {
+    hide();
+    series = next;
+  };
 }
 
-function valuationCard(row, years, fullBasis, closeDay) {
+function valuationCard(row, closeDay) {
   const card = el('article', 'valuation-card');
   const header = el('header');
   header.append(el('h3', '', row.name), el('span', 'valuation-code', row.code));
@@ -741,21 +747,7 @@ function valuationCard(row, years, fullBasis, closeDay) {
     columns.append(cell);
   }
   const metricRows = metrics.createTBody();
-  let history = fullBasis ? row.history.filter(hasFullValuation) : row.history;
-  if (years) {
-    const cutoff = new Date(row.date);
-    const month = cutoff.getUTCMonth();
-    cutoff.setUTCFullYear(cutoff.getUTCFullYear() - years);
-    if (cutoff.getUTCMonth() !== month) cutoff.setUTCDate(0);
-    const startDay = cutoff.toISOString().slice(0, 10);
-    history = history.filter(([day]) => day >= startDay);
-  }
-  const first = history[0];
-  const basisLabel = fullBasis ? '全部历史' : '近 10 年';
-  const chart = svgNode('svg', {
-    viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img', tabindex: 0,
-    'aria-label': row.name + '市盈率和市净率分位走势，' + basisLabel + '口径，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%，左右方向键查看交易日',
-  });
+  const chart = svgNode('svg', { viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img', tabindex: 0 });
   for (const y of [0, 25, 50, 75, 100]) {
     chart.append(svgNode('line', { x1: 0, x2: 240, y1: y, y2: y, class: 'valuation-gridline' }));
   }
@@ -763,7 +755,6 @@ function valuationCard(row, years, fullBasis, closeDay) {
   difference.append(el('span', '', '全历史差值（百分点）'));
   for (const [key, title, tenYearColumn] of [['pe', 'PE', 1], ['pb', 'PB', 2]]) {
     const fullColumn = tenYearColumn + 2;
-    const column = fullBasis ? fullColumn : tenYearColumn;
     const metric = metricRows.insertRow();
     metric.className = key;
     const label = el('th');
@@ -777,20 +768,23 @@ function valuationCard(row, years, fullBasis, closeDay) {
       const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';
       difference.append(el('strong', '', title + ' ' + sign + fmt.format(Math.abs(delta))));
     }
-    const points = valuationPoints(history, column);
-    if (key === 'pe') chart.append(svgNode('polygon', { points: '0,100 ' + points + ' 240,100', class: 'valuation-area pe' }));
-    chart.append(svgNode('polyline', { points, class: 'valuation-line ' + key }));
   }
+  const area = svgNode('polygon', { class: 'valuation-area pe' });
+  const pe = svgNode('polyline', { class: 'valuation-line pe' });
+  const pb = svgNode('polyline', { class: 'valuation-line pb' });
+  chart.append(area, pe, pb);
   const axis = el('div', 'valuation-axis');
   axis.setAttribute('aria-hidden', 'true');
   axis.append(...['100%', '50%', '0%'].map(value => el('span', '', value)));
   const plot = el('div', 'valuation-plot');
   plot.append(axis, chart);
-  addValuationTooltip(plot, chart, history, fullBasis ? 3 : 1, row);
+  const updateTooltip = addValuationTooltip(plot, chart, row);
   const times = el('p', 'valuation-times');
   const month = value => value.slice(0, 7).replace('-', '.');
-  times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
-  for (const time of times.children) time.title = time.dateTime;
+  const from = el('time');
+  const to = date(last[0], month(last[0]));
+  to.title = to.dateTime;
+  times.append(from, to);
   card.append(header, details);
   if (closeDay > row.date) {
     card.append(el('p', 'valuation-waiting', '待更新 ' + closeDay.slice(5) + ' 估值'));
@@ -798,24 +792,71 @@ function valuationCard(row, years, fullBasis, closeDay) {
   card.append(metrics);
   if (canCompare) card.append(difference);
   card.append(plot, times);
-  return card;
+  const curves = new Map();
+  let fullHistory;
+  let active;
+  function update(years, fullBasis) {
+    const key = years + ':' + fullBasis;
+    if (key === active) return;
+    let series = curves.get(key);
+    if (!series) {
+      let history = fullBasis ? (fullHistory ??= row.history.filter(hasFullValuation)) : row.history;
+      if (years) {
+        const cutoff = new Date(row.date);
+        const month = cutoff.getUTCMonth();
+        cutoff.setUTCFullYear(cutoff.getUTCFullYear() - years);
+        if (cutoff.getUTCMonth() !== month) cutoff.setUTCDate(0);
+        const startDay = cutoff.toISOString().slice(0, 10);
+        history = history.slice(history.findIndex(([day]) => day >= startDay));
+      }
+      const start = Date.parse(history[0][0]);
+      const span = Math.max(1, Date.parse(history.at(-1)[0]) - start);
+      const peColumn = fullBasis ? 3 : 1;
+      series = { history, start, span, peColumn,
+        pePoints: valuationPoints(history, peColumn, start, span),
+        pbPoints: valuationPoints(history, peColumn + 1, start, span),
+      };
+    }
+    curves.delete(key);
+    if (curves.size >= 4) curves.delete(curves.keys().next().value);
+    curves.set(key, series);
+    active = key;
+    const first = series.history[0][0];
+    from.dateTime = from.title = first;
+    from.textContent = month(first);
+    const basis = fullBasis ? '全部历史' : '近 10 年';
+    chart.setAttribute('aria-label', row.name + '市盈率和市净率分位走势，' + basis + '口径，' + first +
+      ' 至 ' + last[0] + '，纵轴 0% 至 100%，左右方向键查看交易日');
+    area.setAttribute('points', '0,100 ' + series.pePoints + ' 240,100');
+    pe.setAttribute('points', series.pePoints);
+    pb.setAttribute('points', series.pbPoints);
+    updateTooltip(series);
+  }
+  return { card, update };
 }
 
 let valuationLoading = false;
 let valuationLoadedAt = 0;
 let valuationPayload;
 let valuationETag;
-function renderValuations() {
-  hideValuationTooltip?.();
+let valuationCards = [];
+function updateValuationCharts() {
   const years = Number($('valuation-range').value) || 0;
   const fullBasis = $('valuation-basis').value === 'all';
-  const { indices = [], closeDates = {} } = valuationPayload ?? {};
-  $('index-valuations').replaceChildren(...indices.map(row => valuationCard(row, years, fullBasis, closeDates[row.code])));
+  for (const { update } of valuationCards) update(years, fullBasis);
+}
+
+function renderValuations() {
+  hideValuationTooltip?.();
+  const { indices, closeDates = {} } = valuationPayload;
+  valuationCards = indices.map(row => valuationCard(row, closeDates[row.code]));
+  updateValuationCharts();
+  $('index-valuations').replaceChildren(...valuationCards.map(({ card }) => card));
 }
 
 async function fetchValuations() {
   try {
-    const response = await fetch('/api/investment-market?view=valuations', {
+    const response = await fetch('/api/investment-market?view=valuations&format=' + valuationEncoding, {
       signal: AbortSignal.timeout(8_000),
       cache: 'no-store',
       headers: valuationETag ? { 'If-None-Match': valuationETag } : {},
@@ -824,7 +865,7 @@ async function fetchValuations() {
     if (!response.ok) throw Error('线上估值暂不可用');
     const etag = response.headers.get('ETag');
     if (etag && etag === valuationETag) return valuationPayload;
-    const payload = await response.json();
+    const payload = unpackValuations(await response.json());
     if (!payload.indices?.length) throw Error('缺少指数估值数据');
     if (valuationPayload && payload.indices.some(row =>
       row.date < valuationPayload.indices.find(saved => saved.code === row.code)?.date)) {
@@ -922,23 +963,43 @@ function boardPanel(data, subtitle) {
   card.append(list);
   return card;
 }
+async function refreshSentimentSection(section, id, render, force) {
+  if (loadingSentiment.has(section) || (!force && loadedSentiment.has(section))) return;
+  loadingSentiment.add(section);
+  const panel = $(id);
+  try {
+    const result = await api('/api/investment-market?view=sentiment&section=' + section);
+    const data = result[section];
+    if (!data?.items?.some(item => Number.isFinite(item.score))) throw Error('情绪快照暂不可用');
+    panel.replaceChildren(render(data));
+    loadedSentiment.add(section);
+  } catch {
+    const loaded = loadedSentiment.has(section);
+    const warning = el('p', 'muted snapshot-error', loaded ? '刷新失败，当前显示上次快照。' : '快照暂不可用，可稍后刷新。');
+    panel.querySelector('.snapshot-error')?.remove();
+    if (loaded) panel.prepend(warning);
+    else panel.replaceChildren(warning);
+  } finally {
+    loadingSentiment.delete(section);
+  }
+}
+
+const themeHeatDetails = $('theme-heat').closest('details');
+function refreshThemeHeat(force = false) {
+  if (themeHeatDetails.open) void refreshSentimentSection('crowding', 'theme-heat',
+    data => boardPanel(data, '金融工作台 · 同花顺主题热度'), force);
+}
+
 async function refreshSnapshot(force = false) {
-  if (loadingSnapshot || (snapshot && !force)) return;
+  if (loadingSnapshot || (!force && loadedSentiment.has('fear') && loadedSentiment.has('industry'))) return;
   loadingSnapshot = true;
   snapshotButtons.forEach(button => { button.disabled = true; });
   try {
-    snapshot = await api('/api/investment-market?view=sentiment');
-    $('fear-index').replaceChildren(fearPanel(snapshot.fear));
-    $('industry-fear').replaceChildren(boardPanel(snapshot.industry, 'TMT（电子、通信、计算机、传媒）及其他大行业 · 恐贪分'));
-    $('theme-heat').replaceChildren(boardPanel(snapshot.crowding, '金融工作台 · 同花顺主题热度'));
-  } catch {
-    for (const id of ['fear-index', 'industry-fear', 'theme-heat']) {
-      const warning = el('p', 'muted snapshot-error', snapshot ? '刷新失败，当前显示上次快照。' : '快照暂不可用，可稍后刷新。');
-      const panel = $(id);
-      panel.querySelector('.snapshot-error')?.remove();
-      if (snapshot) panel.prepend(warning);
-      else panel.replaceChildren(warning);
-    }
+    await Promise.all([
+      refreshSentimentSection('fear', 'fear-index', fearPanel, force),
+      refreshSentimentSection('industry', 'industry-fear',
+        data => boardPanel(data, 'TMT（电子、通信、计算机、传媒）及其他大行业 · 恐贪分'), force),
+    ]);
   } finally {
     loadingSnapshot = false;
     snapshotButtons.forEach(button => { button.disabled = false; });
@@ -1454,13 +1515,13 @@ const selectGoalTab = bindTabs($('goal-tabs'), panel => {
   if (selectedGoalType === 'point') void refreshQuotes();
 });
 bindTabs($('technical-tabs'), panel => {
-  if (panel === 'technical-crowding') { void refreshCrowding(); void refreshSnapshot(); }
+  if (panel === 'technical-crowding') void refreshCrowding();
   if (panel === 'technical-flow') void refreshEtfFlow();
 });
 bindTabs($('direction-tabs'), panel => {
   if (panel === 'fundamentals') void refreshValuations();
   if (panel === 'emotion') void refreshSnapshot();
-  if (panel === 'technical' && !$('technical-crowding').hidden) { void refreshCrowding(); void refreshSnapshot(); }
+  if (panel === 'technical' && !$('technical-crowding').hidden) void refreshCrowding();
   if (panel === 'technical' && !$('technical-flow').hidden) void refreshEtfFlow();
 });
 const selectTab = bindTabs($('main-tabs'), panel => {
@@ -1468,7 +1529,7 @@ const selectTab = bindTabs($('main-tabs'), panel => {
   if (panel === 'direction' && !$('fundamentals').hidden) void refreshValuations();
   if (panel === 'direction' && !$('emotion').hidden) void refreshSnapshot();
   if (panel === 'direction' && !$('technical').hidden) {
-    if (!$('technical-crowding').hidden) { void refreshCrowding(); void refreshSnapshot(); }
+    if (!$('technical-crowding').hidden) void refreshCrowding();
     if (!$('technical-flow').hidden) void refreshEtfFlow();
   }
 });
@@ -1621,10 +1682,14 @@ $('trade-type').addEventListener('change', tradeFields);
 for (const name of ['target', 'when']) field($('goal-form'), name).addEventListener('change', goalFields);
 document.querySelectorAll('.refresh-quotes').forEach(button => button.addEventListener('click', () => refreshQuotes(true)));
 snapshotButtons.forEach(button => button.addEventListener('click', () => refreshSnapshot(true)));
-$('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
+themeHeatDetails.addEventListener('toggle', () => refreshThemeHeat());
+$('refresh-crowding').addEventListener('click', () => {
+  void refreshCrowding(true);
+  refreshThemeHeat(true);
+});
 $('valuation-retry').addEventListener('click', () => refreshValuations(true));
-$('valuation-range').addEventListener('change', renderValuations);
-$('valuation-basis').addEventListener('change', renderValuations);
+$('valuation-range').addEventListener('change', updateValuationCharts);
+$('valuation-basis').addEventListener('change', updateValuationCharts);
 document.addEventListener('pointerdown', event => {
   if (hideValuationTooltip && !event.target.closest('.valuation-plot')) hideValuationTooltip();
 });
