@@ -612,6 +612,101 @@ function valuationPoints(history, column) {
 
 const hasFullValuation = point => Number.isFinite(point?.[3]) && Number.isFinite(point?.[4]);
 
+let hideValuationTooltip;
+function addValuationTooltip(plot, chart, history, peColumn) {
+  const start = Date.parse(history[0][0]);
+  const end = history.length - 1;
+  const span = Math.max(1, Date.parse(history[end][0]) - start);
+  const cursor = svgNode('g', { class: 'valuation-cursor', hidden: '', 'aria-hidden': 'true' });
+  const guide = svgNode('line', { class: 'valuation-guide', y1: 0, y2: 100 });
+  const peMarker = svgNode('circle', { class: 'valuation-marker pe', r: 4 });
+  const pbMarker = svgNode('circle', { class: 'valuation-marker pb', r: 4 });
+  cursor.append(guide, peMarker, pbMarker);
+  chart.append(cursor);
+
+  const tooltip = el('div', 'valuation-tooltip');
+  tooltip.hidden = true;
+  tooltip.setAttribute('role', 'status');
+  const day = el('time');
+  const values = el('div', 'valuation-tooltip-values');
+  const pe = el('span', 'pe');
+  const pb = el('span', 'pb');
+  values.append(pe, pb);
+  tooltip.append(day, values);
+  plot.append(tooltip);
+
+  let selected = -1;
+  function hide() {
+    selected = -1;
+    tooltip.hidden = true;
+    cursor.setAttribute('hidden', '');
+    if (hideValuationTooltip === hide) hideValuationTooltip = undefined;
+  }
+
+  function show(index) {
+    if (index === selected) return;
+    if (hideValuationTooltip !== hide) hideValuationTooltip?.();
+    hideValuationTooltip = hide;
+    selected = index;
+    const point = history[index];
+    const fraction = (Date.parse(point[0]) - start) / span;
+    const x = 240 * fraction;
+    const bounds = chart.getBoundingClientRect();
+    const left = bounds.left - plot.getBoundingClientRect().left + bounds.width * fraction;
+    tooltip.style.setProperty('--valuation-tooltip-x', left + 'px');
+    day.dateTime = point[0];
+    day.textContent = point[0];
+    pe.textContent = 'PE ' + pct(point[peColumn]);
+    pb.textContent = 'PB ' + pct(point[peColumn + 1]);
+    guide.setAttribute('x1', x);
+    guide.setAttribute('x2', x);
+    peMarker.setAttribute('cx', x);
+    peMarker.setAttribute('cy', 100 - point[peColumn]);
+    pbMarker.setAttribute('cx', x);
+    pbMarker.setAttribute('cy', 100 - point[peColumn + 1]);
+    cursor.removeAttribute('hidden');
+    tooltip.hidden = false;
+  }
+
+  function pointAt(clientX) {
+    const { left, width } = chart.getBoundingClientRect();
+    const stamp = start + Math.min(1, Math.max(0, (clientX - left) / width)) * span;
+    let low = 0;
+    let high = end;
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      if (Date.parse(history[middle][0]) < stamp) low = middle + 1;
+      else high = middle;
+    }
+    if (low > 0 && stamp - Date.parse(history[low - 1][0]) <= Date.parse(history[low][0]) - stamp) low--;
+    show(low);
+  }
+
+  chart.addEventListener('pointermove', event => {
+    if (event.pointerType !== 'touch') pointAt(event.clientX);
+  });
+  chart.addEventListener('click', event => pointAt(event.clientX));
+  plot.addEventListener('pointerleave', event => {
+    if (event.pointerType !== 'touch') hide();
+  });
+  chart.addEventListener('focus', () => {
+    if (selected < 0 && chart.matches(':focus-visible')) show(end);
+  });
+  chart.addEventListener('blur', hide);
+  chart.addEventListener('keydown', event => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const index = selected < 0 ? end : selected;
+    switch (event.key) {
+      case 'ArrowLeft': show(Math.max(0, index - 1)); break;
+      case 'ArrowRight': show(Math.min(end, index + 1)); break;
+      case 'Home': show(0); break;
+      case 'End': show(end); break;
+      default: return;
+    }
+    event.preventDefault();
+  });
+}
+
 function valuationCard(row, years, fullBasis) {
   const card = el('article', 'valuation-card');
   const header = el('header');
@@ -649,8 +744,8 @@ function valuationCard(row, years, fullBasis) {
   const first = history[0];
   const basisLabel = fullBasis ? '全部历史' : '近 10 年';
   const chart = svgNode('svg', {
-    viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img',
-    'aria-label': row.name + '市盈率和市净率分位走势，' + basisLabel + '口径，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%',
+    viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img', tabindex: 0,
+    'aria-label': row.name + '市盈率和市净率分位走势，' + basisLabel + '口径，' + first[0] + ' 至 ' + last[0] + '，纵轴 0% 至 100%，左右方向键查看交易日',
   });
   for (const y of [0, 25, 50, 75, 100]) {
     chart.append(svgNode('line', { x1: 0, x2: 240, y1: y, y2: y, class: 'valuation-gridline' }));
@@ -680,6 +775,7 @@ function valuationCard(row, years, fullBasis) {
   axis.append(...['100%', '50%', '0%'].map(value => el('span', '', value)));
   const plot = el('div', 'valuation-plot');
   plot.append(axis, chart);
+  addValuationTooltip(plot, chart, history, fullBasis ? 3 : 1);
   const times = el('p', 'valuation-times');
   const month = value => value.slice(0, 7).replace('-', '.');
   times.append(date(first[0], month(first[0])), date(last[0], month(last[0])));
@@ -694,6 +790,7 @@ let valuationLoading = false;
 let valuationLoadedAt = 0;
 let valuationRows = [];
 function renderValuations() {
+  hideValuationTooltip?.();
   const years = Number($('valuation-range').value) || 0;
   const fullBasis = $('valuation-basis').value === 'all';
   $('index-valuations').replaceChildren(...valuationRows.map(row => valuationCard(row, years, fullBasis)));
@@ -1478,6 +1575,12 @@ $('refresh-crowding').addEventListener('click', () => refreshCrowding(true));
 $('valuation-retry').addEventListener('click', refreshValuations);
 $('valuation-range').addEventListener('change', renderValuations);
 $('valuation-basis').addEventListener('change', renderValuations);
+document.addEventListener('pointerdown', event => {
+  if (hideValuationTooltip && !event.target.closest('.valuation-plot')) hideValuationTooltip();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') hideValuationTooltip?.();
+});
 const pageParams = new URLSearchParams(location.search);
 if (pageParams.get('tab') !== 'goal') void refreshValuations();
 tradeFields();
