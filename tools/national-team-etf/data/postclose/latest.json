@@ -3,14 +3,14 @@
   "stage_label": "盘后早值",
   "confidence": "provisional",
   "confidence_note": "早值级：T 日收盘初值，供应商换手率反推，可能被事后修订，不可作定稿",
-  "business_date": "2026-11-26",
-  "generated_at": "2026-11-26T22:04:39+08:00",
-  "build_id": "20261126T220412_0800_9ed0461e35",
-  "built_at": "2026-11-26T22:04:12+08:00",
+  "business_date": "2026-11-27",
+  "generated_at": "2026-11-27T16:27:37+08:00",
+  "build_id": "20261127T162710_0800_279b7565cc",
+  "built_at": "2026-11-27T16:27:10+08:00",
   "pending_review": true,
   "superseded_by": null,
   "primary": "vendor",
-  "primary_net_yi": 26.40099496581055,
+  "primary_net_yi": 44.088709049905,
   "primary_label": "供应商反推净申赎（低置信）",
   "official": {
     "disclosure_stage": "初值或不完整",
@@ -33,13 +33,13 @@
     }
   },
   "vendor": {
-    "net_yi": 26.40099496581055,
-    "net_low_yi": -19.023679418318995,
-    "net_high_yi": 72.15861547869464,
+    "net_yi": 44.088709049905,
+    "net_low_yi": -5.201205888430819,
+    "net_high_yi": 93.03128138229178,
     "valid_members": 15,
     "expected_members": 15,
     "complete": false,
-    "amount_yi": 565.59,
+    "amount_yi": 1160.29,
     "reliable": false,
     "reasons": [
       "供应商换手率反推，分母口径未经验证",
@@ -47,9 +47,9 @@
     ]
   },
   "inventory": {
-    "total_units": 7.048267675225035,
-    "net_added_units": 4.572021808102698,
-    "current_ratio": 0.7048267675225035,
+    "total_units": 7.124293074595536,
+    "net_added_units": 4.648047207473198,
+    "current_ratio": 0.7124293074595536,
     "complete": true,
     "provisional": true,
     "comparable": true,
@@ -58,8 +58,8 @@
   "flattened": {
     "count": 0,
     "members": [],
-    "near_count": 5,
-    "ratio_median": 1.000543,
+    "near_count": 7,
+    "ratio_median": 0.999705,
     "note": "严格抹平按 1±1e-05 判定；near_count 为 1±0.001 的宽口径，含真实小额申赎"
   },
   "revision_risk": "T 日换手率分母可能仍是昨收份额，收盘后才换成当日登记份额；11-13 实测 94/254 只被修订，核心15由 −24.9 亿修正为 −123.7 亿。本页早值不能当定稿，也不能据此判断国家队当日买卖。",
