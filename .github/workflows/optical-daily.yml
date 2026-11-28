@@ -1,28 +1,25 @@
 name: optical-daily-update
 
-# GitHub 的 schedule 不是准点闹钟：实测经常延迟 9～12 小时，偶尔更久。
-# 因此不再只押 15:01 / 16:05 两个点，而是铺两组窗口：
-#   1) UTC 07:01-07:46（北京 15:01-15:46）：覆盖 0～8 小时延迟；
-#   2) UTC 前一日 22:30-23:15（北京 06:30-07:15）：覆盖 9～17 小时延迟，
-#      延迟后正好落到北京 15:30-24:15。
-# 每个 run 先过“北京工作日 15:10-23:59”闸门；不在窗口内直接退出，不装依赖、不抓数。
-# 抓完后再校验 data_date 必须等于北京今天，避免节假日/停市把旧数据提交上去。
+# GitHub 的 schedule 不是准点闹钟：实测延迟 9～18 小时是常态（11-26/11-27 的
+# 15:01/16:05 窗口实际落在北京中午 12:23 和次日凌晨 01:00-02:14）。
+# 因此不再用“墙上时钟窗口”当闸门，改为“数据是否过期”闸门：
+#   gate 读出仓库里已有的 data_date，算出最近一个已收盘交易日（expect），
+#   只有 data_date < expect 且当前不在盘中（09:30-15:00）才真正抓数。
+# 这样 schedule 无论延迟到几点（含次日凌晨、周末），只要线上数据落后就会补上；
+# 已是最新则直接退出，不装依赖不抓数。verify 再要求新数据严格比旧数据新，
+# 且 intraday=false，避免节假日/停市把旧值重复提交。
 
 on:
   schedule:
-    - cron: '1 7 * * 1-5'
-    - cron: '16 7 * * 1-5'
-    - cron: '31 7 * * 1-5'
-    - cron: '46 7 * * 1-5'
-    - cron: '5 8 * * 1-5'
-    - cron: '30 22 * * 0-4'
-    - cron: '45 22 * * 0-4'
-    - cron: '0 23 * * 0-4'
-    - cron: '15 23 * * 0-4'
+    # 工作日每小时一次（UTC 每小时第 5 分）。hourly 是关键：schedule 延迟实测在
+    # 5~10 小时之间浮动，固定几个点必然被整段跳过；每小时都有机会落在 15:05 之后。
+    - cron: '5 * * * 1-5'
+    # 周末三次补漏（北京 09:00 / 15:00 / 21:00），补周五或节假日的缺口
+    - cron: '5 1,7,13 * * 6,0'
   workflow_dispatch:
     inputs:
       force:
-        description: '忽略北京时间闸门（仅手动补跑用）'
+        description: '忽略数据闸门（仅手动补跑用）'
         required: false
         default: false
         type: boolean
@@ -39,25 +36,55 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      run: ${{ steps.decide.outputs.run }}
     steps:
-      - name: Check Beijing close window
-        id: check
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/optical-decline-board/光通信跌幅榜_数据.json
+          sparse-checkout-cone-mode: false
+
+      - name: Decide whether the board is stale
+        id: decide
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "true" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "manual force: bypass time gate"
+            echo "manual force: bypass data gate"
             exit 0
           fi
-          BJ_DAY=$(TZ=Asia/Shanghai date +%u)
+
+          BJ_DATE=$(TZ=Asia/Shanghai date +%F)
+          BJ_WDAY=$(TZ=Asia/Shanghai date +%u)
           BJ_HM=$(TZ=Asia/Shanghai date +%H%M)
-          echo "Beijing now: $(TZ=Asia/Shanghai date '+%F %T weekday=%u')"
-          if [ "$BJ_DAY" -ge 1 ] && [ "$BJ_DAY" -le 5 ] && [ "$((10#$BJ_HM))" -ge 1510 ] && [ "$((10#$BJ_HM))" -le 2359 ]; then
+          OLD=$(python3 -c "import json;print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json',encoding='utf-8'))['meta']['data_date'])")
+          echo "Beijing now: $(TZ=Asia/Shanghai date '+%F %T weekday=%u') | board data_date=${OLD}"
+
+          # 盘中（09:30-15:00）当日行情未定稿，一律不抓
+          IN_SESSION=0
+          if [ "$BJ_WDAY" -le 5 ] && [ "$((10#$BJ_HM))" -ge 930 ] && [ "$((10#$BJ_HM))" -lt 1500 ]; then
+            IN_SESSION=1
+          fi
+
+          # 最近一个已收盘交易日：今天工作日且已过 15:05 取今天，否则往前推到上个工作日
+          if [ "$BJ_WDAY" -le 5 ] && [ "$((10#$BJ_HM))" -ge 1505 ]; then
+            EXPECT=$BJ_DATE
+          else
+            EXPECT=$(TZ=Asia/Shanghai date -d "$BJ_DATE -1 day" +%F)
+            while [ "$(TZ=Asia/Shanghai date -d "$EXPECT" +%u)" -ge 6 ]; do
+              EXPECT=$(TZ=Asia/Shanghai date -d "$EXPECT -1 day" +%F)
+            done
+          fi
+          echo "expect_latest_trading_day=${EXPECT} in_session=${IN_SESSION}"
+
+          if [ "$IN_SESSION" -eq 1 ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "skip: in-session, quotes are not final"
+          elif [[ "$OLD" < "$EXPECT" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "run: board ${OLD} lags ${EXPECT}"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "skip: outside Beijing weekday 15:10-23:59"
+            echo "skip: board ${OLD} already covers ${EXPECT}"
           fi
 
   update:
@@ -97,14 +124,15 @@ jobs:
         working-directory: tools/optical-decline-board
         run: |
           BJ_TODAY=$(TZ=Asia/Shanghai date +%F)
-          DATA_DATE=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['data_date'])")
-          INTRADAY=$(python -c "import json; print(json.load(open('光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['intraday'])")
-          echo "data_date=${DATA_DATE} bj_today=${BJ_TODAY} intraday=${INTRADAY}"
-          if [ "$DATA_DATE" = "$BJ_TODAY" ] && [ "$INTRADAY" = "False" ]; then
+          DATA_DATE=$(python3 -c "import json;print(json.load(open('光通信跌幅榜_数据.json',encoding='utf-8'))['meta']['data_date'])")
+          INTRADAY=$(python3 -c "import json;print(json.load(open('光通信跌幅榜_数据.json',encoding='utf-8'))['meta']['intraday'])")
+          OLD=$(git -C "$GITHUB_WORKSPACE" show HEAD:tools/optical-decline-board/光通信跌幅榜_数据.json | python3 -c "import sys,json;print(json.load(sys.stdin)['meta']['data_date'])")
+          echo "data_date=${DATA_DATE} old=${OLD} bj_today=${BJ_TODAY} intraday=${INTRADAY}"
+          if [ "$INTRADAY" = "False" ] && [[ "$DATA_DATE" > "$OLD" ]] && { [[ "$DATA_DATE" < "$BJ_TODAY" ]] || [ "$DATA_DATE" = "$BJ_TODAY" ]; }; then
             echo "match=true" >> "$GITHUB_OUTPUT"
           else
             echo "match=false" >> "$GITHUB_OUTPUT"
-            echo "skip commit: data_date is not Beijing today, or intraday is still true"
+            echo "skip commit: need intraday=false, data_date newer than ${OLD} and not later than ${BJ_TODAY}"
           fi
 
       - name: Commit & push
@@ -112,7 +140,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          DATA_DATE=$(python -c "import json; print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json', encoding='utf-8'))['meta']['data_date'])")
+          DATA_DATE=$(python3 -c "import json;print(json.load(open('tools/optical-decline-board/光通信跌幅榜_数据.json',encoding='utf-8'))['meta']['data_date'])")
           git add tools/optical-decline-board
           if git diff --cached --quiet; then
             echo "no changes"
