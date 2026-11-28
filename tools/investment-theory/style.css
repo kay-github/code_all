@@ -201,6 +201,9 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .flow-metric h4 { margin: 0 0 3px; color: var(--muted); font-size: 13px; }
 .flow-metric strong { font-size: clamp(15px, 2.3vw, 22px); overflow-wrap: anywhere; }
 .flow-metric p { margin: 3px 0 0; }
+.flow-metrics.flow-inventory { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.emotion-reminder { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 0; color: var(--muted); font-size: 13px; }
+.emotion-reminder strong { padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--group-bg); color: var(--group-text); }
 @media (max-width: 700px) {
   .risk-board, .flow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .goal-group .entry button { min-height: 44px; }
@@ -250,6 +253,8 @@ textarea { resize: vertical; margin-bottom: 8px; }
 .crowding-chart-label { font-size: 11px; fill: var(--muted); }
 .crowding-gridline { stroke: var(--line); }
 .crowding-cursor { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.crowding-reference { stroke: var(--group-text); stroke-width: 1; stroke-dasharray: 5 4; opacity: .75; }
+.crowding-reference-label { fill: var(--group-text); stroke: var(--inset); stroke-width: 3px; paint-order: stroke; }
 .crowding-line { stroke: var(--series); stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
 .crowding-dot { fill: var(--series); stroke: var(--surface); stroke-width: 1.2; }
 .crowding-trend .line-0 { --series: var(--accent); }

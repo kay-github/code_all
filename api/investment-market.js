@@ -136,11 +136,11 @@ module.exports = async function handler(req, res) {
         }
       }
       if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
-      const { valuationPath, valuationSnapshot } = await import('../lib/investmentValuation.mjs');
+      const { valuationPath, publishedValuationSnapshot } = await import('../lib/investmentValuation.mjs');
       const { valuationEncoding, packValuations } = await import('../tools/investment-theory/valuation-codec.mjs');
       const saved = await store.read(valuationPath).catch(() => null);
       const payload = {
-        ...valuationSnapshot(require('../tools/investment-theory/valuations.json'), saved?.value),
+        ...publishedValuationSnapshot(require('../tools/investment-theory/valuations.json'), saved?.value),
         fallback: !saved,
       };
       const body = JSON.stringify(req.query.format === valuationEncoding ? packValuations(payload) : payload);

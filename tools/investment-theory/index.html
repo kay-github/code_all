@@ -185,10 +185,10 @@
             <label for="valuation-range">
               <span class="meta">走势范围</span>
               <select id="valuation-range" disabled>
-                <option value="all" selected>全部历史</option>
+                <option value="all">全部历史</option>
                 <option value="10">近 10 年</option>
                 <option value="5">近 5 年</option>
-                <option value="3">近 3 年</option>
+                <option value="3" selected>近 3 年</option>
                 <option value="1">近 1 年</option>
               </select>
             </label>
@@ -259,6 +259,7 @@
         </details>
       </section>
       <section id="emotion" role="tabpanel" aria-labelledby="tab-emotion" tabindex="0" hidden>
+        <p class="emotion-reminder"><strong>观察提示</strong><span>注意观察股吧、小红书、雪球的散户情绪和大V的亢奋程度</span></p>
         <section class="panel" aria-labelledby="fear-title">
           <div class="section-head"><h3 id="fear-title">核心指数恐贪仪表盘</h3><button class="refresh-snapshot" type="button">刷新快照</button></div>
           <div id="fear-index" aria-live="polite"><p class="muted">正在加载快照…</p></div>

@@ -1043,12 +1043,16 @@ function drawCrowdingPlot(plot, summary, days, series, preserveDate = false) {
   const max = Math.ceil(upper / step) * step;
   const x = index => left + (right - left) * index / Math.max(days.length - 1, 1);
   const y = value => bottom - (bottom - top) * (value - min) / (max - min);
+  const primaryId = series[0].id;
+  const reference = days.findLast(day => Number.isFinite(day.shares[primaryId]));
   const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img',
-    'aria-label': series.map(row => row.name).join('与') + '的成交占比趋势，纵轴为百分比' });
+    'aria-label': series.map(row => row.name).join('与') + '的成交占比趋势，纵轴为百分比' +
+      (reference ? `，${series[0].name}最新参考线为 ${reference.date} 的 ${pct(reference.shares[primaryId])}` : '') });
   const label = (x, y, value, anchor) => {
     const node = svgNode('text', { x, y, 'text-anchor': anchor, class: 'crowding-chart-label' });
     node.textContent = value;
     svg.append(node);
+    return node;
   };
   for (let index = 0; index <= Math.round((max - min) / step); index++) {
     const value = min + index * step;
@@ -1080,6 +1084,13 @@ function drawCrowdingPlot(plot, summary, days, series, preserveDate = false) {
     isolated.forEach(([cx, cy]) => svg.append(svgNode('circle', { cx, cy, r: 2.5, class: `crowding-dot line-${line}` })));
     return svgNode('circle', { r: 4, class: `crowding-dot line-${line}` });
   });
+  if (reference) {
+    const value = reference.shares[primaryId];
+    const level = y(value);
+    svg.append(svgNode('line', { x1: left, x2: right, y1: level, y2: level, class: 'crowding-reference' }));
+    label(right - 4, level - 6 < top ? level + 14 : level - 6, '最新 ' + pct(value), 'end')
+      .classList.add('crowding-reference-label');
+  }
   svg.append(...dots);
 
   let current = -1;
@@ -1465,12 +1476,14 @@ async function refreshEtfFlow() {
     const verified = formal.value;
     const pending = provisional.value;
     const cards = [];
-    const amount = (label, value, caption) => {
+    const metric = (label, value, caption, tone = '') => {
       const card = el('article', 'flow-metric');
-      const readable = Number.isFinite(value) ? (value > 0 ? '+' : '') + fmt.format(value) + ' 亿' : '待完整披露';
-      card.append(el('h4', '', label), el('strong', difference(value), readable), el('p', 'meta', caption));
+      card.append(el('h4', '', label), el('strong', tone, value), el('p', 'meta', caption));
       return card;
     };
+    const amount = (label, value, caption) => metric(label,
+      Number.isFinite(value) ? (value > 0 ? '+' : '') + fmt.format(value) + ' 亿' : '待完整披露',
+      caption, difference(value));
     if (pending?.business_date && (!verified || pending.business_date > verified.business_date)) {
       const rows = pending.official;
       const values = el('div', 'flow-metrics');
@@ -1482,17 +1495,28 @@ async function refreshEtfFlow() {
     }
     if (verified?.business_date) {
       const values = el('div', 'flow-metrics');
-      const { latest, w5 } = verified;
+      const { latest, w5, inventory } = verified;
+      if (inventory) {
+        const levels = el('div', 'flow-metrics flow-inventory');
+        const standard = inventory.latest;
+        const official = inventory.official_correction?.latest;
+        const levelCard = (label, value, caption) => metric(label,
+          Number.isFinite(value) ? fmt.format(value) + ' 份' : '待完整披露', caption);
+        levels.append(
+          levelCard('标准刻度', inventory.complete && standard?.complete && standard.date === verified.business_date ? standard.total_units : null,
+            ['换手率反推', standard?.date].filter(Boolean).join(' · ')),
+          levelCard('正式修正刻度', official?.complete ? official.units : null,
+            ['交易所披露', official?.date, official ? `${official.valid_members}/${official.expected_members} 只` : '待核对'].filter(Boolean).join(' · ')),
+        );
+        cards.push(levels);
+      }
       values.append(
         amount('正式份额 · 当日', latest?.complete ? latest.net_estimate : null,
           `${verified.business_date} · 覆盖 ${latest?.valid_members ?? 0}/${latest?.expected_members ?? 15}`),
         amount('正式份额 · 近5日', w5?.complete ? w5.net_estimate : null, `截至 ${verified.business_date}`),
       );
       if (latest?.complete) {
-        const breadth = el('article', 'flow-metric');
-        breadth.append(el('h4', '', '当日份额分布'), el('strong', '', `${latest.inflow_count} 增 · ${latest.outflow_count} 减`),
-          el('p', 'meta', '核心15只 ETF'));
-        values.append(breadth);
+        values.append(metric('当日份额分布', `${latest.inflow_count} 增 · ${latest.outflow_count} 减`, '核心15只 ETF'));
       }
       cards.push(values);
     }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
-import { indexSnapshot, indices, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
+import { indexSnapshot, indices, publishedValuationSnapshot, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
 import { auditIndexHubValuations } from '../lib/investmentValuationAudit.mjs';
 import { packValuations, unpackValuations, valuationEncoding } from '../tools/investment-theory/valuation-codec.mjs';
 
@@ -119,14 +119,15 @@ test('the cloud job records a delayed source then publishes matching valuations 
     return { status: 'checked' };
   });
   assert.ok(waiting.indices.every(row => row.date === dates[1] && row.closeDate === dates[2]));
-  assert.deepEqual(waiting.backup, { status: 'checked' });
+  assert.equal(waiting.backup.status, 'checked');
+  assert.equal(waiting.backup.rollout.enabledAt, null);
   assert.equal(record.value.backup, undefined);
   assert.equal(writes, 1);
   const auditFailure = await refreshStoredValuations(store, fallback, load, afterClose, async () => {
     throw new Error('audit fixture failure');
   });
   assert.equal(auditFailure.changed, false);
-  assert.deepEqual(auditFailure.backup, { status: 'audit_failed' });
+  assert.equal(auditFailure.backup.status, 'audit_failed');
   assert.equal(conditionalHits, indices.length);
   published = true;
   const updated = await refreshStoredValuations(store, fallback, load, afterClose);
@@ -180,6 +181,99 @@ test('Index Hub audits same-day coverage and six values against five published s
   assert.deepEqual(await auditIndexHubValuations(reference, 'fixture-key', async () => {
     throw new Error('upstream timeout');
   }), { status: 'request_failed' });
+});
+
+test('the trial requires all eight mainland indices to lead on November 30 and match all six values before enabling', async () => {
+  const tradingDays = ['2026-11-23', '2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27',
+    '2026-11-30', '2026-12-01', '2026-12-02'];
+  const [friday, trial, tuesday, wednesday] = tradingDays.slice(-4);
+  const codes = indices.map(([code]) => code);
+  const mainland = codes.filter(code => code !== 'HSI');
+  const rows = code => tradingDays.map((trdDt, i) => ({
+    trdCode: code, trdDt, pxClose: 3000 + i, pETtm: 20 + i, pBLf: 1.25 + i / 10,
+    pETtm10Y: 30 + i, pBLf10Y: 40 + i, pETtmBgn: 50 + i, pBLfBgn: 60 + i,
+  }));
+  const snapshot = { indices: indices.map(([code, name]) =>
+    indexSnapshot(code, name, rows(code).slice(0, 5), rows(code).slice(0, 5), new Date('2026-11-28T15:30:00+08:00'))) };
+
+  async function runScenario(problem) {
+    let data;
+    let primaryEnd = friday;
+    let hubEnd = trial;
+    const store = {
+      async read() { return data; },
+      async write(path, value, etag) {
+        assert.equal(path, valuationPath);
+        assert.equal(data?.etag ?? null, etag);
+        data = { value, etag: String(Number(etag ?? 0) + 1) };
+      },
+    };
+    const run = async (date, time = '16:30:00') => {
+      const now = new Date(date + 'T' + time + '+08:00');
+      return await refreshStoredValuations(store, snapshot, async (code, kind) => {
+        if (kind === 'eod_price') return rows(code);
+        if (problem === 'primary-offline' && code === '000985' && primaryEnd === friday) throw Error('timeout');
+        return rows(code).filter(row => row.trdDt <= primaryEnd);
+      }, now, async primary => {
+        const audit = await auditIndexHubValuations(primary, 'fixture-key', url => Response.json({
+          success: true, data: codes.map(code => ({
+            trdCode: code,
+            items: rows(code).filter(row => row.trdDt <= hubEnd && row.trdDt <= url.searchParams.get('endDate') &&
+              !(problem === 'not-ahead' && code === '000985' && primaryEnd === friday && row.trdDt === trial))
+              .map(row => problem === 'wrong-rank' && code === '000985' && row.trdDt === trial ?
+                { ...row, pBLfBgn: row.pBLfBgn + 1 } : row),
+          })),
+        }));
+        return { ...audit, checkedAt: now.toISOString() };
+      });
+    };
+    const publicRows = () => publishedValuationSnapshot(snapshot, data?.value).indices;
+    await run(trial, '14:59:00');
+    assert.ok(publicRows().every(row => row.date === friday));
+    const earlier = await run(trial);
+    const expectedLeads = ['primary-offline', 'not-ahead'].includes(problem) ? mainland.slice(1) : mainland;
+    assert.deepEqual(Object.keys(earlier.backup.rollout.observedAhead).sort(), [...expectedLeads].sort());
+    assert.equal(earlier.backup.rollout.enabledAt, null);
+    assert.equal(earlier.backup.candidates, undefined);
+    assert.ok(publicRows().every(row => row.date === friday));
+
+    primaryEnd = trial;
+    const compared = await run(tuesday, '08:30:00');
+    if (problem) {
+      assert.deepEqual(compared.backup.rollout.confirmed, mainland.slice(1));
+      assert.equal(compared.backup.rollout.enabledAt, null);
+      hubEnd = tuesday;
+      await run(tuesday);
+      assert.ok(publicRows().every(row => row.date === trial));
+      return;
+    }
+    assert.deepEqual(compared.backup.rollout.confirmed, mainland);
+    assert.ok(compared.backup.rollout.enabledAt);
+    hubEnd = tuesday;
+    const next = await run(tuesday);
+    assert.deepEqual(next.backup.rollout.supplemental, mainland);
+    assert.ok(valuationSnapshot(snapshot, data.value).indices.every(row => row.date === trial));
+    for (const row of publicRows()) {
+      assert.equal(row.date, row.code === 'HSI' ? trial : tuesday);
+      assert.equal(row.history.length, row.code === 'HSI' ? 6 : 7);
+      assert.deepEqual(row.history.slice(0, 5), snapshot.indices.find(item => item.code === row.code).history);
+      assert.equal(row.close, row.code === 'HSI' ? 3005 : 3006);
+      assert.deepEqual(row.history.at(-1).slice(5), [row.pe, row.pb]);
+    }
+    assert.equal((await run(tuesday)).changed, false);
+    await run(wednesday);
+    assert.ok(publicRows().filter(row => row.code !== 'HSI').every(row => row.date === tuesday));
+    hubEnd = wednesday;
+    await run(wednesday);
+    assert.ok(publicRows().filter(row => row.code !== 'HSI').every(row =>
+      row.date === wednesday && row.history.some(([day]) => day === tuesday)));
+    primaryEnd = wednesday;
+    const caughtUp = await run(wednesday, '21:00:00');
+    assert.deepEqual(caughtUp.backup.rollout.supplemental, []);
+    assert.ok(publicRows().every(row => row.date === wednesday && row.history.length === 8));
+  }
+
+  for (const problem of [null, 'not-ahead', 'wrong-rank', 'primary-offline']) await runScenario(problem);
 });
 
 test('the public endpoint supports conditional GET and keeps refresh authenticated', async t => {
