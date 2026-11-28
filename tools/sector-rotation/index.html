@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="/assets/workspace-theme.css">
   <link rel="stylesheet" href="/tools/sector-rotation/style.css">
   <script src="/tools/sector-rotation/app.js" defer></script>
+  <script src="/tools/sector-rotation/trial.js" defer></script>
 </head>
 <body>
   <main>
     <header class="heading">
-      <nav aria-label="工具站"><a href="/" target="_top">← 工具站</a><button id="theme" type="button">切换深浅色</button></nav>
+      <nav aria-label="工具站"><a href="/" target="_top">← 工具站</a><a href="#forward-trial">前瞻对照 ↓</a><button id="theme" type="button">切换深浅色</button></nav>
       <h1>A 股板块轮动</h1>
       <p>跟踪 10 个 A 股行业与主题 ETF。收盘后更新因子排名，每两周确认模型入场和离场。</p>
     </header>
@@ -81,6 +82,60 @@
         <p class="sources">因子参考<a href="https://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/search/rptid/636474699140/index.phtml" target="_blank" rel="noopener noreferrer">开源证券《A 股行业动量的精细结构》</a>，双周轮动框架参考<a href="https://pujiang.sse.com.cn/ListedCompany/learning/learning2/c/10774245/files/c91fb644345f4179af12a775e08e6961.pdf" target="_blank" rel="noopener noreferrer">上交所 ETF 投教材料</a>。本站将行业指数因子应用于固定 ETF 池。行情来自<a href="https://quote.eastmoney.com/center/gridlist.html#fund_etf" target="_blank" rel="noopener noreferrer">东方财富</a>。信号由本站计算，仅供信息参考。</p>
       </details>
     </div>
+    <section id="forward-trial" class="section" aria-labelledby="trial-title">
+      <header class="section-head">
+        <div>
+          <h2 id="trial-title">120 日趋势前瞻对照</h2>
+          <p id="trial-start">同池、同起点、含成本模拟</p>
+        </div>
+        <button id="trial-refresh" type="button">刷新对照</button>
+      </header>
+      <p id="trial-status" role="status">正在读取前瞻记录…</p>
+      <div id="trial-data" hidden>
+        <table aria-label="前瞻模拟累计表现">
+          <thead><tr><th scope="col">组合</th><th scope="col">净收益</th><th scope="col">最大回撤</th><th scope="col">收盘仓位</th></tr></thead>
+          <tbody id="trial-results"></tbody>
+        </table>
+        <p id="trial-evaluation"></p>
+        <details open>
+          <summary>最新信号与持有状态</summary>
+          <p id="trial-signal-date"></p>
+          <ul id="trial-signals" class="trial-signals"></ul>
+        </details>
+        <details>
+          <summary>各板块与 120 日均线</summary>
+          <p>距离随已收盘行情更新，入离场在双周评估日确认。</p>
+          <table aria-label="各板块趋势状态">
+            <thead><tr><th scope="col">板块 / ETF</th><th scope="col">均线距离</th><th scope="col">本期趋势信号</th></tr></thead>
+            <tbody id="trial-sectors"></tbody>
+          </table>
+        </details>
+        <details id="trial-stress" hidden>
+          <summary>双倍成本与夏普</summary>
+          <p>单边 0.20% 的累计净收益。夏普按主账本日收益计算，按 252 个交易日年化，现金收益按零计。</p>
+          <table aria-label="双倍成本与夏普">
+            <thead><tr><th scope="col">组合</th><th scope="col">双倍成本净收益</th><th scope="col">夏普</th></tr></thead>
+            <tbody id="trial-stress-results"></tbody>
+          </table>
+        </details>
+        <details id="trial-history" hidden>
+          <summary>逐日净收益与回撤</summary>
+          <table aria-label="逐日累计净收益与当前回撤">
+            <thead><tr><th scope="col">交易日</th><th scope="col">趋势</th><th scope="col">现版</th><th scope="col">等权</th></tr></thead>
+            <tbody id="trial-days"></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>锁定规则与复核条件</summary>
+          <ul class="rules">
+            <li>固定使用页面的 10 只 ETF。每两周首个交易日收盘评估，沿用 2024-01-01 的周期起点。趋势组用后复权收盘价，严格高于最近 120 个交易日（含当日）的均价时配置 10%，其余资金留现金，现金收益计零。</li>
+            <li>现版组沿用 20 日因子前 5 等权。同池等权组每只 10%。三组从 1.00 开始，首日开盘按预先锁定的上期信号建仓，之后按信号后下一交易日开盘模拟成交。遇停牌或开盘方向涨跌停，整组顺延至可成交开盘。新的双周目标会覆盖尚未执行的旧目标。</li>
+            <li>每笔买入、卖出均按成交金额扣 0.10%，初始建仓也扣费。收盘计净值与回撤，同时按 0.20% 单边成本记第二套账。</li>
+            <li>首轮固定 120 个交易日。趋势组须同时对两组参照做到净收益不低、最大回撤更小、夏普更高，且双倍成本下净收益不低，才进入替换前复核。页面继续并行记账。</li>
+          </ul>
+        </details>
+      </div>
+    </section>
     <noscript>请开启 JavaScript 查看板块轮动信号。</noscript>
   </main>
 </body>

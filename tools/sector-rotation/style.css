@@ -74,3 +74,17 @@ details[open] summary { margin-bottom: 8px; }
   th, td { padding-inline: 4px; }
   th, td:last-child { font-size: 12px; }
 }
+
+#forward-trial { scroll-margin-top: 12px; }
+#trial-status, #trial-evaluation, #trial-signal-date { font-size: 13px; margin-bottom: 8px; }
+#trial-evaluation { margin-top: 8px; }
+#trial-data details { padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--line); }
+#trial-data details table { margin-top: 8px; }
+#trial-results th[scope="row"], #trial-stress-results th[scope="row"] { text-align: left; background: transparent; border-bottom: 1px solid var(--line); }
+.trial-signals { margin: 0; list-style: none; padding: 0; }
+.trial-signals li { background: var(--inset); border-radius: 7px; padding: 7px 10px; margin-top: 6px; }
+.trial-signals p { font-size: 13px; }
+#trial-days .ticker { white-space: normal; }
+@media (max-width: 420px) {
+  #trial-days td { font-size: 12px; }
+}

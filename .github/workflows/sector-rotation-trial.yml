@@ -1,0 +1,29 @@
+name: Sector rotation forward trial
+
+on:
+  schedule:
+    # Beijing time 16:53 and 19:23 on weekdays.
+    - cron: '53 8 * * 1-5'
+    - cron: '23 11 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sector-rotation-trial-v1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Publish completed forward-test sessions
+        env:
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+        run: |
+          test -n "$MONITOR_SECRET"
+          curl --silent --show-error --fail-with-body --max-time 50 -X POST \
+            --header "Authorization: Bearer $MONITOR_SECRET" \
+            'https://1.688680.xyz/api/investment-market?view=sector-rotation-trial'

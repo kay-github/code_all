@@ -175,6 +175,24 @@ module.exports = async function handler(req, res) {
       const snapshot = saved?.value?.schema === seed.schema && saved.value.asOf >= seed.asOf ? saved.value : null;
       return sendJson(res, 200, snapshot || { ...seed, fallback: true });
     }
+    if (req.query?.view === 'sector-rotation-trial') {
+      const trial = require('../lib/sectorRotationTrial');
+      const seed = require('../tools/sector-rotation/trial-opening.json');
+      if (req.method === 'POST') {
+        if (!matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+          return sendJson(res, 401, { error: '未授权' });
+        }
+        try {
+          return sendJson(res, 200, await trial.refresh({ store, seed }));
+        } catch (error) {
+          console.warn('Sector rotation forward trial refresh:', error.message, error.cause?.message ?? '');
+          return sendJson(res, 503, { error: '前瞻对照行情更新暂不可用' });
+        }
+      }
+      if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
+      const saved = await store.read(trial.PATH);
+      return sendJson(res, 200, trial.published(saved?.value, seed));
+    }
     if (req.query?.view === 'crowding') {
       if (req.method === 'POST') {
         const monitor = matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET);
