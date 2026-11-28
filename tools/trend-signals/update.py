@@ -267,24 +267,34 @@ def build_index(code, name, rows):
 def push_plus(title, content):
     token = os.environ.get("PUSHPLUS_TOKEN", "").strip()
     if token:
-        body = json.dumps({"token": token, "title": title, "content": content, "template": "markdown"}).encode()
-        req = urllib.request.Request("https://www.pushplus.plus/send", data=body, headers={"Content-Type": "application/json"})
-        r = json.loads(urllib.request.urlopen(req, timeout=30).read().decode())
-        log("PushPlus:", r.get("code"), r.get("msg"))
-        return r.get("code") == 200
+        try:
+            body = json.dumps({"token": token, "title": title, "content": content, "template": "markdown"}).encode()
+            req = urllib.request.Request("https://www.pushplus.plus/send", data=body,
+                                         headers={"Content-Type": "application/json"})
+            r = json.loads(urllib.request.urlopen(req, timeout=30).read().decode())
+            log("PushPlus:", r.get("code"), r.get("msg"))
+            if r.get("code") == 200:
+                return True
+        except Exception as e:
+            log("PushPlus 直连失败:", e)
     # 复用站点已有的 Vercel PushPlus 通道，避免在 GitHub 再存一份 token
     secret = os.environ.get("MONITOR_SECRET", "").strip()
     if secret:
-        html = (content.replace("&", "&amp;").replace("<", "&lt;")
-                .replace("\n", "<br>").replace("**", ""))
-        body = json.dumps({"title": title, "content": html}).encode()
-        req = urllib.request.Request(
-            "https://1.688680.xyz/api/top-radar?action=notify", data=body,
-            headers={"Content-Type": "application/json", "Authorization": "Bearer " + secret})
-        r = json.loads(urllib.request.urlopen(req, timeout=30).read().decode())
-        log("PushPlus relay:", r.get("ok"), r.get("error", ""))
-        return bool(r.get("ok"))
-    log("PUSHPLUS_TOKEN / MONITOR_SECRET 均未配置，跳过推送")
+        try:
+            html = (content.replace("&", "&amp;").replace("<", "&lt;")
+                    .replace("\n", "<br>").replace("**", ""))
+            body = json.dumps({"title": title, "content": html}).encode()
+            req = urllib.request.Request(
+                "https://1.688680.xyz/api/top-radar?action=notify", data=body,
+                headers={"Content-Type": "application/json", "Authorization": "Bearer " + secret})
+            r = json.loads(urllib.request.urlopen(req, timeout=30).read().decode())
+            log("PushPlus relay:", r.get("ok"), r.get("error", ""))
+            return bool(r.get("ok"))
+        except Exception as e:
+            log("PushPlus relay 失败:", e)
+            return False
+    if not token:
+        log("PUSHPLUS_TOKEN / MONITOR_SECRET 均未配置，跳过推送")
     return False
 
 
