@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="/tools/trend-signals/">
+  <meta name="description" content="主升浪发现器：用行业龙头量价共振作为温度计，在垂直行业 ETF 日线上寻找主升浪的早期线索，并用 2024-2026 样本外数据逐条验证。">
+  <title>主升浪发现器 · 行业 ETF 早期趋势</title>
+  <script src="/assets/site-theme.js"></script>
+  <link rel="stylesheet" href="/assets/workspace-theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="main-wave.js" defer></script>
+</head>
+<body>
+  <div class="app wave-app">
+    <header class="top wave-top">
+      <nav class="wave-nav" aria-label="趋势工具">
+        <a href="/trend">← 趋势买卖点</a>
+        <a href="#validation">验证与边界</a>
+      </nav>
+      <button type="button" class="icon-btn" id="wave-theme" aria-label="切换深浅色" title="切换深浅色">◐</button>
+    </header>
+
+    <main class="wave-main">
+      <header class="wave-heading">
+        <p class="wave-eyebrow">TREND DISCOVERY · 行业 ETF</p>
+        <h1>主升浪发现器</h1>
+        <p class="wave-lede">不提示个股。用行业龙头股的量价共振做“行业温度计”，在垂直行业 ETF 的日线突破、均线转多和回踩再启动中，寻找主升浪的早期线索。</p>
+        <p class="wave-disclaimer">这是发现器，不是买入指令。早期提醒的命中率有限，必须结合确认层、市场环境和风险预算使用。</p>
+      </header>
+
+      <div class="wave-status-row">
+        <p class="wave-message" id="wave-status" role="status">正在读取 ETF 收盘数据…</p>
+        <span class="wave-stamp" id="wave-stamp"></span>
+      </div>
+      <noscript><p class="wave-message">请开启 JavaScript 查看 ETF 信号。</p></noscript>
+      <button id="wave-retry" class="tool-btn" type="button" hidden>重新读取</button>
+
+      <div id="wave-content" hidden>
+        <section class="wave-kpis" id="wave-kpis" aria-label="概览"></section>
+
+        <section class="wave-section" id="wave-today" aria-labelledby="wave-today-title">
+          <div class="wave-section-head">
+            <div>
+              <p class="wave-eyebrow">今日提醒</p>
+              <h2 id="wave-today-title">数据日新触发</h2>
+            </div>
+            <span class="wave-count" id="wave-today-count"></span>
+          </div>
+          <div id="wave-today-list" class="wave-alert-list"></div>
+        </section>
+
+        <section class="wave-section" aria-labelledby="wave-groups-title">
+          <div class="wave-section-head">
+            <div>
+              <p class="wave-eyebrow">跟踪池</p>
+              <h2 id="wave-groups-title">15 个行业主题 · 17 只 ETF</h2>
+            </div>
+            <span class="wave-note">按主题分组；同主题多只 ETF 并列显示</span>
+          </div>
+          <div id="wave-groups" class="wave-groups"></div>
+        </section>
+
+        <details class="wave-details" open>
+          <summary>最近提醒</summary>
+          <ul id="wave-history" class="wave-history"></ul>
+          <p class="wave-method-note">只展示最近 30 条；同一天多只 ETF 可能同时触发，不代表同一笔交易。</p>
+        </details>
+
+        <section class="wave-section wave-validation" id="validation" aria-labelledby="validation-title">
+          <div class="wave-section-head">
+            <div>
+              <p class="wave-eyebrow">数据验证 · 2024-01 至 2026-11 · 17 只 ETF</p>
+              <h2 id="validation-title">先看它抓到了什么，再看它错过了什么</h2>
+            </div>
+          </div>
+          <p class="wave-lede">主升浪不是学术标准术语，下面把它固定成可复现的“波段标签”，再用留出样本检验发现逻辑。开发集只用于选规则，2024 年后的时间留出和 7 个行业留出都没有参与调参。</p>
+
+          <div class="wave-kpis wave-kpis-validation" id="val-kpis"></div>
+
+          <div class="wave-callout" id="val-conclusion">
+            <strong>结论</strong>
+            <span>作为“发现器”有效：覆盖率 92.3%，明显高于随机匹配的 67.7%；作为“买入信号”不够：早期提醒里只有 8.1% 最终落在主升浪内。所以页面只给 ETF 观察线索，不给个股，也不把提醒当成买点。</span>
+          </div>
+          <p class="wave-method-note">开发集的四项目标（覆盖 ≥80%、早期覆盖 ≥65%、早期命中 ≥25%、年提醒 ≤8）没有全部通过：覆盖与早期覆盖达标，早期命中率和提醒频率没有达标。这是把“发现”与“买入”分开的原因。</p>
+
+          <div class="wave-grid-2">
+            <article class="wave-panel">
+              <h3>主升浪的操作口径</h3>
+              <dl class="wave-definition">
+                <div><dt>波段定义</dt><dd>收盘价 8% 方向反转识别峰谷；低点到高点涨幅 ≥25%，持续 10–85 个交易日，同期领先沪深300 ≥10 个百分点。</dd></div>
+                <div><dt>早期定义</dt><dd>首次提醒在低点后 0–10 个交易日，且次日开盘时相对低点已走涨幅不超过整段涨幅的 1/3。</dd></div>
+                <div><dt>提醒口径</dt><dd>12 个交易日冷却；连续 5 日没有候选后再开新一轮；启动观察为三层任一，加速确认为独立一层。</dd></div>
+              </dl>
+            </article>
+            <article class="wave-panel">
+              <h3>研究设计</h3>
+              <dl class="wave-definition">
+                <div><dt>开发集</dt><dd>8 只行业 ETF，2018–2023；2,349 个候选组合，按覆盖率、早期覆盖、早期命中、频率四项筛选。</dt></div>
+                <div><dt>时间留出</dt><dd>同一批开发 ETF，2024-01 起；行业留出为另外 7 只 ETF，同样从 2024 起。</dd></div>
+                <div><dt>冻结规则</dt><dd><code>range10 + ma + reclaim</code> 任一，且不过度拉伸；这是开发集选出的规则，未在留出集上调参。</dd></div>
+              </dl>
+            </article>
+          </div>
+
+          <h3 class="wave-subhead">逐条逻辑验证</h3>
+          <p class="wave-method-note">每一行都是单独逻辑在 2024–2026 样本外的表现；“年提醒”按每只 ETF、每年折算。组合行是最终上线的两层。</p>
+          <div class="table-wrap">
+            <table class="tbl wave-table">
+              <thead><tr><th scope="col">逻辑</th><th scope="col">波段覆盖</th><th scope="col">早期覆盖</th><th scope="col">提醒命中</th><th scope="col">早期命中</th><th scope="col">年提醒 / ETF</th></tr></thead>
+              <tbody id="val-rules"></tbody>
+            </table>
+          </div>
+
+          <h3 class="wave-subhead">不同留出集的表现</h3>
+          <div class="table-wrap">
+            <table class="tbl wave-table">
+              <thead><tr><th scope="col">样本</th><th scope="col">波段</th><th scope="col">覆盖</th><th scope="col">早期覆盖</th><th scope="col">早期命中</th><th scope="col">年提醒 / ETF</th></tr></thead>
+              <tbody id="val-cohorts"></tbody>
+            </table>
+          </div>
+
+          <h3 class="wave-subhead">关键主升浪首报</h3>
+          <p class="wave-method-note">“已走比例”是首次提醒时相对整段最终涨幅已经走掉的比例；越低越早。未触发行是研究里明确保留的失败样本。</p>
+          <div class="wave-filter" role="group" aria-label="波段筛选">
+            <button type="button" class="tool-btn on" data-leg-filter="key">关键 12 段</button>
+            <button type="button" class="tool-btn" data-leg-filter="all">全部 39 段</button>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl wave-table wave-leg-table">
+              <thead><tr><th scope="col">ETF / 主题</th><th scope="col">波段</th><th scope="col">涨幅</th><th scope="col">首报日</th><th scope="col">滞后</th><th scope="col">已走比例</th><th scope="col">结果</th></tr></thead>
+              <tbody id="val-legs"></tbody>
+            </table>
+          </div>
+
+          <h3 class="wave-subhead">提醒后的 20 日收益</h3>
+          <p class="wave-method-note">按次日开盘进入、20 个交易日后收盘退出估算，未扣交易成本；这是统计，不是可执行组合。早期命中样本是“已经落在主升浪里的提醒”，存在事后选择偏差，不能当成 96% 的实战胜率。</p>
+          <div class="table-wrap">
+            <table class="tbl wave-table">
+              <thead><tr><th scope="col">样本</th><th scope="col">次数</th><th scope="col">平均收益</th><th scope="col">胜率</th><th scope="col">平均超额</th></tr></thead>
+              <tbody id="val-forward"></tbody>
+            </table>
+          </div>
+
+          <h3 class="wave-subhead">为什么不做“龙头硬门槛”</h3>
+          <p class="wave-method-note">把 2/5 或 3/5 龙头放量突破做成硬门槛，会显著牺牲早期覆盖。龙头共振更适合做解释和置信度，而不是唯一开关。</p>
+          <div class="table-wrap">
+            <table class="tbl wave-table">
+              <thead><tr><th scope="col">口径</th><th scope="col">覆盖</th><th scope="col">早期覆盖</th><th scope="col">早期命中</th><th scope="col">年提醒 / ETF</th></tr></thead>
+              <tbody id="val-holdings"></tbody>
+            </table>
+          </div>
+
+          <div class="wave-grid-2 wave-boundary">
+            <article class="wave-panel">
+              <h3>失败与边界</h3>
+              <ul class="wave-bullets">
+                <li><strong>3 段没有覆盖：</strong>半导体设备 2025-09、2026-06，以及半导体芯片 2025-09。前一段在启动前已有密集候选，5 日再启动条件没有满足；后两段在快速拉升中触发，但被冷却期压住。</li>
+                <li><strong>2026 年样本变弱：</strong>提醒后 20 日平均 +0.87%，胜率 42.3%，低于全样本；这不是规则失效的证明，但说明不能把历史均值当成未来承诺。</li>
+                <li><strong>早期命中率低：</strong>8.1% 意味着大多数“启动观察”不会走成主升浪；它的价值是提高发现覆盖率，不是提高单次胜率。</li>
+                <li><strong>不使用盘中数据：</strong>只用已收盘日线，T 日收盘生成、T+1 开盘才有执行含义；盘中预览可能失真。</li>
+              </ul>
+            </article>
+            <article class="wave-panel">
+              <h3>使用方式</h3>
+              <ul class="wave-bullets">
+                <li><strong>先看主题，再看 ETF：</strong>同主题内多只 ETF 同时触发，说明行业共振更强；单只 ETF 触发而龙头温度计很冷，置信度应降级。</li>
+                <li><strong>启动观察 vs 加速确认：</strong>前者早、覆盖高、噪音大；后者晚、命中率略高，适合做二次确认。</li>
+                <li><strong>不追高：</strong>ETF 偏离 20 日线超过 12% 或 10 日涨幅超过 18% 时，系统主动暂停新提醒；这是为了不把“已经走完”的波段当成启动。</li>
+                <li><strong>风险预算优先：</strong>提醒只说明“行业出现趋势结构”，不说明估值、基本面或仓位；任何执行都应先有止损和仓位上限。</li>
+              </ul>
+            </article>
+          </div>
+
+          <h3 class="wave-subhead">理论依据</h3>
+          <div class="wave-theory">
+            <article class="wave-theory-card">
+              <p class="wave-eyebrow">阶段分析</p>
+              <h4>Weinstein Stage 2</h4>
+              <p>30 周均线（日线约 150 日）由平转升、价格站上均线、从底部区间放量突破，是阶段 2 的经典定义；相对强度先于价格转强是早期线索。</p>
+              <a href="https://www.stageanalysis.net/blog/4372/stage-analysis-breakout-quality-checklist" target="_blank" rel="noopener noreferrer">Stage Analysis 突破质量清单 ↗</a>
+            </article>
+            <article class="wave-theory-card">
+              <p class="wave-eyebrow">成长股突破</p>
+              <h4>O'Neil CANSLIM</h4>
+              <p>强调从有效底部突破、突破日成交量比常态高 40–50%、相对强度领先，以及只买行业龙头而不是落后补涨股。</p>
+              <a href="https://www.stockeducation.com/book/how-to-make-money-in-stocks/" target="_blank" rel="noopener noreferrer">CAN SLIM 方法概览 ↗</a>
+            </article>
+            <article class="wave-theory-card">
+              <p class="wave-eyebrow">箱体突破</p>
+              <h4>Darvas Box</h4>
+              <p>强势股在新高后进入箱体整理，突破箱体上沿且放量时入场，箱体下沿是失效线；核心是“整理—突破—再整理”的阶梯结构。</p>
+              <a href="https://www.nasdaq.com/articles/how-nicolas-darvas-used-box-theory-to-20x-his-money" target="_blank" rel="noopener noreferrer">Darvas Box 规则 ↗</a>
+            </article>
+            <article class="wave-theory-card">
+              <p class="wave-eyebrow">学术证据</p>
+              <h4>行业动量</h4>
+              <p>Moskowitz &amp; Grinblatt (1999) 发现行业组合存在显著动量，且可解释相当一部分个股动量；但 ETF 层面的动量证据并不总是稳健，交易成本会侵蚀收益。</p>
+              <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/0022-1082.00146" target="_blank" rel="noopener noreferrer">Do Industries Explain Momentum? ↗</a>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer class="foot"><span>行情来自东方财富 · 生产快照前复权 / 验证后复权 · 仅使用已收盘日线 · 研究记录不构成投资建议</span></footer>
+  </div>
+</body>
+</html>

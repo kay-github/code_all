@@ -20,6 +20,11 @@ try:
 except ImportError:
     main_wave = None
 
+try:
+    import main_wave_v2
+except ImportError:
+    main_wave_v2 = None
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
 HIST = os.path.join(DATA, "history")
@@ -312,7 +317,7 @@ def main():
     if a.main_wave_only:
         if a.rebuild or a.check:
             ap.error("--main-wave-only 需要读取行情，不能与 --rebuild 或 --check 同用")
-        if main_wave is None:
+        if main_wave_v2 is None and main_wave is None:
             ap.error("主升浪模块未部署，无法执行 --main-wave-only")
         update_main_wave(now, a.no_push)
         return
@@ -387,7 +392,7 @@ def main():
             "disclaimer": "历史回测不构成投资建议；信号为收盘后生成，下一交易日开盘执行。"}
     json.dump(meta, open(os.path.join(DATA, "meta.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
-    if not a.rebuild and main_wave is not None:
+    if not a.rebuild and (main_wave_v2 is not None or main_wave is not None):
         try:
             update_main_wave(now, a.no_push)
         except Exception as e:
@@ -438,6 +443,13 @@ def main():
 
 
 def update_main_wave(now, no_push):
+    if main_wave_v2 is not None:
+        benchmark = read_csv(os.path.join(HIST, "sh000300.csv"))
+        snapshot = main_wave_v2.refresh(benchmark, DATA, now, fetch_em)
+        log("主升浪发现器v2", snapshot["data_date"], "ETF", len(snapshot["etfs"]), "覆盖", snapshot["coverage"])
+        if not no_push:
+            main_wave_v2.send_alerts(snapshot, DATA, now, push_plus)
+        return
     if main_wave is None:
         return
     benchmark = read_csv(os.path.join(HIST, "sh000300.csv"))

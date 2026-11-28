@@ -1,0 +1,1418 @@
+{
+ "data_date": "2026-11-27",
+ "history_start": "2024-01-02",
+ "fetch_start": "2005-01-04",
+ "market": "沪深300",
+ "universe": {
+  "themes": 15,
+  "etfs": 17
+ },
+ "coverage": 1.0,
+ "status_counts": {
+  "early": 7,
+  "leaders": 2,
+  "running": 3,
+  "watch": 5
+ },
+ "new_today": 7,
+ "etfs": [
+  {
+   "code": "515880",
+   "name": "通信ETF国泰",
+   "theme": "光通信 / CPO",
+   "source": "https://e.gtfund.com/etrade/Jijin/view/id/515880",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 2,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.421,
+    "chg": 0.099217,
+    "r5": 0.162983,
+    "r10": 0.007177,
+    "r20": -0.025463,
+    "relative5": 0.135549,
+    "relative20": -0.044924,
+    "amount_ratio": 1.247634,
+    "to_high20": -0.082789,
+    "to_ma20": 0.040277,
+    "ma20": 0.4047,
+    "high20": 0.459
+   },
+   "conditions": {
+    "range10": true,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "10日新高",
+    "相对强度"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "159583",
+   "name": "通信ETF富国",
+   "theme": "光通信 / CPO",
+   "source": "https://www.fullgoal.com.cn/fundDetail/159583/index.html",
+   "status": "leaders",
+   "reason": "2/3 只代表成分股先放量走强，等 ETF 自身确认。",
+   "leaders_active": 2,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.042,
+    "chg": 0.100317,
+    "r5": 0.15011,
+    "r10": -0.018832,
+    "r20": -0.032498,
+    "relative5": 0.122676,
+    "relative20": -0.051958,
+    "amount_ratio": 0.965277,
+    "to_high20": -0.091543,
+    "to_ma20": 0.02554,
+    "ma20": 1.01605,
+    "high20": 1.147
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "相对强度"
+   ],
+   "last_alert": "2026-09-21",
+   "last_stage": "accel",
+   "last_alert_index": 659
+  },
+  {
+   "code": "515050",
+   "name": "5G通信ETF华夏",
+   "theme": "光通信 / CPO",
+   "source": "https://www.chinaamc.com.cn/fund/515050/zichanzuhe.shtml",
+   "status": "leaders",
+   "reason": "2/3 只代表成分股先放量走强，等 ETF 自身确认。",
+   "leaders_active": 2,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.657,
+    "chg": 0.100503,
+    "r5": 0.140625,
+    "r10": -0.00152,
+    "r20": -0.025223,
+    "relative5": 0.113191,
+    "relative20": -0.044683,
+    "amount_ratio": 1.209361,
+    "to_high20": -0.079832,
+    "to_ma20": 0.031397,
+    "ma20": 0.637,
+    "high20": 0.714
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "相对强度"
+   ],
+   "last_alert": "2026-09-21",
+   "last_stage": "accel",
+   "last_alert_index": 659
+  },
+  {
+   "code": "159516",
+   "name": "半导体设备ETF国泰",
+   "theme": "半导体材料设备",
+   "source": "https://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/efa383d3b0c8a1d5287b4d61c270b0fc.pdf",
+   "status": "running",
+   "reason": "最近一次提醒仍在有效期内，ETF 保持 20 日线上方。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.505,
+    "chg": 0.100218,
+    "r5": -0.015595,
+    "r10": -0.032567,
+    "r20": 0.139955,
+    "relative5": -0.043029,
+    "relative20": 0.120494,
+    "amount_ratio": 1.152759,
+    "to_high20": -0.057836,
+    "to_ma20": 0.001587,
+    "ma20": 0.5042,
+    "high20": 0.536
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-11-11",
+   "last_stage": "early",
+   "last_alert_index": 690
+  },
+  {
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "source": "https://static.cninfo.com.cn/finalpage/2026-10-26/1225621367.PDF",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 1,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.796,
+    "chg": 0.054305,
+    "r5": 0.061333,
+    "r10": -0.014851,
+    "r20": 0.014013,
+    "relative5": 0.033899,
+    "relative20": -0.005448,
+    "amount_ratio": 1.173214,
+    "to_high20": -0.06463,
+    "to_ma20": -0.001881,
+    "ma20": 0.7975,
+    "high20": 0.851
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": true,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "回踩再启动",
+    "相对强度"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "512480",
+   "name": "半导体芯片ETF",
+   "theme": "半导体芯片",
+   "source": "https://quote.eastmoney.com/sh512480.html",
+   "status": "running",
+   "reason": "最近一次提醒仍在有效期内，ETF 保持 20 日线上方。",
+   "leaders_active": 1,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.766,
+    "chg": 0.100575,
+    "r5": 0.028188,
+    "r10": -0.034048,
+    "r20": 0.063889,
+    "relative5": 0.000754,
+    "relative20": 0.044428,
+    "amount_ratio": 1.075325,
+    "to_high20": -0.057811,
+    "to_ma20": 0.005183,
+    "ma20": 0.76205,
+    "high20": 0.813
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-11-11",
+   "last_stage": "early",
+   "last_alert_index": 690
+  },
+  {
+   "code": "515790",
+   "name": "光伏ETF",
+   "theme": "光伏",
+   "source": "https://quote.eastmoney.com/sh515790.html",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.661,
+    "chg": 0.067851,
+    "r5": 0.040945,
+    "r10": -0.053009,
+    "r20": -0.011958,
+    "relative5": 0.013511,
+    "relative20": -0.031419,
+    "amount_ratio": 0.641302,
+    "to_high20": -0.126816,
+    "to_ma20": -0.036443,
+    "ma20": 0.686,
+    "high20": 0.757
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": true,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "回踩再启动"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "515030",
+   "name": "新能源车ETF",
+   "theme": "新能源车",
+   "source": "https://quote.eastmoney.com/sh515030.html",
+   "status": "watch",
+   "reason": "等待 ETF 突破、均线转多或回踩再启动。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.232,
+    "chg": 0.073171,
+    "r5": 0.017341,
+    "r10": -0.047913,
+    "r20": -0.0375,
+    "relative5": -0.010093,
+    "relative20": -0.056961,
+    "amount_ratio": 1.350126,
+    "to_high20": -0.121882,
+    "to_ma20": -0.041133,
+    "ma20": 1.28485,
+    "high20": 1.403
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "放量"
+   ],
+   "last_alert": "2026-11-04",
+   "last_stage": "early",
+   "last_alert_index": 685
+  },
+  {
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "source": "https://quote.eastmoney.com/sh512660.html",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.949,
+    "chg": 0.077185,
+    "r5": 0.059152,
+    "r10": -0.051948,
+    "r20": -0.033605,
+    "relative5": 0.031718,
+    "relative20": -0.053065,
+    "amount_ratio": 1.274216,
+    "to_high20": -0.0875,
+    "to_ma20": -0.024967,
+    "ma20": 0.9733,
+    "high20": 1.04
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": true,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "回踩再启动",
+    "放量",
+    "相对强度"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "source": "https://quote.eastmoney.com/sh512400.html",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.31,
+    "chg": 0.062449,
+    "r5": 0.05475,
+    "r10": -0.047273,
+    "r20": -0.060932,
+    "relative5": 0.027316,
+    "relative20": -0.080392,
+    "amount_ratio": 1.196939,
+    "to_high20": -0.124332,
+    "to_ma20": -0.033282,
+    "ma20": 1.3551,
+    "high20": 1.496
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": true,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "回踩再启动",
+    "相对强度"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "source": "https://quote.eastmoney.com/sh512690.html",
+   "status": "watch",
+   "reason": "等待 ETF 突破、均线转多或回踩再启动。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.437,
+    "chg": 0.016279,
+    "r5": 0.013921,
+    "r10": -0.006818,
+    "r20": 0.011574,
+    "relative5": -0.013513,
+    "relative20": -0.007886,
+    "amount_ratio": 0.716522,
+    "to_high20": -0.037445,
+    "to_ma20": -0.008058,
+    "ma20": 0.44055,
+    "high20": 0.454
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-11-02",
+   "last_stage": "accel",
+   "last_alert_index": 683
+  },
+  {
+   "code": "512800",
+   "name": "银行ETF",
+   "theme": "银行",
+   "source": "https://quote.eastmoney.com/sh512800.html",
+   "status": "running",
+   "reason": "最近一次提醒仍在有效期内，ETF 保持 20 日线上方。",
+   "leaders_active": 1,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.913,
+    "chg": -0.015102,
+    "r5": -0.014039,
+    "r10": 0.017837,
+    "r20": 0.022396,
+    "relative5": -0.041473,
+    "relative20": 0.002936,
+    "amount_ratio": 1.211097,
+    "to_high20": -0.015102,
+    "to_ma20": 0.013712,
+    "ma20": 0.90065,
+    "high20": 0.927
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": true,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "20/60日均线多头"
+   ],
+   "last_alert": "2026-10-30",
+   "last_stage": "accel",
+   "last_alert_index": 682
+  },
+  {
+   "code": "512880",
+   "name": "证券ETF",
+   "theme": "证券",
+   "source": "https://quote.eastmoney.com/sh512880.html",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.006,
+    "chg": 0.066808,
+    "r5": 0.025484,
+    "r10": 0.025484,
+    "r20": 0.045738,
+    "relative5": -0.00195,
+    "relative20": 0.026278,
+    "amount_ratio": 2.353652,
+    "to_high20": -0.015656,
+    "to_ma20": 0.014675,
+    "ma20": 0.99145,
+    "high20": 1.022
+   },
+   "conditions": {
+    "range10": true,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": true,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "10日新高",
+    "放量"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "source": "https://quote.eastmoney.com/sh515220.html",
+   "status": "watch",
+   "reason": "等待 ETF 突破、均线转多或回踩再启动。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.156,
+    "chg": -0.000864,
+    "r5": -0.004307,
+    "r10": -0.017842,
+    "r20": -0.066236,
+    "relative5": -0.031741,
+    "relative20": -0.085696,
+    "amount_ratio": 0.906812,
+    "to_high20": -0.066236,
+    "to_ma20": -0.016798,
+    "ma20": 1.17575,
+    "high20": 1.238
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-10-09",
+   "last_stage": "early",
+   "last_alert_index": 667
+  },
+  {
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "source": "https://quote.eastmoney.com/sh512980.html",
+   "status": "early",
+   "reason": "ETF 出现启动结构，但尚未形成放量确认。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.753,
+    "chg": 0.068085,
+    "r5": 0.062059,
+    "r10": -0.078335,
+    "r20": 0.017568,
+    "relative5": 0.034625,
+    "relative20": -0.001893,
+    "amount_ratio": 1.156461,
+    "to_high20": -0.119298,
+    "to_ma20": -0.041558,
+    "ma20": 0.78565,
+    "high20": 0.855
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": true,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [
+    "回踩再启动",
+    "相对强度"
+   ],
+   "last_alert": "2026-11-27",
+   "last_stage": "early",
+   "last_alert_index": 702
+  },
+  {
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "source": "https://quote.eastmoney.com/sh512200.html",
+   "status": "watch",
+   "reason": "等待 ETF 突破、均线转多或回踩再启动。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 1.031,
+    "chg": 0.047764,
+    "r5": 0.019782,
+    "r10": -0.069495,
+    "r20": -0.072842,
+    "relative5": -0.007652,
+    "relative20": -0.092302,
+    "amount_ratio": 0.594629,
+    "to_high20": -0.111972,
+    "to_ma20": -0.048849,
+    "ma20": 1.08395,
+    "high20": 1.161
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-09-22",
+   "last_stage": "accel",
+   "last_alert_index": 660
+  },
+  {
+   "code": "159825",
+   "name": "农业ETF",
+   "theme": "农业",
+   "source": "https://quote.eastmoney.com/sz159825.html",
+   "status": "watch",
+   "reason": "等待 ETF 突破、均线转多或回踩再启动。",
+   "leaders_active": 0,
+   "leaders_total": 3,
+   "leaders_available": 3,
+   "values": {
+    "close": 0.702,
+    "chg": 0.010072,
+    "r5": -0.007072,
+    "r10": -0.038356,
+    "r20": 0.015919,
+    "relative5": -0.034506,
+    "relative20": -0.003542,
+    "amount_ratio": 1.033284,
+    "to_high20": -0.046196,
+    "to_ma20": -0.023168,
+    "ma20": 0.71865,
+    "high20": 0.736
+   },
+   "conditions": {
+    "range10": false,
+    "range20": false,
+    "ma": false,
+    "reclaim": false,
+    "thrust": false,
+    "volume": false,
+    "not_stretched": true
+   },
+   "conditions_text": [],
+   "last_alert": "2026-11-06",
+   "last_stage": "accel",
+   "last_alert_index": 687
+  }
+ ],
+ "history": [
+  {
+   "date": "2026-11-27",
+   "code": "515880",
+   "name": "通信ETF国泰",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 2,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "515790",
+   "name": "光伏ETF",
+   "theme": "光伏",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "512880",
+   "name": "证券ETF",
+   "theme": "证券",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-27",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-11",
+   "code": "159516",
+   "name": "半导体设备ETF国泰",
+   "theme": "半导体材料设备",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-11",
+   "code": "512480",
+   "name": "半导体芯片ETF",
+   "theme": "半导体芯片",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-06",
+   "code": "159825",
+   "name": "农业ETF",
+   "theme": "农业",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-11-05",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-05",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-11-04",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-04",
+   "code": "515790",
+   "name": "光伏ETF",
+   "theme": "光伏",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-04",
+   "code": "515030",
+   "name": "新能源车ETF",
+   "theme": "新能源车",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-04",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-04",
+   "code": "512880",
+   "name": "证券ETF",
+   "theme": "证券",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-03",
+   "code": "159825",
+   "name": "农业ETF",
+   "theme": "农业",
+   "stage": "early",
+   "leaders_active": 2,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-11-02",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-10-30",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-10-30",
+   "code": "512800",
+   "name": "银行ETF",
+   "theme": "银行",
+   "stage": "accel",
+   "leaders_active": 1,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-10-26",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-10-09",
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-30",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-22",
+   "code": "512480",
+   "name": "半导体芯片ETF",
+   "theme": "半导体芯片",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-09-22",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-22",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-22",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "515880",
+   "name": "通信ETF国泰",
+   "theme": "光通信 / CPO",
+   "stage": "accel",
+   "leaders_active": 0,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "159583",
+   "name": "通信ETF富国",
+   "theme": "光通信 / CPO",
+   "stage": "accel",
+   "leaders_active": 0,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "515050",
+   "name": "5G通信ETF华夏",
+   "theme": "光通信 / CPO",
+   "stage": "accel",
+   "leaders_active": 0,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "515790",
+   "name": "光伏ETF",
+   "theme": "光伏",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-21",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-16",
+   "code": "159516",
+   "name": "半导体设备ETF国泰",
+   "theme": "半导体材料设备",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-16",
+   "code": "512480",
+   "name": "半导体芯片ETF",
+   "theme": "半导体芯片",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-09",
+   "code": "515050",
+   "name": "5G通信ETF华夏",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-07",
+   "code": "515880",
+   "name": "通信ETF国泰",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-07",
+   "code": "159583",
+   "name": "通信ETF富国",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-04",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-09-04",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-31",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-31",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "confirmed",
+   "leaders_active": 1,
+   "description": "ETF 与成交额同步突破，启动观察升级为放量确认。"
+  },
+  {
+   "date": "2026-08-28",
+   "code": "159825",
+   "name": "农业ETF",
+   "theme": "农业",
+   "stage": "accel",
+   "leaders_active": 1,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-27",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "accel",
+   "leaders_active": 1,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-27",
+   "code": "512880",
+   "name": "证券ETF",
+   "theme": "证券",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-27",
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "stage": "accel",
+   "leaders_active": 1,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-26",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-21",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-19",
+   "code": "512800",
+   "name": "银行ETF",
+   "theme": "银行",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-12",
+   "code": "515880",
+   "name": "通信ETF国泰",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-12",
+   "code": "159583",
+   "name": "通信ETF富国",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-12",
+   "code": "512480",
+   "name": "半导体芯片ETF",
+   "theme": "半导体芯片",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-12",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "accel",
+   "leaders_active": 2,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-10",
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "stage": "confirmed",
+   "leaders_active": 0,
+   "description": "ETF 与成交额同步突破，启动观察升级为放量确认。"
+  },
+  {
+   "date": "2026-08-07",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "accel",
+   "leaders_active": 1,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-06",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-04",
+   "code": "515050",
+   "name": "5G通信ETF华夏",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-04",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-04",
+   "code": "512660",
+   "name": "军工ETF",
+   "theme": "军工",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-08-04",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-08-03",
+   "code": "515790",
+   "name": "光伏ETF",
+   "theme": "光伏",
+   "stage": "early",
+   "leaders_active": 2,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-31",
+   "code": "515030",
+   "name": "新能源车ETF",
+   "theme": "新能源车",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-31",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-31",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-30",
+   "code": "512800",
+   "name": "银行ETF",
+   "theme": "银行",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-07-29",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "early",
+   "leaders_active": 1,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-28",
+   "code": "512800",
+   "name": "银行ETF",
+   "theme": "银行",
+   "stage": "early",
+   "leaders_active": 2,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-23",
+   "code": "512880",
+   "name": "证券ETF",
+   "theme": "证券",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-23",
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-07-22",
+   "code": "512400",
+   "name": "有色金属ETF",
+   "theme": "有色金属",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-22",
+   "code": "515220",
+   "name": "煤炭ETF",
+   "theme": "煤炭",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-20",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "accel",
+   "leaders_active": 3,
+   "description": "5 日加速突破，属于较晚的确认层，不是早期触发。"
+  },
+  {
+   "date": "2026-07-20",
+   "code": "159825",
+   "name": "农业ETF",
+   "theme": "农业",
+   "stage": "early",
+   "leaders_active": 2,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-15",
+   "code": "512690",
+   "name": "酒ETF",
+   "theme": "酒类",
+   "stage": "early",
+   "leaders_active": 3,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-13",
+   "code": "159992",
+   "name": "创新药ETF银华",
+   "theme": "创新药",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-10",
+   "code": "512980",
+   "name": "传媒ETF",
+   "theme": "传媒",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-10",
+   "code": "512200",
+   "name": "房地产ETF",
+   "theme": "房地产",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-09",
+   "code": "159583",
+   "name": "通信ETF富国",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  },
+  {
+   "date": "2026-07-09",
+   "code": "515050",
+   "name": "5G通信ETF华夏",
+   "theme": "光通信 / CPO",
+   "stage": "early",
+   "leaders_active": 0,
+   "description": "ETF 出现启动结构，但尚未形成放量确认。"
+  }
+ ],
+ "latest_event_date": "2026-11-27"
+}

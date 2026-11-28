@@ -15,8 +15,9 @@
     marketPulseHistory: '/pulse/history',
     cycleMirror: '/mirror',
     trendSignals: '/trend',
+    waveDiscovery: '/wave',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/pulse/history', 'marketPulseHistory'], ['/pulse/history/', 'marketPulseHistory'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror'], ['/trend/', 'trendSignals'], ['/trends', 'trendSignals'], ['/trends/', 'trendSignals']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/pulse/history', 'marketPulseHistory'], ['/pulse/history/', 'marketPulseHistory'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror'], ['/trend/', 'trendSignals'], ['/trends', 'trendSignals'], ['/trends/', 'trendSignals'], ['/wave', 'waveDiscovery'], ['/wave/', 'waveDiscovery'], ['/main-wave', 'waveDiscovery'], ['/main-wave/', 'waveDiscovery']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);

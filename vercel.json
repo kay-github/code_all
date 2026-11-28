@@ -213,6 +213,14 @@
       "dest": "/tools/trend-signals/index.html"
     },
     {
+      "src": "^/wave/?$",
+      "dest": "/tools/trend-signals/main-wave.html"
+    },
+    {
+      "src": "^/main-wave/?$",
+      "dest": "/tools/trend-signals/main-wave.html"
+    },
+    {
       "src": "^/tools/trend-signals/data/(.*)$",
       "dest": "/tools/trend-signals/data/$1",
       "headers": {
