@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import { indexSnapshot, indices, refresh, refreshStoredValuations, valuationPath, valuationSnapshot } from '../lib/investmentValuation.mjs';
+import { auditIndexHubValuations } from '../lib/investmentValuationAudit.mjs';
 import { packValuations, unpackValuations, valuationEncoding } from '../tools/investment-theory/valuation-codec.mjs';
 
 const require = createRequire(import.meta.url);
@@ -113,10 +114,19 @@ test('the cloud job records a delayed source then publishes matching valuations 
     request.onETag(etag);
     return published ? valuations(code) : valuations(code).slice(0, 2);
   };
-  const waiting = await refreshStoredValuations(store, fallback, load, afterClose);
+  const waiting = await refreshStoredValuations(store, fallback, load, afterClose, async snapshot => {
+    assert.ok(snapshot.indices.every(row => row.date === dates[1] && snapshot.closeDates[row.code] === dates[2]));
+    return { status: 'checked' };
+  });
   assert.ok(waiting.indices.every(row => row.date === dates[1] && row.closeDate === dates[2]));
+  assert.deepEqual(waiting.backup, { status: 'checked' });
+  assert.equal(record.value.backup, undefined);
   assert.equal(writes, 1);
-  assert.equal((await refreshStoredValuations(store, fallback, load, afterClose)).changed, false);
+  const auditFailure = await refreshStoredValuations(store, fallback, load, afterClose, async () => {
+    throw new Error('audit fixture failure');
+  });
+  assert.equal(auditFailure.changed, false);
+  assert.deepEqual(auditFailure.backup, { status: 'audit_failed' });
   assert.equal(conditionalHits, indices.length);
   published = true;
   const updated = await refreshStoredValuations(store, fallback, load, afterClose);
@@ -126,6 +136,50 @@ test('the cloud job records a delayed source then publishes matching valuations 
   assert.equal(valuationLoads, 3 * indices.length);
   assert.ok(valuationSnapshot(fallback, record.value).indices.every(row => row.history.length === 3));
   assert.ok(valuationSnapshot(record.value, fallback).indices.every(row => row.date === dates[2]));
+});
+
+test('Index Hub audits same-day coverage and six values against five published sessions per index', async () => {
+  const sample = ['2026-11-19', '2026-11-20', '2026-11-23', '2026-11-24', '2026-11-25', '2026-11-26'];
+  const codes = ['000300', 'HSI', '399006', '000688'];
+  const items = sample.map((trdDt, i) => ({
+    trdDt, pETtm: 10 + i, pBLf: 1.25, pETtm10Y: 60.123, pBLf10Y: 40,
+    pETtmBgn: 20, pBLfBgn: 0,
+  }));
+  const reference = {
+    indices: codes.map(code => ({
+      code, date: sample[4], history: sample.slice(0, 5).map((date, i) => [date, 60.12, 40, 20, 0, 10 + i, 1.25]),
+    })),
+    closeDates: { '000300': sample[5], HSI: sample[4], '399006': sample[5], '000688': sample[5] },
+  };
+  const report = await auditIndexHubValuations(reference, 'fixture-key', async (url, request) => {
+    assert.equal(url.origin, 'https://www.etf.com.cn');
+    assert.equal(url.pathname, '/api/etf-api-service/skill/v3/index/valuation/history');
+    assert.deepEqual(Object.fromEntries(url.searchParams),
+      { indexCodes: codes.join(','), beginDate: sample[0], endDate: sample[5] });
+    assert.equal(request.headers.Authorization, 'Bearer fixture-key');
+    assert.equal(request.headers['X-Caller-Type'], 'external');
+    assert.equal(request.redirect, 'error');
+    return Response.json({ success: true, data: [
+      { trdCode: '000300', items: [...items].reverse() },
+      { trdCode: 'HSI', items },
+      { trdCode: '399006', items: items.map((row, i) => i === 4 ? { ...row, pETtmBgn: 21 } : row) },
+      { trdCode: '000688', items: [...items.slice(0, 4), { ...items[5], pBLfBgn: null }] },
+    ] });
+  });
+  assert.equal(report.status, 'checked');
+  assert.ok(Number.isFinite(Date.parse(report.checkedAt)));
+  assert.deepEqual(report.indices.map(row => [row.code, row.status, row.officialDate, row.matchedDays]), [
+    ['000300', 'ahead', sample[5], 5],
+    ['HSI', 'aligned', sample[4], 5],
+    ['399006', 'mismatch', sample[5], 4],
+    ['000688', 'insufficient_overlap', sample[3], 4],
+  ]);
+  assert.deepEqual(report.indices[2].mismatch, { day: sample[4], fields: ['pETtmBgn'] });
+  assert.deepEqual(await auditIndexHubValuations(reference, 'fixture-key', async () =>
+    Response.json({ success: false, message: 'authentication failed' })), { status: 'upstream_rejected' });
+  assert.deepEqual(await auditIndexHubValuations(reference, 'fixture-key', async () => {
+    throw new Error('upstream timeout');
+  }), { status: 'request_failed' });
 });
 
 test('the public endpoint supports conditional GET and keeps refresh authenticated', async t => {

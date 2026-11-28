@@ -124,7 +124,12 @@ module.exports = async function handler(req, res) {
         if (!cron && !monitor) return sendJson(res, 401, { error: '未授权' });
         const { refreshStoredValuations } = await import('../lib/investmentValuation.mjs');
         try {
-          return sendJson(res, 200, await refreshStoredValuations(store, require('../tools/investment-theory/valuations.json')));
+          const key = process.env.INDEX_HUB_API_KEY?.trim();
+          const audit = key && (await import('../lib/investmentValuationAudit.mjs')).auditIndexHubValuations;
+          const result = await refreshStoredValuations(store, require('../tools/investment-theory/valuations.json'),
+            undefined, undefined, audit ? snapshot => audit(snapshot, key) : undefined);
+          if (result.backup) console.info('Index Hub valuation audit:', JSON.stringify(result.backup));
+          return sendJson(res, 200, result);
         } catch (error) {
           console.warn('Index valuation refresh:', error.message);
           return sendJson(res, 503, { error: '估值自动更新暂不可用' });
