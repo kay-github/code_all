@@ -1,8 +1,8 @@
 {
   "version": "2.2.0",
-  "build_id": "20261127T123028_0800_0b1b9e9262",
-  "business_date": "2026-11-26",
-  "built_at": "2026-11-27T12:30:28+08:00",
+  "build_id": "20261128T104247_0800_be72bf7ba9",
+  "business_date": "2026-11-27",
+  "built_at": "2026-11-28T10:42:47+08:00",
   "data_stage": "次晨复核",
   "core_members": [
     "159338",
@@ -22,99 +22,99 @@
     "588080"
   ],
   "latest": {
-    "date": "2026-11-26",
+    "date": "2026-11-27",
     "valid_members": 15,
     "expected_members": 15,
     "complete": true,
-    "net_estimate": 115.35191557089938,
-    "partial_net_estimate": 115.35191557089938,
+    "net_estimate": 350.2784508598655,
+    "partial_net_estimate": 350.2784508598655,
     "share_change_members": 15,
-    "outflow_count": 4,
-    "inflow_count": 10
+    "outflow_count": 3,
+    "inflow_count": 12
   },
   "w5": {
     "complete": true,
-    "net_estimate": 1571.8614410824566
+    "net_estimate": 1002.0644837463815
   },
   "unit": "亿元；份额为原生份额",
   "valuation": "份额变化×当日成交均价，仅表示证券敞口变化估算，不是实际现金流",
   "identity": "当日买卖主体未确认",
   "inventory": {
     "version": "1.0",
-    "date": "2026-11-26",
+    "date": "2026-11-27",
     "complete": true,
     "latest": {
-      "date": "2026-11-26",
+      "date": "2026-11-27",
       "complete": true,
       "valid_members": 15,
       "expected_members": 15,
       "missing": [],
-      "current_yi": 12444.68953640202,
-      "net_added_yi": 8103.259187540804,
-      "total_units": 7.098147051977779,
-      "net_added_units": 4.621901184855441,
-      "current_ratio": 0.7098147051977779,
-      "alternative_units": 6.720753535793306,
+      "current_yi": 12771.325394133582,
+      "net_added_yi": 8429.895045272366,
+      "total_units": 7.284452169823076,
+      "net_added_units": 4.8082063027007385,
+      "current_ratio": 0.7284452169823077,
+      "alternative_units": 6.897153203245432,
       "components": [
         {
           "code": "159338",
-          "current_yi": 281.72081181134257
+          "current_yi": 274.5554610061783
         },
         {
           "code": "159845",
-          "current_yi": 62.980916260504195
+          "current_yi": 61.79508160338944
         },
         {
           "code": "159915",
-          "current_yi": 1340.1386238353605
+          "current_yi": 1391.5696843325245
         },
         {
           "code": "159919",
-          "current_yi": 903.00002
+          "current_yi": 911.3939991
         },
         {
           "code": "159949",
-          "current_yi": 274.7500557174888
+          "current_yi": 278.7367474986256
         },
         {
           "code": "510050",
-          "current_yi": 735.3471088338191
+          "current_yi": 739.0435643999998
         },
         {
           "code": "510300",
-          "current_yi": 2296.7277962745097
+          "current_yi": 2354.9456882857144
         },
         {
           "code": "510310",
-          "current_yi": 1244.4188884615385
+          "current_yi": 1252.8403975862068
         },
         {
           "code": "510330",
-          "current_yi": 1001.8607257692308
+          "current_yi": 1007.1899203053434
         },
         {
           "code": "510500",
-          "current_yi": 888.9430300664453
+          "current_yi": 969.7228259887006
         },
         {
           "code": "512050",
-          "current_yi": 178.97242479338846
+          "current_yi": 181.53532727272724
         },
         {
           "code": "512100",
-          "current_yi": 726.0897188951161
+          "current_yi": 859.0633048738531
         },
         {
           "code": "563360",
-          "current_yi": 415.83340798598954
+          "current_yi": 436.257404790831
         },
         {
           "code": "588000",
-          "current_yi": 1429.5066694956522
+          "current_yi": 1395.9671043504084
         },
         {
           "code": "588080",
-          "current_yi": 664.3993382016349
+          "current_yi": 656.7088827390792
         }
       ]
     },
@@ -158,19 +158,19 @@
     ],
     "official_correction": {
       "version": "1.0",
-      "date": "2026-11-26",
+      "date": "2026-11-27",
       "latest": {
-        "date": "2026-11-26",
+        "date": "2026-11-27",
         "complete": true,
         "valid_members": 15,
         "expected_members": 15,
         "missing": [],
-        "shares_total": 522154579200.0,
-        "shares_total_yi": 5221.545792,
-        "value_yi": 12487.309838763,
-        "units": 7.122456631792772,
-        "standard_units": 7.098147051977779,
-        "delta_units": 0.024309579814993043
+        "shares_total": 533579579200.0,
+        "shares_total_yi": 5335.795792,
+        "value_yi": 12855.500207763003,
+        "units": 7.332463428237097,
+        "standard_units": 7.284452169823076,
+        "delta_units": 0.04801125841402065
       },
       "series": [
         {
@@ -453,8 +453,8 @@
           "shares_total_yi": 4031.329792,
           "value_yi": 8876.657291763,
           "units": 5.063028579591329,
-          "standard_units": 5.02157018919264,
-          "delta_units": 0.04145839039868893
+          "standard_units": 5.021570189192639,
+          "delta_units": 0.041458390398689815
         },
         {
           "date": "2026-11-03",
@@ -464,9 +464,9 @@
           "missing": [],
           "shares_total": 433627279200.0,
           "shares_total_yi": 4336.272792,
-          "value_yi": 9683.302685763001,
-          "units": 5.52311941662381,
-          "standard_units": 5.42336501746589,
+          "value_yi": 9683.302685763,
+          "units": 5.523119416623809,
+          "standard_units": 5.423365017465889,
           "delta_units": 0.09975439915791995
         },
         {
@@ -490,9 +490,9 @@
           "missing": [],
           "shares_total": 452601379200.0,
           "shares_total_yi": 4526.013792,
-          "value_yi": 10133.082281763,
-          "units": 5.7796627160005,
-          "standard_units": 5.773233322308253,
+          "value_yi": 10133.082281763001,
+          "units": 5.779662716000501,
+          "standard_units": 5.773233322308254,
           "delta_units": 0.006429393692246599
         },
         {
@@ -503,10 +503,10 @@
           "missing": [],
           "shares_total": 454008179200.0,
           "shares_total_yi": 4540.081792,
-          "value_yi": 10171.579796763,
-          "units": 5.801620758570096,
-          "standard_units": 5.789381180916812,
-          "delta_units": 0.012239577653284428
+          "value_yi": 10171.579796763002,
+          "units": 5.801620758570097,
+          "standard_units": 5.789381180916811,
+          "delta_units": 0.012239577653286204
         },
         {
           "date": "2026-11-09",
@@ -516,9 +516,9 @@
           "missing": [],
           "shares_total": 454939379200.0,
           "shares_total_yi": 4549.393792,
-          "value_yi": 10185.581507763,
-          "units": 5.809606992647417,
-          "standard_units": 5.802592560851528,
+          "value_yi": 10185.581507763001,
+          "units": 5.809606992647418,
+          "standard_units": 5.8025925608515285,
           "delta_units": 0.007014431795889564
         },
         {
@@ -529,10 +529,10 @@
           "missing": [],
           "shares_total": 454440079200.0,
           "shares_total_yi": 4544.400792,
-          "value_yi": 10156.150201763001,
+          "value_yi": 10156.150201763003,
           "units": 5.792820094323544,
-          "standard_units": 5.792167123135661,
-          "delta_units": 0.0006529711878835442
+          "standard_units": 5.79216712313566,
+          "delta_units": 0.0006529711878844324
         },
         {
           "date": "2026-11-11",
@@ -557,8 +557,8 @@
           "shares_total_yi": 4455.939792,
           "value_yi": 9961.229298763,
           "units": 5.681641970598465,
-          "standard_units": 5.69305341215165,
-          "delta_units": -0.011411441553184964
+          "standard_units": 5.6930534121516505,
+          "delta_units": -0.011411441553185853
         },
         {
           "date": "2026-11-13",
@@ -596,8 +596,8 @@
           "shares_total_yi": 4506.737792,
           "value_yi": 10186.402785763,
           "units": 5.8100754295656305,
-          "standard_units": 5.797113089036978,
-          "delta_units": 0.012962340528652305
+          "standard_units": 5.797113089036979,
+          "delta_units": 0.012962340528651417
         },
         {
           "date": "2026-11-18",
@@ -607,9 +607,9 @@
           "missing": [],
           "shares_total": 454382179200.0,
           "shares_total_yi": 4543.821792,
-          "value_yi": 10334.420010763,
-          "units": 5.894500840597575,
-          "standard_units": 5.870508806737257,
+          "value_yi": 10334.420010762999,
+          "units": 5.8945008405975745,
+          "standard_units": 5.870508806737256,
           "delta_units": 0.023992033860318784
         },
         {
@@ -672,10 +672,10 @@
           "missing": [],
           "shares_total": 517797579200.0,
           "shares_total_yi": 5177.975792,
-          "value_yi": 12359.664534763,
+          "value_yi": 12359.664534763002,
           "units": 7.04965086708196,
-          "standard_units": 7.031251541681906,
-          "delta_units": 0.018399325400054067
+          "standard_units": 7.031251541681907,
+          "delta_units": 0.01839932540005318
         },
         {
           "date": "2026-11-26",
@@ -685,10 +685,23 @@
           "missing": [],
           "shares_total": 522154579200.0,
           "shares_total_yi": 5221.545792,
-          "value_yi": 12487.309838763,
-          "units": 7.122456631792772,
+          "value_yi": 12487.309838762998,
+          "units": 7.1224566317927716,
           "standard_units": 7.098147051977779,
-          "delta_units": 0.024309579814993043
+          "delta_units": 0.024309579814992155
+        },
+        {
+          "date": "2026-11-27",
+          "complete": true,
+          "valid_members": 15,
+          "expected_members": 15,
+          "missing": [],
+          "shares_total": 533579579200.0,
+          "shares_total_yi": 5335.795792,
+          "value_yi": 12855.500207763003,
+          "units": 7.332463428237097,
+          "standard_units": 7.284452169823076,
+          "delta_units": 0.04801125841402065
         }
       ],
       "baseline_units": 10.0,
@@ -696,8 +709,8 @@
       "reference_yi": 17532.307298331496,
       "price_date": "2026-11-13",
       "standard_latest": {
-        "date": "2026-11-26",
-        "units": 7.098147051977779
+        "date": "2026-11-27",
+        "units": 7.284452169823076
       },
       "source": "exchange_disclosed_total",
       "method": "按同日15只交易所正式份额合计×固定价格权重，以同一10份基准归一；只与同日标准刻度并排，不并入换手率反推历史序列",
@@ -709,11 +722,11 @@
     }
   },
   "source_urls": {
-    "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-08&txtEnd=2026-11-26",
-    "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-08&txtEnd=2026-11-26",
-    "159915": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-08&txtEnd=2026-11-26",
-    "159919": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-08&txtEnd=2026-11-26",
-    "159949": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-08&txtEnd=2026-11-26",
+    "159338": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159338&txtStart=2026-11-09&txtEnd=2026-11-27",
+    "159845": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159845&txtStart=2026-11-09&txtEnd=2026-11-27",
+    "159915": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159915&txtStart=2026-11-09&txtEnd=2026-11-27",
+    "159919": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159919&txtStart=2026-11-09&txtEnd=2026-11-27",
+    "159949": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_fund_jjgm&TABKEY=tab1&PAGENO=1&jjlb=ETF&txtDm=159949&txtStart=2026-11-09&txtEnd=2026-11-27",
     "510050": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510050&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
     "510300": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510300&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
     "510310": "https://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFZL_ETFJBXX_JJGM_MOREN_L&SEC_CODE=510310&isPagination=true&pageHelp.pageSize=30&pageHelp.pageNo=1",
