@@ -1,0 +1,29 @@
+name: A-share sector rotation
+
+on:
+  schedule:
+    # Beijing time 16:43 and 19:13 on weekdays.
+    - cron: '43 8 * * 1-5'
+    - cron: '13 11 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sector-rotation
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Refresh the complete market snapshot
+        env:
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+        run: |
+          test -n "$MONITOR_SECRET"
+          curl --silent --show-error --fail-with-body --max-time 50 -X POST \
+            --header "Authorization: Bearer $MONITOR_SECRET" \
+            'https://1.688680.xyz/api/investment-market?view=sector-rotation'

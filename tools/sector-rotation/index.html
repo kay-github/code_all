@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A 股行业与主题 ETF 双周轮动信号，含入场、离场、每日强弱排名和历史检验。">
+  <title>A 股板块轮动 · 大杂烩工具站</title>
+  <script src="/assets/site-theme.js"></script>
+  <link rel="stylesheet" href="/assets/workspace-theme.css">
+  <link rel="stylesheet" href="/tools/sector-rotation/style.css">
+  <script src="/tools/sector-rotation/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="heading">
+      <nav aria-label="工具站"><a href="/" target="_top">← 工具站</a><button id="theme" type="button">切换深浅色</button></nav>
+      <h1>A 股板块轮动</h1>
+      <p>跟踪 10 个 A 股行业与主题 ETF。收盘后更新因子排名，每两周确认模型入场和离场。</p>
+    </header>
+
+    <div class="status" role="status">
+      <span id="status">正在读取收盘快照…</span>
+      <button id="refresh" type="button">刷新数据</button>
+    </div>
+
+    <div id="dashboard" hidden>
+      <section class="section" aria-labelledby="changes-title">
+        <header class="section-head">
+          <div>
+            <h2 id="changes-title">本期轮动信号</h2>
+            <p id="signal-date"></p>
+          </div>
+        </header>
+        <div class="signal-grid">
+          <div class="signal-card up"><h3>入场</h3><ul id="entered" class="signal-list"></ul></div>
+          <div class="signal-card down"><h3>离场</h3><ul id="exited" class="signal-list"></ul></div>
+          <div class="signal-card"><h3>继续入选</h3><ul id="held" class="signal-list"></ul></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="rank-title">
+        <header class="section-head">
+          <div>
+            <h2 id="rank-title">收盘因子排名</h2>
+            <p>按近 20 个交易日的日内动量与隔夜反转评分排序。信号来自最近一次双周评估。</p>
+          </div>
+          <label class="filter">筛选
+            <select id="filter">
+              <option value="all">全部状态</option>
+              <option value="enter">入场</option>
+              <option value="exit">离场</option>
+              <option value="hold">继续入选</option>
+              <option value="watch">观察</option>
+            </select>
+          </label>
+        </header>
+        <table>
+          <thead><tr><th scope="col">排名</th><th scope="col">板块 / ETF</th><th scope="col">评分</th><th scope="col">10 日涨跌</th><th scope="col">本期信号</th></tr></thead>
+          <tbody id="ranking"></tbody>
+        </table>
+      </section>
+
+      <details class="section">
+        <summary>历史轮动</summary>
+        <ol id="history"></ol>
+      </details>
+
+      <details class="section" open>
+        <summary>历史检验与信号规则</summary>
+        <p id="sample"></p><p id="assessment"></p>
+        <table>
+          <thead><tr><th scope="col">模拟组合</th><th scope="col">累计收益</th><th scope="col">最大回撤</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+        <ul class="rules">
+          <li>以 2024-01-01 为两周周期起点，每个周期的首个交易日收盘后评估。用前复权日线计算近 20 个交易日的日内收益和隔夜收益，评分为日内收益之和减去隔夜收益之和，乘 100。日内收益是当日收盘价除以开盘价减一，隔夜收益是当日开盘价除以上日收盘价减一。按评分选前 5 名，同分按代码升序排列。</li>
+          <li>首次或重新进入前 5 标记「入场」，退出前 5 标记「离场」。前后两期都入选标记「继续入选」，未入选的其余板块标记「观察」。横截面排名在普跌时也会选出前 5。</li>
+          <li>历史模拟按信号后的下一个交易日收盘调为等权，每笔买入或卖出按成交金额计 0.10% 模拟成本。同池基准在相同日期将全部 10 只 ETF 调为等权。「纯涨幅轮动」在相同条件下只按近 10 个交易日涨幅选前 5。</li>
+          <li>样本使用当前固定观察池，实际成交可能受流动性和价格限制影响。历史收益仅作研究参考。</li>
+        </ul>
+        <p class="sources">因子参考<a href="https://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/search/rptid/636474699140/index.phtml" target="_blank" rel="noopener noreferrer">开源证券《A 股行业动量的精细结构》</a>，双周轮动框架参考<a href="https://pujiang.sse.com.cn/ListedCompany/learning/learning2/c/10774245/files/c91fb644345f4179af12a775e08e6961.pdf" target="_blank" rel="noopener noreferrer">上交所 ETF 投教材料</a>。本站将行业指数因子应用于固定 ETF 池。行情来自<a href="https://quote.eastmoney.com/center/gridlist.html#fund_etf" target="_blank" rel="noopener noreferrer">东方财富</a>。信号由本站计算，仅供信息参考。</p>
+      </details>
+    </div>
+    <noscript>请开启 JavaScript 查看板块轮动信号。</noscript>
+  </main>
+</body>
+</html>

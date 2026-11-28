@@ -156,6 +156,25 @@ module.exports = async function handler(req, res) {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       return res.end(body);
     }
+    if (req.query?.view === 'sector-rotation') {
+      const rotation = require('../lib/sectorRotation');
+      const seed = require('../tools/sector-rotation/snapshot.json');
+      if (req.method === 'POST') {
+        if (!matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET)) {
+          return sendJson(res, 401, { error: '未授权' });
+        }
+        try {
+          return sendJson(res, 200, await rotation.refreshStoredSnapshot({ store, seed }));
+        } catch (error) {
+          console.warn('Sector rotation refresh:', error.message, error.cause?.message ?? '');
+          return sendJson(res, 503, { error: '板块轮动自动更新暂不可用' });
+        }
+      }
+      if (req.method !== 'GET') return sendJson(res, 405, { error: '只支持 GET' });
+      const saved = await store.read(rotation.PATH).catch(() => null);
+      const snapshot = saved?.value?.schema === seed.schema && saved.value.asOf >= seed.asOf ? saved.value : null;
+      return sendJson(res, 200, snapshot || { ...seed, fallback: true });
+    }
     if (req.query?.view === 'crowding') {
       if (req.method === 'POST') {
         const monitor = matchesSecret(authorization, process.env.MONITOR_SECRET && 'Bearer ' + process.env.MONITOR_SECRET);
