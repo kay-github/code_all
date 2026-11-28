@@ -8,7 +8,7 @@
     "cutoff_label": "11:30 上午收盘（午盘快照）",
     "is_final": false
   },
-  "generated_at": "2026-11-28T18:59:11+08:00",
+  "generated_at": "2026-11-28T19:51:38+08:00",
   "headline": "指数午盘收红：ETF 在托底，大单在回补，杠杆仍在出清",
   "indices": [
     {
@@ -299,7 +299,7 @@
       "small_yi": -279.03,
       "stocks": 1200,
       "source": "push2.eastmoney.com clist f62/f66/f72/f78/f84, Shanghai A-share sum",
-      "fetched_at": "2026-11-28T18:54:33",
+      "fetched_at": "2026-11-28T19:45:57",
       "note": "沪市全 A 单点快照；深市未取到，不与深市同口径比较。"
     },
     "prior4": {
@@ -3398,18 +3398,6 @@
       "tone": "warn"
     },
     {
-      "name": "减速器",
-      "chg": 8.93,
-      "net": 34.89,
-      "net5": -12.04,
-      "stocks": 143,
-      "leader": "鸿富瀚",
-      "prior4": -46.93,
-      "ratio": 74.34,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "数字孪生",
       "chg": 8.93,
       "net": 61.67,
@@ -3418,6 +3406,18 @@
       "leader": "汉鑫科技",
       "prior4": -87.84,
       "ratio": 70.21,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "减速器",
+      "chg": 8.93,
+      "net": 34.89,
+      "net5": -12.04,
+      "stocks": 143,
+      "leader": "鸿富瀚",
+      "prior4": -46.93,
+      "ratio": 74.34,
       "label": "强回补",
       "tone": "warn"
     },
@@ -4118,18 +4118,6 @@
       "tone": "warn"
     },
     {
-      "name": "可控核聚变",
-      "chg": 7.77,
-      "net": 52.38,
-      "net5": -15.93,
-      "stocks": 116,
-      "leader": "英杰电气",
-      "prior4": -68.31,
-      "ratio": 76.68,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "氟化工概念",
       "chg": 7.77,
       "net": 35.34,
@@ -4138,6 +4126,18 @@
       "leader": "正帆科技",
       "prior4": -52.67,
       "ratio": 67.1,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "可控核聚变",
+      "chg": 7.77,
+      "net": 52.38,
+      "net5": -15.93,
+      "stocks": 116,
+      "leader": "英杰电气",
+      "prior4": -68.31,
+      "ratio": 76.68,
       "label": "强回补",
       "tone": "warn"
     },
@@ -4334,14 +4334,14 @@
       "tone": "warn"
     },
     {
-      "name": "超导概念",
+      "name": "食品安全",
       "chg": 7.43,
-      "net": 20.61,
-      "net5": -6.35,
-      "stocks": 33,
-      "leader": "阿石创",
-      "prior4": -26.96,
-      "ratio": 76.45,
+      "net": 5.02,
+      "net5": -2.44,
+      "stocks": 74,
+      "leader": "新莱应材",
+      "prior4": -7.46,
+      "ratio": 67.29,
       "label": "强回补",
       "tone": "warn"
     },
@@ -4370,18 +4370,6 @@
       "tone": "warn"
     },
     {
-      "name": "PVDF概念",
-      "chg": 7.36,
-      "net": 7.47,
-      "net5": -2.33,
-      "stocks": 17,
-      "leader": "中创环保",
-      "prior4": -9.8,
-      "ratio": 76.22,
-      "label": "强回补",
-      "tone": "warn"
-    },
-    {
       "name": "高铁",
       "chg": 7.36,
       "net": 26.86,
@@ -4390,6 +4378,18 @@
       "leader": "广脉科技",
       "prior4": -38.8,
       "ratio": 69.23,
+      "label": "强回补",
+      "tone": "warn"
+    },
+    {
+      "name": "PVDF概念",
+      "chg": 7.36,
+      "net": 7.47,
+      "net5": -2.33,
+      "stocks": 17,
+      "leader": "中创环保",
+      "prior4": -9.8,
+      "ratio": 76.22,
       "label": "强回补",
       "tone": "warn"
     },
@@ -8825,5 +8825,5 @@
     "method_note": "工作日 11:36 起抓午盘快照；收盘后 16:10 抓正式版、17:10 补龙虎榜并二次更新。午盘与收盘同页切换，数据源失败时保留上一版并在页面注明。",
     "footer_date": "2026-11-28 · 周六"
   },
-  "rendered_at": "2026-11-28T18:59:11+08:00"
+  "rendered_at": "2026-11-28T19:51:38+08:00"
 }
