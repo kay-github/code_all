@@ -1,0 +1,51 @@
+name: Trend signals daily
+
+on:
+  schedule:
+    # 北京时间 15:35 / 16:05 / 16:35，三次窗口兜住 GitHub schedule 延迟
+    - cron: '35 7 * * 1-5'
+    - cron: '5 8 * * 1-5'
+    - cron: '35 8 * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  group: trend-signals-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+      PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+      MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch, rebuild and push
+        run: python -X utf8 tools/trend-signals/update.py
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/trend-signals/data
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "Trend signals update $(date -u +%F)"
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push origin HEAD:main && exit 0
+            sleep 3
+          done
+          exit 1

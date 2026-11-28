@@ -205,6 +205,21 @@
       "dest": "/tools/wave-tracker/index.html"
     },
     {
+      "src": "^/trend/?$",
+      "dest": "/tools/trend-signals/index.html"
+    },
+    {
+      "src": "^/trends/?$",
+      "dest": "/tools/trend-signals/index.html"
+    },
+    {
+      "src": "^/tools/trend-signals/data/(.*)$",
+      "dest": "/tools/trend-signals/data/$1",
+      "headers": {
+        "Cache-Control": "no-store"
+      }
+    },
+    {
       "src": "^/pulse/history(?:/|\\.html)?$",
       "dest": "/tools/market-pulse/history.html"
     },

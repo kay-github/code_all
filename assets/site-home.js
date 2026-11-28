@@ -14,8 +14,9 @@
     marketPulse: '/pulse',
     marketPulseHistory: '/pulse/history',
     cycleMirror: '/mirror',
+    trendSignals: '/trend',
   };
-  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/pulse/history', 'marketPulseHistory'], ['/pulse/history/', 'marketPulseHistory'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror']]);
+  const aliases = new Map([['/gjd/', 'gjd'], ['/txdp/', 'optical'], ['/jjhc/', 'fundRecovery'], ['/taoding', 'taoding'], ['/taoding/', 'taoding'], ['/waves/', 'waveTracker'], ['/pulse', 'marketPulse'], ['/pulse/', 'marketPulse'], ['/pulse/history', 'marketPulseHistory'], ['/pulse/history/', 'marketPulseHistory'], ['/mirror', 'cycleMirror'], ['/mirror/', 'cycleMirror'], ['/cycle-mirror', 'cycleMirror'], ['/cycle-mirror/', 'cycleMirror'], ['/trend/', 'trendSignals'], ['/trends', 'trendSignals'], ['/trends/', 'trendSignals']]);
   for (const [id, path] of Object.entries(toolPaths)) aliases.set(path, id);
 
   const byId = id => document.getElementById(id);

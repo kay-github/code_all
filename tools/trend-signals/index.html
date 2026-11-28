@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base href="/tools/trend-signals/">
+<meta name="theme-color" content="#121a24">
+<meta name="description" content="用规则化趋势跟随，在沪深300、中证500、中证1000、创业板指、科创50 的日K上标注买卖点：25日突破入场、250日年线过滤、3×ATR吊灯止损，含完整回测与样本外验证。">
+<title>趋势买卖点 · 核心指数趋势信号</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23c9873a'/%3E%3Cpath d='M7 29l7-9 6 5 6-11 7 7' stroke='%23fff' fill='none' stroke-width='2.8'/%3E%3Ccircle cx='33' cy='11' r='3' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/workspace-theme.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand">
+      <span class="mark">势</span>
+      <div class="brand-txt"><b>趋势买卖点</b><small>TREND SIGNALS</small></div>
+    </div>
+    <nav class="index-tabs" id="indexTabs" aria-label="选择指数"></nav>
+    <div class="top-right">
+      <span class="data-date">数据日 <b id="dataDate">—</b></span>
+      <button class="icon-btn" id="themeBtn" title="切换深浅色" aria-label="切换深浅色">◐</button>
+      <a class="home-link" href="/">返回首页</a>
+    </div>
+  </header>
+
+  <div class="stale" id="stale" hidden></div>
+
+  <section class="chart-card" id="chartCard">
+    <div class="chart-head">
+      <div class="quote">
+        <div class="quote-name"><h1 id="idxName">—</h1><span class="quote-code" id="idxCode"></span></div>
+        <div class="quote-num"><strong id="lastPrice">—</strong><span id="dayChg" class="chg">—</span></div>
+        <div class="quote-sub"><span>年线 <b id="ma250">—</b></span><span>距年线 <b id="distMa">—</b></span><span>52周 <b id="range52">—</b></span></div>
+      </div>
+      <div class="chart-tools">
+        <div class="seg" id="periodSeg" role="group" aria-label="K线周期">
+          <button data-period="day" class="on">日K</button><button data-period="week">周K</button><button data-period="month">月K</button>
+        </div>
+        <div class="seg" id="indSeg" role="group" aria-label="指标开关">
+          <button data-ind="ma" class="on">均线</button><button data-ind="boll">BOLL</button><button data-ind="macd" class="on">MACD</button>
+        </div>
+        <button class="tool-btn" id="rangeBtn" title="开启后拖动选择区间">区间统计</button>
+        <button class="icon-btn" id="fsBtn" title="全屏" aria-label="全屏">⛶</button>
+      </div>
+    </div>
+
+    <div class="chart-shell" id="chartShell">
+      <canvas id="kline" aria-label="指数K线图"></canvas>
+      <div class="chart-tip" id="chartTip" hidden></div>
+      <div class="range-panel" id="rangePanel" hidden></div>
+      <div class="chart-loading" id="loading">载入行情…</div>
+      <div class="chart-hint" id="chartHint">滚轮缩放 · 拖动平移 · Shift+拖动区间统计 · 双击复位</div>
+    </div>
+
+    <div class="chart-legend" id="legend">
+      <span><i class="sw ma5"></i>MA5</span><span><i class="sw ma10"></i>MA10</span><span><i class="sw ma20"></i>MA20</span><span><i class="sw ma60"></i>MA60</span><span><i class="sw ma250"></i>MA250</span>
+      <span class="legend-b"><i class="sig-b">B</i>买入</span><span class="legend-s"><i class="sig-s">S</i>卖出</span>
+      <span id="viewInfo" class="view-info"></span>
+    </div>
+  </section>
+
+  <section class="state-strip" id="stateStrip">
+    <div class="state-main"><span class="state-pill" id="statePill">—</span><div><b id="stateTitle">—</b><small id="stateSub">—</small></div></div>
+    <div class="conditions" id="conditions"></div>
+    <div class="next-trigger" id="nextTrigger">—</div>
+  </section>
+
+  <section class="tabs-card">
+    <nav class="tabs" id="tabs" role="tablist">
+      <button data-tab="overview" class="on" role="tab">概览</button>
+      <button data-tab="trades" role="tab">交易记录</button>
+      <button data-tab="years" role="tab">年度收益</button>
+      <button data-tab="method" role="tab">方法与理论</button>
+      <button data-tab="validation" role="tab">验证报告</button>
+    </nav>
+
+    <div class="panel on" id="panel-overview">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="overview-grid">
+        <div class="sub-card">
+          <div class="sub-head"><h2>策略净值 vs 买入持有</h2><span id="equityNote">含 5bp 单边成本，T+1 开盘成交</span></div>
+          <canvas id="equityChart" class="equity-canvas"></canvas>
+          <div class="equity-legend"><span class="lg-strategy" id="eqStrategy">趋势策略</span><span class="lg-bh" id="eqBh">买入持有</span></div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-head"><h2>当前盘面数据</h2><span>日频</span></div>
+          <div class="stat-list" id="statList"></div>
+        </div>
+      </div>
+      <div class="sub-card notes-card">
+        <div class="sub-head"><h2>怎么读这张图</h2><span>先看状态，再看价格</span></div>
+        <div class="reading-grid">
+          <div><b>B / S 标记</b><p>B 是收盘触发买入、次日开盘成交；S 是收盘触发卖出、次日开盘成交。标记画在信号日，成交价在提示框里。</p></div>
+          <div><b>持仓带</b><p>K 线下方的琥珀色细带表示策略处于持仓期。空仓段不代表看空，只是规则未满足。</p></div>
+          <div><b>止损线</b><p>持仓时显示吊灯止损：22 日最高 − 3×ATR22，只上移不下移；与入场时的 2N 硬止损取较高者。</p></div>
+          <div><b>区间统计</b><p>Shift+拖动或点“区间统计”后拖动，统计区间涨跌、振幅、成交量、成交额、年化波动与区间最大回撤。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-trades">
+      <div class="panel-head"><div><h2>历史信号与交易</h2><p id="tradeSummary">—</p></div><div class="seg" id="tradeFilter"><button data-f="all" class="on">全部</button><button data-f="BUY">买入</button><button data-f="SELL">卖出</button></div></div>
+      <div class="table-wrap"><table class="tbl" id="tradeTable"><thead><tr><th>信号日</th><th>执行日</th><th>方向</th><th>成交价</th><th>信号收盘</th><th>持有</th><th>单笔收益</th><th>退出止损</th></tr></thead><tbody></tbody></table></div>
+      <div class="table-note">收益按“开盘价 + 5bp 买入、开盘价 − 5bp 卖出”计算，未计滑点与冲击成本。卖出为风险退出，不是看空预测。</div>
+    </div>
+
+    <div class="panel" id="panel-years">
+      <div class="panel-head"><div><h2>年度收益对比</h2><p>策略按年收盘净值计算；买入持有为同期指数。</p></div></div>
+      <div class="table-wrap"><table class="tbl" id="yearTable"><thead><tr><th>年份</th><th>趋势策略</th><th>买入持有</th><th>超额</th><th>策略年内回撤</th></tr></thead><tbody></tbody></table></div>
+      <div class="table-note">年度收益按年末净值；完整逐日回撤见验证报告。</div>
+    </div>
+
+    <div class="panel" id="panel-method"></div>
+    <div class="panel" id="panel-validation"></div>
+  </section>
+
+  <footer class="foot">
+    <div>规则化趋势跟随 · 数据来自东方财富指数日线（不复权） · 每个交易日 15:35 更新</div>
+    <div>历史回测不构成投资建议 · <a href="/">1.688680.xyz</a></div>
+  </footer>
+</div>
+<script src="/assets/site-theme.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

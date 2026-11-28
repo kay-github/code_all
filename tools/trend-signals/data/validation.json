@@ -1,0 +1,1241 @@
+{
+ "generated": "2026-11-28 21:28",
+ "params": {
+  "entry": "donchian_ma",
+  "entry_n": 25,
+  "exit": "chandelier",
+  "exit_n": 22,
+  "atr_mult": 3.0,
+  "ma": 250,
+  "slope_mode": "60",
+  "buf": 0.005,
+  "hard_stop_n": 2.0,
+  "adx_min": 0
+ },
+ "cost": {
+  "0.0": {
+   "full_median_cagr": 0.0805,
+   "oos_median_cagr": 0.0405
+  },
+  "0.0005": {
+   "full_median_cagr": 0.0785,
+   "oos_median_cagr": 0.0394
+  },
+  "0.001": {
+   "full_median_cagr": 0.0764,
+   "oos_median_cagr": 0.0384
+  },
+  "0.002": {
+   "full_median_cagr": 0.0723,
+   "oos_median_cagr": 0.0363
+  }
+ },
+ "plateau": [
+  [
+   {
+    "entry": 15,
+    "mult": 2.0,
+    "is_sharpe": 0.551,
+    "oos_sharpe": 0.247
+   },
+   {
+    "entry": 15,
+    "mult": 2.5,
+    "is_sharpe": 0.782,
+    "oos_sharpe": 0.475
+   },
+   {
+    "entry": 15,
+    "mult": 3.0,
+    "is_sharpe": 0.75,
+    "oos_sharpe": 0.527
+   },
+   {
+    "entry": 15,
+    "mult": 3.5,
+    "is_sharpe": 0.732,
+    "oos_sharpe": 0.468
+   },
+   {
+    "entry": 15,
+    "mult": 4.0,
+    "is_sharpe": 0.873,
+    "oos_sharpe": 0.37
+   }
+  ],
+  [
+   {
+    "entry": 20,
+    "mult": 2.0,
+    "is_sharpe": 0.564,
+    "oos_sharpe": 0.54
+   },
+   {
+    "entry": 20,
+    "mult": 2.5,
+    "is_sharpe": 0.806,
+    "oos_sharpe": 0.37
+   },
+   {
+    "entry": 20,
+    "mult": 3.0,
+    "is_sharpe": 0.758,
+    "oos_sharpe": 0.442
+   },
+   {
+    "entry": 20,
+    "mult": 3.5,
+    "is_sharpe": 0.692,
+    "oos_sharpe": 0.455
+   },
+   {
+    "entry": 20,
+    "mult": 4.0,
+    "is_sharpe": 0.854,
+    "oos_sharpe": 0.358
+   }
+  ],
+  [
+   {
+    "entry": 25,
+    "mult": 2.0,
+    "is_sharpe": 0.557,
+    "oos_sharpe": 0.571
+   },
+   {
+    "entry": 25,
+    "mult": 2.5,
+    "is_sharpe": 0.757,
+    "oos_sharpe": 0.554
+   },
+   {
+    "entry": 25,
+    "mult": 3.0,
+    "is_sharpe": 0.774,
+    "oos_sharpe": 0.503
+   },
+   {
+    "entry": 25,
+    "mult": 3.5,
+    "is_sharpe": 0.694,
+    "oos_sharpe": 0.387
+   },
+   {
+    "entry": 25,
+    "mult": 4.0,
+    "is_sharpe": 0.835,
+    "oos_sharpe": 0.317
+   }
+  ],
+  [
+   {
+    "entry": 30,
+    "mult": 2.0,
+    "is_sharpe": 0.536,
+    "oos_sharpe": 0.377
+   },
+   {
+    "entry": 30,
+    "mult": 2.5,
+    "is_sharpe": 0.752,
+    "oos_sharpe": 0.425
+   },
+   {
+    "entry": 30,
+    "mult": 3.0,
+    "is_sharpe": 0.758,
+    "oos_sharpe": 0.442
+   },
+   {
+    "entry": 30,
+    "mult": 3.5,
+    "is_sharpe": 0.676,
+    "oos_sharpe": 0.366
+   },
+   {
+    "entry": 30,
+    "mult": 4.0,
+    "is_sharpe": 0.834,
+    "oos_sharpe": 0.269
+   }
+  ],
+  [
+   {
+    "entry": 35,
+    "mult": 2.0,
+    "is_sharpe": 0.572,
+    "oos_sharpe": 0.404
+   },
+   {
+    "entry": 35,
+    "mult": 2.5,
+    "is_sharpe": 0.748,
+    "oos_sharpe": 0.313
+   },
+   {
+    "entry": 35,
+    "mult": 3.0,
+    "is_sharpe": 0.768,
+    "oos_sharpe": 0.424
+   },
+   {
+    "entry": 35,
+    "mult": 3.5,
+    "is_sharpe": 0.708,
+    "oos_sharpe": 0.243
+   },
+   {
+    "entry": 35,
+    "mult": 4.0,
+    "is_sharpe": 0.816,
+    "oos_sharpe": 0.2
+   }
+  ],
+  [
+   {
+    "entry": 40,
+    "mult": 2.0,
+    "is_sharpe": 0.553,
+    "oos_sharpe": 0.404
+   },
+   {
+    "entry": 40,
+    "mult": 2.5,
+    "is_sharpe": 0.752,
+    "oos_sharpe": 0.313
+   },
+   {
+    "entry": 40,
+    "mult": 3.0,
+    "is_sharpe": 0.75,
+    "oos_sharpe": 0.378
+   },
+   {
+    "entry": 40,
+    "mult": 3.5,
+    "is_sharpe": 0.705,
+    "oos_sharpe": 0.259
+   },
+   {
+    "entry": 40,
+    "mult": 4.0,
+    "is_sharpe": 0.801,
+    "oos_sharpe": 0.123
+   }
+  ]
+ ],
+ "portfolio": {
+  "strategy": {
+   "cagr": 0.0413,
+   "vol": 0.086,
+   "sharpe": 0.533,
+   "maxdd": -0.129,
+   "calmar": 0.32,
+   "trades": 0,
+   "win_rate": null,
+   "avg_win": 0.0,
+   "avg_loss": 0.0,
+   "profit_factor": null,
+   "avg_hold": null,
+   "exposure": 0.0,
+   "final": 1.3222
+  },
+  "bh": {
+   "cagr": 0.0312,
+   "vol": 0.2483,
+   "sharpe": 0.252,
+   "maxdd": -0.4667,
+   "calmar": 0.067,
+   "trades": 0,
+   "win_rate": null,
+   "avg_win": 0.0,
+   "avg_loss": 0.0,
+   "profit_factor": null,
+   "avg_hold": null,
+   "exposure": 0.0,
+   "final": 1.2359
+  },
+  "sharpe_ci": [
+   -0.173,
+   0.51,
+   1.18
+  ],
+  "start": "2020-01-02",
+  "end": "2026-11-27"
+ },
+ "signal_forward": {
+  "sh000300": {
+   "BUY_20d": {
+    "n": 33,
+    "mean": -0.0032,
+    "all_mean": 0.0084,
+    "excess": -0.0116,
+    "t": -0.86
+   },
+   "SELL_20d": {
+    "n": 33,
+    "mean": 0.0066,
+    "all_mean": 0.0084,
+    "excess": -0.0018,
+    "t": -0.13
+   },
+   "BUY_60d": {
+    "n": 33,
+    "mean": 0.0537,
+    "all_mean": 0.0283,
+    "excess": 0.0255,
+    "t": 0.92
+   },
+   "SELL_60d": {
+    "n": 33,
+    "mean": 0.0448,
+    "all_mean": 0.0283,
+    "excess": 0.0166,
+    "t": 0.6
+   },
+   "BUY_120d": {
+    "n": 32,
+    "mean": 0.1246,
+    "all_mean": 0.064,
+    "excess": 0.0606,
+    "t": 1.21
+   },
+   "SELL_120d": {
+    "n": 32,
+    "mean": 0.1102,
+    "all_mean": 0.064,
+    "excess": 0.0462,
+    "t": 0.92
+   }
+  },
+  "sh000905": {
+   "BUY_20d": {
+    "n": 42,
+    "mean": 0.0226,
+    "all_mean": 0.0118,
+    "excess": 0.0108,
+    "t": 0.76
+   },
+   "SELL_20d": {
+    "n": 42,
+    "mean": 0.0084,
+    "all_mean": 0.0118,
+    "excess": -0.0033,
+    "t": -0.23
+   },
+   "BUY_60d": {
+    "n": 42,
+    "mean": 0.0813,
+    "all_mean": 0.0382,
+    "excess": 0.0432,
+    "t": 1.54
+   },
+   "SELL_60d": {
+    "n": 42,
+    "mean": 0.0604,
+    "all_mean": 0.0382,
+    "excess": 0.0223,
+    "t": 0.8
+   },
+   "BUY_120d": {
+    "n": 41,
+    "mean": 0.2007,
+    "all_mean": 0.0798,
+    "excess": 0.1209,
+    "t": 2.6
+   },
+   "SELL_120d": {
+    "n": 41,
+    "mean": 0.1774,
+    "all_mean": 0.0798,
+    "excess": 0.0976,
+    "t": 2.1
+   }
+  },
+  "sh000852": {
+   "BUY_20d": {
+    "n": 39,
+    "mean": 0.0349,
+    "all_mean": 0.0126,
+    "excess": 0.0223,
+    "t": 1.4
+   },
+   "SELL_20d": {
+    "n": 39,
+    "mean": 0.0067,
+    "all_mean": 0.0126,
+    "excess": -0.0059,
+    "t": -0.37
+   },
+   "BUY_60d": {
+    "n": 39,
+    "mean": 0.0984,
+    "all_mean": 0.0413,
+    "excess": 0.0571,
+    "t": 1.8
+   },
+   "SELL_60d": {
+    "n": 39,
+    "mean": 0.0817,
+    "all_mean": 0.0413,
+    "excess": 0.0404,
+    "t": 1.27
+   },
+   "BUY_120d": {
+    "n": 39,
+    "mean": 0.2408,
+    "all_mean": 0.0849,
+    "excess": 0.1559,
+    "t": 3.1
+   },
+   "SELL_120d": {
+    "n": 39,
+    "mean": 0.2087,
+    "all_mean": 0.0849,
+    "excess": 0.1239,
+    "t": 2.46
+   }
+  },
+  "sz399006": {
+   "BUY_20d": {
+    "n": 26,
+    "mean": 0.0323,
+    "all_mean": 0.0097,
+    "excess": 0.0226,
+    "t": 1.21
+   },
+   "SELL_20d": {
+    "n": 26,
+    "mean": 0.0045,
+    "all_mean": 0.0097,
+    "excess": -0.0052,
+    "t": -0.28
+   },
+   "BUY_60d": {
+    "n": 26,
+    "mean": 0.1225,
+    "all_mean": 0.033,
+    "excess": 0.0895,
+    "t": 2.55
+   },
+   "SELL_60d": {
+    "n": 26,
+    "mean": 0.0889,
+    "all_mean": 0.033,
+    "excess": 0.0558,
+    "t": 1.59
+   },
+   "BUY_120d": {
+    "n": 25,
+    "mean": 0.2681,
+    "all_mean": 0.0707,
+    "excess": 0.1975,
+    "t": 3.92
+   },
+   "SELL_120d": {
+    "n": 24,
+    "mean": 0.2676,
+    "all_mean": 0.0707,
+    "excess": 0.197,
+    "t": 3.83
+   }
+  },
+  "sh000688": {
+   "BUY_20d": {
+    "n": 7,
+    "mean": 0.055,
+    "all_mean": 0.0031,
+    "excess": 0.0519,
+    "t": 1.34
+   },
+   "SELL_20d": {
+    "n": 7,
+    "mean": 0.0235,
+    "all_mean": 0.0031,
+    "excess": 0.0204,
+    "t": 0.53
+   },
+   "BUY_60d": {
+    "n": 7,
+    "mean": 0.0417,
+    "all_mean": 0.0167,
+    "excess": 0.025,
+    "t": 0.38
+   },
+   "SELL_60d": {
+    "n": 7,
+    "mean": -0.0032,
+    "all_mean": 0.0167,
+    "excess": -0.0199,
+    "t": -0.3
+   },
+   "BUY_120d": {
+    "n": 6,
+    "mean": 0.1206,
+    "all_mean": 0.0361,
+    "excess": 0.0845,
+    "t": 0.92
+   },
+   "SELL_120d": {
+    "n": 6,
+    "mean": 0.0091,
+    "all_mean": 0.0361,
+    "excess": -0.027,
+    "t": -0.29
+   }
+  }
+ },
+ "indices": [
+  {
+   "code": "sh000300",
+   "name": "沪深300",
+   "start": "2005-01-04",
+   "end": "2026-11-27",
+   "bars": 5319,
+   "full": {
+    "cagr": 0.0427,
+    "vol": 0.1024,
+    "sharpe": 0.476,
+    "maxdd": -0.2884,
+    "calmar": 0.148,
+    "trades": 33,
+    "win_rate": 0.394,
+    "avg_win": 0.1781,
+    "avg_loss": -0.0528,
+    "profit_factor": 2.194,
+    "avg_hold": 25.7,
+    "exposure": 0.159,
+    "final": 2.4993
+   },
+   "bh": {
+    "cagr": 0.067,
+    "vol": 0.2498,
+    "sharpe": 0.395,
+    "maxdd": -0.723,
+    "calmar": 0.093,
+    "trades": 0,
+    "win_rate": null,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": null,
+    "avg_hold": null,
+    "exposure": 0.0,
+    "final": 4.1342
+   },
+   "IS": {
+    "strategy": {
+     "cagr": 0.0731,
+     "vol": 0.1131,
+     "sharpe": 0.703,
+     "maxdd": -0.2324,
+     "calmar": 0.315,
+     "trades": 21,
+     "win_rate": 0.476,
+     "avg_win": 0.1945,
+     "avg_loss": -0.0592,
+     "profit_factor": 2.988,
+     "avg_hold": 26.0,
+     "exposure": 0.16,
+     "final": 2.6817
+    },
+    "bh": {
+     "cagr": 0.0834,
+     "vol": 0.2777,
+     "sharpe": 0.438,
+     "maxdd": -0.723,
+     "calmar": 0.115,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 3.0634
+    }
+   },
+   "OOS": {
+    "strategy": {
+     "cagr": 0.0202,
+     "vol": 0.065,
+     "sharpe": 0.352,
+     "maxdd": -0.1438,
+     "calmar": 0.14,
+     "trades": 9,
+     "win_rate": 0.333,
+     "avg_win": 0.1234,
+     "avg_loss": -0.031,
+     "profit_factor": 1.987,
+     "avg_hold": 28.2,
+     "exposure": 0.132,
+     "final": 1.1712
+    },
+    "bh": {
+     "cagr": 0.0405,
+     "vol": 0.1904,
+     "sharpe": 0.312,
+     "maxdd": -0.456,
+     "calmar": 0.089,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.3682
+    },
+    "sharpe_ci": [
+     -0.345,
+     0.343,
+     1.019
+    ]
+   },
+   "years": {
+    "2005": 0.0,
+    "2006": 0.5369,
+    "2007": 0.5098,
+    "2008": 0.0032,
+    "2009": 0.0109,
+    "2010": -0.0667,
+    "2011": -0.0513,
+    "2012": 0.0,
+    "2013": 0.0,
+    "2014": 0.1967,
+    "2015": -0.0419,
+    "2016": 0.0,
+    "2017": 0.0992,
+    "2018": 0.0212,
+    "2019": -0.0109,
+    "2020": 0.0002,
+    "2021": -0.0517,
+    "2022": 0.0,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.0788,
+    "2026": -0.0791
+   },
+   "bh_years": {
+    "2005": -0.0604,
+    "2006": 1.2102,
+    "2007": 1.6155,
+    "2008": -0.6595,
+    "2009": 0.9671,
+    "2010": -0.1251,
+    "2011": -0.2501,
+    "2012": 0.0755,
+    "2013": -0.0765,
+    "2014": 0.5166,
+    "2015": 0.0558,
+    "2016": -0.1128,
+    "2017": 0.2178,
+    "2018": -0.2531,
+    "2019": 0.3607,
+    "2020": 0.2721,
+    "2021": -0.052,
+    "2022": -0.2163,
+    "2023": -0.1138,
+    "2024": 0.1468,
+    "2025": 0.1766,
+    "2026": -0.1224
+   },
+   "worst_trade": -0.1046,
+   "random": {
+    "cagr_med": 0.0302,
+    "cagr_p5": -0.0065,
+    "cagr_p95": 0.0651,
+    "dd_med": -0.5814,
+    "dd_p5": -0.7119,
+    "dd_p95": -0.3723
+   },
+   "signals": 66
+  },
+  {
+   "code": "sh000905",
+   "name": "中证500",
+   "start": "2005-01-04",
+   "end": "2026-11-27",
+   "bars": 5319,
+   "full": {
+    "cagr": 0.0785,
+    "vol": 0.1284,
+    "sharpe": 0.675,
+    "maxdd": -0.3751,
+    "calmar": 0.209,
+    "trades": 42,
+    "win_rate": 0.5,
+    "avg_win": 0.1425,
+    "avg_loss": -0.0446,
+    "profit_factor": 3.192,
+    "avg_hold": 27.1,
+    "exposure": 0.214,
+    "final": 5.2285
+   },
+   "bh": {
+    "cagr": 0.0885,
+    "vol": 0.289,
+    "sharpe": 0.45,
+    "maxdd": -0.7242,
+    "calmar": 0.122,
+    "trades": 0,
+    "win_rate": null,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": null,
+    "avg_hold": null,
+    "exposure": 0.0,
+    "final": 6.3972
+   },
+   "IS": {
+    "strategy": {
+     "cagr": 0.1142,
+     "vol": 0.1449,
+     "sharpe": 0.846,
+     "maxdd": -0.3212,
+     "calmar": 0.356,
+     "trades": 29,
+     "win_rate": 0.552,
+     "avg_win": 0.1588,
+     "avg_loss": -0.0509,
+     "profit_factor": 3.841,
+     "avg_hold": 26.3,
+     "exposure": 0.224,
+     "final": 4.5333
+    },
+    "bh": {
+     "cagr": 0.1085,
+     "vol": 0.3177,
+     "sharpe": 0.496,
+     "maxdd": -0.7242,
+     "calmar": 0.15,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 4.2232
+    }
+   },
+   "OOS": {
+    "strategy": {
+     "cagr": 0.033,
+     "vol": 0.0788,
+     "sharpe": 0.467,
+     "maxdd": -0.1463,
+     "calmar": 0.226,
+     "trades": 11,
+     "win_rate": 0.455,
+     "avg_win": 0.0904,
+     "avg_loss": -0.0277,
+     "profit_factor": 2.72,
+     "avg_hold": 30.7,
+     "exposure": 0.176,
+     "final": 1.2923
+    },
+    "bh": {
+     "cagr": 0.0551,
+     "vol": 0.2295,
+     "sharpe": 0.358,
+     "maxdd": -0.4181,
+     "calmar": 0.132,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.528
+    },
+    "sharpe_ci": [
+     -0.195,
+     0.474,
+     1.147
+    ]
+   },
+   "years": {
+    "2005": 0.0,
+    "2006": 0.1542,
+    "2007": 1.6041,
+    "2008": 0.0054,
+    "2009": -0.1345,
+    "2010": 0.1738,
+    "2011": -0.0451,
+    "2012": 0.0,
+    "2013": 0.0295,
+    "2014": 0.1274,
+    "2015": 0.3538,
+    "2016": 0.0,
+    "2017": -0.0158,
+    "2018": 0.0,
+    "2019": 0.0189,
+    "2020": 0.015,
+    "2021": 0.0085,
+    "2022": -0.0407,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.0988,
+    "2026": 0.0491
+   },
+   "bh_years": {
+    "2005": -0.1285,
+    "2006": 1.0068,
+    "2007": 1.8663,
+    "2008": -0.608,
+    "2009": 1.3127,
+    "2010": 0.1007,
+    "2011": -0.3383,
+    "2012": 0.0028,
+    "2013": 0.1689,
+    "2014": 0.3901,
+    "2015": 0.4312,
+    "2016": -0.1778,
+    "2017": -0.002,
+    "2018": -0.3332,
+    "2019": 0.2638,
+    "2020": 0.2087,
+    "2021": 0.1558,
+    "2022": -0.2031,
+    "2023": -0.0742,
+    "2024": 0.0546,
+    "2025": 0.3039,
+    "2026": -0.1543
+   },
+   "worst_trade": -0.1803,
+   "random": {
+    "cagr_med": 0.0436,
+    "cagr_p5": -0.0013,
+    "cagr_p95": 0.09,
+    "dd_med": -0.5996,
+    "dd_p5": -0.7452,
+    "dd_p95": -0.4323
+   },
+   "signals": 84
+  },
+  {
+   "code": "sh000852",
+   "name": "中证1000",
+   "start": "2005-01-04",
+   "end": "2026-11-27",
+   "bars": 5319,
+   "full": {
+    "cagr": 0.0873,
+    "vol": 0.1297,
+    "sharpe": 0.735,
+    "maxdd": -0.3184,
+    "calmar": 0.274,
+    "trades": 39,
+    "win_rate": 0.462,
+    "avg_win": 0.1803,
+    "avg_loss": -0.0399,
+    "profit_factor": 3.878,
+    "avg_hold": 26.9,
+    "exposure": 0.197,
+    "final": 6.2484
+   },
+   "bh": {
+    "cagr": 0.0856,
+    "vol": 0.302,
+    "sharpe": 0.435,
+    "maxdd": -0.7251,
+    "calmar": 0.118,
+    "trades": 0,
+    "win_rate": null,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": null,
+    "avg_hold": null,
+    "exposure": 0.0,
+    "final": 6.0435
+   },
+   "IS": {
+    "strategy": {
+     "cagr": 0.1215,
+     "vol": 0.1473,
+     "sharpe": 0.881,
+     "maxdd": -0.3184,
+     "calmar": 0.382,
+     "trades": 29,
+     "win_rate": 0.483,
+     "avg_win": 0.2056,
+     "avg_loss": -0.0479,
+     "profit_factor": 4.006,
+     "avg_hold": 25.8,
+     "exposure": 0.22,
+     "final": 4.9702
+    },
+    "bh": {
+     "cagr": 0.1131,
+     "vol": 0.3257,
+     "sharpe": 0.505,
+     "maxdd": -0.7251,
+     "calmar": 0.156,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 4.4749
+    }
+   },
+   "OOS": {
+    "strategy": {
+     "cagr": 0.0394,
+     "vol": 0.0761,
+     "sharpe": 0.566,
+     "maxdd": -0.1011,
+     "calmar": 0.39,
+     "trades": 8,
+     "win_rate": 0.5,
+     "avg_win": 0.0918,
+     "avg_loss": -0.0109,
+     "profit_factor": 8.464,
+     "avg_hold": 33.4,
+     "exposure": 0.139,
+     "final": 1.3575
+    },
+    "bh": {
+     "cagr": 0.0394,
+     "vol": 0.2545,
+     "sharpe": 0.285,
+     "maxdd": -0.4671,
+     "calmar": 0.084,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.3571
+    },
+    "sharpe_ci": [
+     -0.075,
+     0.553,
+     1.233
+    ]
+   },
+   "years": {
+    "2005": 0.0,
+    "2006": -0.033,
+    "2007": 1.7672,
+    "2008": 0.0191,
+    "2009": -0.1846,
+    "2010": 0.0232,
+    "2011": -0.0448,
+    "2012": 0.0,
+    "2013": 0.0096,
+    "2014": 0.077,
+    "2015": 1.4434,
+    "2016": -0.1393,
+    "2017": 0.0,
+    "2018": 0.0,
+    "2019": 0.0154,
+    "2020": -0.0003,
+    "2021": 0.0825,
+    "2022": -0.0431,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.1414,
+    "2026": 0.0475
+   },
+   "bh_years": {
+    "2005": -0.1487,
+    "2006": 0.7622,
+    "2007": 2.0257,
+    "2008": -0.5926,
+    "2009": 1.3985,
+    "2010": 0.174,
+    "2011": -0.3296,
+    "2012": -0.0143,
+    "2013": 0.3159,
+    "2014": 0.3446,
+    "2015": 0.761,
+    "2016": -0.2001,
+    "2017": -0.1735,
+    "2018": -0.3687,
+    "2019": 0.2567,
+    "2020": 0.1939,
+    "2021": 0.2052,
+    "2022": -0.2158,
+    "2023": -0.0628,
+    "2024": 0.012,
+    "2025": 0.2749,
+    "2026": -0.2123
+   },
+   "worst_trade": -0.0874,
+   "random": {
+    "cagr_med": 0.0443,
+    "cagr_p5": 0.002,
+    "cagr_p95": 0.0934,
+    "dd_med": -0.6173,
+    "dd_p5": -0.7494,
+    "dd_p95": -0.4152
+   },
+   "signals": 78
+  },
+  {
+   "code": "sz399006",
+   "name": "创业板指",
+   "start": "2010-06-01",
+   "end": "2026-11-27",
+   "bars": 4005,
+   "full": {
+    "cagr": 0.0876,
+    "vol": 0.1439,
+    "sharpe": 0.678,
+    "maxdd": -0.2493,
+    "calmar": 0.351,
+    "trades": 25,
+    "win_rate": 0.52,
+    "avg_win": 0.1888,
+    "avg_loss": -0.0477,
+    "profit_factor": 4.285,
+    "avg_hold": 32.8,
+    "exposure": 0.205,
+    "final": 3.9921
+   },
+   "bh": {
+    "cagr": 0.0574,
+    "vol": 0.3128,
+    "sharpe": 0.342,
+    "maxdd": -0.6974,
+    "calmar": 0.082,
+    "trades": 0,
+    "win_rate": null,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": null,
+    "avg_hold": null,
+    "exposure": 0.0,
+    "final": 2.5112
+   },
+   "IS": {
+    "strategy": {
+     "cagr": 0.0926,
+     "vol": 0.1523,
+     "sharpe": 0.678,
+     "maxdd": -0.2356,
+     "calmar": 0.393,
+     "trades": 11,
+     "win_rate": 0.545,
+     "avg_win": 0.2371,
+     "avg_loss": -0.0549,
+     "profit_factor": 5.183,
+     "avg_hold": 35.6,
+     "exposure": 0.188,
+     "final": 2.1369
+    },
+    "bh": {
+     "cagr": 0.0297,
+     "vol": 0.3191,
+     "sharpe": 0.255,
+     "maxdd": -0.6974,
+     "calmar": 0.043,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.2849
+    }
+   },
+   "OOS": {
+    "strategy": {
+     "cagr": 0.085,
+     "vol": 0.1226,
+     "sharpe": 0.753,
+     "maxdd": -0.1642,
+     "calmar": 0.518,
+     "trades": 11,
+     "win_rate": 0.455,
+     "avg_win": 0.1974,
+     "avg_loss": -0.0394,
+     "profit_factor": 4.172,
+     "avg_hold": 33.9,
+     "exposure": 0.195,
+     "final": 1.9051
+    },
+    "bh": {
+     "cagr": 0.0909,
+     "vol": 0.3057,
+     "sharpe": 0.448,
+     "maxdd": -0.5705,
+     "calmar": 0.159,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.9889
+    },
+    "sharpe_ci": [
+     0.15,
+     0.769,
+     1.339
+    ]
+   },
+   "years": {
+    "2010": 0.0,
+    "2011": 0.0,
+    "2012": 0.0,
+    "2013": 0.1244,
+    "2014": -0.1164,
+    "2015": 1.4819,
+    "2016": -0.1334,
+    "2017": 0.0,
+    "2018": 0.0,
+    "2019": -0.0424,
+    "2020": 0.3309,
+    "2021": 0.183,
+    "2022": 0.0,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.2162,
+    "2026": 0.0188
+   },
+   "bh_years": {
+    "2010": 0.169,
+    "2011": -0.3588,
+    "2012": -0.0214,
+    "2013": 0.8273,
+    "2014": 0.1283,
+    "2015": 0.8441,
+    "2016": -0.2771,
+    "2017": -0.1067,
+    "2018": -0.2865,
+    "2019": 0.4379,
+    "2020": 0.6496,
+    "2021": 0.1202,
+    "2022": -0.2937,
+    "2023": -0.1941,
+    "2024": 0.1323,
+    "2025": 0.4957,
+    "2026": -0.237
+   },
+   "worst_trade": -0.0992,
+   "random": {
+    "cagr_med": 0.0352,
+    "cagr_p5": -0.0042,
+    "cagr_p95": 0.0856,
+    "dd_med": -0.4779,
+    "dd_p5": -0.6221,
+    "dd_p95": -0.3292
+   },
+   "signals": 52
+  },
+  {
+   "code": "sh000688",
+   "name": "科创50",
+   "start": "2019-12-31",
+   "end": "2026-11-27",
+   "bars": 1674,
+   "full": {
+    "cagr": 0.0547,
+    "vol": 0.1256,
+    "sharpe": 0.503,
+    "maxdd": -0.134,
+    "calmar": 0.408,
+    "trades": 7,
+    "win_rate": 0.714,
+    "avg_win": 0.0946,
+    "avg_loss": -0.038,
+    "profit_factor": 6.227,
+    "avg_hold": 25.3,
+    "exposure": 0.106,
+    "final": 1.4445
+   },
+   "bh": {
+    "cagr": 0.044,
+    "vol": 0.3493,
+    "sharpe": 0.301,
+    "maxdd": -0.6266,
+    "calmar": 0.07,
+    "trades": 0,
+    "win_rate": null,
+    "avg_win": 0.0,
+    "avg_loss": 0.0,
+    "profit_factor": null,
+    "avg_hold": null,
+    "exposure": 0.0,
+    "final": 1.3462
+   },
+   "IS": null,
+   "OOS": {
+    "strategy": {
+     "cagr": 0.0547,
+     "vol": 0.1256,
+     "sharpe": 0.503,
+     "maxdd": -0.134,
+     "calmar": 0.408,
+     "trades": 7,
+     "win_rate": 0.714,
+     "avg_win": 0.0946,
+     "avg_loss": -0.038,
+     "profit_factor": 6.227,
+     "avg_hold": 25.3,
+     "exposure": 0.106,
+     "final": 1.4445
+    },
+    "bh": {
+     "cagr": 0.044,
+     "vol": 0.3493,
+     "sharpe": 0.301,
+     "maxdd": -0.6266,
+     "calmar": 0.07,
+     "trades": 0,
+     "win_rate": null,
+     "avg_win": 0.0,
+     "avg_loss": 0.0,
+     "profit_factor": null,
+     "avg_hold": null,
+     "exposure": 0.0,
+     "final": 1.3462
+    },
+    "sharpe_ci": [
+     -0.112,
+     0.498,
+     1.087
+    ]
+   },
+   "years": {
+    "2019": 0.0,
+    "2020": 0.0,
+    "2021": 0.0677,
+    "2022": 0.0,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.0798,
+    "2026": 0.2529
+   },
+   "bh_years": {
+    "2019": 0.0,
+    "2020": 0.393,
+    "2021": 0.0037,
+    "2022": -0.3135,
+    "2023": -0.1124,
+    "2024": 0.1607,
+    "2025": 0.3592,
+    "2026": 0.0015
+   },
+   "worst_trade": -0.0473,
+   "random": {
+    "cagr_med": -0.0259,
+    "cagr_p5": -0.0726,
+    "cagr_p95": 0.0125,
+    "dd_med": -0.2725,
+    "dd_p5": -0.4318,
+    "dd_p95": -0.12
+   },
+   "signals": 14
+  }
+ ]
+}
